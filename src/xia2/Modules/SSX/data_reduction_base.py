@@ -24,7 +24,10 @@ from xia2.Modules.SSX.data_reduction_programs import (
     filter_,
     merge_files,
 )
-from xia2.Modules.SSX.yml_handling import yml_to_filesdict, apply_scaled_array_to_all_files
+from xia2.Modules.SSX.yml_handling import (
+    apply_scaled_array_to_all_files,
+    yml_to_filesdict,
+)
 
 
 def inspect_directories(directories_to_process: List[Path]) -> List[FilePair]:
@@ -134,7 +137,7 @@ def inspect_files(
 from cctbx import crystal, miller, uctbx
 
 
-def prepare_scaled_array(file_pair, reduction_params):
+def prepare_scaled_array(file_pair, reduction_params, name):
     expts = load.experiment_list(file_pair.expt, check_format=False)
     table = flex.reflection_table.from_file(file_pair.refl)
     miller_set = miller.set(
@@ -156,7 +159,7 @@ def prepare_scaled_array(file_pair, reduction_params):
             wavelength=1.0,
         )
     )
-    return expts, i_obs
+    return expts, i_obs, name
 
 
 class BaseDataReduction(object):
@@ -363,9 +366,11 @@ class BaseDataReduction(object):
                 )
         else:
             # need to loop through scaled results and apply
-            #merge_input = {"mergegroup_1": scaled_results}  # default if no 'merge_by'
-            #metadata_groups = ["  all_data"]
-            merge_input, metadata_groups = apply_scaled_array_to_all_files(self._scale_wd, scaled_results, self._reduction_params)
+            # merge_input = {"mergegroup_1": scaled_results}  # default if no 'merge_by'
+            # metadata_groups = ["  all_data"]
+            merge_input, metadata_groups = apply_scaled_array_to_all_files(
+                self._scale_wd, scaled_results, self._reduction_params
+            )
 
         future_list = (
             []
@@ -375,29 +380,31 @@ class BaseDataReduction(object):
         # parallel load for each mergegroup, the join,
         # from xia2.Modules.SSX.data_reduction_programs import prepare_scaled_array
 
-        name_to_expts_arr = {}
+        name_to_expts_arr = {name: [None, None] for name in merge_input.keys()}
+        futures = []
         with concurrent.futures.ProcessPoolExecutor(
-            max_workers=self._reduction_params.nproc
+            max_workers=max(self._reduction_params.nproc - 1, 1)
         ) as pool:
             for name, results in merge_input.items():
-                future_list = []
+                # future_list = []
                 for fp in results:
-                    future_list.append(
+                    futures.append(
                         pool.submit(
-                            prepare_scaled_array,
-                            fp,
-                            self._reduction_params,
+                            prepare_scaled_array, fp, self._reduction_params, name
                         )
                     )
-                for i, r in enumerate(future_list):
-                    result = r.result()
-                    if i == 0:
-                        elist = result[0]
-                        scaled_array = result[1]
-                    else:
-                        elist.extend(result[0])
-                        scaled_array.concatenate(result[1])
-                name_to_expts_arr[name] = (scaled_array, elist)
+        for future in concurrent.futures.as_completed(futures):
+            elist, scaled_array, name = future.result()
+            if name_to_expts_arr[name][0] is None:
+                name_to_expts_arr[name][0] = scaled_array
+                name_to_expts_arr[name][1] = elist
+            else:
+                name_to_expts_arr[name][0] = name_to_expts_arr[name][0].concatenate(
+                    scaled_array
+                )
+                name_to_expts_arr[name][1].extend(elist)
+        for v in name_to_expts_arr.values():
+            v[0].set_observation_type_xray_intensity()
 
         future_list = []
         summaries = {name: "" for name in name_to_expts_arr.keys()}
@@ -421,24 +428,24 @@ class BaseDataReduction(object):
             # for name, group, future in zip(
             #    merge_input.keys(), metadata_groups, future_list
             # ):
-            try:
-                mergeresult = future.result()
-            except Exception as e:
-                xia2_logger.warning(f"Unsuccessful merging of a group. Error:\n{e}")
-            else:
-                xia2_logger.info(f"Merged {mergeresult.name}")
-                summaries[mergeresult.name] = mergeresult.summary
-                # xia2_logger.info()
-                FileHandler.record_data_file(mergeresult.merge_file)
-                FileHandler.record_log_file(
-                    mergeresult.logfile.name.rstrip(".log"), mergeresult.logfile
-                )
-                FileHandler.record_more_log_file(
-                    mergeresult.jsonfile.name.rstrip(".json"), mergeresult.jsonfile
-                )
-                FileHandler.record_html_file(
-                    mergeresult.htmlfile.name.rstrip(".html"), mergeresult.htmlfile
-                )
+            # try:
+            mergeresult = future.result()
+            # except Exception as e:
+            #    xia2_logger.warning(f"Unsuccessful merging of a group. Error:\n{e}")
+            # else:
+            xia2_logger.info(f"Merged {mergeresult.name}")
+            summaries[mergeresult.name] = mergeresult.summary
+            # xia2_logger.info()
+            FileHandler.record_data_file(mergeresult.merge_file)
+            FileHandler.record_log_file(
+                mergeresult.logfile.name.rstrip(".log"), mergeresult.logfile
+            )
+            FileHandler.record_more_log_file(
+                mergeresult.jsonfile.name.rstrip(".json"), mergeresult.jsonfile
+            )
+            FileHandler.record_html_file(
+                mergeresult.htmlfile.name.rstrip(".html"), mergeresult.htmlfile
+            )
         for group, (name, result) in zip(
             metadata_groups, summaries.items()
         ):  # always print stats in same order
