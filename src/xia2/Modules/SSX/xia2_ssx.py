@@ -106,7 +106,7 @@ indexing {
   unit_cell = None
     .type = unit_cell
     .expert_level=0
-  max_lattices = 1
+  max_lattices = 3
     .type = int
     .help = "Maximum number of lattices to search for, per image"
     .expert_level=1

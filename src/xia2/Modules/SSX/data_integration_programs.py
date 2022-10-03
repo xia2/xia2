@@ -21,6 +21,9 @@ from dials.algorithms.indexing.ssx.analysis import (
 from dials.algorithms.integration.ssx.ssx_integrate import (
     generate_html_report as generate_integration_html_report,
 )
+from dials.algorithms.refinement.parameterisation.crystal_parameters import (
+    CrystalUnitCellParameterisation,
+)
 from dials.algorithms.shoebox import MaskCode
 from dials.array_family import flex
 from dials.command_line.combine_experiments import CombineWithReference
@@ -444,11 +447,25 @@ def ssx_integrate(
                 output.batch_size=1000
             """
             if integration_params.algorithm == "ellipsoid":
-                extra_defaults += """
-                profile.ellipsoid.refinement.outlier_probability=0.95
-                profile.ellipsoid.refinement.max_separation=1
-                profile.ellipsoid.prediction.probability=0.95
-            """
+                n_uc_params = CrystalUnitCellParameterisation(
+                    indexed_expts[0].crystal
+                ).num_free()
+                n_orientation_params = 3
+                n_mosaicity_params = {
+                    "angular4": 4,
+                    "angular2": 2,
+                    "simple1": 1,
+                    "simple6": 6,
+                }[integration_params.rlp_mosaicity]
+                min_n_reflections = max(
+                    n_uc_params + n_orientation_params + 1, n_mosaicity_params + 1
+                )
+                # ellipsoid does refinement of uc+orientation, then mosaicity,
+                # so ensure min_n_reflections >= n_params + 1.
+                # for angular 4, min_n_reflections will range from 5 (cubic SG) to 10 (P1)
+                extra_defaults += f"""
+                profile.ellipsoid.refinement.min_n_reflections={min_n_reflections}
+                """
 
             if integration_params.phil:
                 itpr = integration_phil.command_line_argument_interpreter()
