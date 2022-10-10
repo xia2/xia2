@@ -26,7 +26,7 @@ from xia2.Modules.SSX.data_reduction_programs import (
 )
 from xia2.Modules.SSX.yml_handling import (
     apply_scaled_array_to_all_files,
-    yml_to_filesdict_2,
+    yml_to_merged_filesdict,
 )
 
 
@@ -134,7 +134,7 @@ def inspect_files(
     return new_data
 
 
-from cctbx import crystal, miller, uctbx
+from cctbx import crystal, miller
 
 
 def prepare_scaled_array(results, name):
@@ -210,6 +210,8 @@ class BaseDataReduction(object):
 
         if not Path.is_dir(self._data_reduction_wd):
             Path.mkdir(self._data_reduction_wd)
+        if not Path(self._scale_wd).is_dir():
+            Path.mkdir(self._scale_wd)
         if not Path(self._merge_wd).is_dir():
             Path.mkdir(self._merge_wd)
 
@@ -356,7 +358,7 @@ class BaseDataReduction(object):
             if "merge_by" in self._parsed_yaml._groupings:
                 # for name, scaled_files in scaled_results.items():
                 merge_input = {}
-                groups_for_merge, metadata_groups = yml_to_filesdict_2(
+                groups_for_merge, metadata_groups = yml_to_merged_filesdict(
                     self._scale_wd,
                     self._parsed_yaml,
                     scaled_results,
@@ -376,14 +378,6 @@ class BaseDataReduction(object):
                 self._scale_wd, scaled_results, self._reduction_params
             )
 
-        future_list = (
-            []
-        )  # do it this way to get results in order for consistent printing
-
-        # loop over all results to get elist and scaled array
-        # parallel load for each mergegroup, the join,
-        # from xia2.Modules.SSX.data_reduction_programs import prepare_scaled_array
-
         name_to_expts_arr = {name: [None, None] for name in merge_input.keys()}
         futures = []
         with concurrent.futures.ProcessPoolExecutor(
@@ -397,20 +391,6 @@ class BaseDataReduction(object):
                         name,
                     )
                 )
-                """n_refl = sum(fp.n_refl for fp in results)
-                print(n_refl)
-                hkl = flex.miller_index(n_refl)
-                intensity = flex.double(n_refl)
-                sigma = flex.double(n_refl)
-                # future_list = []
-                n_start=0
-                for fp in results:
-                    n_end = n_start + fp.n_refl
-                    futures.append(
-                        pool.submit(
-                            prepare_scaled_array, fp, self._reduction_params, (n_start, n_end)
-                        )
-                    )"""
         for future in concurrent.futures.as_completed(futures):
             name, scaled_array, expts = future.result()
             name_to_expts_arr[name] = [scaled_array, expts]
