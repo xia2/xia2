@@ -20,6 +20,13 @@ from dxtbx.serialize import load
 from xia2.Modules.SSX.data_reduction_programs import FilePair
 
 xia2_logger = logging.getLogger(__name__)
+from dials.util.image_grouping import (
+    GroupingImageTemplates,
+    GroupsIdentifiersForExpt,
+    InputIterable,
+    MetaDataGroup,
+    ParsedYAML,
+)
 
 
 class MetadataInFile(object):
@@ -92,7 +99,7 @@ Summary of data in ParsedGrouping class
             header += f"  Image: {i}\n    metadata: {v}\n"
         return header
 
-    def join(self, new):
+    """def join(self, new):
         assert self.name == new.name
         assert self.metadata_names == new.metadata_names
         assert self.tolerances == new.tolerances
@@ -101,7 +108,7 @@ Summary of data in ParsedGrouping class
                 assert self._images_to_metadata[image] == meta
             else:
                 self._images_to_metadata[image] = meta
-        return self
+        return self"""
 
     def extract_data(self) -> dict:
         relevant_metadata: dict[str, dict] = defaultdict(dict)
@@ -128,7 +135,7 @@ Summary of data in ParsedGrouping class
         return relevant_metadata
 
 
-class ParsedYAML(object):
+"""class ParsedYAML(object):
     def __init__(self, images, metadata, structure):
         self._images = images
         self.metadata_items = {}
@@ -199,7 +206,7 @@ class ParsedYAML(object):
             )
             self._groupings[groupby].check_consistent()
 
-    def join(self, new):
+    '''def join(self, new):
         self._images = list(set(self._images + new._images))
         # first combine the metadata
         assert set(self.metadata_items.keys()) == set(new.metadata_items.keys())
@@ -215,7 +222,7 @@ class ParsedYAML(object):
                 self.groupings[name].join(group)
             else:
                 self.groupings[name] = group
-        return self
+        return self'''
 
 
 def full_parse(yml):
@@ -231,7 +238,7 @@ def full_parse(yml):
         raise AssertionError("No structure defined in yml file")
     structure = data["structure"]
 
-    return ParsedYAML(images, metadata, structure)
+    return ParsedYAML(images, metadata, structure)"""
 
 
 def determine_groups(
@@ -315,7 +322,7 @@ def determine_groups(
     return groups
 
 
-class MetaDataGroup(object):
+"""class MetaDataGroup(object):
     def __init__(self, data_dict):
         self._data_dict = data_dict
 
@@ -325,7 +332,7 @@ class MetaDataGroup(object):
     def __str__(self):
         return "\n".join(
             f"  {k} : {v['min']} - {v['max']}" for k, v in self._data_dict.items()
-        )
+        )"""
 
 
 class ImgIdxToGroupId(object):
@@ -390,15 +397,6 @@ def files_to_groups(
                             flumpy.from_numpy(in_group), i
                         )
     return file_to_groups
-
-
-class GroupsIdentifiersForExpt(object):
-    def __init__(self):
-        self.single_group = None
-        self.groups_array = None
-        self.keep_all_original = True
-        self.identifiers = []
-        self.unique_group_numbers = None
 
 
 def get_expt_file_to_groupsdata(
@@ -466,6 +464,51 @@ def _save_split_for_merge(input_):
 from dials.algorithms.scaling.scaling_library import scaled_data_as_miller_array
 
 
+def save_scaled_array_for_merge(input_):
+    expts = load.experiment_list(input_.fp.expt, check_format=False)
+    refls = flex.reflection_table.from_file(input_.fp.refl)
+    trim_table_for_merge(refls)
+    groupdata = input_.groupdata
+    if groupdata.single_group == input_.groupindex:
+        pass
+    else:
+        # need to select
+        identifiers = expts.identifiers()
+        sel = input_.groupdata.groups_array == input_.groupindex
+        sel_identifiers = list(identifiers.select(flumpy.from_numpy(sel)))
+        expts.select_on_experiment_identifiers(sel_identifiers)
+        refls.select_on_experiment_identifiers(sel_identifiers)
+    if expts:
+        best_uc = input_.reduction_params.central_unit_cell
+        refls["d"] = best_uc.d(refls["miller_index"])
+        for expt in expts:
+            expt.crystal.unit_cell = best_uc
+        refls = filter_reflection_table(
+            refls,
+            intensity_choice=["scale"],
+            d_min=input_.reduction_params.d_min,
+            combine_partials=False,
+            partiality_threshold=0.4,  # make this setable?
+        )
+        tmp = flex.reflection_table()
+        tmp["miller_index"] = refls["miller_index"]
+        tmp["intensity"] = refls["intensity.scale.value"]
+        tmp["sigma"] = flex.sqrt(refls["intensity.scale.variance"])
+        tmp = tmp.select(refls["inverse_scale_factor"] > 0)
+        exptout = (
+            input_.working_directory
+            / f"group_{input_.groupindex}_{input_.fileindex}.expt"
+        )
+        reflout = (
+            input_.working_directory
+            / f"group_{input_.groupindex}_{input_.fileindex}.refl"
+        )
+        expts.as_file(exptout)
+        tmp.as_file(reflout)
+        return (input_.name, FilePair(exptout, reflout))
+    return None
+
+
 def _save_scaled_array_for_merge(input_):
     expts = load.experiment_list(input_.fp.expt, check_format=False)
     refls = flex.reflection_table.from_file(input_.fp.refl)
@@ -501,58 +544,46 @@ def _save_scaled_array_for_merge(input_):
     return None
 
 
-from cctbx import uctbx
-from dials.util.filter_reflections import filter_reflection_table
-
-
-@dataclass
-class InputIterable(object):
-    working_directory: Path
-    fp: FilePair
-    i: int
-    g: int
-    groupdata: GroupsIdentifiersForExpt
-    name: str
-    d_min: float
-    best_unit_cell: uctbx.unit_cell
-    select: bool = False
-
-
 import copy
 from multiprocessing import Pool
 
+from cctbx import uctbx
+from dials.util.filter_reflections import filter_reflection_table
+
 from xia2.Modules.SSX.data_reduction_definitions import ReductionParams
+
 
 def apply_scaled_array_to_all_files(working_directory, scaled_files, reduction_params):
 
-    g = 0
+    groupindex = 0
     name = "all data"
-    groupdata = ""
+    groupdata = GroupsIdentifiersForExpt()
+    groupdata.single_group = 0
     input_iterable = []
-    filesdict = {name : []}
+    filesdict = {name: []}
     for i, fp in enumerate(scaled_files):
         input_iterable.append(
             InputIterable(
                 working_directory,
                 fp,
                 i,
-                g,
+                groupindex,
                 groupdata,
                 name,
-                reduction_params.d_min,
-                copy.deepcopy(reduction_params.central_unit_cell),
-                select=False,
+                reduction_params,
             )
         )
     if input_iterable:
         with Pool(min(reduction_params.nproc, len(input_iterable))) as pool:
-            results = pool.map(_save_scaled_array_for_merge, input_iterable)
+            results = pool.map(save_scaled_array_for_merge, input_iterable)
         for result in results:
             if result:
                 name = result[0]
                 fp = result[1]
                 filesdict[name].append(fp)
-    return (filesdict, ["  all data"])
+    groups = MetaDataGroup({})
+    groups._default_all = True
+    return (filesdict, [groups])
 
 
 def split_files_to_groups(
@@ -615,6 +646,26 @@ def split_files_to_groups(
                 fp = result[1]
                 filesdict[name].append(fp)
     return filesdict
+
+
+def yml_to_filesdict_2(
+    working_directory: Path,
+    parsed: ParsedYAML,
+    integrated_files: List[FilePair],
+    reduction_params,
+    grouping: str = "merge_by",
+):
+    mergeby = parsed.groupings[grouping]
+    handler = GroupingImageTemplates(mergeby, reduction_params.nproc)
+
+    filesdict = handler.split_files_to_groups(
+        working_directory,
+        integrated_files,
+        reduction_params,
+        function_to_apply=save_scaled_array_for_merge,
+    )
+    metadata_groups = handler._groups
+    return (filesdict, metadata_groups)
 
 
 def yml_to_filesdict(

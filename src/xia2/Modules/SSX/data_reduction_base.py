@@ -26,7 +26,7 @@ from xia2.Modules.SSX.data_reduction_programs import (
 )
 from xia2.Modules.SSX.yml_handling import (
     apply_scaled_array_to_all_files,
-    yml_to_filesdict,
+    yml_to_filesdict_2,
 )
 
 
@@ -137,29 +137,39 @@ def inspect_files(
 from cctbx import crystal, miller, uctbx
 
 
-def prepare_scaled_array(file_pair, reduction_params, name):
-    expts = load.experiment_list(file_pair.expt, check_format=False)
-    table = flex.reflection_table.from_file(file_pair.refl)
-    miller_set = miller.set(
-        crystal_symmetry=crystal.symmetry(
-            unit_cell=reduction_params.central_unit_cell,
-            space_group=expts[0].crystal.get_space_group(),
-            assert_is_compatible_unit_cell=False,
-        ),
-        indices=table["miller_index"],
-        anomalous_flag=False,
-    )
-    i_obs = miller.array(miller_set, data=table["intensity"])
-    i_obs.set_observation_type_xray_intensity()
-    i_obs.set_sigmas(table["sigma"])
-    i_obs.set_info(
-        miller.array_info(
-            source="DIALS",
-            source_type="reflection_tables",
-            wavelength=1.0,
+def prepare_scaled_array(results, name):
+
+    scaled_array = None
+    joint_expts = None
+    for fp in results:
+        expts = load.experiment_list(fp.expt, check_format=False)
+        table = flex.reflection_table.from_file(fp.refl)
+        # now make the miller array
+        miller_set = miller.set(
+            crystal_symmetry=crystal.symmetry(
+                unit_cell=expts[0].crystal.get_unit_cell(),
+                space_group=expts[0].crystal.get_space_group(),
+                assert_is_compatible_unit_cell=False,
+            ),
+            indices=table["miller_index"],
+            anomalous_flag=False,
         )
-    )
-    return expts, i_obs, name
+        i_obs = miller.array(
+            miller_set,
+            data=table["intensity"],
+        )
+        i_obs.set_observation_type_xray_intensity()
+        i_obs.set_sigmas(table["sigma"])
+        if scaled_array is None:
+            scaled_array = i_obs
+            joint_expts = expts
+        else:
+            scaled_array = scaled_array.concatenate(i_obs)
+            joint_expts.extend(expts)
+
+    scaled_array.set_observation_type_xray_intensity()
+
+    return name, scaled_array, joint_expts
 
 
 class BaseDataReduction(object):
@@ -203,21 +213,15 @@ class BaseDataReduction(object):
         if not Path(self._merge_wd).is_dir():
             Path.mkdir(self._merge_wd)
 
+        self._parsed_yaml = None
         if self._reduction_params.groupby_yaml:
             # verify the grouping yaml and save into the data reduction dir.
-            from xia2.Modules.SSX.yml_handling import full_parse
+            # from xia2.Modules.SSX.yml_handling import ParsedYAML
+            from dials.util.image_grouping import ParsedYAML
 
-            with open(self._reduction_params.groupby_yaml, "r") as f:
-                parsed = full_parse(f)
-            self._parsed_yaml = parsed
-            from shutil import copyfile
-
-            copyfile(
+            self._parsed_yaml = ParsedYAML(
                 self._reduction_params.groupby_yaml,
-                self._data_reduction_wd / "groupby.yaml",
             )
-        else:
-            self._parsed_yaml = None
 
     @classmethod
     def from_directories(
@@ -352,7 +356,7 @@ class BaseDataReduction(object):
             if "merge_by" in self._parsed_yaml._groupings:
                 # for name, scaled_files in scaled_results.items():
                 merge_input = {}
-                groups_for_merge, metadata_groups = yml_to_filesdict(
+                groups_for_merge, metadata_groups = yml_to_filesdict_2(
                     self._scale_wd,
                     self._parsed_yaml,
                     scaled_results,
@@ -386,25 +390,30 @@ class BaseDataReduction(object):
             max_workers=max(self._reduction_params.nproc - 1, 1)
         ) as pool:
             for name, results in merge_input.items():
+                futures.append(
+                    pool.submit(
+                        prepare_scaled_array,
+                        results,
+                        name,
+                    )
+                )
+                """n_refl = sum(fp.n_refl for fp in results)
+                print(n_refl)
+                hkl = flex.miller_index(n_refl)
+                intensity = flex.double(n_refl)
+                sigma = flex.double(n_refl)
                 # future_list = []
+                n_start=0
                 for fp in results:
+                    n_end = n_start + fp.n_refl
                     futures.append(
                         pool.submit(
-                            prepare_scaled_array, fp, self._reduction_params, name
+                            prepare_scaled_array, fp, self._reduction_params, (n_start, n_end)
                         )
-                    )
+                    )"""
         for future in concurrent.futures.as_completed(futures):
-            elist, scaled_array, name = future.result()
-            if name_to_expts_arr[name][0] is None:
-                name_to_expts_arr[name][0] = scaled_array
-                name_to_expts_arr[name][1] = elist
-            else:
-                name_to_expts_arr[name][0] = name_to_expts_arr[name][0].concatenate(
-                    scaled_array
-                )
-                name_to_expts_arr[name][1].extend(elist)
-        for v in name_to_expts_arr.values():
-            v[0].set_observation_type_xray_intensity()
+            name, scaled_array, expts = future.result()
+            name_to_expts_arr[name] = [scaled_array, expts]
 
         future_list = []
         summaries = {name: "" for name in name_to_expts_arr.keys()}
