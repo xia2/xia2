@@ -31,20 +31,22 @@ def save_scaled_array_for_merge(input_):
     refls = flex.reflection_table.from_file(input_.fp.refl)
     trim_table_for_merge(refls)
     groupdata = input_.groupdata
-    if groupdata.single_group == input_.groupindex:
+    if (groupdata.single_group is not None) and (
+        groupdata.single_group == input_.groupindex
+    ):
         pass
     else:
         # need to select
         identifiers = expts.identifiers()
-        sel = input_.groupdata.groups_array == input_.groupindex
-        sel_identifiers = list(identifiers.select(flumpy.from_numpy(sel)))
+        sel = flumpy.from_numpy(input_.groupdata.groups_array == input_.groupindex)
+        sel_identifiers = list(identifiers.select(sel))
         expts.select_on_experiment_identifiers(sel_identifiers)
-        refls.select_on_experiment_identifiers(sel_identifiers)
+        refls = refls.select_on_experiment_identifiers(sel_identifiers)
     if expts:
         best_uc = input_.reduction_params.central_unit_cell
         refls["d"] = best_uc.d(refls["miller_index"])
         for expt in expts:
-            expt.crystal.unit_cell = best_uc
+            expt.crystal.set_unit_cell(best_uc)
         refls = filter_reflection_table(
             refls,
             intensity_choice=["scale"],
