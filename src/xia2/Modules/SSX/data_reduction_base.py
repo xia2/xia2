@@ -367,14 +367,27 @@ class BaseDataReduction(object):
                 )
                 for g, flist in groups_for_merge.items():
                     merge_input[f"{g}"] = flist
+                n_groups = len(groups_for_merge)
+                if n_groups == 1:
+                    xia2_logger.info(
+                        f"All data within a single merge group based on metadata items: {', '.join(self._parsed_yaml.groupings['merge_by'].metadata_names)}"
+                    )
+                else:
+                    xia2_logger.info(
+                        f"Data split into {n_groups} merge groups based on metadata items: {', '.join(self._parsed_yaml.groupings['merge_by'].metadata_names)}"
+                    )
                 xia2_logger.info(
-                    f"Split data into {len(groups_for_merge)} merge groups based on metadata items: {', '.join(self._parsed_yaml.groupings['merge_by'].metadata_names)}"
+                    "Group data ranges:\n"
+                    + "\n".join(
+                        f"  {n}: {g}"
+                        for n, g in zip(merge_input.keys(), metadata_groups)
+                    )
                 )
         else:
             # need to loop through scaled results and apply
             # merge_input = {"mergegroup_1": scaled_results}  # default if no 'merge_by'
             # metadata_groups = ["  all_data"]
-            merge_input, metadata_groups = apply_scaled_array_to_all_files(
+            merge_input = apply_scaled_array_to_all_files(
                 self._scale_wd, scaled_results, self._reduction_params
             )
 
@@ -414,17 +427,9 @@ class BaseDataReduction(object):
                     )
                 )
         for future in concurrent.futures.as_completed(future_list):
-            # for name, group, future in zip(
-            #    merge_input.keys(), metadata_groups, future_list
-            # ):
-            # try:
             mergeresult = future.result()
-            # except Exception as e:
-            #    xia2_logger.warning(f"Unsuccessful merging of a group. Error:\n{e}")
-            # else:
             xia2_logger.info(f"Merged {mergeresult.name}")
             summaries[mergeresult.name] = mergeresult.summary
-            # xia2_logger.info()
             FileHandler.record_data_file(mergeresult.merge_file)
             FileHandler.record_log_file(
                 mergeresult.logfile.name.rstrip(".log"), mergeresult.logfile
@@ -435,8 +440,6 @@ class BaseDataReduction(object):
             FileHandler.record_html_file(
                 mergeresult.htmlfile.name.rstrip(".html"), mergeresult.htmlfile
             )
-        for group, (name, result) in zip(
-            metadata_groups, summaries.items()
-        ):  # always print stats in same order
+        for result in summaries.values():  # always print stats in same order
             if result:
-                xia2_logger.info(f"{name}:\n{group}\n" + result)
+                xia2_logger.info(result)

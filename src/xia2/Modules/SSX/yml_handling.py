@@ -8,7 +8,7 @@ from dials.array_family import flex
 from dxtbx import flumpy
 from dxtbx.serialize import load
 
-from xia2.Modules.SSX.data_reduction_programs import FilePair
+from xia2.Modules.SSX.data_reduction_programs import FilePair, ReductionParams
 
 xia2_logger = logging.getLogger(__name__)
 from multiprocessing import Pool
@@ -19,14 +19,13 @@ from dials.util.image_grouping import (
     GroupingImageTemplates,
     GroupsIdentifiersForExpt,
     InputIterable,
-    MetaDataGroup,
     ParsedYAML,
 )
 
 from xia2.Modules.SSX.data_reduction_programs import trim_table_for_merge
 
 
-def save_scaled_array_for_merge(input_):
+def save_scaled_array_for_merge(input_: InputIterable):
     expts = load.experiment_list(input_.fp.expt, check_format=False)
     refls = flex.reflection_table.from_file(input_.fp.refl)
     trim_table_for_merge(refls)
@@ -73,14 +72,18 @@ def save_scaled_array_for_merge(input_):
     return None
 
 
-def apply_scaled_array_to_all_files(working_directory, scaled_files, reduction_params):
+def apply_scaled_array_to_all_files(
+    working_directory: Path,
+    scaled_files: List[FilePair],
+    reduction_params: ReductionParams,
+) -> dict[str, List[FilePair]]:
 
     groupindex = 0
     name = "all data"
     groupdata = GroupsIdentifiersForExpt()
     groupdata.single_group = 0
     input_iterable = []
-    filesdict = {name: []}
+    filesdict: dict[str, List[FilePair]] = {name: []}
     for i, fp in enumerate(scaled_files):
         input_iterable.append(
             InputIterable(
@@ -101,16 +104,14 @@ def apply_scaled_array_to_all_files(working_directory, scaled_files, reduction_p
                 name = result[0]
                 fp = result[1]
                 filesdict[name].append(fp)
-    groups = MetaDataGroup({})
-    groups._default_all = True
-    return (filesdict, [groups])
+    return filesdict
 
 
 def yml_to_merged_filesdict(
     working_directory: Path,
     parsed: ParsedYAML,
     integrated_files: List[FilePair],
-    reduction_params,
+    reduction_params: ReductionParams,
     grouping: str = "merge_by",
 ):
 

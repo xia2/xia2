@@ -296,12 +296,6 @@ def merge(
         params.assess_space_group = False
         params.combine_partials = False
 
-        # use multiprocessing to load data, filter,
-        """experiments, scaled_array = prepare_scaled_array(
-            scaled_results[0],
-            best_unit_cell,
-            d_min,
-        )"""
         dials_logger.info(input_)
         mtz_file, json_data = merge_scaled_array_to_mtz_with_report_collection(
             params, experiments, scaled_array
