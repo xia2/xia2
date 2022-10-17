@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import logging
 from pathlib import Path
-from typing import List
+from typing import List, Optional, Tuple
 
 from dials.array_family import flex
 from dxtbx import flumpy
@@ -17,15 +17,17 @@ from dials.util.filter_reflections import filter_reflection_table
 from dials.util.image_grouping import (
     GroupingImageFiles,
     GroupingImageTemplates,
-    GroupsIdentifiersForExpt,
-    InputIterable,
+    GroupsForExpt,
     ParsedYAML,
+    SplittingIterable,
 )
 
 from xia2.Modules.SSX.data_reduction_programs import trim_table_for_merge
 
 
-def save_scaled_array_for_merge(input_: InputIterable):
+def save_scaled_array_for_merge(
+    input_: SplittingIterable,
+) -> Optional[Tuple[str, FilePair]]:
     expts = load.experiment_list(input_.fp.expt, check_format=False)
     refls = flex.reflection_table.from_file(input_.fp.refl)
     trim_table_for_merge(refls)
@@ -42,14 +44,14 @@ def save_scaled_array_for_merge(input_: InputIterable):
         expts.select_on_experiment_identifiers(sel_identifiers)
         refls = refls.select_on_experiment_identifiers(sel_identifiers)
     if expts:
-        best_uc = input_.reduction_params.central_unit_cell
+        best_uc = input_.params.central_unit_cell
         refls["d"] = best_uc.d(refls["miller_index"])
         for expt in expts:
             expt.crystal.set_unit_cell(best_uc)
         refls = filter_reflection_table(
             refls,
             intensity_choice=["scale"],
-            d_min=input_.reduction_params.d_min,
+            d_min=input_.params.d_min,
             combine_partials=False,
             partiality_threshold=0.4,  # make this setable?
         )
@@ -80,13 +82,12 @@ def apply_scaled_array_to_all_files(
 
     groupindex = 0
     name = "all data"
-    groupdata = GroupsIdentifiersForExpt()
-    groupdata.single_group = 0
+    groupdata = GroupsForExpt(0)
     input_iterable = []
     filesdict: dict[str, List[FilePair]] = {name: []}
     for i, fp in enumerate(scaled_files):
         input_iterable.append(
-            InputIterable(
+            SplittingIterable(
                 working_directory,
                 fp,
                 i,
