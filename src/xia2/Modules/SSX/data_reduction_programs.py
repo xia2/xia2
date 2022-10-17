@@ -123,7 +123,7 @@ def assess_for_indexing_ambiguities(
         max_delta=max_delta,
         enforce_max_delta_for_generated_two_folds=True,
     )
-    need_to_assess = lattice_group.order_z() > space_group.group().order_z()
+    need_to_assess = lattice_group.order_p() > space_group.group().order_p()
     human_readable = {True: "yes", False: "no"}
     xia2_logger.info(
         "Indexing ambiguity assessment:\n"
