@@ -15,11 +15,10 @@ from multiprocessing import Pool
 
 from dials.util.filter_reflections import filter_reflection_table
 from dials.util.image_grouping import (
-    GroupingImageFiles,
-    GroupingImageTemplates,
     GroupsForExpt,
     ParsedYAML,
     SplittingIterable,
+    get_grouping_handler,
 )
 
 from xia2.Modules.SSX.data_reduction_programs import trim_table_for_merge
@@ -116,15 +115,7 @@ def yml_to_merged_filesdict(
     grouping: str = "merge_by",
 ):
 
-    if all(image.is_template for image in parsed._images.values()):
-        handler_class = GroupingImageTemplates
-    elif all(image.is_h5 for image in parsed._images.values()):
-        handler_class = GroupingImageFiles
-    else:
-        raise ValueError("Can't mix image templates and image files in yml definition.")
-
-    mergeby = parsed.groupings[grouping]
-    handler = handler_class(mergeby, reduction_params.nproc)
+    handler = get_grouping_handler(parsed, grouping, reduction_params.nproc)
 
     filesdict = handler.split_files_to_groups(
         working_directory,
