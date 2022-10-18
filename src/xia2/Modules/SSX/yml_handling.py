@@ -129,8 +129,8 @@ def yml_to_merged_filesdict(
     filesdict = handler.split_files_to_groups(
         working_directory,
         integrated_files,
-        reduction_params,
         function_to_apply=save_scaled_array_for_merge,
+        params=reduction_params,
     )
     metadata_groups = handler._groups
     return (filesdict, metadata_groups)
