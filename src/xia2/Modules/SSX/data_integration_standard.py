@@ -513,8 +513,9 @@ def cumulative_determine_reference_geometry(
         expts, refl, summary_this = ssx_index(working_directory, indexing_params)
         n_xtal += len(expts)
         xia2_logger.info(f"Indexed {n_xtal} crystals in total")
-        all_expts.extend(expts)
-        all_tables.append(refl)
+        if refl.size():
+            all_expts.extend(expts)
+            all_tables.append(refl)
         first_image += options.batch_size
         success_per_image.extend(summary_this["success_per_image"])
 
