@@ -1,0 +1,2 @@
+Bug fix: explicitly set the log file encoding to be `utf-8` (useful for non-native-English systems)
+

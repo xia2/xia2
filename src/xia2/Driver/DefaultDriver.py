@@ -367,7 +367,7 @@ class DefaultDriver:
 
         # should have bufsize = 0 here... won't work on mac!
 
-        self._log_file = open(filename, "w")
+        self._log_file = open(filename, "w", encoding="utf-8")
         if self._standard_output_records:
             for s in self._standard_output_records:
                 self._log_file.write(s)
