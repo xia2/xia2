@@ -1,3 +1,27 @@
+xia2 3.12.0 (2022-10-31)
+========================
+
+Features
+--------
+
+- ``xia2.ssx`` and ``xia2.ssx_reduce`` are now considered stable, so have dropped the ``dev.`` prefix. (`#710 <https://github.com/xia2/xia2/issues/710>`_)
+
+
+Bugfixes
+--------
+
+- ``xia2.ssx``: Fix error in deciding whether to assess indexing ambiguities. (`#705 <https://github.com/xia2/xia2/issues/705>`_)
+- ``xia2.ssx``: Fix crash in geometry refinement when a block has no indexable images. (`#707 <https://github.com/xia2/xia2/issues/707>`_)
+- Explicitly set the log file encoding to be UTF-8. This could break on systems set to non-native character encodings. (`#709 <https://github.com/xia2/xia2/issues/709>`_)
+- ``xia2.ssx``: Avoid crash if no images successfully integrated. (`#711 <https://github.com/xia2/xia2/issues/711>`_)
+
+
+Misc
+----
+
+- `#703 <https://github.com/xia2/xia2/issues/703>`_, `#704 <https://github.com/xia2/xia2/issues/704>`_
+
+
 xia2 3.11.0 (2022-08-24)
 ========================
 
