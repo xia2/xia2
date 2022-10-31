@@ -87,12 +87,16 @@ def filter_(
 ) -> Tuple[FilesDict, uctbx.unit_cell, sgtbx.space_group_info]:
 
     crystals_data = load_crystal_data_from_new_expts(integrated_data)
+    if not any(v.crystals for v in crystals_data.values()):
+        raise ValueError(
+            "No integrated images in integrated datafiles, processing finished."
+        )
     space_group = check_consistent_space_group(crystals_data)
     good_crystals_data = filter_new_data(
         working_directory, crystals_data, reduction_params
     )
     if not any(v.crystals for v in good_crystals_data.values()):
-        raise ValueError("No crystals remain after filtering")
+        raise ValueError("No crystals remain after filtering, processing finished.")
 
     new_files_to_process = split_filtered_data(
         working_directory,
