@@ -1,1 +1,1 @@
-``dev.xia2.ssx``: Update integration parameters to avoid overfiltering, set max_lattices=3 by default.
+``xia2.ssx``: Update integration parameters to avoid overfiltering, set max_lattices=3 by default.

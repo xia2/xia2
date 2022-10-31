@@ -50,7 +50,7 @@ def test_assess_crystals(dials_data, tmp_path, option, expected_success):
     # due to very thin batch size.
     with (tmp_path / "index.phil").open(mode="w") as f:
         f.write("indexing.max_cell=150")
-    args = ["dev.xia2.ssx", option, "indexing.phil=index.phil"]
+    args = ["xia2.ssx", option, "indexing.phil=index.phil"]
     args.append("image=" + os.fspath(ssx / "merlin0047_1700*.cbf"))
 
     result = subprocess.run(args, cwd=tmp_path, capture_output=True)
@@ -89,7 +89,7 @@ def test_geometry_refinement(dials_data, tmp_path, option, expected_success):
     with (tmp_path / "index.phil").open(mode="w") as f:
         f.write("indexing.max_cell=150")
     args = [
-        "dev.xia2.ssx",
+        "xia2.ssx",
         "steps=None",
         "unit_cell=96.4,96.4,96.4,90,90,90",
         "space_group=P213",
@@ -139,7 +139,7 @@ def refined_expt(dials_data, tmp_path):
     ssx = dials_data("cunir_serial", pathlib=True)
 
     args = [
-        "dev.xia2.ssx",
+        "xia2.ssx",
         "steps=None",
         "unit_cell=96.4,96.4,96.4,90,90,90",
         "space_group=P213",
@@ -168,7 +168,7 @@ def test_run_with_reference(dials_data, tmp_path, refined_expt):
     ssx = dials_data("cunir_serial", pathlib=True)
 
     args = [
-        "dev.xia2.ssx",
+        "xia2.ssx",
         "unit_cell=96.4,96.4,96.4,90,90,90",
         "space_group=P213",
         "integration.algorithm=stills",
@@ -189,7 +189,7 @@ def test_full_run_without_reference(dials_data, tmp_path):
     ssx = dials_data("cunir_serial", pathlib=True)
 
     args = [
-        "dev.xia2.ssx",
+        "xia2.ssx",
         "unit_cell=96.4,96.4,96.4,90,90,90",
         "space_group=P213",
         "integration.algorithm=stills",
@@ -243,7 +243,7 @@ def test_stepwise_run_without_reference(dials_data, tmp_path):
     ssx = dials_data("cunir_serial", pathlib=True)
 
     args = [
-        "dev.xia2.ssx",
+        "xia2.ssx",
         "unit_cell=96.4,96.4,96.4,90,90,90",
         "space_group=P213",
         "integration.algorithm=stills",
@@ -410,12 +410,12 @@ def test_ssx_reduce(dials_data, tmp_path, pdb_model, idx_ambiguity):
         expts = tmp_path / "reindexed.expt"
         refls = tmp_path / "reindexed.refl"
         args = [
-            "dev.xia2.ssx_reduce",
+            "xia2.ssx_reduce",
             f"{refls}",
             f"{expts}",
         ]  # note - pass as files rather than directory to test that input option
     else:
-        args = ["dev.xia2.ssx_reduce", f"directory={ssx}"]
+        args = ["xia2.ssx_reduce", f"directory={ssx}"]
     extra_args = []
     if pdb_model:
         model = dials_data("cunir_serial", pathlib=True) / "2BW4.pdb"
@@ -437,7 +437,7 @@ def test_ssx_reduce(dials_data, tmp_path, pdb_model, idx_ambiguity):
     # now run again only on previously scaled data
     pathlib.Path.mkdir(tmp_path / "reduce")
     args = [
-        "dev.xia2.ssx_reduce",
+        "xia2.ssx_reduce",
         f"processed_directory={tmp_path / 'DataFiles'}",
     ] + extra_args
     result = subprocess.run(args, cwd=tmp_path / "reduce", capture_output=True)
@@ -505,7 +505,7 @@ def test_ssx_reduce_filter_options(
     dials_data, tmp_path, cluster_args: List[str], expected_results: dict
 ):
     ssx = dials_data("cunir_serial_processed", pathlib=True)
-    args = ["dev.xia2.ssx_reduce", f"directory={ssx}"] + cluster_args
+    args = ["xia2.ssx_reduce", f"directory={ssx}"] + cluster_args
 
     result = subprocess.run(args, cwd=tmp_path, capture_output=True)
     assert not result.returncode and not result.stderr

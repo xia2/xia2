@@ -7,7 +7,7 @@ pipeline built upon data analysis programs/APIs from DIALS.
 
 To integrate and reduce data, the minimal recommended example command is::
 
-    dev.xia2.ssx template=../lyso_1_###.cbf space_group=P43212 \
+    xia2.ssx template=../lyso_1_###.cbf space_group=P43212 \
       unit_cell=79.1,79.1,38.2,90,90,90  model=../lyso.pdb
 
 i.e. the minimal required information is the location of the images, the expected
@@ -34,7 +34,7 @@ directory containing image files.
 For data in h5 format, the option :samp:`image=/path/to/image_master.h5` is recommended.
 For cbf data, the file template option is recommended, e.g.::
 
-    dev.xia2.ssx template=../lyso_1_###.cbf space_group=P43212 \
+    xia2.ssx template=../lyso_1_###.cbf space_group=P43212 \
       unit_cell=79.1,79.1,38.2,90,90,90
 
 The overall sequence of the data integration part of the pipeline is as follows.
@@ -58,7 +58,7 @@ used in spotfinding and integration. A few other common options to set are the
 for on each image in indexing, and :samp:`d_min` which controls the resolution
 limit for spotfinding and integration.
 
-To see the full list of options and their descriptions, run :samp:`dev.xia2.ssx -ce2 -a1`.
+To see the full list of options and their descriptions, run :samp:`xia2.ssx -ce2 -a1`.
 Change the number after :samp:`-ce` to a value from 0 to 3 to see different
 "expert levels" of program parameters. Note that a phil options file can be
 provided for each of the DIALS programs, to allow further customisation of the
@@ -71,12 +71,12 @@ Data Reduction
 --------------
 Following data integration, data reduction (reindexing, scaling and merging) will
 be performed. The data reduction can be run separately to the full pipeline through
-the command :samp:`dev.xia2.ssx_reduce`, taking integrated data as input, e.g.::
+the command :samp:`xia2.ssx_reduce`, taking integrated data as input, e.g.::
 
-    dev.xia2.ssx_reduce ../xia2_ssx/batch_*/integrated*.{expt,refl}
+    xia2.ssx_reduce ../xia2_ssx/batch_*/integrated*.{expt,refl}
 
 To run only the data integration without reduction, use the option
-:samp:`steps=find_spots+index+integrate` (i.e. omit :samp:`+reduce`) when running :samp:`dev.xia2.ssx`.
+:samp:`steps=find_spots+index+integrate` (i.e. omit :samp:`+reduce`) when running :samp:`xia2.ssx`.
 
 The data reduction process consists of unit cell filtering, followed by indexing
 ambiguity resolution in batches (if ambiguities are possible due to lattice
@@ -89,5 +89,5 @@ options are setting :samp:`anomalous=True/False` and specifying a :samp:`d_min` 
 To evaluate the success of indexing ambiguity resolution, it is important to inspect
 the html output from dials.cosym jobs in the :samp:`data_reduction\\reindex` folder.
 To see the full list of data reduction parameters and their descriptions,
-run :samp:`dev.xia2.ssx_reduce -ce3 -a2`. The output of the data reduction pipeline
+run :samp:`xia2.ssx_reduce -ce3 -a2`. The output of the data reduction pipeline
 is a merged MTZ file which can be taken onwards for structure determination.
