@@ -245,6 +245,31 @@ remove_profile_fitting_failures = True
     process_includes=True,
 )
 
+# the phil scope which used to live in xia2.multi_crystal_analysis
+mca_phil = iotbx.phil.parse(
+    """
+include scope xia2.cli.report.phil_scope
+
+seed = 42
+  .type = int(value_min=0)
+
+unit_cell_clustering {
+  threshold = 5000
+    .type = float(value_min=0)
+    .help = 'Threshold value for the clustering'
+  log = False
+    .type = bool
+    .help = 'Display the dendrogram with a log scale'
+}
+
+output {
+  log = xia2.multi_crystal_analysis.log
+    .type = str
+}
+""",
+    process_includes=True,
+)
+
 # override default parameters
 phil_scope = phil_scope.fetch(
     source=iotbx.phil.parse(
@@ -777,7 +802,6 @@ class MultiCrystalScale:
         logger.info("Space group determined by dials.symmetry: %s" % space_group.info())
 
     def multi_crystal_analysis(self):
-        from xia2.cli.multi_crystal_analysis import phil_scope as mca_phil
         from xia2.Modules.MultiCrystalAnalysis import MultiCrystalReport
 
         params = mca_phil.extract()

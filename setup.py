@@ -31,7 +31,6 @@ console_scripts = [
     "xia2.ispyb_json=xia2.cli.ispyb_json:run",
     "xia2.ispyb_xml=xia2.cli.ispyb_xml:run",
     "xia2.merging_statistics=xia2.cli.merging_statistics:run",
-    "xia2.multi_crystal_analysis=xia2.cli.multi_crystal_analysis:run_with_log",
     "xia2.multiplex=xia2.cli.multiplex:run",
     "xia2.npp=xia2.cli.npp:run",
     "xia2.overload=xia2.cli.overload:run",
