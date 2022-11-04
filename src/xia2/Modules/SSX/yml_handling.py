@@ -8,6 +8,7 @@ from dials.array_family import flex
 from dxtbx import flumpy
 from dxtbx.serialize import load
 
+from xia2.Handlers.Files import FileHandler
 from xia2.Modules.SSX.data_reduction_programs import FilePair, ReductionParams
 
 xia2_logger = logging.getLogger(__name__)
@@ -80,7 +81,7 @@ def apply_scaled_array_to_all_files(
 ) -> dict[str, List[FilePair]]:
 
     groupindex = 0
-    name = "all data"
+    name = "merged"
     groupdata = GroupsForExpt(0)
     input_iterable = []
     filesdict: dict[str, List[FilePair]] = {name: []}
@@ -104,6 +105,8 @@ def apply_scaled_array_to_all_files(
                 name = result[0]
                 fp = result[1]
                 filesdict[name].append(fp)
+                FileHandler.record_temporary_file(fp.expt)
+                FileHandler.record_temporary_file(fp.refl)
     return filesdict
 
 

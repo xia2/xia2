@@ -15,6 +15,10 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
 from cctbx import crystal, sgtbx, uctbx
+from dials.algorithms.merging.merge import (
+    merge_scaled_array_to_mtz_with_report_collection,
+)
+from dials.algorithms.merging.reporting import generate_html_report as merge_html_report
 from dials.algorithms.scaling.algorithm import ScalingAlgorithm
 from dials.array_family import flex
 from dials.command_line.cluster_unit_cell import do_cluster_analysis
@@ -22,8 +26,6 @@ from dials.command_line.cluster_unit_cell import phil_scope as cluster_phil_scop
 from dials.command_line.cosym import cosym
 from dials.command_line.cosym import phil_scope as cosym_phil_scope
 from dials.command_line.cosym import register_default_cosym_observers
-from dials.command_line.merge import generate_html_report as merge_html_report
-from dials.command_line.merge import merge_scaled_array_to_mtz_with_report_collection
 from dials.command_line.merge import phil_scope as merge_phil_scope
 from dials.command_line.scale import phil_scope as scaling_phil_scope
 from dxtbx.model import Crystal, ExperimentList
