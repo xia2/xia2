@@ -365,7 +365,9 @@ class BaseDataReduction(object):
             merge_input = apply_scaled_array_to_all_files(
                 self._scale_wd, scaled_results, self._reduction_params
             )
-
+        if self._reduction_params.dose_series_repeat:
+            for name in list(merge_input.keys()):
+                merge_input[name.replace("group", "dose")] = merge_input.pop(name)
         name_to_expts_arr: dict[str, Tuple] = {name: () for name in merge_input.keys()}
         futures = {}
         with concurrent.futures.ProcessPoolExecutor(
