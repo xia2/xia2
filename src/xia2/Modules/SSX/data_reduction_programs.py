@@ -8,11 +8,14 @@ import json
 import logging
 import math
 import os
+import random
 import sys
 from dataclasses import dataclass, field
 from io import StringIO
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
+
+import numpy as np
 
 from cctbx import crystal, miller, sgtbx, uctbx
 from dials.algorithms.merging.merge import (
@@ -677,6 +680,10 @@ def cosym_against_reference(
 
             tables = table.split_by_experiment_id()
             # now run cosym
+            if cosym_params.seed is not None:
+                flex.set_random_seed(cosym_params.seed)
+                np.random.seed(cosym_params.seed)
+                random.seed(cosym_params.seed)
             cosym_instance = cosym(expts, tables, cosym_params)
             register_default_cosym_observers(cosym_instance)
             cosym_instance.run()
@@ -721,6 +728,10 @@ def individual_cosym(
 
         tables = table.split_by_experiment_id()
         # now run cosym
+        if cosym_params.seed is not None:
+            flex.set_random_seed(cosym_params.seed)
+            np.random.seed(cosym_params.seed)
+            random.seed(cosym_params.seed)
         cosym_instance = cosym(expts, tables, cosym_params)
         register_default_cosym_observers(cosym_instance)
         cosym_instance.run()

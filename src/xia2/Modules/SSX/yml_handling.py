@@ -67,7 +67,7 @@ grouping:
     values:
       - dose_point
 """
-    parsed_yaml = ParsedYAML("", yml_dict=grouping)
+    parsed_yaml = ParsedYAML(yml_str=grouping)
     return parsed_yaml
 
 

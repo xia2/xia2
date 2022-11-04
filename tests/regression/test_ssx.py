@@ -310,11 +310,11 @@ def check_data_reduction_files(tmp_path, reindex=True, reference=False):
     assert reindex is (tmp_path / "LogFiles" / "dials.cosym.0.log").is_file()
     assert reindex is (tmp_path / "LogFiles" / "dials.cosym.0.html").is_file()
     assert (tmp_path / "data_reduction" / "scale").is_dir()
-    assert (tmp_path / "data_reduction" / "merge" / "mergegroup_1.mtz").is_file()
-    assert (tmp_path / "DataFiles" / "mergegroup_1.mtz").is_file()
-    assert (tmp_path / "LogFiles" / "dials.merge.mergegroup_1.html").is_file()
-    assert (tmp_path / "LogFiles" / "dials.merge.mergegroup_1.log").is_file()
-    assert (tmp_path / "LogFiles" / "dials.merge.mergegroup_1.json").is_file()
+    assert (tmp_path / "data_reduction" / "merge" / "merged.mtz").is_file()
+    assert (tmp_path / "DataFiles" / "merged.mtz").is_file()
+    assert (tmp_path / "LogFiles" / "dials.merge.html").is_file()
+    assert (tmp_path / "LogFiles" / "dials.merge.log").is_file()
+    assert (tmp_path / "LogFiles" / "dials.merge.json").is_file()
     if reference:
         assert (tmp_path / "DataFiles" / "scalebatch_1.refl").is_file()
         assert (tmp_path / "DataFiles" / "scalebatch_1.expt").is_file()
@@ -332,11 +332,11 @@ def check_data_reduction_files_on_scaled_only(tmp_path, reference=False):
     assert not (tmp_path / "LogFiles" / "dials.cosym.0.log").is_file()
     assert not (tmp_path / "LogFiles" / "dials.cosym.0.html").is_file()
     assert (tmp_path / "data_reduction" / "merge").is_dir()
-    assert (tmp_path / "data_reduction" / "merge" / "mergegroup_1.mtz").is_file()
-    assert (tmp_path / "DataFiles" / "mergegroup_1.mtz").is_file()
-    assert (tmp_path / "LogFiles" / "dials.merge.mergegroup_1.html").is_file()
-    assert (tmp_path / "LogFiles" / "dials.merge.mergegroup_1.log").is_file()
-    assert (tmp_path / "LogFiles" / "dials.merge.mergegroup_1.json").is_file()
+    assert (tmp_path / "data_reduction" / "merge" / "merged.mtz").is_file()
+    assert (tmp_path / "DataFiles" / "merged.mtz").is_file()
+    assert (tmp_path / "LogFiles" / "dials.merge.html").is_file()
+    assert (tmp_path / "LogFiles" / "dials.merge.log").is_file()
+    assert (tmp_path / "LogFiles" / "dials.merge.json").is_file()
     if reference:
         assert not (tmp_path / "DataFiles" / "scalebatch_1.refl").is_file()
         assert not (tmp_path / "DataFiles" / "scalebatch_1.expt").is_file()
@@ -356,10 +356,10 @@ def check_data_reduction_files_on_scaled_plus_integrated(
     assert reindex is (tmp_path / "LogFiles" / "dials.cosym.0.log").is_file()
     assert reindex is (tmp_path / "LogFiles" / "dials.cosym.0.html").is_file()
     assert (tmp_path / "data_reduction" / "scale").is_dir()
-    assert (tmp_path / "data_reduction" / "merge" / "mergegroup_1.mtz").is_file()
-    assert (tmp_path / "DataFiles" / "mergegroup_1.mtz").is_file()
-    assert (tmp_path / "LogFiles" / "dials.merge.mergegroup_1.html").is_file()
-    assert (tmp_path / "LogFiles" / "dials.merge.mergegroup_1.log").is_file()
+    assert (tmp_path / "data_reduction" / "merge" / "merged.mtz").is_file()
+    assert (tmp_path / "DataFiles" / "merged.mtz").is_file()
+    assert (tmp_path / "LogFiles" / "dials.merge.html").is_file()
+    assert (tmp_path / "LogFiles" / "dials.merge.log").is_file()
     if reference:
         assert (tmp_path / "DataFiles" / "scalebatch_1.refl").is_file()
         assert (tmp_path / "DataFiles" / "scalebatch_1.expt").is_file()
@@ -520,14 +520,18 @@ grouping:
     result = subprocess.run(args + extra_args, cwd=tmp_path, capture_output=True)
     assert not result.returncode
     assert not result.stderr.decode()
-    assert (tmp_path / "DataFiles" / "group_1.mtz").is_file()
-    assert (tmp_path / "DataFiles" / "group_2.mtz").is_file()
-    assert (tmp_path / "LogFiles" / "dials.merge.group_1.html").is_file()
-    assert (tmp_path / "LogFiles" / "dials.merge.group_2.html").is_file()
+    output_names = [f"group_{i}" if use_grouping else f"dose_{i}" for i in [1, 2]]
+    for n in output_names:
+        assert (tmp_path / "DataFiles" / f"{n}.mtz").is_file()
+        assert (tmp_path / "LogFiles" / f"dials.merge.{n}.html").is_file()
 
-    g1_mtz = mtz.object(file_name=os.fspath(tmp_path / "DataFiles" / "group_1.mtz"))
+    g1_mtz = mtz.object(
+        file_name=os.fspath(tmp_path / "DataFiles" / f"{output_names[0]}.mtz")
+    )
     assert abs(g1_mtz.n_reflections() - 1271) < 10
-    g2_mtz = mtz.object(file_name=os.fspath(tmp_path / "DataFiles" / "group_2.mtz"))
+    g2_mtz = mtz.object(
+        file_name=os.fspath(tmp_path / "DataFiles" / f"{output_names[1]}.mtz")
+    )
     assert abs(g2_mtz.n_reflections() - 468) < 10
 
 
