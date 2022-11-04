@@ -12,6 +12,7 @@ import pytest
 from dials.algorithms.scaling.scaling_library import determine_best_unit_cell
 from dials.array_family import flex
 from dxtbx.serialize import load
+from iotbx import mtz
 
 
 def check_output(main_dir, find_spots=False, index=False, integrate=False):
@@ -473,6 +474,54 @@ def test_ssx_reduce(dials_data, tmp_path, pdb_model, idx_ambiguity):
     check_data_reduction_files_on_scaled_plus_integrated(
         tmp_path / "reduce_combined", reference=pdb_model, reindex=idx_ambiguity
     )
+
+
+def test_reduce_with_grouping(dials_data, tmp_path):
+    """Test the feature of specifying a grouping yaml file
+    to define merge groups.
+    """
+    ssx = dials_data("cunir_serial_processed", pathlib=True)
+    ssx_data = dials_data("cunir_serial", pathlib=True)
+    args = ["dev.xia2.ssx_reduce", f"directory={ssx}"]
+    extra_args = []
+    model = dials_data("cunir_serial", pathlib=True) / "2BW4.pdb"
+    extra_args.append(f"model={str(model)}")
+    # also test using scaling and cosym phil files
+    cosym_phil = "d_min=2.5"
+    scaling_phil = "reflection_selection.Isigma_range=3.0,0.0"
+    with open(tmp_path / "scaling.phil", "w") as f:
+        f.write(scaling_phil)
+    with open(tmp_path / "cosym.phil", "w") as f:
+        f.write(cosym_phil)
+    extra_args.append("symmetry.phil=cosym.phil")
+    extra_args.append("scaling.phil=scaling.phil")
+
+    # pretend that this is some dose series data
+    grouping = f"""
+    metadata:
+      dose_point:
+        {os.fspath(ssx_data / 'merlin0047_#####.cbf')} : "repeat=2"
+    grouping:
+      merge_by:
+        values:
+          - dose_point
+    """
+    with open(tmp_path / "example.yaml", "w") as f:
+        f.write(grouping)
+    extra_args.append("grouping=example.yaml")
+
+    result = subprocess.run(args + extra_args, cwd=tmp_path, capture_output=True)
+    assert not result.returncode
+    assert not result.stderr.decode()
+    assert (tmp_path / "DataFiles" / "group_1.mtz").is_file()
+    assert (tmp_path / "DataFiles" / "group_2.mtz").is_file()
+    assert (tmp_path / "LogFiles" / "dials.merge.group_1.html").is_file()
+    assert (tmp_path / "LogFiles" / "dials.merge.group_2.html").is_file()
+
+    g1_mtz = mtz.object(file_name=os.fspath(tmp_path / "DataFiles" / "group_1.mtz"))
+    assert abs(g1_mtz.n_reflections() - 1271) < 10
+    g2_mtz = mtz.object(file_name=os.fspath(tmp_path / "DataFiles" / "group_2.mtz"))
+    assert abs(g2_mtz.n_reflections() - 468) < 10
 
 
 @pytest.mark.parametrize(

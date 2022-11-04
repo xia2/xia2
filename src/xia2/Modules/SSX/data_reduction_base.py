@@ -181,10 +181,10 @@ class BaseDataReduction(object):
         if not Path(self._merge_wd).is_dir():
             Path.mkdir(self._merge_wd)
 
-        self._parsed_yaml = None
+        self._parsed_grouping = None
         if self._reduction_params.grouping:
             try:
-                self._parsed_yaml = ParsedYAML(self._reduction_params.grouping)
+                self._parsed_grouping = ParsedYAML(self._reduction_params.grouping)
             except Exception as e:
                 xia2_logger.warning(
                     f"Error parsing {self._reduction_params.grouping}\n"
@@ -319,11 +319,11 @@ class BaseDataReduction(object):
             f"{n_final} crystals in total scaled in space group {self._reduction_params.space_group}\nMedian cell: {uc_str}"
         )
         merge_input = {}
-        if self._parsed_yaml:
-            if "merge_by" in self._parsed_yaml._groupings:
+        if self._parsed_grouping:
+            if "merge_by" in self._parsed_grouping._groupings:
                 groups_for_merge, metadata_groups = yml_to_merged_filesdict(
                     self._scale_wd,
-                    self._parsed_yaml,
+                    self._parsed_grouping,
                     scaled_results,
                     self._reduction_params,
                     grouping="merge_by",
@@ -333,11 +333,11 @@ class BaseDataReduction(object):
                 n_groups = len(groups_for_merge)
                 if n_groups == 1:
                     xia2_logger.info(
-                        f"All data within a single merge group based on metadata items: {', '.join(self._parsed_yaml.groupings['merge_by'].metadata_names)}"
+                        f"All data within a single merge group based on metadata items: {', '.join(self._parsed_grouping.groupings['merge_by'].metadata_names)}"
                     )
                 else:
                     xia2_logger.info(
-                        f"Data split into {n_groups} merge groups based on metadata items: {', '.join(self._parsed_yaml.groupings['merge_by'].metadata_names)}"
+                        f"Data split into {n_groups} merge groups based on metadata items: {', '.join(self._parsed_grouping.groupings['merge_by'].metadata_names)}"
                     )
                 xia2_logger.info(
                     "Group data ranges:\n"
@@ -346,7 +346,7 @@ class BaseDataReduction(object):
                         for n, g in zip(merge_input.keys(), metadata_groups)
                     )
                 )
-        if not merge_input:  # i.e. no "merge_by" in parsed_yaml
+        if not merge_input:  # i.e. no "merge_by" in parsed_grouping
             merge_input = apply_scaled_array_to_all_files(
                 self._scale_wd, scaled_results, self._reduction_params
             )

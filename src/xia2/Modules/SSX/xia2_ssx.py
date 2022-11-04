@@ -5,6 +5,7 @@ import os
 import pathlib
 
 import iotbx.phil
+from dials.util.image_grouping import ParsedYAML
 from libtbx import Auto
 from libtbx.introspection import number_of_processors
 
@@ -235,6 +236,17 @@ def run_xia2_ssx(
     if params.multiprocessing.nproc is Auto:
         params.multiprocessing.nproc = number_of_processors(return_value_if_unknown=1)
 
+    parsed_grouping = None
+    if params.grouping:
+        full_path = pathlib.Path(params.grouping).resolve()
+        try:
+            parsed_grouping = ParsedYAML(full_path)
+        except Exception as e:
+            xia2_logger.warning(
+                f"Error parsing {full_path}\n"
+                + f"as a valid grouping yaml file, check input. Exception encountered:\n{e}"
+            )
+
     options = AlgorithmParams(
         assess_crystals_n_crystals=params.assess_crystals.n_crystals,
         geometry_refinement_n_crystals=params.geometry_refinement.n_crystals,
@@ -243,6 +255,7 @@ def run_xia2_ssx(
         nproc=params.multiprocessing.nproc,
         steps=params.workflow.steps,
         enable_live_reporting=params.enable_live_reporting,
+        parsed_grouping=parsed_grouping,
     )
 
     if params.assess_crystals.images_to_use:

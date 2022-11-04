@@ -16,6 +16,7 @@ import libtbx.easy_mp
 from dials.algorithms.clustering.unit_cell import Cluster
 from dials.algorithms.indexing.ssx.analysis import generate_html_report
 from dials.array_family import flex
+from dials.util.image_grouping import ParsedYAML
 from dxtbx.model import ExperimentList
 from dxtbx.serialize import load
 
@@ -63,6 +64,7 @@ class AlgorithmParams:
     njobs: int = 1
     multiprocessing_method: str = "multiprocessing"
     enable_live_reporting: bool = False
+    parsed_grouping: Optional[ParsedYAML] = None
 
 
 def process_batch(
