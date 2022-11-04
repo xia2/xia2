@@ -34,9 +34,9 @@ input {
     .help = "Path to previously reduced data"
     .expert_level = 1
 }
-groupby_yaml = None
+grouping = None
   .type = str
-  .help = "Path to .yml file defining grouping structure during processing"
+  .help = "Path to a .yml file defining grouping structure during processing"
 multiprocessing.nproc = Auto
   .type = int
   .expert_level = 1

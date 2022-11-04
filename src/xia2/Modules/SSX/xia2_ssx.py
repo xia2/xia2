@@ -50,9 +50,9 @@ reference_geometry = None
   .type = path
   .help = "Path to a reference geomtery (refined.expt) file"
   .expert_level=1
-groupby_yaml = None
+grouping = None
   .type = str
-  .help = "Path to .yml file defining grouping structure during processing"
+  .help = "Path to a .yml file defining grouping structure during processing"
 multiprocessing {
   nproc = Auto
     .type = int

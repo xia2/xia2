@@ -13,6 +13,7 @@ xia2_logger = logging.getLogger(__name__)
 import concurrent.futures
 
 from dials.array_family import flex
+from dials.util.image_grouping import ParsedYAML
 from dxtbx.serialize import load
 
 from xia2.Driver.timing import record_step
@@ -181,14 +182,14 @@ class BaseDataReduction(object):
             Path.mkdir(self._merge_wd)
 
         self._parsed_yaml = None
-        if self._reduction_params.groupby_yaml:
-            # verify the grouping yaml and save into the data reduction dir.
-            # from xia2.Modules.SSX.yml_handling import ParsedYAML
-            from dials.util.image_grouping import ParsedYAML
-
-            self._parsed_yaml = ParsedYAML(
-                self._reduction_params.groupby_yaml,
-            )
+        if self._reduction_params.grouping:
+            try:
+                self._parsed_yaml = ParsedYAML(self._reduction_params.grouping)
+            except Exception as e:
+                xia2_logger.warning(
+                    f"Error parsing {self._reduction_params.grouping}\n"
+                    + f"as a valid grouping yaml file, check input. Exception encountered:\n{e}"
+                )
 
     @classmethod
     def from_directories(

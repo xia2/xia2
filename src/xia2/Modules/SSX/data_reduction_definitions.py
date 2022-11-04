@@ -47,7 +47,7 @@ class ReductionParams:
     reference: Optional[Path] = None
     cosym_phil: Optional[Path] = None
     scaling_phil: Optional[Path] = None
-    groupby_yaml: Optional[Path] = None
+    grouping: Optional[Path] = None
 
     @classmethod
     def from_phil(cls, params: iotbx.phil.scope_extract):
@@ -55,7 +55,7 @@ class ReductionParams:
         reference = None
         cosym_phil = None
         scaling_phil = None
-        groupby_yaml = None
+        grouping = None
         if params.reference:
             reference = Path(params.reference).resolve()
         elif params.scaling.model:
@@ -68,8 +68,8 @@ class ReductionParams:
             cosym_phil = Path(params.symmetry.phil).resolve()
         if params.scaling.phil:
             scaling_phil = Path(params.scaling.phil).resolve()
-        if params.groupby_yaml:
-            groupby_yaml = Path(params.groupby_yaml).resolve()
+        if params.grouping:
+            grouping = Path(params.grouping).resolve()
         return cls(
             params.symmetry.space_group,
             params.reduction_batch_size,
@@ -84,5 +84,5 @@ class ReductionParams:
             reference,
             cosym_phil,
             scaling_phil,
-            groupby_yaml,
+            grouping,
         )
