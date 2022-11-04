@@ -46,8 +46,8 @@ def save_scaled_array_for_merge(
     if expts:
         best_uc = input_.params.central_unit_cell
         refls["d"] = best_uc.d(refls["miller_index"])
-        for expt in expts:
-            expt.crystal.set_unit_cell(best_uc)
+        # for expt in expts:
+        #    expt.crystal.set_unit_cell(best_uc)
         refls = filter_reflection_table(
             refls,
             intensity_choice=["scale"],
@@ -81,7 +81,7 @@ def apply_scaled_array_to_all_files(
 ) -> dict[str, List[FilePair]]:
 
     groupindex = 0
-    name = "merged"
+    name = "merged"  # note this name becomes the filename of the output mtz
     groupdata = GroupsForExpt(0)
     input_iterable = []
     filesdict: dict[str, List[FilePair]] = {name: []}

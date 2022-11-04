@@ -20,9 +20,12 @@ from xia2.Handlers.Files import FileHandler
 from xia2.Modules.SSX.data_reduction_definitions import FilePair, ReductionParams
 from xia2.Modules.SSX.data_reduction_programs import (
     CrystalsDict,
+    MergeResult,
     assess_for_indexing_ambiguities,
     filter_,
-    merge_files,
+    merge,
+    prepare_scaled_array,
+    split_integrated_data,
 )
 from xia2.Modules.SSX.yml_handling import (
     apply_scaled_array_to_all_files,
@@ -132,44 +135,6 @@ def inspect_files(
         else:
             new_data.append(fp)
     return new_data
-
-
-from cctbx import crystal, miller
-
-
-def prepare_scaled_array(results, name):
-
-    scaled_array = None
-    joint_expts = None
-    for fp in results:
-        expts = load.experiment_list(fp.expt, check_format=False)
-        table = flex.reflection_table.from_file(fp.refl)
-        # now make the miller array
-        miller_set = miller.set(
-            crystal_symmetry=crystal.symmetry(
-                unit_cell=expts[0].crystal.get_unit_cell(),
-                space_group=expts[0].crystal.get_space_group(),
-                assert_is_compatible_unit_cell=False,
-            ),
-            indices=table["miller_index"],
-            anomalous_flag=False,
-        )
-        i_obs = miller.array(
-            miller_set,
-            data=table["intensity"],
-        )
-        i_obs.set_observation_type_xray_intensity()
-        i_obs.set_sigmas(table["sigma"])
-        if scaled_array is None:
-            scaled_array = i_obs
-            joint_expts = expts
-        else:
-            scaled_array = scaled_array.concatenate(i_obs)
-            joint_expts.extend(expts)
-
-    scaled_array.set_observation_type_xray_intensity()
-
-    return name, scaled_array, joint_expts
 
 
 class BaseDataReduction(object):
@@ -306,7 +271,6 @@ class BaseDataReduction(object):
         self._merge()
 
     def _split_data_for_reindex(self, good_crystals_data):
-        from xia2.Modules.SSX.data_reduction_programs import split_integrated_data
 
         self._filtered_files_to_process = split_integrated_data(
             self._filter_wd,
@@ -336,7 +300,7 @@ class BaseDataReduction(object):
         # e.g. to add in previously scaled data in reduction with a reference
         pass
 
-    def _merge(self):
+    def _merge(self) -> None:
         scaled_results = self._files_to_merge
 
         uc_params = [flex.double() for _ in range(6)]
@@ -353,11 +317,9 @@ class BaseDataReduction(object):
         xia2_logger.info(
             f"{n_final} crystals in total scaled in space group {self._reduction_params.space_group}\nMedian cell: {uc_str}"
         )
-
+        merge_input = {}
         if self._parsed_yaml:
             if "merge_by" in self._parsed_yaml._groupings:
-                # for name, scaled_files in scaled_results.items():
-                merge_input = {}
                 groups_for_merge, metadata_groups = yml_to_merged_filesdict(
                     self._scale_wd,
                     self._parsed_yaml,
@@ -383,30 +345,23 @@ class BaseDataReduction(object):
                         for n, g in zip(merge_input.keys(), metadata_groups)
                     )
                 )
-        else:
-            # need to loop through scaled results and apply
-            # merge_input = {"mergegroup_1": scaled_results}  # default if no 'merge_by'
-            # metadata_groups = ["  all_data"]
+        if not merge_input:  # i.e. no "merge_by" in parsed_yaml
             merge_input = apply_scaled_array_to_all_files(
                 self._scale_wd, scaled_results, self._reduction_params
             )
 
-        name_to_expts_arr = {name: [None, None] for name in merge_input.keys()}
-        futures = []
+        name_to_expts_arr: dict[str, Tuple] = {name: () for name in merge_input.keys()}
+        futures = {}
         with concurrent.futures.ProcessPoolExecutor(
-            max_workers=max(self._reduction_params.nproc - 1, 1)
+            max_workers=self._reduction_params.nproc
         ) as pool:
-            for name, results in merge_input.items():
-                futures.append(
-                    pool.submit(
-                        prepare_scaled_array,
-                        results,
-                        name,
-                    )
-                )
+            for name, filelist in merge_input.items():
+                futures[
+                    pool.submit(prepare_scaled_array, filelist, best_unit_cell)
+                ] = name
         for future in concurrent.futures.as_completed(futures):
-            name, scaled_array, expts = future.result()
-            name_to_expts_arr[name] = [scaled_array, expts]
+            name = futures[future]
+            name_to_expts_arr[name] = future.result()
 
         future_list = []
         summaries = {name: "" for name in name_to_expts_arr.keys()}
@@ -415,31 +370,36 @@ class BaseDataReduction(object):
         ), concurrent.futures.ProcessPoolExecutor(
             max_workers=self._reduction_params.nproc
         ) as pool:
-            for name, results in name_to_expts_arr.items():
+            for name, (scaled_array, elist) in name_to_expts_arr.items():
                 future_list.append(
                     pool.submit(
-                        merge_files,
+                        merge,
                         self._merge_wd,
-                        results[0],
-                        results[1],
-                        self._reduction_params,
+                        scaled_array,
+                        elist,
+                        self._reduction_params.d_min,
+                        best_unit_cell,
                         name,
                     )
                 )
-        for future in concurrent.futures.as_completed(future_list):
-            mergeresult = future.result()
-            xia2_logger.info(f"Merged {mergeresult.name}")
+
+        for mergefuture in concurrent.futures.as_completed(future_list):
+            mergeresult: MergeResult = mergefuture.result()
+            if len(future_list) > 1:
+                xia2_logger.info(f"Merged {mergeresult.name}")
             summaries[mergeresult.name] = mergeresult.summary
             FileHandler.record_data_file(mergeresult.merge_file)
             FileHandler.record_log_file(
                 mergeresult.logfile.name.rstrip(".log"), mergeresult.logfile
             )
-            FileHandler.record_more_log_file(
-                mergeresult.jsonfile.name.rstrip(".json"), mergeresult.jsonfile
-            )
-            FileHandler.record_html_file(
-                mergeresult.htmlfile.name.rstrip(".html"), mergeresult.htmlfile
-            )
+            if mergeresult.jsonfile:
+                FileHandler.record_more_log_file(
+                    mergeresult.jsonfile.name.rstrip(".json"), mergeresult.jsonfile
+                )
+            if mergeresult.htmlfile:
+                FileHandler.record_html_file(
+                    mergeresult.htmlfile.name.rstrip(".html"), mergeresult.htmlfile
+                )
         for result in summaries.values():  # always print stats in same order
             if result:
                 xia2_logger.info(result)

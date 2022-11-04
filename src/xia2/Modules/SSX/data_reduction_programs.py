@@ -14,7 +14,7 @@ from io import StringIO
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
-from cctbx import crystal, sgtbx, uctbx
+from cctbx import crystal, miller, sgtbx, uctbx
 from dials.algorithms.merging.merge import (
     merge_scaled_array_to_mtz_with_report_collection,
 )
@@ -268,8 +268,8 @@ def run_uc_cluster(
 
 def merge(
     working_directory: Path,
-    scaled_array,
-    experiments,
+    scaled_array: miller.array,
+    experiments: ExperimentList,
     d_min: float = None,
     best_unit_cell: Optional[uctbx.unit_cell] = None,
     name: str = "",
@@ -278,7 +278,7 @@ def merge(
     filename = "merged.mtz"
     html_file = "dials.merge.html"
     json_file = "dials.merge.json"
-    if name:
+    if name and name != "merged":
         logfile = f"dials.merge.{name}.log"
         filename = f"{name}.mtz"
         html_file = f"dials.merge.{name}.html"
@@ -323,7 +323,11 @@ def merge(
         wlkey = list(json_data.keys())[0]
         table_1_stats = json_data[wlkey]["table_1_stats"]
         result.summary = (
-            f"Merged {len(experiments)} crystals in {', '.join(name.split('.'))}\n"
+            (
+                f"Merged {len(experiments)} crystals in {', '.join(name.split('.'))}\n"
+                if name != "merged"
+                else ""
+            )
             + f"Merged mtz file: {filename}\n"
             + f"{table_1_stats}"
         )
@@ -372,38 +376,6 @@ class MergeResult:
     summary: str = ""
     table_1_stats: str = ""
     name: str = ""
-
-
-def merge_files(working_directory, scaled_array, elist, reduction_params, name):
-
-    """# with record_step("joining for merge"):
-    scaled_expts = ExperimentList([])
-    scaled_tables = []
-    # For merging (a simple program), we don't require much data in the
-    # reflection table. So to avoid a large memory spike, just keep the
-    # values we know we need for merging and to report statistics
-    # first 6 in keep are required in merge, the rest will potentially
-    #  be used for filter_reflections call in merge
-
-    for file_pair in scaled_results:  # .values():
-        expts = load.experiment_list(file_pair.expt, check_format=False)
-        _wrap_extend_expts(scaled_expts, expts)
-        table = flex.reflection_table.from_file(file_pair.refl)
-        trim_table_for_merge(table)
-        scaled_tables.append(table)
-
-    scaled_table = flex.reflection_table.concat(scaled_tables)
-    """
-    mergeresult = merge(
-        working_directory,
-        scaled_array,
-        elist,
-        reduction_params.d_min,
-        reduction_params.central_unit_cell,
-        name,
-    )
-
-    return mergeresult
 
 
 def _extract_scaling_params(reduction_params):
@@ -1030,3 +1002,44 @@ def split_filtered_data(
         for table in leftover_refls:
             assert table.size() == 0
     return data_to_reindex
+
+
+def prepare_scaled_array(
+    filelist: List[FilePair], best_unit_cell: uctbx.unit_cell
+) -> Tuple[miller.array, ExperimentList]:
+    """
+    Loads a list of reflection tables and experiment lists, creates a miller
+    array and concatenates into a combined miller array and experiment list.
+    """
+    scaled_array = None
+    joint_expts: ExperimentList = ExperimentList()
+    for fp in filelist:
+        expts = load.experiment_list(fp.expt, check_format=False)
+        table = flex.reflection_table.from_file(fp.refl)
+        # now make the miller array
+        miller_set = miller.set(
+            crystal_symmetry=crystal.symmetry(
+                unit_cell=best_unit_cell,
+                space_group=expts[0].crystal.get_space_group(),
+                assert_is_compatible_unit_cell=False,
+            ),
+            indices=table["miller_index"],
+            anomalous_flag=False,
+        )
+        i_obs: miller.array = miller.array(
+            miller_set,
+            data=table["intensity"],
+        )
+        i_obs.set_observation_type_xray_intensity()
+        i_obs.set_sigmas(table["sigma"])
+        if scaled_array is None:
+            scaled_array = i_obs
+            joint_expts = expts
+        else:
+            scaled_array = scaled_array.concatenate(i_obs)
+            joint_expts.extend(expts)
+    if not scaled_array:
+        raise RuntimeError("No file list given to prepare_scaled_array")
+    scaled_array.set_observation_type_xray_intensity()
+
+    return scaled_array, joint_expts
