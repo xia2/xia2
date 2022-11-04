@@ -84,6 +84,14 @@ batch_size = 1000
           "the resource requirements and output reporting of the program, but"
           "does not change the resultant integrated data."
   .expert_level=2
+dose_series_repeat = None
+  .type = int(value_min=2)
+  .expert_level = 2
+  .help = "This option allows the user to specify that the data is a dose series"
+          "by providing the number of repeated measurements at each point. i.e. it"
+          "is assumed that $dose_series_repeat measurements are taken on each crystal"
+          "and that these form consecutive images in the input image files. Each dose"
+          "point will be merged separately"
 dials_import.phil = None
   .type = path
   .help = "Phil file to use for dials.import. Parameters defined in the"
@@ -237,6 +245,8 @@ def run_xia2_ssx(
         params.multiprocessing.nproc = number_of_processors(return_value_if_unknown=1)
 
     parsed_grouping = None
+    # for now, we just want to check the validity of the input at the start, even if
+    # there are not yet features that can use this in data integration.
     if params.grouping:
         full_path = pathlib.Path(params.grouping).resolve()
         try:

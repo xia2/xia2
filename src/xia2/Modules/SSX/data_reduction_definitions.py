@@ -48,6 +48,7 @@ class ReductionParams:
     cosym_phil: Optional[Path] = None
     scaling_phil: Optional[Path] = None
     grouping: Optional[Path] = None
+    dose_series_repeat: Optional[int] = None
 
     @classmethod
     def from_phil(cls, params: iotbx.phil.scope_extract):
@@ -85,4 +86,5 @@ class ReductionParams:
             cosym_phil,
             scaling_phil,
             grouping,
+            params.dose_series_repeat,
         )

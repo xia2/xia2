@@ -30,6 +30,7 @@ from xia2.Modules.SSX.data_reduction_programs import (
 )
 from xia2.Modules.SSX.yml_handling import (
     apply_scaled_array_to_all_files,
+    dose_series_repeat_to_groupings,
     yml_to_merged_filesdict,
 )
 
@@ -182,14 +183,28 @@ class BaseDataReduction(object):
             Path.mkdir(self._merge_wd)
 
         self._parsed_grouping = None
-        if self._reduction_params.grouping:
-            try:
-                self._parsed_grouping = ParsedYAML(self._reduction_params.grouping)
-            except Exception as e:
-                xia2_logger.warning(
-                    f"Error parsing {self._reduction_params.grouping}\n"
-                    + f"as a valid grouping yaml file, check input. Exception encountered:\n{e}"
-                )
+        if self._reduction_params.grouping or self._reduction_params.dose_series_repeat:
+            if self._reduction_params.dose_series_repeat:
+                expts = []
+                for fp in self._integrated_data + self._previously_scaled_data:
+                    expts.append(load.experiment_list(fp.expt, check_format=False))
+                try:
+                    self._parsed_grouping = dose_series_repeat_to_groupings(
+                        expts, self._reduction_params.dose_series_repeat
+                    )
+                except Exception as e:
+                    xia2_logger.warning(
+                        "Unable to automatically deduce groupings from input data and dose_series_repeat option."
+                        + f"\nSpecific exception encountered: {e}"
+                    )
+            if not self._parsed_grouping and self._reduction_params.grouping:
+                try:
+                    self._parsed_grouping = ParsedYAML(self._reduction_params.grouping)
+                except Exception as e:
+                    xia2_logger.warning(
+                        f"Error parsing {self._reduction_params.grouping}\n"
+                        + f"as a valid grouping yaml file, check input. Exception encountered:\n{e}"
+                    )
 
     @classmethod
     def from_directories(

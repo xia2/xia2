@@ -47,6 +47,14 @@ batch_size = None
 d_min = None
   .type = float
   .expert_level = 1
+dose_series_repeat = None
+  .type = int(value_min=2)
+  .expert_level = 2
+  .help = "This option allows the user to specify that the data is a dose series"
+          "by providing the number of repeated measurements at each point. i.e. it"
+          "is assumed that $dose_series_repeat measurements are taken on each crystal"
+          "and that these form consecutive images in the input image files. Each dose"
+          "point will be merged separately"
 """
 
 data_reduction_phil_str = """

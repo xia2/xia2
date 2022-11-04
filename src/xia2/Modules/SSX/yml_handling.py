@@ -6,6 +6,8 @@ from typing import List, Optional, Tuple
 
 from dials.array_family import flex
 from dxtbx import flumpy
+from dxtbx.model import ExperimentList
+from dxtbx.sequence_filenames import group_files_by_imageset
 from dxtbx.serialize import load
 
 from xia2.Handlers.Files import FileHandler
@@ -23,6 +25,50 @@ from dials.util.image_grouping import (
 )
 
 from xia2.Modules.SSX.data_reduction_programs import trim_table_for_merge
+
+
+def dose_series_repeat_to_groupings(
+    experiments: List[ExperimentList], dose_series_repeat: int
+) -> ParsedYAML:
+    """
+    For a dose series data collection, attempt to create and then parse a
+    groupings yaml based on the images in the input experiments.
+
+    Callers of this function should be prepared to catch Exceptions!
+    """
+    # if all end with .h5 or .nxs then images, else template?
+
+    images = set()
+    for expts in experiments:
+        for iset in expts.imagesets():
+            images.update(iset.paths())
+
+    metalines = ""
+    if all(image.endswith(".nxs") or image.endswith(".h5") for image in images):
+        # ok assume all independent:
+        metadata = []
+        for image in images:
+            metadata.append(f"{image} : 'repeat={dose_series_repeat}'")
+        metalines = "\n    ".join(s for s in metadata)
+    else:
+        isets = group_files_by_imageset(images)
+        metadata = []
+        for iset in isets.keys():
+            metadata.append(f"{iset} : 'repeat={dose_series_repeat}'")
+        metalines = "\n    ".join(s for s in metadata)
+    if not metalines:
+        raise ValueError("Unable to extract images/templates from experiments")
+    grouping = f"""
+metadata:
+  dose_point:
+    {metalines}
+grouping:
+  merge_by:
+    values:
+      - dose_point
+"""
+    parsed_yaml = ParsedYAML("", yml_dict=grouping)
+    return parsed_yaml
 
 
 def save_scaled_array_for_merge(

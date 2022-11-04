@@ -476,7 +476,11 @@ def test_ssx_reduce(dials_data, tmp_path, pdb_model, idx_ambiguity):
     )
 
 
-def test_reduce_with_grouping(dials_data, tmp_path):
+@pytest.mark.parametrize(
+    "use_grouping",
+    [True, False],
+)
+def test_reduce_with_grouping(dials_data, tmp_path, use_grouping):
     """Test the feature of specifying a grouping yaml file
     to define merge groups.
     """
@@ -497,18 +501,21 @@ def test_reduce_with_grouping(dials_data, tmp_path):
     extra_args.append("scaling.phil=scaling.phil")
 
     # pretend that this is some dose series data
-    grouping = f"""
-    metadata:
-      dose_point:
+    if use_grouping:
+        grouping = f"""
+metadata:
+    dose_point:
         {os.fspath(ssx_data / 'merlin0047_#####.cbf')} : "repeat=2"
-    grouping:
-      merge_by:
+grouping:
+    merge_by:
         values:
-          - dose_point
-    """
-    with open(tmp_path / "example.yaml", "w") as f:
-        f.write(grouping)
-    extra_args.append("grouping=example.yaml")
+            - dose_point
+        """
+        with open(tmp_path / "example.yaml", "w") as f:
+            f.write(grouping)
+        extra_args.append("grouping=example.yaml")
+    else:
+        extra_args.append("dose_series_repeat=2")
 
     result = subprocess.run(args + extra_args, cwd=tmp_path, capture_output=True)
     assert not result.returncode
