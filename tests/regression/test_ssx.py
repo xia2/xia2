@@ -476,6 +476,48 @@ def test_ssx_reduce(dials_data, tmp_path, pdb_model, idx_ambiguity):
     )
 
 
+def test_reduce_h5(dials_data, tmp_path):
+    """Test the data reduction on data from h5 format. Use as an opportunity to test
+    groupings too for h5 data."""
+    ssx = dials_data("dtpb_serial_processed", pathlib=True)
+    grouping_yml = """
+metadata:
+  well_id:
+    "/dls/mx/data/nt30330/nt30330-15/VMXi-AB1698/well_39/images/image_58763.nxs" : 39
+    "/dls/mx/data/nt30330/nt30330-15/VMXi-AB1698/well_42/images/image_58766.nxs" : 42
+grouping:
+  merge_by:
+    values:
+      - well_id
+"""
+    files = [
+        ssx / "well39_batch12_integrated.expt",
+        ssx / "well39_batch12_integrated.refl",
+        ssx / "well42_batch6_integrated.expt",
+        ssx / "well42_batch6_integrated.refl",
+    ]
+    with open(tmp_path / "example.yaml", "w") as f:
+        f.write(grouping_yml)
+
+    args = ["xia2.ssx_reduce", "grouping=example.yaml"] + files
+    result = subprocess.run(args, cwd=tmp_path, capture_output=True)
+    assert not result.returncode
+    assert not result.stderr.decode()
+    output_names = [f"group_{i}" for i in [1, 2]]
+    for n in output_names:
+        assert (tmp_path / "DataFiles" / f"{n}.mtz").is_file()
+        assert (tmp_path / "LogFiles" / f"dials.merge.{n}.html").is_file()
+
+    g1_mtz = mtz.object(
+        file_name=os.fspath(tmp_path / "DataFiles" / f"{output_names[0]}.mtz")
+    )
+    assert abs(g1_mtz.n_reflections() - 5783) < 10
+    g2_mtz = mtz.object(
+        file_name=os.fspath(tmp_path / "DataFiles" / f"{output_names[1]}.mtz")
+    )
+    assert abs(g2_mtz.n_reflections() - 8811) < 10
+
+
 @pytest.mark.parametrize(
     "use_grouping",
     [True, False],
