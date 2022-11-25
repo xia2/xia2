@@ -138,7 +138,9 @@ def statistics_output_from_scaled_files(
     if d_min:
         scaled_array = scaled_array.select(scaled_array.d_spacings().data() >= d_min)
         try:
-            stats, anom_stats = merging_stats_from_scaled_array(scaled_array)
+            stats, anom_stats = merging_stats_from_scaled_array(
+                scaled_array, additional_stats=True
+            )
         except DialsMergingStatisticsError:
             pass
         else:
@@ -149,7 +151,9 @@ def statistics_output_from_scaled_files(
 
     else:  # estimate resolution limit
         try:
-            stats, anom_stats = merging_stats_from_scaled_array(scaled_array)
+            stats, anom_stats = merging_stats_from_scaled_array(
+                scaled_array, additional_stats=True
+            )
         except DialsMergingStatisticsError:
             pass
         else:
@@ -185,6 +189,7 @@ def _fit_stats(stats, anom_stats, scaled_array, n_bins=20, use_internal_variance
                     scaled_array.resolution_filter(d_min=d_min_fit),
                     n_bins=n_bins,
                     use_internal_variance=use_internal_variance,
+                    additional_stats=True,
                 )
             except DialsMergingStatisticsError:
                 pass
