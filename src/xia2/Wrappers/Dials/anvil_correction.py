@@ -13,13 +13,9 @@ This wrapper is intended for use in the _integrate_finish step of the DialsInteg
 from __future__ import annotations
 
 import os
+from typing import List, Optional, SupportsFloat, Tuple
 
 from xia2.Driver.DriverFactory import DriverFactory
-
-try:
-    from typing import List, Optional, SupportsFloat, Tuple
-except ImportError:
-    pass
 
 
 def anvil_correction(driver_type=None):
@@ -37,15 +33,15 @@ def anvil_correction(driver_type=None):
 
             # Input and output files.
             # None is a valid value only for the output experiment list filename.
-            self.experiments_filenames = []  # type: List[str, ...]
-            self.reflections_filenames = []  # type: List[str, ...]
-            self.output_experiments_filename = None  # type: Optional[str]
-            self.output_reflections_filename = None  # type: Optional[str]
+            self.experiments_filenames: List[str] = []
+            self.reflections_filenames: List[str] = []
+            self.output_experiments_filename: Optional[str] = None
+            self.output_reflections_filename: Optional[str] = None
 
             # Parameters to pass to dials.anvil_correction
-            self.density = None  # type: Optional[SupportsFloat]
-            self.thickness = None  # type: Optional[SupportsFloat]
-            self.normal = None  # type: Optional[Tuple[3 * (SupportsFloat,)]]
+            self.density: Optional[SupportsFloat] = None
+            self.thickness: Optional[SupportsFloat] = None
+            self.normal: Optional[Tuple[3 * (SupportsFloat,)]] = None
 
         def run(self):
             """Run dials.anvil_correction if the parameters are valid."""

@@ -10,10 +10,7 @@ from xia2.Handlers.Phil import PhilIndex
 
 logger = logging.getLogger("xia2.Wrappers.Dials.Integrate")
 
-try:
-    from typing import Optional
-except ImportError:
-    pass
+from typing import Optional
 
 
 class DIALSIntegrateError(RuntimeError):
@@ -48,8 +45,8 @@ def Integrate(DriverType=None):
 
             # The minimum number of spots required for profile modelling, per degree
             # and overall.
-            self._min_spots_per_degree = None  # type: Optional[int]
-            self._min_spots_overall = None  # type: Optional[int]
+            self._min_spots_per_degree: Optional[int] = None
+            self._min_spots_overall: Optional[int] = None
 
             self._integration_report = {}
 
