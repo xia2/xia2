@@ -517,3 +517,39 @@ def test_ssx_reduce_filter_options(
     assert list(determine_best_unit_cell(expts).parameters()) == pytest.approx(
         expected_results["best_unit_cell"]
     )
+
+
+def test_on_sacla_data(dials_data, tmp_path):
+
+    sacla_path = dials_data("image_examples", pathlib=True)
+    image = sacla_path / "SACLA-MPCCD-run266702-0-subset.h5"
+    # NB need to set gain, as using reference from detector overwrites gain to 1
+    # error with reference geom file? Alt is to manually set detector distance in
+    # import.
+    find_spots_phil = """spotfinder.threshold.dispersion.gain=10"""
+    fp = tmp_path / "sf.phil"
+    with open(fp, "w") as f:
+        f.write(find_spots_phil)
+    geometry = (
+        sacla_path / "SACLA-MPCCD-run266702-0-subset-refined_experiments_level1.json"
+    )
+    args = [
+        "xia2.ssx",
+        f"image={image}",
+        f"reference_geometry={geometry}",
+        "space_group = P43212",
+        "unit_cell=78.9,78.9,38.1,90,90,90",
+        "min_spot_size=2",
+        "integration.algorithm=stills",
+        f"spotfinding.phil={fp}",
+    ]
+    result = subprocess.run(args, cwd=tmp_path, capture_output=True)
+    assert not result.returncode and not result.stderr
+    check_output(tmp_path, find_spots=True, index=True, integrate=True)
+
+    imported = load.experiment_list(
+        tmp_path / "import" / "imported.expt", check_format=False
+    )
+    assert len(imported) == 4
+    assert len(imported.imagesets()) == 1
+    assert (tmp_path / "DataFiles" / "merged.mtz").is_file()
