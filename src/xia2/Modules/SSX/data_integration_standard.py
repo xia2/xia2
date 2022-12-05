@@ -273,7 +273,11 @@ def run_import(working_directory: pathlib.Path, file_input: FileInput) -> None:
         pathlib.Path.mkdir(working_directory)
 
     xia2_logger.info("New images or geometry detected, running import")
-    import_command = ["dials.import", "output.experiments=imported.expt"]
+    import_command = [
+        "dials.import",
+        "output.experiments=imported.expt",
+        "convert_stills_to_sequences=True",
+    ]
     if file_input.import_phil:
         import_command.insert(1, os.fspath(file_input.import_phil))
     if file_input.images:
