@@ -1,1 +1,1 @@
-xia2.ssx: Handle data from PAL-XFEL and SACLA.
+``xia2.ssx``: Handle data from PAL-XFEL and SACLA.
