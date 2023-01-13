@@ -20,6 +20,7 @@ are:
   ``small_molecule=true``                    Process in manner more suited to small molecule data.
   ``space_group=sg``                         Set the spacegroup, e.g. ``P21``.
   ``unit_cell=a,b,c,α,β,γ``                  Set the cell constants.
+  ``hdf5_plugin=/path/to/durin.so``          Set the path to the HDF5 file reading plugin for XDS (needed for processing of Eiger data)
   =========================================  ==============
 
 Resolution limits
