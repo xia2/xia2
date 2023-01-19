@@ -1,1 +1,1 @@
-xia2.ssx: Report r-split metric in merging stats
+``xia2.ssx``: Report r-split metric in merging stats
