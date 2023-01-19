@@ -284,6 +284,7 @@ def merge(
         logfile
     ) as dials_logger, record_step("dials.merge"):
         params = merge_phil_scope.extract()
+        params.output.additional_stats = True
         input_ = (
             "Input parameters:\n  reflections = scaled.refl\n"
             + "  experiments = scaled.expt\n"
@@ -324,6 +325,7 @@ def _extract_scaling_params(reduction_params):
         reflection_selection.method=intensity_ranges
         reflection_selection.Isigma_range=2.0,0.0
         reflection_selection.min_partiality=0.4
+        output.additional_stats=True
         scaling_options.nproc=8
     """
     xia2_phil = f"""
@@ -382,6 +384,7 @@ def _extract_scaling_params_for_scale_against_reference(reduction_params, index)
         reflection_selection.method=intensity_ranges
         reflection_selection.Isigma_range=2.0,0.0
         reflection_selection.min_partiality=0.4
+        output.additional_stats=True
         cut_data.small_scale_cutoff=1e-9
     """
     xia2_phil = f"""
