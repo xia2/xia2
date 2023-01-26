@@ -1,3 +1,25 @@
+xia2 3.13.0 (2023-01-26)
+========================
+
+Features
+--------
+
+- ``xia2.ssx``: Handle data from PAL-XFEL and SACLA. (`#719 <https://github.com/xia2/xia2/issues/719>`_)
+- ``xia2.ssx``: Report r-split metric in merging stats (`#721 <https://github.com/xia2/xia2/issues/721>`_)
+
+
+Improved Documentation
+----------------------
+
+- Documentation: add `hdf5_plugin` description (`#716 <https://github.com/xia2/xia2/issues/716>`_)
+
+
+Misc
+----
+
+- `#720 <https://github.com/xia2/xia2/issues/720>`_
+
+
 xia2 3.12.0 (2022-10-31)
 ========================
 
