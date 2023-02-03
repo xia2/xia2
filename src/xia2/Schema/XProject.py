@@ -10,6 +10,7 @@ import logging
 import os
 import pathlib
 
+from xia2.cli.to_shelx import parse_compound  # probs not the best place for this
 from xia2.Handlers.Phil import PhilIndex
 from xia2.Handlers.Syminfo import get_lattice
 from xia2.Handlers.XInfo import XInfo
@@ -192,6 +193,12 @@ class XProject:
             elif settings.space_group is not None:
                 # XXX do we ever actually get here?
                 xc.set_user_spacegroup(settings.space_group.type().lookup_symbol())
+
+            # user added chemical formula
+            if "user_chemical_formula" in crystals[crystal]:
+                # here we try to parse the formula
+                chem_form = parse_compound(crystals[crystal]["user_chemical_formula"])
+                xc.set_user_chemical_formula(chem_form)
 
             # add a default sample if none present in xinfo file
             if not crystals[crystal]["samples"]:
