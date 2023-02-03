@@ -414,6 +414,8 @@ def _write_sweeps(sweeps, out):
             % settings.unit_cell.parameters()
         )
         out.write("\n")
+    if settings.chemical_formula:
+        out.write("USER_CHEMICAL_FORMULA %s\n" % settings.chemical_formula)
 
     freer_file = PhilIndex.params.xia2.settings.scale.freer_file
     if freer_file is not None:
