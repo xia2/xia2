@@ -10,11 +10,11 @@ from cctbx import sgtbx, uctbx
 from dials.array_family import flex
 from dials.command_line.unit_cell_histogram import plot_uc_histograms
 from dials.util import tabulate
+from dials.util.mp import available_cores
 from dxtbx.serialize import load
 from libtbx import Auto
 from scitbx.math import five_number_summary
 
-from xia2.Handlers.Environment import get_number_cpus
 from xia2.Handlers.Phil import PhilIndex
 from xia2.lib.bits import auto_logfiler
 from xia2.Modules import Report
@@ -297,7 +297,7 @@ class MultiCrystalScale:
             raise ValueError("Can not specify both laue_group and space_group")
 
         if self._params.nproc is Auto:
-            self._params.nproc = get_number_cpus()
+            self._params.nproc = available_cores()
         PhilIndex.params.xia2.settings.multiprocessing.nproc = self._params.nproc
 
         if self._params.identifiers is not None:
