@@ -725,8 +725,15 @@ class CommonScaler(Scaler):
             # crystal_symm.show_summary()
             xray_structure = structure(crystal_symmetry=crystal_symm)
 
-            for element in "CNOH":
-                xray_structure.add_scatterer(scatterer(label=element, occupancy=1))
+            # did the user specify a chemical formula?
+            chemical_formula = self._scalr_input_chemical_formula or {
+                "C": 1,
+                "H": 1,
+                "N": 1,
+                "O": 1,
+            }
+            for element, number in chemical_formula.items():
+                xray_structure.add_scatterer(scatterer(label=element, occupancy=number))
 
             wavelength = self._scalr_xcrystal.get_xwavelength(
                 wavelength_name
