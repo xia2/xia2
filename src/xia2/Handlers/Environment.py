@@ -11,8 +11,6 @@ import os
 import platform
 import tempfile
 
-from libtbx.introspection import number_of_processors
-
 logger = logging.getLogger("xia2.Handlers.Environment")
 
 
@@ -89,22 +87,6 @@ def set_up_ccp4_tmpdir():
             pass
 
     atexit.register(drop_ccp4_scr_tmpdir_if_possible)
-
-
-def get_number_cpus():
-    """Portably get the number of processor cores available."""
-
-    if os.name == "nt":
-        # Windows only has once CPU because easy_mp does not support more. #191
-        return 1
-
-    # if environmental variable NSLOTS is set to a number then use that
-    try:
-        return int(os.environ.get("NSLOTS"))
-    except (ValueError, TypeError):
-        pass
-
-    return number_of_processors(return_value_if_unknown=-1)
 
 
 set_up_ccp4_tmpdir()

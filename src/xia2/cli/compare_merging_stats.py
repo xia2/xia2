@@ -12,8 +12,8 @@ import iotbx.merging_statistics
 import iotbx.phil
 import libtbx
 from cctbx import uctbx
+from dials.util.mp import available_cores
 from dials.util.options import ArgumentParser
-from libtbx.introspection import number_of_processors
 
 help_message = """
 """
@@ -75,7 +75,7 @@ def run(args=sys.argv[1:]):
         return
 
     if params.nproc is libtbx.Auto:
-        params.nproc = number_of_processors()
+        params.nproc = available_cores()
 
     results = []
     mtz_files = []

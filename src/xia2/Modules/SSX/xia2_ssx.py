@@ -6,8 +6,8 @@ import pathlib
 
 import iotbx.phil
 from dials.util.image_grouping import ParsedYAML
+from dials.util.mp import available_cores
 from libtbx import Auto
-from libtbx.introspection import number_of_processors
 
 from xia2.Modules.SSX.data_integration_programs import (
     IndexingParams,
@@ -242,7 +242,7 @@ def run_xia2_ssx(
         file_input.import_phil = import_phil
 
     if params.multiprocessing.nproc is Auto:
-        params.multiprocessing.nproc = number_of_processors(return_value_if_unknown=1)
+        params.multiprocessing.nproc = available_cores()
 
     parsed_grouping = None
     # for now, we just want to check the validity of the input at the start, even if

@@ -4,8 +4,8 @@ import logging
 from pathlib import Path
 
 import iotbx.phil
+from dials.util.mp import available_cores
 from libtbx import Auto
-from libtbx.introspection import number_of_processors
 
 from xia2.Modules.SSX.data_reduction_definitions import ReductionParams
 from xia2.Modules.SSX.data_reduction_interface import get_reducer
@@ -142,7 +142,7 @@ def run_xia2_ssx_reduce(
 ) -> None:
 
     if params.multiprocessing.nproc is Auto:
-        params.multiprocessing.nproc = number_of_processors(return_value_if_unknown=1)
+        params.multiprocessing.nproc = available_cores()
 
     if params.batch_size:  # This is an alias for reduction_batch_size
         params.reduction_batch_size = params.batch_size
