@@ -294,6 +294,7 @@ def run_import(working_directory: pathlib.Path, file_input: FileInput) -> None:
         import_command += [
             f"reference_geometry={os.fspath(file_input.reference_geometry)}",
             "use_gonio_reference=False",
+            "use_beam_reference=False",
         ]
         xia2_logger.notice(banner("Importing with reference geometry"))  # type: ignore
     else:
