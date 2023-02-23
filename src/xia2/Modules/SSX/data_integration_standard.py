@@ -797,8 +797,8 @@ def run_data_integration(
                 imported_expts,
                 options.batch_size,
             )
-        if not batch_directories:
-            raise ValueError("Unable to determine directories for processing.")
+    if not batch_directories:
+        raise ValueError("Unable to determine directories for processing.")
 
     process_batches(
         batch_directories,
