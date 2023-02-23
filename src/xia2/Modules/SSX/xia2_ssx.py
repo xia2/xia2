@@ -63,7 +63,13 @@ multiprocessing {
             "cluster."
             "WARNING: be considerate of fair use policies for the computing"
             "resources you will be using and whether it is necessary to use njobs>1."
-}
+  method = *multiprocessing sge lsf pbs condor slurm
+    .type = choice
+    .short_caption = "Parallelization method"
+  qsub_command = None
+    .type = str
+    .short_caption = qsub command
+  }
 
 space_group = None
   .type = space_group
@@ -236,6 +242,8 @@ def run_xia2_ssx(
         assess_crystals_n_crystals=params.assess_crystals.n_crystals,
         geometry_refinement_n_crystals=params.geometry_refinement.n_crystals,
         batch_size=params.batch_size,
+        multiprocessing_method=params.multiprocessing.method,
+        qsub_command=params.multiprocessing.qsub_command,
         njobs=params.multiprocessing.njobs,
         nproc=params.multiprocessing.nproc,
         steps=params.workflow.steps,

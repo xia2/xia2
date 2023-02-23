@@ -62,6 +62,7 @@ class AlgorithmParams:
     nproc: int = 1
     njobs: int = 1
     multiprocessing_method: str = "multiprocessing"
+    qsub_command: Optional[str] = None
     enable_live_reporting: bool = False
 
 
@@ -635,16 +636,18 @@ def process_batches(
         xia2_logger.info(
             f"Submitting processing in {len(batch_directories)} batches across {njobs} cores, each with nproc={options.nproc}."
         )
+        include = abs(libtbx.env.build_path.dirname() / "dials")
         libtbx.easy_mp.parallel_map(
             func=ProcessBatch(
                 spotfinding_params, indexing_params, integration_params, options
             ),
             iterable=batch_directories,
-            qsub_command=f"qsub -pe smp {options.nproc}",
+            qsub_command=options.qsub_command or f"qsub -pe smp {options.nproc}",
             processes=njobs,
             method=options.multiprocessing_method,
             callback=process_output,
             preserve_order=False,
+            include=include,
         )
     else:
         for batch_dir in batch_directories:
