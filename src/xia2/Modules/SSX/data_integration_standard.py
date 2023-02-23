@@ -259,7 +259,7 @@ def check_previous_import(
 def run_import(
     working_directory: pathlib.Path,
     file_input: FileInput,
-    ignore_manual_detector_geometry: bool = False,
+    ignore_manual_detector_phil_options: bool = False,
 ) -> None:
     """
     Run dials.import with either images, templates or directories.
@@ -284,7 +284,7 @@ def run_import(
         "convert_stills_to_sequences=True",
     ]
     if file_input.import_phil:
-        if ignore_manual_detector_geometry:
+        if ignore_manual_detector_phil_options:
             # remove any geometry options from the user phil, if we are now using the refined
             # reference geometry
             with open(file_input.import_phil, "r") as f:
@@ -795,7 +795,7 @@ def run_data_integration(
         file_input.reference_geometry = geom_ref_wd / "refined.expt"
         # at this point, we want the reference detector geometry to take
         # precedence over any initial manually specified options.
-        run_import(import_wd, file_input, ignore_manual_detector_geometry=True)
+        run_import(import_wd, file_input, ignore_manual_detector_phil_options=True)
         import_was_run = True
 
     if not options.steps:
