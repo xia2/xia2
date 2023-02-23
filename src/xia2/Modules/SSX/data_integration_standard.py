@@ -780,16 +780,23 @@ def run_data_integration(
         raise ValueError(
             "New data was imported, but there are gaps in the processing steps. Please adjust input."
         )
-    try:
-        batch_directories, setup_data = inspect_existing_batch_directories(
-            root_working_directory
-        )
-    except ValueError:  # if existing batches weren't found
+    if import_was_run:  # need to setup the batch folders again with new imported.expt
         batch_directories, setup_data = setup_main_process(
             root_working_directory,
             imported_expts,
             options.batch_size,
         )
+    else:
+        try:
+            batch_directories, setup_data = inspect_existing_batch_directories(
+                root_working_directory
+            )
+        except ValueError:  # if existing batches weren't found
+            batch_directories, setup_data = setup_main_process(
+                root_working_directory,
+                imported_expts,
+                options.batch_size,
+            )
     if not batch_directories:
         raise ValueError("Unable to determine directories for processing.")
 
