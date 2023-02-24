@@ -18,6 +18,7 @@ from dials.algorithms.indexing.ssx.analysis import generate_html_report
 from dials.array_family import flex
 from dxtbx.model import ExperimentList
 from dxtbx.serialize import load
+from libtbx import phil
 
 from xia2.Driver.timing import record_step
 from xia2.Handlers.Files import FileHandler
@@ -255,7 +256,11 @@ def check_previous_import(
     return (same_as_previous, previous)
 
 
-def run_import(working_directory: pathlib.Path, file_input: FileInput) -> None:
+def run_import(
+    working_directory: pathlib.Path,
+    file_input: FileInput,
+    ignore_manual_detector_phil_options: bool = False,
+) -> None:
     """
     Run dials.import with either images, templates or directories.
     After running dials.import, the options are saved to file_input.json
@@ -279,7 +284,26 @@ def run_import(working_directory: pathlib.Path, file_input: FileInput) -> None:
         "convert_stills_to_sequences=True",
     ]
     if file_input.import_phil:
-        import_command.insert(1, os.fspath(file_input.import_phil))
+        if ignore_manual_detector_phil_options:
+            # remove any geometry options from the user phil, if we are now using the refined
+            # reference geometry
+            with open(file_input.import_phil, "r") as f:
+                params = phil.parse(input_string=f.read())
+            non_detector_phil = ""
+            for obj in params.objects:
+                if obj.name == "geometry" and hasattr(obj.extract(), "detector"):
+                    xia2_logger.info(
+                        f"Removing manual detector geometry option from import phil: {obj.as_str()}"
+                    )
+                else:
+                    non_detector_phil += obj.as_str()
+            if non_detector_phil:
+                fname = working_directory / "import_tmp.phil"
+                with open(fname, "w") as f:
+                    f.write(non_detector_phil)
+                import_command.insert(1, os.fspath(fname))
+        else:
+            import_command.insert(1, os.fspath(file_input.import_phil))
     if file_input.images:
         import_command += file_input.images
     elif file_input.templates:
@@ -769,7 +793,9 @@ def run_data_integration(
 
         # Reimport with this reference geometry to prepare for the main processing
         file_input.reference_geometry = geom_ref_wd / "refined.expt"
-        run_import(import_wd, file_input)
+        # at this point, we want the reference detector geometry to take
+        # precedence over any initial manually specified options.
+        run_import(import_wd, file_input, ignore_manual_detector_phil_options=True)
         import_was_run = True
 
     if not options.steps:

@@ -74,6 +74,45 @@ def test_assess_crystals(dials_data, tmp_path, option, expected_success):
     assert data["success_per_image"] == expected_success
 
 
+def test_import_phil_handling(dials_data, tmp_path):
+    """Just run geometry refinement. This will do the refinement then reimport
+    using the refined as reference."""
+    ssx = dials_data("cunir_serial", pathlib=True)
+    with (tmp_path / "import.phil").open(mode="w") as f:
+        f.write("geometry.beam.wavelength=1.36\ngeometry.detector.distance=247.6")
+    with (tmp_path / "index.phil").open(mode="w") as f:
+        f.write("indexing.max_cell=150")
+    args = [
+        "xia2.ssx",
+        "steps=None",
+        "unit_cell=96.4,96.4,96.4,90,90,90",
+        "space_group=P213",
+        "indexing.phil=index.phil",
+        "dials_import.phil=import.phil",
+        "max_lattices=1",
+    ]
+    args.append("image=" + os.fspath(ssx / "merlin0047_1700*.cbf"))
+    result = subprocess.run(args, cwd=tmp_path, capture_output=True)
+    assert not result.returncode and not result.stderr
+    imported_with_ref = load.experiment_list(tmp_path / "import" / "imported.expt")
+    assert (
+        imported_with_ref.beams()[0].get_wavelength() == 1.36
+    )  # would be 1.37611 without import.phil
+    assert (
+        imported_with_ref.detectors()[0].to_dict()["panels"][0]["origin"][2] != -247.6
+    )
+    imported_without_ref = load.experiment_list(
+        tmp_path / "geometry_refinement" / "imported.expt"
+    )
+    assert (
+        imported_without_ref.beams()[0].get_wavelength() == 1.36
+    )  # would be 1.37611 without import.phil
+    assert (
+        imported_without_ref.detectors()[0].to_dict()["panels"][0]["origin"][2]
+        == -247.6
+    )
+
+
 @pytest.mark.parametrize(
     "option,expected_success",
     [
