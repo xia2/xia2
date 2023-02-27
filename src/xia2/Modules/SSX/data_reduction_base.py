@@ -197,6 +197,10 @@ class BaseDataReduction(object):
                         "Unable to automatically deduce groupings from input data and dose_series_repeat option."
                         + f"\nSpecific exception encountered: {e}"
                     )
+                else:
+                    xia2_logger.info(
+                        f"Assigning dose groups using: image_no modulo {self._reduction_params.dose_series_repeat} = dose_point"
+                    )
             if not self._parsed_grouping and self._reduction_params.grouping:
                 try:
                     self._parsed_grouping = ParsedYAML(self._reduction_params.grouping)
@@ -344,7 +348,8 @@ class BaseDataReduction(object):
                     grouping="merge_by",
                 )
                 for g, flist in groups_for_merge.items():
-                    merge_input[f"{g}"] = flist
+                    if flist:
+                        merge_input[f"{g}"] = flist
                 n_groups = len(groups_for_merge)
                 if n_groups == 1:
                     xia2_logger.info(
@@ -361,6 +366,11 @@ class BaseDataReduction(object):
                         for n, g in zip(merge_input.keys(), metadata_groups)
                     )
                 )
+                if self._reduction_params.dose_series_repeat:
+                    xia2_logger.info(
+                        f"Dose groups assigned using formula: image_no modulo {self._reduction_params.dose_series_repeat} = dose_point"
+                    )
+
         if not merge_input:  # i.e. no "merge_by" in parsed_grouping
             merge_input = apply_scaled_array_to_all_files(
                 self._scale_wd, scaled_results, self._reduction_params

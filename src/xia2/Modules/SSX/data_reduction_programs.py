@@ -303,7 +303,10 @@ def merge(
 
         dials_logger.info(input_)
         mtz_file, json_data = merge_scaled_array_to_mtz_with_report_collection(
-            params, experiments, scaled_array
+            params,
+            experiments,
+            scaled_array,
+            applied_d_min=d_min,
         )
         # mtz_file, json_data = merge_data_to_mtz_with_report_collection(
         #    params, experiments, [reflection_table]
@@ -324,7 +327,10 @@ def merge(
             name=name,
         )
         wlkey = list(json_data.keys())[0]
-        table_1_stats = json_data[wlkey]["table_1_stats"]
+        try:
+            table_1_stats = json_data[wlkey]["table_1_stats"]
+        except KeyError:
+            table_1_stats = ""
         result.summary = (
             (
                 f"Merged {len(experiments)} crystals in {', '.join(name.split('.'))}\n"
