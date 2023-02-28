@@ -29,7 +29,7 @@ from dials.util.options import ArgumentParser
 
 import xia2.Driver.timing
 import xia2.Handlers.Streams
-from xia2.Handlers.Files import FileHandler, cleanup
+from xia2.Handlers.Files import cleanup
 from xia2.Modules.SSX.xia2_ssx import full_phil_str, run_xia2_ssx
 
 phil_scope = iotbx.phil.parse(full_phil_str)
@@ -65,7 +65,6 @@ def run(args=sys.argv[1:]):
     cwd = pathlib.Path.cwd()
     try:
         with cleanup(cwd):
-            FileHandler.record_log_file("xia2.ssx", cwd / "xia2.ssx.log")
             run_xia2_ssx(cwd, params)
     except ValueError as e:
         xia2_logger.info(f"Error: {e}")
