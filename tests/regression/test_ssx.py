@@ -22,7 +22,7 @@ def check_output(main_dir, find_spots=False, index=False, integrate=False):
     assert index is (main_dir / "batch_1" / "indexed.refl").is_file()
     assert integrate is (main_dir / "batch_1" / "integrated_1.expt").is_file()
     assert integrate is (main_dir / "batch_1" / "integrated_1.refl").is_file()
-    assert (main_dir / "LogFiles" / "xia2.ssx.log").is_file()
+    assert (main_dir / "xia2.ssx.log").is_file()
     assert integrate is (main_dir / "DataFiles" / "integrated_1_batch_1.expt").is_file()
     assert integrate is (main_dir / "DataFiles" / "integrated_1_batch_1.expt").is_file()
 
