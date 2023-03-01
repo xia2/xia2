@@ -1,8 +1,8 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Optional
+from typing import List, Optional
 
 import iotbx.phil
 from cctbx import sgtbx, uctbx
@@ -49,6 +49,7 @@ class ReductionParams:
     scaling_phil: Optional[Path] = None
     grouping: Optional[Path] = None
     dose_series_repeat: Optional[int] = None
+    steps: List[str] = field(default_factory=lambda: ["scale", "merge"])
 
     @classmethod
     def from_phil(cls, params: iotbx.phil.scope_extract):
@@ -87,4 +88,5 @@ class ReductionParams:
             scaling_phil,
             grouping,
             params.dose_series_repeat,
+            params.workflow.steps,
         )

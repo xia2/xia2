@@ -10,7 +10,6 @@ from typing import List
 import pytest
 
 from dials.algorithms.scaling.scaling_library import determine_best_unit_cell
-from dials.array_family import flex
 from dxtbx.serialize import load
 from iotbx import mtz
 
@@ -310,7 +309,7 @@ def check_data_reduction_files(tmp_path, reindex=True, reference=False):
     assert reindex is (tmp_path / "LogFiles" / "dials.cosym.0.log").is_file()
     assert reindex is (tmp_path / "LogFiles" / "dials.cosym.0.html").is_file()
     assert (tmp_path / "data_reduction" / "scale").is_dir()
-    assert (tmp_path / "data_reduction" / "merge" / "merged.mtz").is_file()
+    assert (tmp_path / "data_reduction" / "merge" / "all" / "merged.mtz").is_file()
     assert (tmp_path / "DataFiles" / "merged.mtz").is_file()
     assert (tmp_path / "LogFiles" / "dials.merge.html").is_file()
     assert (tmp_path / "LogFiles" / "dials.merge.log").is_file()
@@ -332,42 +331,11 @@ def check_data_reduction_files_on_scaled_only(tmp_path, reference=False):
     assert not (tmp_path / "LogFiles" / "dials.cosym.0.log").is_file()
     assert not (tmp_path / "LogFiles" / "dials.cosym.0.html").is_file()
     assert (tmp_path / "data_reduction" / "merge").is_dir()
-    assert (tmp_path / "data_reduction" / "merge" / "merged.mtz").is_file()
+    assert (tmp_path / "data_reduction" / "merge" / "all" / "merged.mtz").is_file()
     assert (tmp_path / "DataFiles" / "merged.mtz").is_file()
     assert (tmp_path / "LogFiles" / "dials.merge.html").is_file()
     assert (tmp_path / "LogFiles" / "dials.merge.log").is_file()
     assert (tmp_path / "LogFiles" / "dials.merge.json").is_file()
-    if reference:
-        assert not (tmp_path / "DataFiles" / "scalebatch_1.refl").is_file()
-        assert not (tmp_path / "DataFiles" / "scalebatch_1.expt").is_file()
-        assert not (tmp_path / "LogFiles" / "dials.scale.scalebatch_1.log").is_file()
-    else:
-        assert (tmp_path / "DataFiles" / "scaled.refl").is_file()
-        assert (tmp_path / "DataFiles" / "scaled.expt").is_file()
-        assert (tmp_path / "LogFiles" / "dials.scale.log").is_file()
-
-
-def check_data_reduction_files_on_scaled_plus_integrated(
-    tmp_path, reindex=True, reference=False
-):
-    assert (tmp_path / "data_reduction").is_dir()
-    assert (tmp_path / "data_reduction" / "prefilter").is_dir()
-    assert reindex is (tmp_path / "data_reduction" / "reindex").is_dir()
-    assert reindex is (tmp_path / "LogFiles" / "dials.cosym.0.log").is_file()
-    assert reindex is (tmp_path / "LogFiles" / "dials.cosym.0.html").is_file()
-    assert (tmp_path / "data_reduction" / "scale").is_dir()
-    assert (tmp_path / "data_reduction" / "merge" / "merged.mtz").is_file()
-    assert (tmp_path / "DataFiles" / "merged.mtz").is_file()
-    assert (tmp_path / "LogFiles" / "dials.merge.html").is_file()
-    assert (tmp_path / "LogFiles" / "dials.merge.log").is_file()
-    if reference:
-        assert (tmp_path / "DataFiles" / "scalebatch_1.refl").is_file()
-        assert (tmp_path / "DataFiles" / "scalebatch_1.expt").is_file()
-        assert (tmp_path / "LogFiles" / "dials.scale.scalebatch_1.log").is_file()
-    else:
-        assert (tmp_path / "DataFiles" / "scaled.refl").is_file()
-        assert (tmp_path / "DataFiles" / "scaled.expt").is_file()
-        assert (tmp_path / "LogFiles" / "dials.scale.log").is_file()
 
 
 # For testing data reduction, there are a few different paths.
@@ -428,8 +396,8 @@ def test_ssx_reduce(dials_data, tmp_path, pdb_model, idx_ambiguity):
         f.write(scaling_phil)
     with open(tmp_path / "cosym.phil", "w") as f:
         f.write(cosym_phil)
-    extra_args.append("symmetry.phil=cosym.phil")
-    extra_args.append("scaling.phil=scaling.phil")
+    extra_args.append(f"symmetry.phil={tmp_path / 'cosym.phil'}")
+    extra_args.append(f"scaling.phil={tmp_path / 'scaling.phil'}")
 
     result = subprocess.run(args + extra_args, cwd=tmp_path, capture_output=True)
     assert not result.returncode
@@ -438,42 +406,18 @@ def test_ssx_reduce(dials_data, tmp_path, pdb_model, idx_ambiguity):
 
     # now run again only on previously scaled data
     pathlib.Path.mkdir(tmp_path / "reduce")
-    args = [
-        "xia2.ssx_reduce",
-        f"processed_directory={tmp_path / 'DataFiles'}",
-    ] + extra_args
+    args = (
+        [
+            "xia2.ssx_reduce",
+            "steps=merge",
+        ]
+        + list((tmp_path / "DataFiles").glob("scale*"))
+        + extra_args
+    )
     result = subprocess.run(args, cwd=tmp_path / "reduce", capture_output=True)
     assert not result.returncode
     assert not result.stderr.decode()
     check_data_reduction_files_on_scaled_only(tmp_path / "reduce", reference=pdb_model)
-
-    # now run again only on previously scaled data + integrated data
-    # Need to assign new identifiers to avoid clash
-    pathlib.Path.mkdir(tmp_path / "integrated_copy")
-    if not idx_ambiguity:
-        int_expts = load.experiment_list(
-            tmp_path / "reindexed.expt", check_format=False
-        )
-        int_refls = flex.reflection_table.from_file(tmp_path / "reindexed.refl")
-    else:
-        int_expts = load.experiment_list(ssx / "integrated.expt", check_format=False)
-        int_refls = flex.reflection_table.from_file(ssx / "integrated.refl")
-    new_identifiers = ["0", "1", "2", "3", "4"]
-
-    for i, (expt, new) in enumerate(zip(int_expts, new_identifiers)):
-        expt.identifier = new
-        del int_refls.experiment_identifiers()[i]
-        int_refls.experiment_identifiers()[i] = new
-    int_expts.as_file(tmp_path / "integrated_copy" / "integrated.expt")
-    int_refls.as_file(tmp_path / "integrated_copy" / "integrated.refl")
-    pathlib.Path.mkdir(tmp_path / "reduce_combined")
-    args.append(f"directory={tmp_path / 'integrated_copy'}")
-    result = subprocess.run(args, cwd=tmp_path / "reduce_combined", capture_output=True)
-    assert not result.returncode
-    assert not result.stderr.decode()
-    check_data_reduction_files_on_scaled_plus_integrated(
-        tmp_path / "reduce_combined", reference=pdb_model, reindex=idx_ambiguity
-    )
 
 
 def test_reduce_h5(dials_data, tmp_path):

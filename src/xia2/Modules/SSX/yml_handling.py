@@ -76,6 +76,10 @@ def save_scaled_array_for_merge(
 ) -> Optional[Tuple[str, FilePair]]:
     expts = load.experiment_list(input_.fp.expt, check_format=False)
     refls = flex.reflection_table.from_file(input_.fp.refl)
+    if not any(refls.get_flags(refls.flags.scaled)):
+        raise ValueError("Unscaled data input for merging")
+    if list(refls.keys()) == ["intensity", "miller_index", "sigma"]:
+        return (input_.name, input_.fp)
     trim_table_for_merge(refls)
     groupdata = input_.groupdata
     if (groupdata.single_group is not None) and (
@@ -92,8 +96,6 @@ def save_scaled_array_for_merge(
     if expts:
         best_uc = input_.params.central_unit_cell
         refls["d"] = best_uc.d(refls["miller_index"])
-        # for expt in expts:
-        #    expt.crystal.set_unit_cell(best_uc)
         refls = filter_reflection_table(
             refls,
             intensity_choice=["scale"],

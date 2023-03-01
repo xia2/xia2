@@ -81,45 +81,6 @@ def validate(expt: Path, refl: Path):
         return fp
 
 
-def inspect_scaled_directories(
-    directories_to_process: List[Path],
-    reduction_params: ReductionParams,
-) -> List[FilePair]:
-    new_data: List[FilePair] = []
-    for d in directories_to_process:
-        # if reduction_params.model - check same as for these data.
-        expts_this, refls_this = ([], [])
-        for file_ in list(d.glob("scale*.expt")):
-            expts_this.append(file_)
-        for file_ in list(d.glob("scale*.refl")):
-            refls_this.append(file_)
-        if len(expts_this) != len(refls_this):
-            raise ValueError(
-                f"Unequal number of experiments ({len(expts_this)}) "
-                + f"and reflections ({len(refls_this)}) files found in {d}"
-            )
-        if not expts_this:
-            xia2_logger.warning(f"No scaled data files found in {str(d)}")
-        else:
-            future_list = []
-            with concurrent.futures.ProcessPoolExecutor(
-                max_workers=min(reduction_params.nproc, len(expts_this))
-            ) as pool:
-                for expt, refl in zip(sorted(expts_this), sorted(refls_this)):
-                    future_list.append(pool.submit(validate, expt, refl))
-            for future in future_list:
-                try:
-                    fp = future.result()
-                except ValueError as e:
-                    xia2_logger.warning(e)
-                else:
-                    new_data.append(fp)
-
-    if not new_data:
-        raise ValueError("No scaled datafiles found in directories given")
-    return new_data
-
-
 def inspect_files(
     reflection_files: List[Path], experiment_files: List[Path]
 ) -> List[FilePair]:
@@ -141,17 +102,22 @@ def inspect_files(
 
 class BaseDataReduction(object):
 
-    _no_input_error_msg = "No input data found"  # overwritten with more useful
-    # messages in derived classes.
+    _no_input_error_msg = (
+        "No input data, (experiments+reflections files or integrated directories)\n"
+        + "have been found in the input. Please provide at least some integrated/scaled data or\n"
+        + "a directory of data integrated with xia2.ssx/dials.ssx_integrate\n"
+        + " - Use directory= to specify a directory containing integrated data,\n"
+        + "   or both reflections= and experiments= to specify integrated/scaled data files.\n"
+        + " - Use steps=merge to remerge already scaled data\n"
+    )
 
     def __init__(
         self,
         main_directory: Path,
-        integrated_data: List[FilePair],
-        processed_directories: List[Path],
+        data: List[FilePair],
         reduction_params,
     ):
-        self._integrated_data: List[FilePair] = integrated_data
+
         self._main_directory: Path = main_directory
         self._reduction_params: ReductionParams = reduction_params
 
@@ -161,24 +127,26 @@ class BaseDataReduction(object):
         self._scale_wd = self._data_reduction_wd / "scale"
         self._merge_wd = self._data_reduction_wd / "merge"
 
+        self._integrated_data: List[FilePair] = []
         self._filtered_files_to_process: List[FilePair] = []
         self._files_to_scale: List[FilePair] = []
         self._files_to_merge: List[FilePair] = []
 
-        # load any previously scaled data
-        self._previously_scaled_data = []
-        if processed_directories:
-            self._previously_scaled_data = inspect_scaled_directories(
-                processed_directories, reduction_params
-            )
-
-        if not (self._integrated_data or self._previously_scaled_data):
+        if not data:
             raise ValueError(self._no_input_error_msg)
 
+        # set up the directory structures
         if not Path.is_dir(self._data_reduction_wd):
             Path.mkdir(self._data_reduction_wd)
-        if not Path(self._scale_wd).is_dir():
-            Path.mkdir(self._scale_wd)
+
+        if "scale" in self._reduction_params.steps:
+            self._integrated_data.extend(data)
+            if not Path(self._scale_wd).is_dir():
+                Path.mkdir(self._scale_wd)
+        else:
+            # just merge
+            self._files_to_merge.extend(data)
+
         if not Path(self._merge_wd).is_dir():
             Path.mkdir(self._merge_wd)
 
@@ -186,7 +154,7 @@ class BaseDataReduction(object):
         if self._reduction_params.grouping or self._reduction_params.dose_series_repeat:
             if self._reduction_params.dose_series_repeat:
                 expts = []
-                for fp in self._integrated_data + self._previously_scaled_data:
+                for fp in self._integrated_data + self._files_to_merge:
                     expts.append(load.experiment_list(fp.expt, check_format=False))
                 try:
                     self._parsed_grouping = dose_series_repeat_to_groupings(
@@ -215,16 +183,10 @@ class BaseDataReduction(object):
         cls,
         main_directory: Path,
         directories_to_process: List[Path],
-        processed_directories: List[Path],
         reduction_params,
     ):
         new_data = inspect_directories(directories_to_process)
-        return cls(
-            main_directory,
-            new_data,
-            processed_directories,
-            reduction_params,
-        )
+        return cls(main_directory, new_data, reduction_params)
 
     @classmethod
     def from_files(
@@ -232,7 +194,6 @@ class BaseDataReduction(object):
         main_directory: Path,
         reflection_files: List[Path],
         experiment_files: List[Path],
-        processed_directories: List[Path],
         reduction_params,
     ):
         # load and check all integrated files
@@ -240,26 +201,13 @@ class BaseDataReduction(object):
             new_data = inspect_files(reflection_files, experiment_files)
         except FileNotFoundError as e:
             raise ValueError(e)
-        return cls(
-            main_directory,
-            new_data,
-            processed_directories,
-            reduction_params,
-        )
-
-    @classmethod
-    def from_processed_only(
-        cls,
-        main_directory: Path,
-        processed_directories: List[Path],
-        reduction_params,
-    ):
-        return cls(main_directory, [], processed_directories, reduction_params)
+        return cls(main_directory, new_data, reduction_params)
 
     def run(self) -> None:
 
         if not self._integrated_data:
-            self._run_only_previously_scaled()
+            xia2_logger.notice(banner("Merging"))  # type: ignore
+            self._merge()
             return
 
         # first filter the data based on unit cells.
@@ -277,7 +225,7 @@ class BaseDataReduction(object):
         )
 
         if sym_requires_reindex:
-            # split good crystals based on resolve_by + batchsize
+            # split good crystals based on batchsize
             xia2_logger.notice(banner("Reindexing"))  # type: ignore
             self._split_data_for_reindex(good_crystals_data)
             self._reindex()
@@ -286,7 +234,6 @@ class BaseDataReduction(object):
 
         xia2_logger.notice(banner("Scaling"))  # type: ignore
         self._scale()
-        self._prepare_for_merging()
         xia2_logger.notice(banner("Merging"))  # type: ignore
         self._merge()
 
@@ -299,9 +246,6 @@ class BaseDataReduction(object):
             self._reduction_params,
         )
 
-    def _run_only_previously_scaled(self):
-        raise NotImplementedError
-
     def _filter(self) -> Tuple[CrystalsDict, uctbx.unit_cell, sgtbx.space_group_info]:
         return filter_(self._filter_wd, self._integrated_data, self._reduction_params)
 
@@ -309,16 +253,15 @@ class BaseDataReduction(object):
         raise NotImplementedError
 
     def _prepare_for_scaling(self, good_crystals_data) -> None:
-        "Inspect filtered files and organise for scaling."
-        raise NotImplementedError
+        self._files_to_scale = split_integrated_data(
+            self._filter_wd,
+            good_crystals_data,
+            self._integrated_data,
+            self._reduction_params,
+        )
 
     def _scale(self) -> None:
         raise NotImplementedError
-
-    def _prepare_for_merging(self):
-        # Chance to do something specific between having scaled results and merging
-        # e.g. to add in previously scaled data in reduction with a reference
-        pass
 
     def _merge(self) -> None:
         scaled_results = self._files_to_merge
@@ -338,18 +281,39 @@ class BaseDataReduction(object):
             f"{n_final} crystals in total scaled in space group {self._reduction_params.space_group}\nMedian cell: {uc_str}"
         )
         merge_input = {}
+        merge_wds = {}
         if self._parsed_grouping:
             if "merge_by" in self._parsed_grouping._groupings:
                 groups_for_merge, metadata_groups = yml_to_merged_filesdict(
-                    self._scale_wd,
+                    self._merge_wd,
                     self._parsed_grouping,
                     scaled_results,
                     self._reduction_params,
                     grouping="merge_by",
                 )
+                if self._reduction_params.dose_series_repeat:
+                    # Not essential, but nicer to be named dose rather than generic 'group'
+                    for name in list(groups_for_merge.keys()):
+                        groups_for_merge[
+                            name.replace("group", "dose")
+                        ] = groups_for_merge.pop(name)
+
+                # move the data into subdirs
+                for g, flist in groups_for_merge.items():
+                    if flist:
+                        if not Path(self._merge_wd / g).is_dir():
+                            Path.mkdir(self._merge_wd / g)
+                        for f in flist:
+                            new_expt = f.expt.parent / g / f.expt.name
+                            new_refl = f.refl.parent / g / f.refl.name
+                            f.expt.rename(new_expt)
+                            f.refl.rename(new_refl)
+                            f.expt = new_expt
+                            f.refl = new_refl
                 for g, flist in groups_for_merge.items():
                     if flist:
                         merge_input[f"{g}"] = flist
+                        merge_wds[f"{g}"] = flist[0].expt.parent
                 n_groups = len(groups_for_merge)
                 if n_groups == 1:
                     xia2_logger.info(
@@ -372,13 +336,15 @@ class BaseDataReduction(object):
                     )
 
         if not merge_input:  # i.e. no "merge_by" in parsed_grouping
+            merge_wds = {"merged": self._data_reduction_wd / "merge" / "all"}
+            if not Path(merge_wds["merged"]).is_dir():
+                Path.mkdir(merge_wds["merged"])
+            # NB at this point, data could be already grouped and filtered or still scaled output
             merge_input = apply_scaled_array_to_all_files(
-                self._scale_wd, scaled_results, self._reduction_params
+                merge_wds["merged"], scaled_results, self._reduction_params
             )
-        if self._reduction_params.dose_series_repeat:
-            for name in list(merge_input.keys()):
-                merge_input[name.replace("group", "dose")] = merge_input.pop(name)
         name_to_expts_arr: dict[str, Tuple] = {name: () for name in merge_input.keys()}
+
         futures = {}
         with concurrent.futures.ProcessPoolExecutor(
             max_workers=self._reduction_params.nproc
@@ -402,7 +368,7 @@ class BaseDataReduction(object):
                 future_list.append(
                     pool.submit(
                         merge,
-                        self._merge_wd,
+                        merge_wds[name],
                         scaled_array,
                         elist,
                         self._reduction_params.d_min,

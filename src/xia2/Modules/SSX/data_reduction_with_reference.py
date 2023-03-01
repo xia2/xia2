@@ -10,7 +10,6 @@ from cctbx import sgtbx, uctbx
 
 from xia2.Driver.timing import record_step
 from xia2.Handlers.Files import FileHandler
-from xia2.Handlers.Streams import banner
 from xia2.Modules.SSX.data_reduction_base import BaseDataReduction
 from xia2.Modules.SSX.data_reduction_programs import (
     CrystalsDict,
@@ -18,7 +17,6 @@ from xia2.Modules.SSX.data_reduction_programs import (
     filter_,
     parallel_cosym_reference,
     scale_against_reference,
-    split_integrated_data,
 )
 
 xia2_logger = logging.getLogger(__name__)
@@ -27,27 +25,7 @@ xia2_logger = logging.getLogger(__name__)
 class DataReductionWithReference(BaseDataReduction):
 
     ### This implementation uses the reference model when reindexing and scaling,
-    ### allowing parallel processing in batches. If there is any previously scaled
-    ### data, this is just added in at the end at the point of merging.
-
-    _no_input_error_msg = (
-        "No input integrated data, or previously processed scale directories\n"
-        + "have been found in the input. Please provide at least some integrated data or\n"
-        + "a directory of data previously scaled with xia2.ssx/xia2.ssx_reduce\n"
-        + " - Use directory= to specify a directory containing integrated data,\n"
-        + "   or both reflections= and experiments= to specify integrated data files.\n"
-        + " - Use processed_directory= to specify /data_reduction/scale directories of\n"
-        + "   data previously processed with the same PDB model/data file as reference."
-    )
-
-    def _run_only_previously_scaled(self):
-
-        if not Path.is_dir(self._merge_wd):
-            Path.mkdir(self._merge_wd)
-
-        self._files_to_merge = self._previously_scaled_data
-        xia2_logger.notice(banner("Merging"))
-        self._merge()
+    ### allowing parallel processing in batches.
 
     def _filter(self) -> Tuple[CrystalsDict, uctbx.unit_cell, sgtbx.space_group_info]:
         good_crystals_data, best_unit_cell, space_group = filter_(
@@ -56,15 +34,6 @@ class DataReductionWithReference(BaseDataReduction):
         self._reduction_params.central_unit_cell = best_unit_cell  # store the
         # updated value to use in scaling
         return good_crystals_data, best_unit_cell, space_group
-
-    def _prepare_for_scaling(self, good_crystals_data) -> None:
-
-        self._files_to_scale = split_integrated_data(
-            self._filter_wd,
-            good_crystals_data,
-            self._integrated_data,
-            self._reduction_params,
-        )
 
     def _reindex(self) -> None:
         self._files_to_scale = parallel_cosym_reference(
@@ -124,8 +93,3 @@ class DataReductionWithReference(BaseDataReduction):
         if not scaled_results:
             raise ValueError("No groups successfully scaled")
         self._files_to_merge = scaled_results
-
-    def _prepare_for_merging(self):
-
-        if self._previously_scaled_data:
-            self._files_to_merge += self._previously_scaled_data

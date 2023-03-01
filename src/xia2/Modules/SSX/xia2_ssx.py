@@ -308,9 +308,10 @@ def run_xia2_ssx(
     # Now do the data reduction
     if not params.symmetry.space_group:
         params.symmetry.space_group = params.space_group
+    params.workflow.steps = ["scale", "merge"]
     reduction_params = ReductionParams.from_phil(params)
     reducer_class = get_reducer(reduction_params)
     reducer = reducer_class.from_directories(
-        root_working_directory, integrated_batch_directories, [], reduction_params
+        root_working_directory, integrated_batch_directories, reduction_params
     )
     reducer.run()

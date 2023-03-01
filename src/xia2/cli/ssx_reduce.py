@@ -75,9 +75,9 @@ def run(args=sys.argv[1:]):
         with cleanup(cwd):
             FileHandler.record_log_file("xia2.ssx_reduce", cwd / "xia2.ssx_reduce.log")
             run_xia2_ssx_reduce(cwd, params)
-    #except ValueError as e:
-    #    xia2_logger.info(f"Error: {e}")
-    #    sys.exit(0)
+    except ValueError as e:
+        xia2_logger.info(f"Error: {e}")
+        sys.exit(0)
     except Exception as e:
         with (cwd / "xia2-error.txt").open(mode="w") as fh:
             traceback.print_exc(file=fh)

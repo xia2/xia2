@@ -31,8 +31,15 @@ input {
   processed_directory = None
     .type = str
     .multiple = True
-    .help = "Path to previously reduced data"
+    .help = "DEPRECATED, please use steps=merge to just merge data"
     .expert_level = 1
+}
+workflow {
+  steps = *scale *merge
+    .help = "Option to control either full reduction (steps=scale+merge) or just"
+            "merging already scaled data (steps=merge)."
+    .type=choice(multi=True)
+     .expert_level=2
 }
 grouping = None
   .type = str
@@ -149,10 +156,6 @@ def run_xia2_ssx_reduce(
 
     reduction_params = ReductionParams.from_phil(params)
     reducer_class = get_reducer(reduction_params)
-    processed_directories = []
-    if params.input.processed_directory:
-        for d in params.input.processed_directory:
-            processed_directories.append(Path(d).resolve())
 
     if params.input.directory:
         if params.input.reflections or params.input.experiments:
@@ -164,7 +167,6 @@ def run_xia2_ssx_reduce(
         reducer = reducer_class.from_directories(
             root_working_directory,
             directories,
-            processed_directories,
             reduction_params,
         )
     elif params.input.reflections or params.input.experiments:
@@ -176,12 +178,7 @@ def run_xia2_ssx_reduce(
             root_working_directory,
             reflections,
             experiments,
-            processed_directories,
             reduction_params,
-        )
-    elif processed_directories:
-        reducer = reducer_class.from_processed_only(
-            root_working_directory, processed_directories, reduction_params
         )
     else:
         raise ValueError(reducer_class._no_input_error_msg)
