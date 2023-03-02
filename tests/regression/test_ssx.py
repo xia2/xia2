@@ -315,9 +315,9 @@ def check_data_reduction_files(tmp_path, reindex=True, reference=False):
     assert (tmp_path / "LogFiles" / "dials.merge.log").is_file()
     assert (tmp_path / "LogFiles" / "dials.merge.json").is_file()
     if reference:
-        assert (tmp_path / "DataFiles" / "scalebatch_1.refl").is_file()
-        assert (tmp_path / "DataFiles" / "scalebatch_1.expt").is_file()
-        assert (tmp_path / "LogFiles" / "dials.scale.scalebatch_1.log").is_file()
+        assert (tmp_path / "DataFiles" / "scaled_batch1.refl").is_file()
+        assert (tmp_path / "DataFiles" / "scaled_batch1.expt").is_file()
+        assert (tmp_path / "LogFiles" / "dials.scale.scaled_batch1.log").is_file()
     else:
         assert (tmp_path / "DataFiles" / "scaled.refl").is_file()
         assert (tmp_path / "DataFiles" / "scaled.expt").is_file()
@@ -519,6 +519,32 @@ grouping:
         file_name=os.fspath(tmp_path / "DataFiles" / f"{output_names[1]}.mtz")
     )
     assert abs(g2_mtz.n_reflections() - 468) < 10
+    assert not (tmp_path / "DataFiles" / "merged.mtz").is_file()
+
+    # now rerun with a res limit on one group. Should be able to just process straight from
+    # the group files for fast merging.
+    args = ["xia2.ssx_reduce", "d_min=3.0", "steps=merge"]
+    if use_grouping:
+        args += list(
+            (tmp_path / "data_reduction" / "merge" / "group_1").glob("group*.expt")
+        )
+        args += list(
+            (tmp_path / "data_reduction" / "merge" / "group_1").glob("group*.refl")
+        )
+    else:
+        args += list(
+            (tmp_path / "data_reduction" / "merge" / "dose_1").glob("group*.expt")
+        )
+        args += list(
+            (tmp_path / "data_reduction" / "merge" / "dose_1").glob("group*.refl")
+        )
+
+    result = subprocess.run(args, cwd=tmp_path, capture_output=True)
+    assert not result.returncode
+    assert not result.stderr.decode()
+    assert (tmp_path / "DataFiles" / "merged.mtz").is_file()
+    merged_mtz = mtz.object(file_name=os.fspath(tmp_path / "DataFiles" / "merged.mtz"))
+    assert abs(merged_mtz.n_reflections() - 341) < 10  # expect 341 from d_min=3.0
 
 
 @pytest.mark.parametrize(

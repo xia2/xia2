@@ -273,6 +273,7 @@ class BaseDataReduction(object):
                 unit_cell = c.get_recalculated_unit_cell() or c.get_unit_cell()
                 for i, p in enumerate(unit_cell.parameters()):
                     uc_params[i].append(p)
+        self._reduction_params.space_group = c.get_space_group().info()
         best_unit_cell = uctbx.unit_cell(parameters=[flex.median(p) for p in uc_params])
         self._reduction_params.central_unit_cell = best_unit_cell
         n_final = len(uc_params[0])

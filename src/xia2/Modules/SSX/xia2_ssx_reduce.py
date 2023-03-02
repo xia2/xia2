@@ -157,6 +157,12 @@ def run_xia2_ssx_reduce(
     reduction_params = ReductionParams.from_phil(params)
     reducer_class = get_reducer(reduction_params)
 
+    if params.input.processed_directory:
+        xia2_logger.warning(
+            "The option processed_directory= is deprecated\n"
+            "Instead, to just merge data, specify the reflections and\n"
+            "experiments files and use the option steps=merge.\n"
+        )
     if params.input.directory:
         if params.input.reflections or params.input.experiments:
             xia2_logger.warning(

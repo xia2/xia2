@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import logging
+import shutil
 from pathlib import Path
 from typing import List, Optional, Tuple
 
@@ -74,14 +75,30 @@ grouping:
 def save_scaled_array_for_merge(
     input_: SplittingIterable,
 ) -> Optional[Tuple[str, FilePair]]:
-    expts = load.experiment_list(input_.fp.expt, check_format=False)
     refls = flex.reflection_table.from_file(input_.fp.refl)
     if not any(refls.get_flags(refls.flags.scaled)):
         raise ValueError("Unscaled data input for merging")
-    if list(refls.keys()) == ["intensity", "miller_index", "sigma"]:
-        return (input_.name, input_.fp)
+    # check if the input file is a pre-merge file from a previous grouped processing job
+    if set(refls.keys()) == {"intensity", "miller_index", "sigma", "flags", "d"}:
+        # One use case is rerunning with a d_min cutoff.
+        if input_.params.d_min:
+            refls = refls.select(refls["d"] >= input_.params.d_min)
+            reflout = (
+                input_.working_directory
+                / f"group_{input_.groupindex}_{input_.fileindex}.refl"
+            )
+            exptout = (
+                input_.working_directory
+                / f"group_{input_.groupindex}_{input_.fileindex}.expt"
+            )
+            shutil.copyfile(input_.fp.expt, exptout)
+            refls.as_file(reflout)
+            return (input_.name, FilePair(exptout, reflout))
+        else:
+            return (input_.name, input_.fp)
     trim_table_for_merge(refls)
     groupdata = input_.groupdata
+    expts = load.experiment_list(input_.fp.expt, check_format=False)
     if (groupdata.single_group is not None) and (
         groupdata.single_group == input_.groupindex
     ):
@@ -107,6 +124,8 @@ def save_scaled_array_for_merge(
         tmp["miller_index"] = refls["miller_index"]
         tmp["intensity"] = refls["intensity.scale.value"]
         tmp["sigma"] = flex.sqrt(refls["intensity.scale.variance"])
+        tmp["flags"] = refls["flags"]
+        tmp["d"] = refls["d"]
         tmp = tmp.select(refls["inverse_scale_factor"] > 0)
         exptout = (
             input_.working_directory

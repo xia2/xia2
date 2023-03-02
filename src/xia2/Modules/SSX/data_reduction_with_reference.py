@@ -52,7 +52,7 @@ class DataReductionWithReference(BaseDataReduction):
         scaled_results = []
 
         batch_template = functools.partial(
-            "scalebatch_{index:0{maxindexlength:d}d}".format,
+            "scaled_batch{index:0{maxindexlength:d}d}".format,
             maxindexlength=len(str(len(self._files_to_scale))),
         )
         jobs = {
