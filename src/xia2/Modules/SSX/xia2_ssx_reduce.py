@@ -31,9 +31,19 @@ input {
   processed_directory = None
     .type = str
     .multiple = True
-    .help = "Path to previously reduced data"
+    .help = "DEPRECATED, please use steps=merge to just merge data"
     .expert_level = 1
 }
+workflow {
+  steps = *scale *merge
+    .help = "Option to control either full reduction (steps=scale+merge) or just"
+            "merging already scaled data (steps=merge)."
+    .type=choice(multi=True)
+     .expert_level=2
+}
+grouping = None
+  .type = str
+  .help = "Path to a .yml file defining grouping structure during processing"
 multiprocessing.nproc = Auto
   .type = int
   .expert_level = 1
@@ -44,6 +54,14 @@ batch_size = None
 d_min = None
   .type = float
   .expert_level = 1
+dose_series_repeat = None
+  .type = int(value_min=2)
+  .expert_level = 2
+  .help = "This option allows the user to specify that the data is a dose series"
+          "by providing the number of repeated measurements at each point. i.e. it"
+          "is assumed that $dose_series_repeat measurements are taken on each crystal"
+          "and that these form consecutive images in the input image files. Each dose"
+          "point will be merged separately"
 """
 
 data_reduction_phil_str = """
@@ -138,11 +156,13 @@ def run_xia2_ssx_reduce(
 
     reduction_params = ReductionParams.from_phil(params)
     reducer_class = get_reducer(reduction_params)
-    processed_directories = []
-    if params.input.processed_directory:
-        for d in params.input.processed_directory:
-            processed_directories.append(Path(d).resolve())
 
+    if params.input.processed_directory:
+        xia2_logger.warning(
+            "The option processed_directory= is deprecated\n"
+            "Instead, to just merge data, specify the reflections and\n"
+            "experiments files and use the option steps=merge.\n"
+        )
     if params.input.directory:
         if params.input.reflections or params.input.experiments:
             xia2_logger.warning(
@@ -153,7 +173,6 @@ def run_xia2_ssx_reduce(
         reducer = reducer_class.from_directories(
             root_working_directory,
             directories,
-            processed_directories,
             reduction_params,
         )
     elif params.input.reflections or params.input.experiments:
@@ -165,12 +184,7 @@ def run_xia2_ssx_reduce(
             root_working_directory,
             reflections,
             experiments,
-            processed_directories,
             reduction_params,
-        )
-    elif processed_directories:
-        reducer = reducer_class.from_processed_only(
-            root_working_directory, processed_directories, reduction_params
         )
     else:
         raise ValueError(reducer_class._no_input_error_msg)

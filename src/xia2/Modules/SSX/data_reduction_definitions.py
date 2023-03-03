@@ -1,8 +1,8 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Dict, Optional
+from typing import List, Optional
 
 import iotbx.phil
 from cctbx import sgtbx, uctbx
@@ -32,10 +32,6 @@ class FilePair:
         return False
 
 
-FilesDict = Dict[int, FilePair]
-# FilesDict: A dict where the keys are an index, corresponding to a filepair
-
-
 @dataclass
 class ReductionParams:
     space_group: sgtbx.space_group
@@ -51,6 +47,9 @@ class ReductionParams:
     reference: Optional[Path] = None
     cosym_phil: Optional[Path] = None
     scaling_phil: Optional[Path] = None
+    grouping: Optional[Path] = None
+    dose_series_repeat: Optional[int] = None
+    steps: List[str] = field(default_factory=lambda: ["scale", "merge"])
 
     @classmethod
     def from_phil(cls, params: iotbx.phil.scope_extract):
@@ -58,6 +57,7 @@ class ReductionParams:
         reference = None
         cosym_phil = None
         scaling_phil = None
+        grouping = None
         if params.reference:
             reference = Path(params.reference).resolve()
         elif params.scaling.model:
@@ -70,6 +70,8 @@ class ReductionParams:
             cosym_phil = Path(params.symmetry.phil).resolve()
         if params.scaling.phil:
             scaling_phil = Path(params.scaling.phil).resolve()
+        if params.grouping:
+            grouping = Path(params.grouping).resolve()
         return cls(
             params.symmetry.space_group,
             params.reduction_batch_size,
@@ -84,4 +86,7 @@ class ReductionParams:
             reference,
             cosym_phil,
             scaling_phil,
+            grouping,
+            params.dose_series_repeat,
+            params.workflow.steps,
         )

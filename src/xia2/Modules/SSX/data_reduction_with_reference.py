@@ -1,222 +1,95 @@
 from __future__ import annotations
 
 import concurrent.futures
+import functools
 import logging
 from pathlib import Path
 from typing import Any, Dict, Tuple
 
 from cctbx import sgtbx, uctbx
-from dials.algorithms.scaling.scaling_library import determine_best_unit_cell
-from dials.array_family import flex
-from dxtbx.model import ExperimentList
-from dxtbx.serialize import load
 
 from xia2.Driver.timing import record_step
 from xia2.Handlers.Files import FileHandler
-from xia2.Modules.SSX.data_reduction_base import BaseDataReduction, FilesDict
+from xia2.Modules.SSX.data_reduction_base import BaseDataReduction
 from xia2.Modules.SSX.data_reduction_programs import (
+    CrystalsDict,
+    FilePair,
     filter_,
-    merge,
     parallel_cosym_reference,
     scale_against_reference,
 )
-from xia2.Modules.SSX.reporting import statistics_output_from_scaled_files
 
 xia2_logger = logging.getLogger(__name__)
-
-scaled_cols_to_keep = [
-    "miller_index",
-    "inverse_scale_factor",
-    "intensity.scale.value",
-    "intensity.scale.variance",
-    "flags",
-    "id",
-    "partiality",
-    "partial_id",
-    "d",
-    "qe",
-    "dqe",
-    "lp",
-]
-
-
-def _wrap_extend_expts(first_elist, second_elist):
-    try:
-        first_elist.extend(second_elist)
-    except RuntimeError as e:
-        raise ValueError(
-            "Unable to combine experiments, check for datafiles containing duplicate experiments.\n"
-            + f"  Specific error message encountered:\n  {e}"
-        )
 
 
 class DataReductionWithReference(BaseDataReduction):
 
-    _no_input_error_msg = (
-        "No input integrated data, or previously processed scale directories\n"
-        + "have been found in the input. Please provide at least some integrated data or\n"
-        + "a directory of data previously scaled with xia2.ssx/xia2.ssx_reduce\n"
-        + " - Use directory= to specify a directory containing integrated data,\n"
-        + "   or both reflections= and experiments= to specify integrated data files.\n"
-        + " - Use processed_directory= to specify /data_reduction/scale directories of\n"
-        + "   data previously processed with the same PDB model/data file as reference."
-    )
+    ### This implementation uses the reference model when reindexing and scaling,
+    ### allowing parallel processing in batches.
 
-    def _combine_previously_scaled(self):
-        scaled_expts = ExperimentList([])
-        scaled_tables = []
-        for file_pair in self._previously_scaled_data:
-            prev_expts = load.experiment_list(file_pair.expt, check_format=False)
-            _wrap_extend_expts(scaled_expts, prev_expts)
-            table = flex.reflection_table.from_file(file_pair.refl)
-            for k in list(table.keys()):
-                if k not in scaled_cols_to_keep:
-                    del table[k]
-            scaled_tables.append(table)
-        return scaled_expts, scaled_tables
-
-    def _run_only_previously_scaled(self):
-
-        if not Path.is_dir(self._scale_wd):
-            Path.mkdir(self._scale_wd)
-
-        scaled_expts, scaled_tables = self._combine_previously_scaled()
-        scaled_table = flex.reflection_table.concat(scaled_tables)
-        n_final = len(scaled_expts)
-        uc = determine_best_unit_cell(scaled_expts)
-        uc_str = ", ".join(str(round(i, 3)) for i in uc.parameters())
-        xia2_logger.info(
-            f"{n_final} crystals scaled in space group {scaled_expts[0].crystal.get_space_group().info()}\nMedian cell: {uc_str}"
-        )
-        xia2_logger.info("Summary statistics for combined previously scaled data")
-        stats_summary, _ = statistics_output_from_scaled_files(
-            scaled_expts, scaled_table, uc, self._reduction_params.d_min
-        )
-        xia2_logger.info(stats_summary)
-
-        merge(
-            self._scale_wd,
-            scaled_expts,
-            scaled_table,
-            self._reduction_params.d_min,
-            uc,
-        )
-
-    def _filter(self) -> Tuple[FilesDict, uctbx.unit_cell, sgtbx.space_group_info]:
-        new_files_to_process, best_unit_cell, space_group = filter_(
+    def _filter(self) -> Tuple[CrystalsDict, uctbx.unit_cell, sgtbx.space_group_info]:
+        good_crystals_data, best_unit_cell, space_group = filter_(
             self._filter_wd, self._integrated_data, self._reduction_params
         )
         self._reduction_params.central_unit_cell = best_unit_cell  # store the
         # updated value to use in scaling
-        return new_files_to_process, best_unit_cell, space_group
-
-    def _prepare_for_scaling(self) -> None:
-        self._files_to_scale = list(self._filtered_files_to_process.values())
+        return good_crystals_data, best_unit_cell, space_group
 
     def _reindex(self) -> None:
-        # ideally - reindex each dataset against target
-        # on each batch - reindex internally to be consistent
-        # then reindex against reference.
-        self._files_to_scale = list(
-            parallel_cosym_reference(
-                self._reindex_wd,
-                self._filtered_files_to_process,
-                self._reduction_params,
-                nproc=self._reduction_params.nproc,
-            ).values()
+        self._files_to_scale = parallel_cosym_reference(
+            self._reindex_wd,
+            self._filtered_files_to_process,
+            self._reduction_params,
+            nproc=self._reduction_params.nproc,
         )
 
-    def _scale_and_merge(self) -> None:
-        """Run scaling and merging"""
+    def _scale(self) -> None:
+        """Run scaling"""
 
         if not Path.is_dir(self._scale_wd):
             Path.mkdir(self._scale_wd)
 
-        scaled_results: FilesDict = {}
+        scaled_results = []
+
+        batch_template = functools.partial(
+            "scaled_batch{index:0{maxindexlength:d}d}".format,
+            maxindexlength=len(str(len(self._files_to_scale))),
+        )
+        jobs = {
+            f"{batch_template(index=i+1)}": fp
+            for i, fp in enumerate(self._files_to_scale)
+        }
+
         with record_step(
             "dials.scale (parallel)"
         ), concurrent.futures.ProcessPoolExecutor(
             max_workers=self._reduction_params.nproc
         ) as pool:
-            scale_futures: Dict[Any, int] = {
+            scale_futures: Dict[Any, str] = {
                 pool.submit(
                     scale_against_reference,
                     self._scale_wd,
                     files,
-                    index,
                     self._reduction_params,
-                ): index
-                for index, files in enumerate(self._files_to_scale)  # .items()
+                    name,
+                ): name
+                for name, files in jobs.items()  # .items()
             }
             for future in concurrent.futures.as_completed(scale_futures):
                 try:
                     result = future.result()
-                    i = scale_futures[future]
+                    name = scale_futures[future]
                 except Exception as e:
                     xia2_logger.warning(f"Unsuccessful scaling of group. Error:\n{e}")
                 else:
-                    xia2_logger.info(f"Completed scaling of group {i+1}")
-                    scaled_results.update(result)
-                    FileHandler.record_data_file(result[i].expt)
-                    FileHandler.record_data_file(result[i].refl)
+                    xia2_logger.info(f"Completed scaling of {name}")
+                    scaled_results.append(FilePair(result.exptfile, result.reflfile))
+                    FileHandler.record_data_file(result.exptfile)
+                    FileHandler.record_data_file(result.reflfile)
                     FileHandler.record_log_file(
-                        f"dials.scale.{i}", self._scale_wd / f"dials.scale.{i}.log"
+                        result.logfile.name.rstrip(".log"), result.logfile
                     )
 
         if not scaled_results:
             raise ValueError("No groups successfully scaled")
-
-        with record_step("joining for merge"):
-            scaled_expts = ExperimentList([])
-            scaled_tables = []
-            # For merging (a simple program), we don't require much data in the
-            # reflection table. So to avoid a large memory spike, just keep the
-            # values we know we need for merging and to report statistics
-            # first 6 in keep are required in merge, the rest will potentially
-            #  be used for filter_reflections call in merge
-            for file_pair in scaled_results.values():
-                expts = load.experiment_list(file_pair.expt, check_format=False)
-                _wrap_extend_expts(scaled_expts, expts)
-                table = flex.reflection_table.from_file(file_pair.refl)
-                for k in list(table.keys()):
-                    if k not in scaled_cols_to_keep:
-                        del table[k]
-                scaled_tables.append(table)
-
-            # now add any extra data previously scaled
-            if self._previously_scaled_data:
-                (
-                    prev_scaled_expts,
-                    prev_scaled_tables,
-                ) = self._combine_previously_scaled()
-                _wrap_extend_expts(scaled_expts, prev_scaled_expts)
-                scaled_table = flex.reflection_table.concat(
-                    scaled_tables + prev_scaled_tables
-                )
-            else:
-                scaled_table = flex.reflection_table.concat(scaled_tables)
-
-            n_final = len(scaled_expts)
-            uc = determine_best_unit_cell(scaled_expts)
-            self._reduction_params.central_unit_cell = uc
-            uc_str = ", ".join(str(round(i, 3)) for i in uc.parameters())
-            xia2_logger.info(
-                f"{n_final} crystals scaled in space group {scaled_expts[0].crystal.get_space_group().info()}\nMedian cell: {uc_str}"
-            )
-            if self._previously_scaled_data:
-                xia2_logger.info(
-                    "Summary statistics for all input data, including previously scaled"
-                )
-            stats_summary, _ = statistics_output_from_scaled_files(
-                scaled_expts, scaled_table, uc, self._reduction_params.d_min
-            )
-            xia2_logger.info(stats_summary)
-
-        with record_step("merging"):
-            merge(
-                self._scale_wd,
-                scaled_expts,
-                scaled_table,
-                self._reduction_params.d_min,
-                uc,
-            )
+        self._files_to_merge = scaled_results
