@@ -430,6 +430,8 @@ def cumulative_assess_crystal_parameters(
             cluster_plots, large_clusters = clusters_from_experiments(all_expts)
             if large_clusters:
                 xia2_logger.info(f"{condensed_unit_cell_info(large_clusters)}")
+    if all_expts:
+        all_expts.as_file("indexed_all.expt")
 
     if cluster_plots:
         generate_html_report(
@@ -457,7 +459,7 @@ def _report_on_assess_crystals(
             )
         else:
             xia2_logger.info(
-                "Some imaged indexed, but no significant unit cell clusters found.\n"
+                "Some images indexed, but no significant unit cell clusters found.\n"
                 + "Please try adjusting indexing parameters or try crystal assessment on different images"
             )
     else:
