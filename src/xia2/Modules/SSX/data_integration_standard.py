@@ -14,6 +14,7 @@ import numpy as np
 
 import libtbx.easy_mp
 from dials.algorithms.clustering.unit_cell import Cluster
+from dials.algorithms.indexing import DialsIndexError
 from dials.algorithms.indexing.ssx.analysis import generate_html_report
 from dials.array_family import flex
 from dials.util.image_grouping import ParsedYAML
@@ -423,20 +424,24 @@ def cumulative_assess_crystal_parameters(
             break
         strong = ssx_find_spots(working_directory, spotfinding_params)
         strong.as_file(working_directory / "strong.refl")
-        expts, _, summary_this = ssx_index(working_directory, indexing_params)
-        n_xtal += len(expts)
-        xia2_logger.info(f"Indexed {n_xtal} crystals in total")
-        all_expts.extend(expts)
-        first_image += options.batch_size
-        success_per_image.extend(summary_this["success_per_image"])
+        try:
+            expts, _, summary_this = ssx_index(working_directory, indexing_params)
+        except DialsIndexError as e:
+            xia2_logger.info(e)
+        else:
+            n_xtal += len(expts)
+            xia2_logger.info(f"Indexed {n_xtal} crystals in total")
+            all_expts.extend(expts)
+            first_image += options.batch_size
+            success_per_image.extend(summary_this["success_per_image"])
 
-        if all_expts:
-            # generate up-to-date cluster plots and lists
-            cluster_plots, large_clusters = clusters_from_experiments(
-                all_expts, threshold="auto"
-            )
-            if large_clusters:
-                xia2_logger.info(f"{condensed_unit_cell_info(large_clusters)}")
+            if all_expts:
+                # generate up-to-date cluster plots and lists
+                cluster_plots, large_clusters = clusters_from_experiments(
+                    all_expts, threshold="auto"
+                )
+                if large_clusters:
+                    xia2_logger.info(f"{condensed_unit_cell_info(large_clusters)}")
     if all_expts:
         all_expts.as_file(working_directory / "indexed_all.expt")
 
