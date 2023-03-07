@@ -580,5 +580,5 @@ def best_cell_from_cluster(cluster: Cluster) -> Tuple:
         0
     ]
     uc_params_conv = group["best_subsym"].unit_cell().parameters()
-    sg = group["best_subsym"].space_group_info().symbol_and_number()
+    sg = group["best_subsym"].space_group_info().type().lookup_symbol()
     return sg, uc_params_conv

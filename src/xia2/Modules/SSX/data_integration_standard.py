@@ -29,7 +29,6 @@ from xia2.Modules.SSX.data_integration_programs import (
     IntegrationParams,
     RefinementParams,
     SpotfindingParams,
-    best_cell_from_cluster,
     clusters_from_experiments,
     combine_with_reference,
     run_refinement,
@@ -37,7 +36,10 @@ from xia2.Modules.SSX.data_integration_programs import (
     ssx_index,
     ssx_integrate,
 )
-from xia2.Modules.SSX.reporting import condensed_unit_cell_info
+from xia2.Modules.SSX.reporting import (
+    condensed_metric_unit_cell_info,
+    condensed_unit_cell_info,
+)
 from xia2.Modules.SSX.util import redirect_xia2_logger
 
 xia2_logger = logging.getLogger(__name__)
@@ -381,6 +383,7 @@ def assess_crystal_parameters_from_images(
         cluster_plots, large_clusters = clusters_from_experiments(expts)
         if large_clusters:
             xia2_logger.info(f"{condensed_unit_cell_info(large_clusters)}")
+        expts.as_file(working_directory / "indexed_all.expt")
 
     if cluster_plots:
         generate_html_report(
@@ -431,7 +434,7 @@ def cumulative_assess_crystal_parameters(
             if large_clusters:
                 xia2_logger.info(f"{condensed_unit_cell_info(large_clusters)}")
     if all_expts:
-        all_expts.as_file("indexed_all.expt")
+        all_expts.as_file(working_directory / "indexed_all.expt")
 
     if cluster_plots:
         generate_html_report(
@@ -450,13 +453,7 @@ def _report_on_assess_crystals(
 
     if experiments:
         if large_clusters:
-            sg, uc = best_cell_from_cluster(large_clusters[0])
-            xia2_logger.info(
-                "Properties of largest cluster:\n"
-                "Highest possible metric unit cell: "
-                + ", ".join(f"{i:.3f}" for i in uc)
-                + f"\nHighest possible metric symmetry: {sg}"
-            )
+            xia2_logger.info(condensed_metric_unit_cell_info(large_clusters))
         else:
             xia2_logger.info(
                 "Some images indexed, but no significant unit cell clusters found.\n"
