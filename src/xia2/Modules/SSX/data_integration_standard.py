@@ -380,7 +380,9 @@ def assess_crystal_parameters_from_images(
     success_per_image = summary["success_per_image"]
 
     if expts:
-        cluster_plots, large_clusters = clusters_from_experiments(expts)
+        cluster_plots, large_clusters = clusters_from_experiments(
+            expts, threshold="auto"
+        )
         if large_clusters:
             xia2_logger.info(f"{condensed_unit_cell_info(large_clusters)}")
         expts.as_file(working_directory / "indexed_all.expt")
@@ -430,7 +432,9 @@ def cumulative_assess_crystal_parameters(
 
         if all_expts:
             # generate up-to-date cluster plots and lists
-            cluster_plots, large_clusters = clusters_from_experiments(all_expts)
+            cluster_plots, large_clusters = clusters_from_experiments(
+                all_expts, threshold="auto"
+            )
             if large_clusters:
                 xia2_logger.info(f"{condensed_unit_cell_info(large_clusters)}")
     if all_expts:

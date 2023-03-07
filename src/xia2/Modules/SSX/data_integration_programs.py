@@ -217,7 +217,7 @@ def ssx_find_spots(
 
 
 def clusters_from_experiments(
-    experiments: ExperimentList,
+    experiments: ExperimentList, threshold: float | str = 5000
 ) -> Tuple[dict, List[Cluster]]:
     crystal_symmetries = [
         crystal.symmetry(
@@ -226,7 +226,34 @@ def clusters_from_experiments(
         )
         for expt in experiments
     ]
-    cluster_plots, large_clusters = report_on_crystal_clusters(crystal_symmetries, True)
+
+    if threshold == "auto":
+        threshold = 5000
+        ratio = 1
+        while ratio > 0.05 and threshold > 100:
+            cluster_plots, large_clusters = report_on_crystal_clusters(
+                crystal_symmetries, True, threshold=threshold
+            )
+            if not large_clusters:
+                threshold *= 2.0
+                cluster_plots, large_clusters = report_on_crystal_clusters(
+                    crystal_symmetries, True, threshold=threshold
+                )
+                break
+            large = large_clusters[0]
+            mean_cell_std = (
+                large.cell_std[0] + large.cell_std[1] + large.cell_std[2]
+            ) / 3.0
+            mean_cell_length = (
+                large.median_cell[0] + large.median_cell[1] + large.median_cell[2]
+            ) / 3.0
+            ratio = mean_cell_std / mean_cell_length
+            threshold /= 2.0
+    else:
+        cluster_plots, large_clusters = report_on_crystal_clusters(
+            crystal_symmetries, True, threshold=threshold
+        )
+
     return cluster_plots, large_clusters
 
 
