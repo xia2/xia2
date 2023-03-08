@@ -428,6 +428,7 @@ def cumulative_assess_crystal_parameters(
             expts, _, summary_this = ssx_index(working_directory, indexing_params)
         except DialsIndexError as e:
             xia2_logger.info(e)
+            first_image += options.batch_size
         else:
             n_xtal += len(expts)
             xia2_logger.info(f"Indexed {n_xtal} crystals in total")
