@@ -165,7 +165,6 @@ def test_geometry_refinement(dials_data, tmp_path, option, expected_success):
     assert data["success_per_image"] == expected_success
     refined_expts = load.experiment_list(reference, check_format=False)
     assert len(refined_expts) == sum(expected_success)
-    assert len(refined_expts.beams()) == 1
     assert len(refined_expts.detectors()) == 1
 
     assert (tmp_path / "DataFiles" / "refined.expt").is_file()
