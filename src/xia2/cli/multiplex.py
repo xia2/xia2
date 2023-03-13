@@ -81,6 +81,9 @@ seed = 42
 output {
   log = xia2.multiplex.log
     .type = str
+  prefix = "scaled"
+    .type = str
+    .help = "Option to set filepath for output files e.g. prefix.refl etc."
 }
 """,
     process_includes=True,

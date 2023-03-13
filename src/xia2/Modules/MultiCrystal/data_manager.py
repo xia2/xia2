@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import copy
 import logging
 import math
 
@@ -17,11 +16,8 @@ logger = logging.getLogger(__name__)
 
 class DataManager:
     def __init__(self, experiments, reflections):
-        self._input_experiments = experiments
-        self._input_reflections = reflections
-
-        self._experiments = copy.deepcopy(experiments)
-        self._reflections = copy.deepcopy(reflections)
+        self._experiments = experiments
+        self._reflections = reflections
         self.ids_to_identifiers_map = dict(self._reflections.experiment_identifiers())
         self.identifiers_to_ids_map = {
             value: key for key, value in self.ids_to_identifiers_map.items()
