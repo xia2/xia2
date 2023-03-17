@@ -229,8 +229,9 @@ def clusters_from_experiments(
 
     if threshold == "auto":
         threshold = 5000
-        ratio = 1
-        while ratio > 0.05 and threshold > 100:
+        length_ratio = 1
+        angle_ratio = 1
+        while length_ratio > 0.05 and threshold > 100 and angle_ratio > 0.05:
             cluster_plots, large_clusters = report_on_crystal_clusters(
                 crystal_symmetries, True, threshold=threshold
             )
@@ -247,7 +248,14 @@ def clusters_from_experiments(
             mean_cell_length = (
                 large.median_cell[0] + large.median_cell[1] + large.median_cell[2]
             ) / 3.0
-            ratio = mean_cell_std / mean_cell_length
+            length_ratio = mean_cell_std / mean_cell_length
+            mean_angle_std = (
+                large.cell_std[3] + large.cell_std[4] + large.cell_std[5]
+            ) / 3.0
+            mean_angle = (
+                large.median_cell[3] + large.median_cell[4] + large.median_cell[5]
+            ) / 3.0
+            angle_ratio = mean_angle_std / mean_angle
             threshold /= 2.0
     else:
         cluster_plots, large_clusters = report_on_crystal_clusters(
