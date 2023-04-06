@@ -441,3 +441,7 @@ class XInfo:
                 self._crystals[crystal]["user_cell"] = tuple(
                     float(x) for x in record.split()[1:]
                 )
+            if "USER_CHEMICAL_FORMULA" in record:
+                self._crystals[crystal]["user_chemical_formula"] = record.replace(
+                    "USER_CHEMICAL_FORMULA", ""
+                ).strip()

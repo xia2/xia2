@@ -807,6 +807,12 @@ xia2.settings
               "estimated standard uncertainties on the cell parameters. " \
               "Only relevant to DIALS pipeline."
   }
+  chemical_formula = None
+    .type = str
+    .short_caption = "Chemical formula for shelxt"
+    .help = "Insert this chemical formula into the shelxt ins file." \
+            "Otherwise will use the default CHNO"
+    .expert_level = 1
   space_group = None
     .type = space_group
     .help = "Provide a target space group to the indexing program"

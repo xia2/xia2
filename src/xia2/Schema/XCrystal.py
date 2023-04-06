@@ -186,6 +186,7 @@ class XCrystal:
         self._reference_reflection_file = None
         self._freer_file = None
         self._user_spacegroup = None
+        self._user_chemical_formula = None
 
         # things to help the great passing on of information
         self._scaled_merged_reflections = None
@@ -602,6 +603,10 @@ class XCrystal:
         """Set a user assigned spacegroup - which needs to be propogated."""
         self._user_spacegroup = user_spacegroup
 
+    def set_user_chemical_formula(self, user_chemical_formula):
+        """Set a user assigned formula - which needs to be propogated."""
+        self._user_chemical_formula = user_chemical_formula
+
     def set_scaled_merged_reflections(self, scaled_merged_reflections):
         self._scaled_merged_reflections = scaled_merged_reflections
 
@@ -799,6 +804,11 @@ class XCrystal:
 
                 self._scaler.set_scaler_input_spacegroup(self._user_spacegroup)
                 self._scaler.set_scaler_input_pointgroup(pointgroup)
+
+            if self._user_chemical_formula:
+                self._scaler.set_scaler_input_chemical_formula(
+                    self._user_chemical_formula
+                )
 
             integraters = self._get_integraters()
 

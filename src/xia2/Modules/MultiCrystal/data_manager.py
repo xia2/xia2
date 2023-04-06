@@ -179,10 +179,12 @@ class DataManager:
         params.intensity = ["scale"]
         export.export_mtz(params, self._experiments, [self._reflections])
 
-    def export_merged_mtz(self, filename, d_min=None):
+    def export_merged_mtz(self, filename, d_min=None, r_free_params=None):
         params = merge.phil_scope.extract()
         params.d_min = d_min
         params.assess_space_group = False
+        if r_free_params:
+            params.r_free_flags = r_free_params
         mtz_obj = merge.merge_data_to_mtz(
             params, self._experiments, [self._reflections]
         )
