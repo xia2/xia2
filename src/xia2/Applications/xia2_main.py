@@ -14,6 +14,7 @@ import h5py
 
 from dials.util import Sorry
 
+from xia2.cli import extra_help_lines
 from xia2.Handlers.Citations import Citations
 from xia2.Handlers.Environment import df
 from xia2.XIA2Version import Version
@@ -205,6 +206,9 @@ Command-line options to xia2:
     sys.stdout.write("[atom=se] (say) - this is for xia2setup\n")
     sys.stdout.write("[project=foo] (say) - this is for xia2setup\n")
     sys.stdout.write("[crystal=bar] (say) - this is for xia2setup\n\n")
+
+    for ehl in extra_help_lines:
+        sys.stdout.write(f"{ehl}\n")
 
     sys.stdout.write("Sensible command lines:\n")
     sys.stdout.write("xia2 (pipeline=dials|3d|..) xinfo=foo.xinfo\n")

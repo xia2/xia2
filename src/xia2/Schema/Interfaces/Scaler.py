@@ -39,6 +39,7 @@ class Scaler:
         # user input to guide spacegroup choices
         self._scalr_input_spacegroup = None
         self._scalr_input_pointgroup = None
+        self._scalr_input_chemical_formula = None
 
         # places to hold the output
 
@@ -219,6 +220,9 @@ class Scaler:
 
     def set_scaler_input_pointgroup(self, pointgroup):
         self._scalr_input_pointgroup = pointgroup
+
+    def set_scaler_input_chemical_formula(self, formula):
+        self._scalr_input_chemical_formula = formula
 
     def set_scaler_xcrystal(self, xcrystal):
         self._scalr_xcrystal = xcrystal

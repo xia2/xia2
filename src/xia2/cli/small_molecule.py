@@ -11,6 +11,11 @@ def run():
     # itself
     import libtbx.load_env
 
+    from xia2.cli import extra_help_lines
+
+    extra_help_lines.append(
+        "[chemical_formula=C20H20N2O2Br] (say) - formula for shelxt input fileg\n"
+    )
     libtbx.env.dispatcher_name = "xia2"
     import xia2.cli.xia2_main
 
