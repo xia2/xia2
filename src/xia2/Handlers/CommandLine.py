@@ -17,6 +17,7 @@ import shutil
 import sys
 
 from dials.util import Sorry
+from dials.util.mp import available_cores
 from dxtbx.serialize import load
 
 from xia2.Experts.FindImages import image2template_directory
@@ -233,18 +234,16 @@ class _CommandLine:
 
         params = PhilIndex.get_python_object()
         mp_params = params.xia2.settings.multiprocessing
-        from xia2.Handlers.Environment import get_number_cpus
-
         if mp_params.mode == "parallel":
             if mp_params.type == "qsub":
                 if not shutil.which("qsub"):
                     raise Sorry("qsub not available")
             if mp_params.njob is Auto:
-                mp_params.njob = get_number_cpus()
+                mp_params.njob = available_cores()
                 if mp_params.nproc is Auto:
                     mp_params.nproc = 1
             elif mp_params.nproc is Auto:
-                mp_params.nproc = get_number_cpus()
+                mp_params.nproc = available_cores()
         elif mp_params.mode == "serial":
             if mp_params.type == "qsub":
                 if not shutil.which("qsub"):
@@ -252,7 +251,7 @@ class _CommandLine:
             if mp_params.njob is Auto:
                 mp_params.njob = 1
             if mp_params.nproc is Auto:
-                mp_params.nproc = get_number_cpus()
+                mp_params.nproc = available_cores()
 
         PhilIndex.update("xia2.settings.multiprocessing.njob=%d" % mp_params.njob)
         PhilIndex.update("xia2.settings.multiprocessing.nproc=%d" % mp_params.nproc)

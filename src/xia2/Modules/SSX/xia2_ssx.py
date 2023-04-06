@@ -5,8 +5,9 @@ import os
 import pathlib
 
 import iotbx.phil
+from dials.util.image_grouping import ParsedYAML
+from dials.util.mp import available_cores
 from libtbx import Auto
-from libtbx.introspection import number_of_processors
 
 from xia2.Modules.SSX.data_integration_programs import (
     IndexingParams,
@@ -50,6 +51,9 @@ reference_geometry = None
   .type = path
   .help = "Path to a reference geomtery (refined.expt) file"
   .expert_level=1
+grouping = None
+  .type = str
+  .help = "Path to a .yml file defining grouping structure during processing"
 multiprocessing {
   nproc = Auto
     .type = int
@@ -80,6 +84,14 @@ batch_size = 1000
           "the resource requirements and output reporting of the program, but"
           "does not change the resultant integrated data."
   .expert_level=2
+dose_series_repeat = None
+  .type = int(value_min=2)
+  .expert_level = 2
+  .help = "This option allows the user to specify that the data is a dose series"
+          "by providing the number of repeated measurements at each point. i.e. it"
+          "is assumed that $dose_series_repeat measurements are taken on each crystal"
+          "and that these form consecutive images in the input image files. Each dose"
+          "point will be merged separately"
 dials_import.phil = None
   .type = path
   .help = "Phil file to use for dials.import. Parameters defined in the"
@@ -230,7 +242,20 @@ def run_xia2_ssx(
         file_input.import_phil = import_phil
 
     if params.multiprocessing.nproc is Auto:
-        params.multiprocessing.nproc = number_of_processors(return_value_if_unknown=1)
+        params.multiprocessing.nproc = available_cores()
+
+    parsed_grouping = None
+    # for now, we just want to check the validity of the input at the start, even if
+    # there are not yet features that can use this in data integration.
+    if params.grouping:
+        full_path = pathlib.Path(params.grouping).resolve()
+        try:
+            parsed_grouping = ParsedYAML(full_path)
+        except Exception as e:
+            xia2_logger.warning(
+                f"Error parsing {full_path}\n"
+                + f"as a valid grouping yaml file, check input. Exception encountered:\n{e}"
+            )
 
     options = AlgorithmParams(
         assess_crystals_n_crystals=params.assess_crystals.n_crystals,
@@ -240,6 +265,7 @@ def run_xia2_ssx(
         nproc=params.multiprocessing.nproc,
         steps=params.workflow.steps,
         enable_live_reporting=params.enable_live_reporting,
+        parsed_grouping=parsed_grouping,
     )
 
     if params.assess_crystals.images_to_use:
@@ -282,9 +308,10 @@ def run_xia2_ssx(
     # Now do the data reduction
     if not params.symmetry.space_group:
         params.symmetry.space_group = params.space_group
+    params.workflow.steps = ["scale", "merge"]
     reduction_params = ReductionParams.from_phil(params)
     reducer_class = get_reducer(reduction_params)
     reducer = reducer_class.from_directories(
-        root_working_directory, integrated_batch_directories, [], reduction_params
+        root_working_directory, integrated_batch_directories, reduction_params
     )
     reducer.run()

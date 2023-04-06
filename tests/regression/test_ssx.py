@@ -9,10 +9,9 @@ from typing import List
 
 import pytest
 
-from dials.array_family import flex
+from dials.algorithms.scaling.scaling_library import determine_best_unit_cell
 from dxtbx.serialize import load
-
-from xia2.Modules.SSX.data_reduction_programs import determine_best_unit_cell
+from iotbx import mtz
 
 
 def check_output(main_dir, find_spots=False, index=False, integrate=False):
@@ -22,7 +21,7 @@ def check_output(main_dir, find_spots=False, index=False, integrate=False):
     assert index is (main_dir / "batch_1" / "indexed.refl").is_file()
     assert integrate is (main_dir / "batch_1" / "integrated_1.expt").is_file()
     assert integrate is (main_dir / "batch_1" / "integrated_1.refl").is_file()
-    assert (main_dir / "LogFiles" / "xia2.ssx.log").is_file()
+    assert (main_dir / "xia2.ssx.log").is_file()
     assert integrate is (main_dir / "DataFiles" / "integrated_1_batch_1.expt").is_file()
     assert integrate is (main_dir / "DataFiles" / "integrated_1_batch_1.expt").is_file()
 
@@ -72,6 +71,45 @@ def test_assess_crystals(dials_data, tmp_path, option, expected_success):
     with open(tmp_path / "assess_crystals" / "assess_crystals.json", "r") as f:
         data = json.load(f)
     assert data["success_per_image"] == expected_success
+
+
+def test_import_phil_handling(dials_data, tmp_path):
+    """Just run geometry refinement. This will do the refinement then reimport
+    using the refined as reference."""
+    ssx = dials_data("cunir_serial", pathlib=True)
+    with (tmp_path / "import.phil").open(mode="w") as f:
+        f.write("geometry.beam.wavelength=1.36\ngeometry.detector.distance=247.6")
+    with (tmp_path / "index.phil").open(mode="w") as f:
+        f.write("indexing.max_cell=150")
+    args = [
+        "xia2.ssx",
+        "steps=None",
+        "unit_cell=96.4,96.4,96.4,90,90,90",
+        "space_group=P213",
+        "indexing.phil=index.phil",
+        "dials_import.phil=import.phil",
+        "max_lattices=1",
+    ]
+    args.append("image=" + os.fspath(ssx / "merlin0047_1700*.cbf"))
+    result = subprocess.run(args, cwd=tmp_path, capture_output=True)
+    assert not result.returncode and not result.stderr
+    imported_with_ref = load.experiment_list(tmp_path / "import" / "imported.expt")
+    assert (
+        imported_with_ref.beams()[0].get_wavelength() == 1.36
+    )  # would be 1.37611 without import.phil
+    assert (
+        imported_with_ref.detectors()[0].to_dict()["panels"][0]["origin"][2] != -247.6
+    )
+    imported_without_ref = load.experiment_list(
+        tmp_path / "geometry_refinement" / "imported.expt"
+    )
+    assert (
+        imported_without_ref.beams()[0].get_wavelength() == 1.36
+    )  # would be 1.37611 without import.phil
+    assert (
+        imported_without_ref.detectors()[0].to_dict()["panels"][0]["origin"][2]
+        == -247.6
+    )
 
 
 @pytest.mark.parametrize(
@@ -127,7 +165,6 @@ def test_geometry_refinement(dials_data, tmp_path, option, expected_success):
     assert data["success_per_image"] == expected_success
     refined_expts = load.experiment_list(reference, check_format=False)
     assert len(refined_expts) == sum(expected_success)
-    assert len(refined_expts.beams()) == 1
     assert len(refined_expts.detectors()) == 1
 
     assert (tmp_path / "DataFiles" / "refined.expt").is_file()
@@ -310,15 +347,15 @@ def check_data_reduction_files(tmp_path, reindex=True, reference=False):
     assert reindex is (tmp_path / "LogFiles" / "dials.cosym.0.log").is_file()
     assert reindex is (tmp_path / "LogFiles" / "dials.cosym.0.html").is_file()
     assert (tmp_path / "data_reduction" / "scale").is_dir()
-    assert (tmp_path / "data_reduction" / "scale" / "merged.mtz").is_file()
+    assert (tmp_path / "data_reduction" / "merge" / "all" / "merged.mtz").is_file()
     assert (tmp_path / "DataFiles" / "merged.mtz").is_file()
     assert (tmp_path / "LogFiles" / "dials.merge.html").is_file()
     assert (tmp_path / "LogFiles" / "dials.merge.log").is_file()
     assert (tmp_path / "LogFiles" / "dials.merge.json").is_file()
     if reference:
-        assert (tmp_path / "DataFiles" / "scaled_0.refl").is_file()
-        assert (tmp_path / "DataFiles" / "scaled_0.expt").is_file()
-        assert (tmp_path / "LogFiles" / "dials.scale.0.log").is_file()
+        assert (tmp_path / "DataFiles" / "scaled_batch1.refl").is_file()
+        assert (tmp_path / "DataFiles" / "scaled_batch1.expt").is_file()
+        assert (tmp_path / "LogFiles" / "dials.scale.scaled_batch1.log").is_file()
     else:
         assert (tmp_path / "DataFiles" / "scaled.refl").is_file()
         assert (tmp_path / "DataFiles" / "scaled.expt").is_file()
@@ -331,43 +368,12 @@ def check_data_reduction_files_on_scaled_only(tmp_path, reference=False):
     assert not (tmp_path / "data_reduction" / "reindex").is_dir()
     assert not (tmp_path / "LogFiles" / "dials.cosym.0.log").is_file()
     assert not (tmp_path / "LogFiles" / "dials.cosym.0.html").is_file()
-    assert (tmp_path / "data_reduction" / "scale").is_dir()
-    assert (tmp_path / "data_reduction" / "scale" / "merged.mtz").is_file()
+    assert (tmp_path / "data_reduction" / "merge").is_dir()
+    assert (tmp_path / "data_reduction" / "merge" / "all" / "merged.mtz").is_file()
     assert (tmp_path / "DataFiles" / "merged.mtz").is_file()
     assert (tmp_path / "LogFiles" / "dials.merge.html").is_file()
     assert (tmp_path / "LogFiles" / "dials.merge.log").is_file()
     assert (tmp_path / "LogFiles" / "dials.merge.json").is_file()
-    if reference:
-        assert not (tmp_path / "DataFiles" / "scaled_0.refl").is_file()
-        assert not (tmp_path / "DataFiles" / "scaled_0.expt").is_file()
-        assert not (tmp_path / "LogFiles" / "dials.scale.0.log").is_file()
-    else:
-        assert (tmp_path / "DataFiles" / "scaled.refl").is_file()
-        assert (tmp_path / "DataFiles" / "scaled.expt").is_file()
-        assert (tmp_path / "LogFiles" / "dials.scale.log").is_file()
-
-
-def check_data_reduction_files_on_scaled_plus_integrated(
-    tmp_path, reindex=True, reference=False
-):
-    assert (tmp_path / "data_reduction").is_dir()
-    assert (tmp_path / "data_reduction" / "prefilter").is_dir()
-    assert reindex is (tmp_path / "data_reduction" / "reindex").is_dir()
-    assert reindex is (tmp_path / "LogFiles" / "dials.cosym.0.log").is_file()
-    assert reindex is (tmp_path / "LogFiles" / "dials.cosym.0.html").is_file()
-    assert (tmp_path / "data_reduction" / "scale").is_dir()
-    assert (tmp_path / "data_reduction" / "scale" / "merged.mtz").is_file()
-    assert (tmp_path / "DataFiles" / "merged.mtz").is_file()
-    assert (tmp_path / "LogFiles" / "dials.merge.html").is_file()
-    assert (tmp_path / "LogFiles" / "dials.merge.log").is_file()
-    if reference:
-        assert (tmp_path / "DataFiles" / "scaled_0.refl").is_file()
-        assert (tmp_path / "DataFiles" / "scaled_0.expt").is_file()
-        assert (tmp_path / "LogFiles" / "dials.scale.0.log").is_file()
-    else:
-        assert (tmp_path / "DataFiles" / "scaled.refl").is_file()
-        assert (tmp_path / "DataFiles" / "scaled.expt").is_file()
-        assert (tmp_path / "LogFiles" / "dials.scale.log").is_file()
 
 
 # For testing data reduction, there are a few different paths.
@@ -406,7 +412,8 @@ def test_ssx_reduce(dials_data, tmp_path, pdb_model, idx_ambiguity):
             cwd=tmp_path,
             capture_output=True,
         )
-        assert not result.returncode and not result.stderr
+        assert not result.returncode
+        assert not result.stderr.decode()
         expts = tmp_path / "reindexed.expt"
         refls = tmp_path / "reindexed.refl"
         args = [
@@ -427,49 +434,155 @@ def test_ssx_reduce(dials_data, tmp_path, pdb_model, idx_ambiguity):
         f.write(scaling_phil)
     with open(tmp_path / "cosym.phil", "w") as f:
         f.write(cosym_phil)
-    extra_args.append("symmetry.phil=cosym.phil")
-    extra_args.append("scaling.phil=scaling.phil")
+    extra_args.append(f"symmetry.phil={tmp_path / 'cosym.phil'}")
+    extra_args.append(f"scaling.phil={tmp_path / 'scaling.phil'}")
 
     result = subprocess.run(args + extra_args, cwd=tmp_path, capture_output=True)
-    assert not result.returncode and not result.stderr
+    assert not result.returncode
+    assert not result.stderr.decode()
     check_data_reduction_files(tmp_path, reference=pdb_model, reindex=idx_ambiguity)
 
     # now run again only on previously scaled data
     pathlib.Path.mkdir(tmp_path / "reduce")
-    args = [
-        "xia2.ssx_reduce",
-        f"processed_directory={tmp_path / 'DataFiles'}",
-    ] + extra_args
+    args = (
+        [
+            "xia2.ssx_reduce",
+            "steps=merge",
+        ]
+        + list((tmp_path / "DataFiles").glob("scale*"))
+        + extra_args
+    )
     result = subprocess.run(args, cwd=tmp_path / "reduce", capture_output=True)
-    assert not result.returncode and not result.stderr
+    assert not result.returncode
+    assert not result.stderr.decode()
     check_data_reduction_files_on_scaled_only(tmp_path / "reduce", reference=pdb_model)
 
-    # now run again only on previously scaled data + integrated data
-    # Need to assign new identifiers to avoid clash
-    pathlib.Path.mkdir(tmp_path / "integrated_copy")
-    if not idx_ambiguity:
-        int_expts = load.experiment_list(
-            tmp_path / "reindexed.expt", check_format=False
-        )
-        int_refls = flex.reflection_table.from_file(tmp_path / "reindexed.refl")
-    else:
-        int_expts = load.experiment_list(ssx / "integrated.expt", check_format=False)
-        int_refls = flex.reflection_table.from_file(ssx / "integrated.refl")
-    new_identifiers = ["0", "1", "2", "3", "4"]
 
-    for i, (expt, new) in enumerate(zip(int_expts, new_identifiers)):
-        expt.identifier = new
-        del int_refls.experiment_identifiers()[i]
-        int_refls.experiment_identifiers()[i] = new
-    int_expts.as_file(tmp_path / "integrated_copy" / "integrated.expt")
-    int_refls.as_file(tmp_path / "integrated_copy" / "integrated.refl")
-    pathlib.Path.mkdir(tmp_path / "reduce_combined")
-    args.append(f"directory={tmp_path / 'integrated_copy'}")
-    result = subprocess.run(args, cwd=tmp_path / "reduce_combined", capture_output=True)
-    assert not result.returncode and not result.stderr
-    check_data_reduction_files_on_scaled_plus_integrated(
-        tmp_path / "reduce_combined", reference=pdb_model, reindex=idx_ambiguity
+def test_reduce_h5(dials_data, tmp_path):
+    """Test the data reduction on data from h5 format. Use as an opportunity to test
+    groupings too for h5 data."""
+    ssx = dials_data("dtpb_serial_processed", pathlib=True)
+    grouping_yml = """
+metadata:
+  well_id:
+    "/dls/mx/data/nt30330/nt30330-15/VMXi-AB1698/well_39/images/image_58763.nxs" : 39
+    "/dls/mx/data/nt30330/nt30330-15/VMXi-AB1698/well_42/images/image_58766.nxs" : 42
+grouping:
+  merge_by:
+    values:
+      - well_id
+"""
+    files = [
+        ssx / "well39_batch12_integrated.expt",
+        ssx / "well39_batch12_integrated.refl",
+        ssx / "well42_batch6_integrated.expt",
+        ssx / "well42_batch6_integrated.refl",
+    ]
+    with open(tmp_path / "example.yaml", "w") as f:
+        f.write(grouping_yml)
+
+    args = ["xia2.ssx_reduce", "grouping=example.yaml"] + files
+    result = subprocess.run(args, cwd=tmp_path, capture_output=True)
+    assert not result.returncode
+    assert not result.stderr.decode()
+    output_names = [f"group_{i}" for i in [1, 2]]
+    for n in output_names:
+        assert (tmp_path / "DataFiles" / f"{n}.mtz").is_file()
+        assert (tmp_path / "LogFiles" / f"dials.merge.{n}.html").is_file()
+
+    g1_mtz = mtz.object(
+        file_name=os.fspath(tmp_path / "DataFiles" / f"{output_names[0]}.mtz")
     )
+    assert abs(g1_mtz.n_reflections() - 5783) < 10
+    g2_mtz = mtz.object(
+        file_name=os.fspath(tmp_path / "DataFiles" / f"{output_names[1]}.mtz")
+    )
+    assert abs(g2_mtz.n_reflections() - 8811) < 10
+
+
+@pytest.mark.parametrize(
+    "use_grouping",
+    [True, False],
+)
+def test_reduce_with_grouping(dials_data, tmp_path, use_grouping):
+    """Test the feature of specifying a grouping yaml file
+    to define merge groups.
+    """
+    ssx = dials_data("cunir_serial_processed", pathlib=True)
+    ssx_data = dials_data("cunir_serial", pathlib=True)
+    args = ["xia2.ssx_reduce", f"directory={ssx}"]
+    extra_args = []
+    model = dials_data("cunir_serial", pathlib=True) / "2BW4.pdb"
+    extra_args.append(f"model={str(model)}")
+    # also test using scaling and cosym phil files
+    cosym_phil = "d_min=2.5"
+    scaling_phil = "reflection_selection.Isigma_range=3.0,0.0"
+    with open(tmp_path / "scaling.phil", "w") as f:
+        f.write(scaling_phil)
+    with open(tmp_path / "cosym.phil", "w") as f:
+        f.write(cosym_phil)
+    extra_args.append("symmetry.phil=cosym.phil")
+    extra_args.append("scaling.phil=scaling.phil")
+
+    # pretend that this is some dose series data
+    if use_grouping:
+        grouping = f"""
+metadata:
+    dose_point:
+        {os.fspath(ssx_data / 'merlin0047_#####.cbf')} : "repeat=2"
+grouping:
+    merge_by:
+        values:
+            - dose_point
+        """
+        with open(tmp_path / "example.yaml", "w") as f:
+            f.write(grouping)
+        extra_args.append("grouping=example.yaml")
+    else:
+        extra_args.append("dose_series_repeat=2")
+
+    result = subprocess.run(args + extra_args, cwd=tmp_path, capture_output=True)
+    assert not result.returncode
+    assert not result.stderr.decode()
+    output_names = [f"group_{i}" if use_grouping else f"dose_{i}" for i in [1, 2]]
+    for n in output_names:
+        assert (tmp_path / "DataFiles" / f"{n}.mtz").is_file()
+        assert (tmp_path / "LogFiles" / f"dials.merge.{n}.html").is_file()
+
+    g1_mtz = mtz.object(
+        file_name=os.fspath(tmp_path / "DataFiles" / f"{output_names[0]}.mtz")
+    )
+    assert abs(g1_mtz.n_reflections() - 1271) < 10
+    g2_mtz = mtz.object(
+        file_name=os.fspath(tmp_path / "DataFiles" / f"{output_names[1]}.mtz")
+    )
+    assert abs(g2_mtz.n_reflections() - 468) < 10
+    assert not (tmp_path / "DataFiles" / "merged.mtz").is_file()
+
+    # now rerun with a res limit on one group. Should be able to just process straight from
+    # the group files for fast merging.
+    args = ["xia2.ssx_reduce", "d_min=3.0", "steps=merge"]
+    if use_grouping:
+        args += list(
+            (tmp_path / "data_reduction" / "merge" / "group_1").glob("group*.expt")
+        )
+        args += list(
+            (tmp_path / "data_reduction" / "merge" / "group_1").glob("group*.refl")
+        )
+    else:
+        args += list(
+            (tmp_path / "data_reduction" / "merge" / "dose_1").glob("group*.expt")
+        )
+        args += list(
+            (tmp_path / "data_reduction" / "merge" / "dose_1").glob("group*.refl")
+        )
+
+    result = subprocess.run(args, cwd=tmp_path, capture_output=True)
+    assert not result.returncode
+    assert not result.stderr.decode()
+    assert (tmp_path / "DataFiles" / "merged.mtz").is_file()
+    merged_mtz = mtz.object(file_name=os.fspath(tmp_path / "DataFiles" / "merged.mtz"))
+    assert abs(merged_mtz.n_reflections() - 341) < 10  # expect 341 from d_min=3.0
 
 
 @pytest.mark.parametrize(

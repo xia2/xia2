@@ -10,11 +10,11 @@ from cctbx import sgtbx, uctbx
 from dials.array_family import flex
 from dials.command_line.unit_cell_histogram import plot_uc_histograms
 from dials.util import tabulate
+from dials.util.mp import available_cores
 from dxtbx.serialize import load
 from libtbx import Auto
 from scitbx.math import five_number_summary
 
-from xia2.Handlers.Environment import get_number_cpus
 from xia2.Handlers.Phil import PhilIndex
 from xia2.lib.bits import auto_logfiler
 from xia2.Modules import Report
@@ -241,6 +241,8 @@ remove_profile_fitting_failures = True
   .type = bool
   .short_caption = "Remove profile fitting failures"
 
+include scope dials.algorithms.merging.merge.r_free_flags_phil_scope
+
 """,
     process_includes=True,
 )
@@ -297,7 +299,7 @@ class MultiCrystalScale:
             raise ValueError("Can not specify both laue_group and space_group")
 
         if self._params.nproc is Auto:
-            self._params.nproc = get_number_cpus()
+            self._params.nproc = available_cores()
         PhilIndex.params.xia2.settings.multiprocessing.nproc = self._params.nproc
 
         if self._params.identifiers is not None:
@@ -367,7 +369,15 @@ class MultiCrystalScale:
         self._data_manager.export_unmerged_mtz(
             "scaled_unmerged.mtz", d_min=self._scaled.d_min
         )
-        self._data_manager.export_merged_mtz("scaled.mtz", d_min=self._scaled.d_min)
+        d_spacings = self._scaled.data_manager._reflections["d"]
+        self._params.r_free_flags.d_min = flex.min(d_spacings.select(d_spacings > 0))
+        self._params.r_free_flags.d_max = flex.max(d_spacings)
+        self._data_manager.export_merged_mtz(
+            "scaled.mtz",
+            d_min=self._scaled.d_min,
+            r_free_params=self._params.r_free_flags,
+        )
+        self._params.r_free_flags.reference = os.path.join(os.getcwd(), "scaled.mtz")
         self._data_manager.export_experiments("scaled.expt")
         self._data_manager.export_reflections("scaled.refl", d_min=self._scaled.d_min)
         convert_merged_mtz_to_sca("scaled.mtz")
@@ -426,7 +436,11 @@ class MultiCrystalScale:
                 data_manager.export_unmerged_mtz(
                     "scaled_unmerged.mtz", d_min=scaled.d_min
                 )
-                data_manager.export_merged_mtz("scaled.mtz", d_min=scaled.d_min)
+                data_manager.export_merged_mtz(
+                    "scaled.mtz",
+                    d_min=scaled.d_min,
+                    r_free_params=self._params.r_free_flags,
+                )
                 data_manager.export_experiments("scaled.expt")
                 data_manager.export_reflections("scaled.refl", d_min=scaled.d_min)
                 convert_merged_mtz_to_sca("scaled.mtz")
@@ -449,7 +463,11 @@ class MultiCrystalScale:
             data_manager.export_unmerged_mtz(
                 "filtered_unmerged.mtz", d_min=scaled.d_min
             )
-            data_manager.export_merged_mtz("filtered.mtz", d_min=scaled.d_min)
+            data_manager.export_merged_mtz(
+                "filtered.mtz",
+                d_min=scaled.d_min,
+                r_free_params=self._params.r_free_flags,
+            )
             convert_merged_mtz_to_sca("filtered.mtz")
             convert_unmerged_mtz_to_sca("filtered_unmerged.mtz")
 

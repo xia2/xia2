@@ -2,18 +2,21 @@
 Processing serial synchrotron crystallography (SSX) datasets with xia2
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-xia2 is able to processes serial synchrotron data through a developmental SSX
-pipeline built upon data analysis programs/APIs from DIALS.
+xia2 is able to processes serial synchrotron data through a SSX
+pipeline built upon data analysis programs from DIALS.
 
-To integrate and reduce data, the minimal recommended example command is::
+To process serial data from images to a merged MTZ file, the
+minimal recommended example command is::
 
     xia2.ssx template=../lyso_1_###.cbf space_group=P43212 \
       unit_cell=79.1,79.1,38.2,90,90,90  model=../lyso.pdb
 
 i.e. the minimal required information is the location of the images, the expected
-space group and unit cell, and a suitable pdb model file to enable data reduction
-using a reference. Typically, a reference geometry and mask should also be provided,
-as described below.
+space group and unit cell. A suitable pdb model file is also recommended to enable
+data reduction using a reference. Typically, a reference geometry and mask should
+also be provided, as described below.
+
+
 
 ----------------
 Data Integration
@@ -83,7 +86,7 @@ ambiguity resolution in batches (if ambiguities are possible due to lattice
 and space group symmetries), followed by scaling and merging. If a reference dataset/PDB model is
 provided with the option :samp:`reference=`, then reindexing and scaling is performed
 in parallel in batches of at least :samp:`reduction_batch_size` crystals, using intensities
-generated/extracted from the reference as a reference when reindexing and scaling.
+generated from the reference as a reference when reindexing and scaling.
 If there is no reference given, the scaling is not performed in parallel. Other important
 options are setting :samp:`anomalous=True/False` and specifying a :samp:`d_min` value.
 To evaluate the success of indexing ambiguity resolution, it is important to inspect
@@ -91,3 +94,22 @@ the html output from dials.cosym jobs in the :samp:`data_reduction\\reindex` fol
 To see the full list of data reduction parameters and their descriptions,
 run :samp:`xia2.ssx_reduce -ce3 -a2`. The output of the data reduction pipeline
 is a merged MTZ file which can be taken onwards for structure determination.
+
+``xia2.ssx_reduce`` also supports quick remerging of already processed data by using the option
+``steps=merge``. This can be useful for aggregating multiple processing jobs processed
+using the same reference model, or generating MTZ files with specified resolution
+cutoffs e.g.::
+
+    xia2.ssx_reduce ../xia2_ssx_reduce/DataFiles/scaled*.{expt,refl} steps=merge d_min=1.8
+
+    xia2.ssx_reduce steps=merge ../{chip1,chip2}/DataFiles/scaled*.{expt,refl}
+
+-----------------
+Merging in groups
+-----------------
+
+``xia2.ssx_reduce`` also supports merging in groups to handle more complex experiments such
+as dose series experiments. This is described in more detail in the links below.
+
+.. toctree::
+  Dose-series experiments and merging in groups <xia2-ssx-dose-series>

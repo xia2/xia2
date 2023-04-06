@@ -16,8 +16,10 @@ import libtbx.easy_mp
 from dials.algorithms.clustering.unit_cell import Cluster
 from dials.algorithms.indexing.ssx.analysis import generate_html_report
 from dials.array_family import flex
+from dials.util.image_grouping import ParsedYAML
 from dxtbx.model import ExperimentList
 from dxtbx.serialize import load
+from libtbx import phil
 
 from xia2.Driver.timing import record_step
 from xia2.Handlers.Files import FileHandler
@@ -63,6 +65,7 @@ class AlgorithmParams:
     njobs: int = 1
     multiprocessing_method: str = "multiprocessing"
     enable_live_reporting: bool = False
+    parsed_grouping: Optional[ParsedYAML] = None
 
 
 def process_batch(
@@ -255,7 +258,11 @@ def check_previous_import(
     return (same_as_previous, previous)
 
 
-def run_import(working_directory: pathlib.Path, file_input: FileInput) -> None:
+def run_import(
+    working_directory: pathlib.Path,
+    file_input: FileInput,
+    ignore_manual_detector_phil_options: bool = False,
+) -> None:
     """
     Run dials.import with either images, templates or directories.
     After running dials.import, the options are saved to file_input.json
@@ -279,7 +286,26 @@ def run_import(working_directory: pathlib.Path, file_input: FileInput) -> None:
         "convert_stills_to_sequences=True",
     ]
     if file_input.import_phil:
-        import_command.insert(1, os.fspath(file_input.import_phil))
+        if ignore_manual_detector_phil_options:
+            # remove any geometry options from the user phil, if we are now using the refined
+            # reference geometry
+            with open(file_input.import_phil, "r") as f:
+                params = phil.parse(input_string=f.read())
+            non_detector_phil = ""
+            for obj in params.objects:
+                if obj.name == "geometry" and hasattr(obj.extract(), "detector"):
+                    xia2_logger.info(
+                        f"Removing manual detector geometry option from import phil: {obj.as_str()}"
+                    )
+                else:
+                    non_detector_phil += obj.as_str()
+            if non_detector_phil:
+                fname = working_directory / "import_tmp.phil"
+                with open(fname, "w") as f:
+                    f.write(non_detector_phil)
+                import_command.insert(1, os.fspath(fname))
+        else:
+            import_command.insert(1, os.fspath(file_input.import_phil))
     if file_input.images:
         import_command += file_input.images
     elif file_input.templates:
@@ -294,6 +320,7 @@ def run_import(working_directory: pathlib.Path, file_input: FileInput) -> None:
         import_command += [
             f"reference_geometry={os.fspath(file_input.reference_geometry)}",
             "use_gonio_reference=False",
+            "use_beam_reference=False",
         ]
         xia2_logger.notice(banner("Importing with reference geometry"))  # type: ignore
     else:
@@ -768,7 +795,9 @@ def run_data_integration(
 
         # Reimport with this reference geometry to prepare for the main processing
         file_input.reference_geometry = geom_ref_wd / "refined.expt"
-        run_import(import_wd, file_input)
+        # at this point, we want the reference detector geometry to take
+        # precedence over any initial manually specified options.
+        run_import(import_wd, file_input, ignore_manual_detector_phil_options=True)
         import_was_run = True
 
     if not options.steps:
@@ -779,16 +808,23 @@ def run_data_integration(
         raise ValueError(
             "New data was imported, but there are gaps in the processing steps. Please adjust input."
         )
-    try:
-        batch_directories, setup_data = inspect_existing_batch_directories(
-            root_working_directory
-        )
-    except ValueError:  # if existing batches weren't found
+    if import_was_run:  # need to setup the batch folders again with new imported.expt
         batch_directories, setup_data = setup_main_process(
             root_working_directory,
             imported_expts,
             options.batch_size,
         )
+    else:
+        try:
+            batch_directories, setup_data = inspect_existing_batch_directories(
+                root_working_directory
+            )
+        except ValueError:  # if existing batches weren't found
+            batch_directories, setup_data = setup_main_process(
+                root_working_directory,
+                imported_expts,
+                options.batch_size,
+            )
     if not batch_directories:
         raise ValueError("Unable to determine directories for processing.")
 

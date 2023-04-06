@@ -8,6 +8,9 @@ from xia2.Modules.SSX.data_reduction_with_reference import DataReductionWithRefe
 
 
 def get_reducer(reduction_params: ReductionParams) -> Type[BaseDataReduction]:
+    if reduction_params.steps == ["merge"]:
+        # merging is same for all referene types and defined in the base class.
+        return BaseDataReduction
     if reduction_params.reference:
         return DataReductionWithReference
     else:
