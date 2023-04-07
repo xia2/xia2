@@ -34,6 +34,19 @@ def condensed_unit_cell_info(clusters: List[Cluster]) -> str:
     return out_str
 
 
+def condensed_metric_unit_cell_info(clusters: List[Cluster]) -> str:
+    from xia2.Modules.SSX.data_integration_programs import best_cell_from_cluster
+
+    out_str = "Highest possible symmetries and metric unit cells for clusters"
+    al, be, ga = "med_" + "\u03B1", "med_" + "\u03B2", "med_" + "\u03B3"
+    out_str += f"\n{'n_xtals'} {'sym.':>10} {'med_a':>7} {'med_b':>7} {'med_c':>7} {al:>6} {be:>6} {ga:>6}"
+    for c in clusters:
+        sg, uc = best_cell_from_cluster(c)
+        p = [f"{i:.2f}" for i in uc]
+        out_str += f"\n{len(c):>7} {sg:>10} {p[0]:>7} {p[1]:>7} {p[2]:>7} {p[3]:>6} {p[4]:>6} {p[5]:>6}"
+    return out_str
+
+
 def generate_refinement_step_table(refiner: Any) -> str:
 
     rmsd_multipliers = []

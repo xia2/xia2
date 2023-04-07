@@ -14,6 +14,7 @@ import numpy as np
 
 import libtbx.easy_mp
 from dials.algorithms.clustering.unit_cell import Cluster
+from dials.algorithms.indexing import DialsIndexError
 from dials.algorithms.indexing.ssx.analysis import generate_html_report
 from dials.array_family import flex
 from dials.util.image_grouping import ParsedYAML
@@ -29,7 +30,6 @@ from xia2.Modules.SSX.data_integration_programs import (
     IntegrationParams,
     RefinementParams,
     SpotfindingParams,
-    best_cell_from_cluster,
     clusters_from_experiments,
     combine_with_reference,
     run_refinement,
@@ -37,7 +37,10 @@ from xia2.Modules.SSX.data_integration_programs import (
     ssx_index,
     ssx_integrate,
 )
-from xia2.Modules.SSX.reporting import condensed_unit_cell_info
+from xia2.Modules.SSX.reporting import (
+    condensed_metric_unit_cell_info,
+    condensed_unit_cell_info,
+)
 from xia2.Modules.SSX.util import redirect_xia2_logger
 
 xia2_logger = logging.getLogger(__name__)
@@ -378,9 +381,12 @@ def assess_crystal_parameters_from_images(
     success_per_image = summary["success_per_image"]
 
     if expts:
-        cluster_plots, large_clusters = clusters_from_experiments(expts)
+        cluster_plots, large_clusters = clusters_from_experiments(
+            expts, threshold="auto"
+        )
         if large_clusters:
             xia2_logger.info(f"{condensed_unit_cell_info(large_clusters)}")
+        expts.as_file(working_directory / "indexed_all.expt")
 
     if cluster_plots:
         generate_html_report(
@@ -418,18 +424,27 @@ def cumulative_assess_crystal_parameters(
             break
         strong = ssx_find_spots(working_directory, spotfinding_params)
         strong.as_file(working_directory / "strong.refl")
-        expts, _, summary_this = ssx_index(working_directory, indexing_params)
-        n_xtal += len(expts)
-        xia2_logger.info(f"Indexed {n_xtal} crystals in total")
-        all_expts.extend(expts)
-        first_image += options.batch_size
-        success_per_image.extend(summary_this["success_per_image"])
+        try:
+            expts, _, summary_this = ssx_index(working_directory, indexing_params)
+        except DialsIndexError as e:
+            xia2_logger.info(e)
+            first_image += options.batch_size
+        else:
+            n_xtal += len(expts)
+            xia2_logger.info(f"Indexed {n_xtal} crystals in total")
+            all_expts.extend(expts)
+            first_image += options.batch_size
+            success_per_image.extend(summary_this["success_per_image"])
 
-        if all_expts:
-            # generate up-to-date cluster plots and lists
-            cluster_plots, large_clusters = clusters_from_experiments(all_expts)
-            if large_clusters:
-                xia2_logger.info(f"{condensed_unit_cell_info(large_clusters)}")
+            if all_expts:
+                # generate up-to-date cluster plots and lists
+                cluster_plots, large_clusters = clusters_from_experiments(
+                    all_expts, threshold="auto"
+                )
+                if large_clusters:
+                    xia2_logger.info(f"{condensed_unit_cell_info(large_clusters)}")
+    if all_expts:
+        all_expts.as_file(working_directory / "indexed_all.expt")
 
     if cluster_plots:
         generate_html_report(
@@ -448,16 +463,10 @@ def _report_on_assess_crystals(
 
     if experiments:
         if large_clusters:
-            sg, uc = best_cell_from_cluster(large_clusters[0])
-            xia2_logger.info(
-                "Properties of largest cluster:\n"
-                "Highest possible metric unit cell: "
-                + ", ".join(f"{i:.3f}" for i in uc)
-                + f"\nHighest possible metric symmetry: {sg}"
-            )
+            xia2_logger.info(condensed_metric_unit_cell_info(large_clusters))
         else:
             xia2_logger.info(
-                "Some imaged indexed, but no significant unit cell clusters found.\n"
+                "Some images indexed, but no significant unit cell clusters found.\n"
                 + "Please try adjusting indexing parameters or try crystal assessment on different images"
             )
     else:
