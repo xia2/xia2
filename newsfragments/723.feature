@@ -1,1 +1,1 @@
-Add handling for small-molecule chemical formula data.
+Add handling for small-molecule chemical formula data, and extra help output when using ``xia2.small_molecule``.
