@@ -225,6 +225,17 @@ cluster_method = *cos_angle correlation
   .type = choice
   .short_caption = "Metric on which to perform clustering"
 
+max_cluster_height_difference = 0.5
+  .type = float
+  .short_caption = "Maximum hight difference between clusters"
+max_output_clusters = 10
+  .type = int
+  .short_caption = "Maximum number of important clusters to be output"
+min_cluster_size = 5
+  .type = int
+  .short_caption = "Minimum number of datasets for an important cluster"
+
+
 identifiers = None
   .type = strings
   .short_caption = "Identifiers"
