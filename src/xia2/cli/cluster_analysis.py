@@ -137,6 +137,8 @@ def run(args=sys.argv[1:]):
         sys.exit(str(e))
     else:
 
+        MCA.cluster_analysis()
+
         cc_file_data, cc_list = MCA.interesting_cluster_identification(
             MCA._cluster_analysis.cc_clusters
         )
@@ -149,7 +151,7 @@ def run(args=sys.argv[1:]):
         with open("cos_clusters_to_compare.txt", "w") as f:
             f.write("\n".join(cos_file_data))
 
-        if not os.path.exists("cc_clusters"):  ###
+        if not os.path.exists("cc_clusters"):
             os.mkdir("cc_clusters")
         if not os.path.exists("cos_angle_clusters"):
             os.mkdir("cos_angle_clusters")
