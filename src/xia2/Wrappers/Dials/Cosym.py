@@ -37,6 +37,7 @@ def DialsCosym(DriverType=None, decay_correction=None):
             self._html = None
             self._best_monoclinic_beta = False
             self._lattice_symmetry_max_delta = None
+            self._reference_pdb = None
 
         # getter and setter methods
 
@@ -66,6 +67,9 @@ def DialsCosym(DriverType=None, decay_correction=None):
 
         def set_lattice_symmetry_max_delta(self, lattice_symmetry_max_delta):
             self._lattice_symmetry_max_delta = lattice_symmetry_max_delta
+
+        def set_reference_pdb(self, reference_pdb):
+            self._reference_pdb = reference_pdb
 
         def get_json(self):
             return self._json
@@ -101,6 +105,9 @@ def DialsCosym(DriverType=None, decay_correction=None):
                 self.add_command_line(
                     "space_group=%s" % self._space_group.type().lookup_symbol()
                 )
+
+            if self._reference_pdb:
+                self.add_command_line("reference=%s" % self._reference_pdb)
 
             if not self._json:
                 self._json = os.path.join(
@@ -140,10 +147,14 @@ def DialsCosym(DriverType=None, decay_correction=None):
             assert os.path.exists(self._json)
             with open(self._json, "rb") as f:
                 self._cosym_analysis = json.load(f)
-            if self._space_group is None:
+
+            # if not self._reference_pdb:
+            if self._space_group is None and self._reference_pdb is None:
                 self._best_solution = self._cosym_analysis["subgroup_scores"][0]
             else:
                 self._best_solution = None
+            # else:
+            # self._best_solution = None
 
             return "OK"
 
