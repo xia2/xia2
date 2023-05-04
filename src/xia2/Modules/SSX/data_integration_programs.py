@@ -343,6 +343,7 @@ def ssx_index(
             )
 
             dials_logger.info(report)
+            n_hits = sum(v[0]["n_strong"] > 0 for v in summary_data.values())
 
             # Report on clustering, and generate html report and json output
             if indexed_experiments:
@@ -369,6 +370,7 @@ def ssx_index(
                 "n_images_indexed": n_images,
                 "large_clusters": large_clusters,
                 "success_per_image": indexing_success_per_image,
+                "n_hits": n_hits,
             }
     return indexed_experiments, indexed_reflections, summary_for_xia2
 
