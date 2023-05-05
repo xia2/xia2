@@ -98,7 +98,9 @@ def process_batch(
     if "find_spots" in options.steps:
         strong = ssx_find_spots(working_directory, spotfinding_params)
         strong.as_file(working_directory / "strong.refl")
-        n_hits = np.sum(np.bincount(flumpy.to_numpy(strong["id"])) >= 10)
+        n_hits = np.sum(
+            np.bincount(flumpy.to_numpy(strong["id"])) >= indexing_params.min_spots
+        )
         data["n_hits"] = n_hits
         if progress_reporter:
             progress_reporter.add_find_spots_result(data)
