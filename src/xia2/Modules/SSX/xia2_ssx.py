@@ -122,6 +122,12 @@ indexing {
     .type = int
     .help = "Maximum number of lattices to search for, per image"
     .expert_level=1
+  min_spots = 10
+    .type = int
+    .help = "Attempt indexing on images with at least this number of strong spots"
+            "(as determined by spotfinding). This number also defines what is"
+            "reported as a 'hit' in the xia2.ssx log output."
+    .expert_level = 1
   phil = None
     .type = path
     .help = "Phil options file to use for indexing. Parameters defined in"

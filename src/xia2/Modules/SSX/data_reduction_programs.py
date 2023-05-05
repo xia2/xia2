@@ -73,7 +73,7 @@ def load_crystal_data_from_new_expts(new_data: List[FilePair]) -> CrystalsDict:
         else:
             xia2_logger.warning(f"No crystals found in {str(file_pair.expt)}")
             data[str(file_pair.expt)] = CrystalsData([], [])
-    xia2_logger.info(f"Found {n} new integrated crystals")
+    xia2_logger.info(f"Found {n} integrated crystals")
     return data
 
 
