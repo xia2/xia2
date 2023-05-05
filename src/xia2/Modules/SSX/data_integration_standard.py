@@ -86,7 +86,7 @@ def process_batch(
     data = {
         "n_images_indexed": None,
         "n_cryst_integrated": None,
-        "directory": str(working_directory),
+        "directory": working_directory,
     }
     if options.enable_live_reporting:
         nuggets_dir = working_directory / "nuggets"
@@ -164,7 +164,7 @@ def setup_main_process(
         sub_expt = expts[splits[i] : splits[i + 1]]
         sub_expt.as_file(subdir / "imported.expt")
         batch_directories.append(subdir)
-        setup_data["images_per_batch"][str(subdir)] = splits[i + 1] - splits[i]
+        setup_data["images_per_batch"][subdir] = splits[i + 1] - splits[i]
     return batch_directories, setup_data
 
 
@@ -191,7 +191,7 @@ def inspect_existing_batch_directories(
     order = np.argsort(np.array(numbers))
     for idx in order:
         batch_directories.append(dirs_list[idx])
-        setup_data["images_per_batch"][str(dirs_list[idx])] = n_images[idx]
+        setup_data["images_per_batch"][dirs_list[idx]] = n_images[idx]
 
     return batch_directories, setup_data
 
@@ -382,26 +382,52 @@ def assess_crystal_parameters_from_images(
     Generates a unit cell clustering html report if any clusters are found.
     Always outputs a assess_crystals.json containing at least the success_per_image.
     """
+    xia2_logger.notice(banner("Assess crystal parameters"))  # type: ignore
     large_clusters: List[Cluster] = []
     cluster_plots: dict = {}
     success_per_image: List[bool] = []
 
     slice_images_from_experiments(imported_expts, working_directory, images_to_use)
 
+    progress_reporter = ProgressReport({"images_per_batch": {}})
+
     # now run find spots and index
     strong = ssx_find_spots(working_directory, spotfinding_params)
     strong.as_file(working_directory / "strong.refl")
-    expts, __, summary = ssx_index(working_directory, indexing_params)
-    success_per_image = summary["success_per_image"]
 
+    data = {
+        "n_hits": np.sum(
+            np.bincount(flumpy.to_numpy(strong["id"])) >= indexing_params.min_spots
+        )
+    }
+    # NB ideally count is formatted the same as batch numbering e.g 01 if >9 batches
+    dir_placeholder = pathlib.Path("assess")
+    data["directory"] = dir_placeholder
+    progress_reporter.setup_data["images_per_batch"][dir_placeholder] = len(
+        strong.experiment_identifiers()
+    )
+    progress_reporter.add_find_spots_result(data)
+    try:
+        expts, __, summary = ssx_index(working_directory, indexing_params)
+    except DialsIndexError as e:
+        data["n_images_indexed"] = 0
+        xia2_logger.info(e)
+        expts = ExperimentList([])
+    else:
+        success_per_image = summary["success_per_image"]
+        data["n_images_indexed"] = summary["n_images_indexed"]
+
+    progress_reporter.add_index_result(data)
     if expts:
         cluster_plots, large_clusters = clusters_from_experiments(
             expts, threshold="auto"
         )
         if large_clusters:
-            xia2_logger.info(f"{condensed_unit_cell_info(large_clusters)}")
+            cell_clustering = f"{condensed_unit_cell_info(large_clusters)}"
+            progress_reporter.add_latest_clustering(cell_clustering)
         expts.as_file(working_directory / "indexed_all.expt")
 
+    progress_reporter.summarise()
     if cluster_plots:
         generate_html_report(
             cluster_plots, working_directory / "dials.cell_clusters.html"
@@ -420,6 +446,7 @@ def cumulative_assess_crystal_parameters(
     spotfinding_params: SpotfindingParams,
     indexing_params: IndexingParams,
 ):
+    xia2_logger.notice(banner("Assess crystal parameters"))  # type: ignore
     large_clusters: List[Cluster] = []
     cluster_plots: dict = {}
     success_per_image: List[bool] = []
@@ -427,7 +454,11 @@ def cumulative_assess_crystal_parameters(
     n_xtal = 0
     first_image = 0
     all_expts = ExperimentList()
+    progress_reporter = ProgressReport({"images_per_batch": {}})
+    count = 0
+
     while n_xtal < options.assess_crystals_n_crystals:
+        count += 1
         try:
             slice_images_from_experiments(
                 imported_expts,
@@ -438,25 +469,46 @@ def cumulative_assess_crystal_parameters(
             break
         strong = ssx_find_spots(working_directory, spotfinding_params)
         strong.as_file(working_directory / "strong.refl")
+        data = {
+            "n_hits": np.sum(
+                np.bincount(flumpy.to_numpy(strong["id"])) >= indexing_params.min_spots
+            )
+        }
+        # NB ideally count is formatted the same as batch numbering e.g 01 if >9 batches
+        dir_placeholder = pathlib.Path(f"assess_batch_{count}")
+        data["directory"] = dir_placeholder
+        progress_reporter.setup_data["images_per_batch"][dir_placeholder] = len(
+            strong.experiment_identifiers()
+        )
+        progress_reporter.add_find_spots_result(data)
+
         try:
             expts, _, summary_this = ssx_index(working_directory, indexing_params)
         except DialsIndexError as e:
+            data["n_images_indexed"] = 0
             xia2_logger.info(e)
-            first_image += options.batch_size
+            expts = None
+            success_per_image.extend([False] * options.batch_size)
         else:
+            data["n_images_indexed"] = summary_this["n_images_indexed"]
             n_xtal += len(expts)
-            xia2_logger.info(f"Indexed {n_xtal} crystals in total")
-            all_expts.extend(expts)
-            first_image += options.batch_size
             success_per_image.extend(summary_this["success_per_image"])
+            if expts:
+                all_expts.extend(expts)
+        progress_reporter.add_index_result(data)
 
-            if all_expts:
-                # generate up-to-date cluster plots and lists
-                cluster_plots, large_clusters = clusters_from_experiments(
-                    all_expts, threshold="auto"
-                )
-                if large_clusters:
-                    xia2_logger.info(f"{condensed_unit_cell_info(large_clusters)}")
+        if all_expts:
+            # generate up-to-date cluster plots and lists
+            cluster_plots, large_clusters = clusters_from_experiments(
+                all_expts, threshold="auto"
+            )
+            if large_clusters:
+                cell_clustering = f"{condensed_unit_cell_info(large_clusters)}"
+                progress_reporter.add_latest_clustering(cell_clustering)
+
+        first_image += options.batch_size
+        progress_reporter.summarise()
+
     if all_expts:
         all_expts.as_file(working_directory / "indexed_all.expt")
 
@@ -499,21 +551,45 @@ def determine_reference_geometry_from_images(
     refinement_params: RefinementParams,
 ) -> None:
     """Run find spots, indexing and joint refinement in the working directory."""
+    xia2_logger.notice(banner("Joint-refinement of experimental geometry"))  # type: ignore
     slice_images_from_experiments(imported_expts, working_directory, images_to_use)
 
-    xia2_logger.notice(banner("Joint-refinement of experimental geometry"))  # type: ignore
     cluster_plots: dict = {}
     success_per_image: List[bool] = []
+    progress_reporter = ProgressReport({"images_per_batch": {}})
 
     strong = ssx_find_spots(working_directory, spotfinding_params)
     strong.as_file(working_directory / "strong.refl")
-    expts, refl, summary = ssx_index(working_directory, indexing_params)
-    success_per_image = summary["success_per_image"]
+    data = {
+        "n_hits": np.sum(
+            np.bincount(flumpy.to_numpy(strong["id"])) >= indexing_params.min_spots
+        )
+    }
+    # NB ideally count is formatted the same as batch numbering e.g 01 if >9 batches
+    dir_placeholder = pathlib.Path("refinement")
+    data["directory"] = dir_placeholder
+    progress_reporter.setup_data["images_per_batch"][dir_placeholder] = len(
+        strong.experiment_identifiers()
+    )
+    progress_reporter.add_find_spots_result(data)
+    try:
+        expts, refl, summary = ssx_index(working_directory, indexing_params)
+    except DialsIndexError as e:
+        data["n_images_indexed"] = 0
+        xia2_logger.info(e)
+        expts, refl = (None, None)
+    else:
+        success_per_image = summary["success_per_image"]
+        data["n_images_indexed"] = summary["n_images_indexed"]
 
+    progress_reporter.add_index_result(data)
     if expts:
         cluster_plots, large_clusters = clusters_from_experiments(expts)
         if large_clusters:
-            xia2_logger.info(f"{condensed_unit_cell_info(large_clusters)}")
+            cell_clustering = f"{condensed_unit_cell_info(large_clusters)}"
+            progress_reporter.add_latest_clustering(cell_clustering)
+
+    progress_reporter.summarise()
     if cluster_plots:
         generate_html_report(
             cluster_plots, working_directory / "dials.cell_clusters.html"
@@ -553,7 +629,10 @@ def cumulative_determine_reference_geometry(
     first_image = 0
     all_expts = ExperimentList()
     all_tables = []
+    progress_reporter = ProgressReport({"images_per_batch": {}})
+    count = 0
     while n_xtal < options.geometry_refinement_n_crystals:
+        count += 1
         try:
             slice_images_from_experiments(
                 imported_expts,
@@ -564,19 +643,43 @@ def cumulative_determine_reference_geometry(
             break
         strong = ssx_find_spots(working_directory, spotfinding_params)
         strong.as_file(working_directory / "strong.refl")
-        expts, refl, summary_this = ssx_index(working_directory, indexing_params)
-        n_xtal += len(expts)
-        xia2_logger.info(f"Indexed {n_xtal} crystals in total")
-        if refl.size():
-            all_expts.extend(expts)
-            all_tables.append(refl)
-        first_image += options.batch_size
-        success_per_image.extend(summary_this["success_per_image"])
+        data = {
+            "n_hits": np.sum(
+                np.bincount(flumpy.to_numpy(strong["id"])) >= indexing_params.min_spots
+            )
+        }
+        # NB ideally count is formatted the same as batch numbering e.g 01 if >9 batches
+        dir_placeholder = pathlib.Path(f"refinement_batch_{count}")
+        data["directory"] = dir_placeholder
+        progress_reporter.setup_data["images_per_batch"][dir_placeholder] = len(
+            strong.experiment_identifiers()
+        )
+        progress_reporter.add_find_spots_result(data)
+
+        try:
+            expts, refl, summary_this = ssx_index(working_directory, indexing_params)
+        except DialsIndexError as e:
+            data["n_images_indexed"] = 0
+            xia2_logger.info(e)
+            success_per_image.extend([False] * options.batch_size)
+        else:
+            data["n_images_indexed"] = summary_this["n_images_indexed"]
+            n_xtal += len(expts)
+            success_per_image.extend(summary_this["success_per_image"])
+            if refl.size():
+                all_expts.extend(expts)
+                all_tables.append(refl)
+        progress_reporter.add_index_result(data)
 
         if all_expts:
             cluster_plots, large_clusters = clusters_from_experiments(all_expts)
             if large_clusters:
-                xia2_logger.info(f"{condensed_unit_cell_info(large_clusters)}")
+                cell_clustering = f"{condensed_unit_cell_info(large_clusters)}"
+                progress_reporter.add_latest_clustering(cell_clustering)
+
+        first_image += options.batch_size
+        progress_reporter.summarise()
+
     if cluster_plots:
         generate_html_report(
             cluster_plots, working_directory / "dials.cell_clusters.html"
@@ -633,6 +736,119 @@ class ProcessBatch(object):
         return summary_data
 
 
+class ProgressReport(object):
+
+    # class to store progress for reporting.
+    # Either add and report after each step, or add all at the end (so can
+    # distribute batch processing and not have mixed up reporting)
+    # Then at the end of each batch report the cumulative processing stats.
+    # Also allow reporting for stepwise processsing (e.g only find_spots, index or integrate)
+
+    def __init__(self, setup_data):
+        self.setup_data = setup_data
+        self.cumulative_images_spotfinding: int = 0
+        self.cumulative_images_indexing: int = 0
+        self.cumulative_images_integration: int = 0
+        self.cumulative_hits: int = 0
+        self.cumulative_images_indexed: int = 0
+        self.cumulative_crystals_integrated: int = 0
+        self.cell_clustering: str = ""
+
+    def add_find_spots_result(self, summary_data):
+        n_images_this_batch = self.setup_data["images_per_batch"][
+            summary_data["directory"]
+        ]
+        self.cumulative_images_spotfinding += n_images_this_batch
+        self.cumulative_hits += summary_data["n_hits"]
+        this_hit_rate = f"{100.0 * summary_data['n_hits'] / n_images_this_batch:.1f}"
+        overall_hit_rate = (
+            f"{100.0 * self.cumulative_hits / self.cumulative_images_spotfinding:.1f}"
+        )
+        name = summary_data["directory"].name.replace("_", " ")
+        xia2_logger.info(
+            f"{name} hit rate {this_hit_rate}%, overall hit rate {overall_hit_rate}%"
+        )
+
+    def add_index_result(self, summary_data):
+        n_images_this_batch = self.setup_data["images_per_batch"][
+            summary_data["directory"]
+        ]
+        self.cumulative_images_indexing += n_images_this_batch
+        if summary_data["n_images_indexed"] is not None:
+            self.cumulative_images_indexed += summary_data["n_images_indexed"]
+        pc_indexed = f"{self.cumulative_images_indexed * 100 / self.cumulative_images_indexing:.1f}"
+        if self.cumulative_images_spotfinding:
+            pc_indexed_of_hits = (
+                f"{self.cumulative_images_indexed * 100 / self.cumulative_hits:.1f}"
+            )
+        else:
+            self.cumulative_hits += summary_data["n_hits"]
+            pc_indexed_of_hits = (
+                f"{self.cumulative_images_indexed * 100 / self.cumulative_hits:.1f}"
+            )
+        xia2_logger.info(
+            f"{self.cumulative_images_indexed} indexed images overall ({pc_indexed_of_hits}% of hits, {pc_indexed}% of overall)"
+        )
+
+    def add_integration_result(self, summary_data):
+        n_images_this_batch = self.setup_data["images_per_batch"][
+            summary_data["directory"]
+        ]
+        self.cumulative_images_integration += n_images_this_batch
+        if summary_data["n_cryst_integrated"] is not None:
+            self.cumulative_crystals_integrated += summary_data["n_cryst_integrated"]
+        pc_integrated = f"{100 * self.cumulative_crystals_integrated / self.cumulative_images_integration}%"
+        xia2_logger.info(
+            f"{self.cumulative_crystals_integrated} integrated crystals overall ({pc_integrated})"
+        )
+
+    def add_latest_clustering(self, condensed_cell_info):
+        self.cell_clustering = condensed_cell_info
+
+    def summarise(self):
+        # We might just have done one processing step, so can't assume we have all the required quantities to report.
+        n_images = max(
+            [
+                self.cumulative_images_spotfinding,
+                self.cumulative_images_indexing,
+                self.cumulative_images_integration,
+            ]
+        )
+        msg = f"Progress summary:\n  {n_images} processed images"
+        if self.cumulative_hits:
+            if self.cumulative_images_spotfinding:
+                overall_hit_rate = f"{100.0 * self.cumulative_hits / self.cumulative_images_spotfinding:.1f}"
+            else:
+                overall_hit_rate = f"{100.0 * self.cumulative_hits / self.cumulative_images_indexing:.1f}"
+            msg += f", {self.cumulative_hits} hits ({overall_hit_rate}%)"
+        if self.cumulative_images_indexing:
+            pc_indexed = f"{self.cumulative_images_indexed * 100 / self.cumulative_images_indexing:.1f}"
+            pc_indexed_of_hits = (
+                f"{self.cumulative_images_indexed * 100 / self.cumulative_hits:.1f}"
+            )
+            msg += f"\n  {self.cumulative_images_indexed} indexed images ({pc_indexed_of_hits}% of hits, {pc_indexed}% of overall)"
+        if self.cumulative_images_integration:
+            pc_integrated = f"{100 * self.cumulative_crystals_integrated / self.cumulative_images_integration}%"
+            msg += f"\n  {self.cumulative_crystals_integrated} integrated crystals ({pc_integrated})"
+        if self.cell_clustering:
+            msg += "\n" + "\n".join("  " + l for l in self.cell_clustering.split("\n"))
+        xia2_logger.info(msg)
+
+    def add_all(self, summary_data: dict) -> None:
+        # Add complete summary data for a batch, in preparation for summarised report.
+        self.cumulative_images_spotfinding += self.setup_data["images_per_batch"][
+            summary_data["directory"]
+        ]
+        self.cumulative_images_indexing = self.cumulative_images_spotfinding
+        self.cumulative_images_integration = self.cumulative_images_spotfinding
+        if "n_hits" in summary_data:
+            self.cumulative_hits += summary_data["n_hits"]
+        if summary_data["n_images_indexed"] is not None:
+            self.cumulative_images_indexed += summary_data["n_images_indexed"]
+        if summary_data["n_cryst_integrated"] is not None:
+            self.cumulative_crystals_integrated += summary_data["n_cryst_integrated"]
+
+
 def process_batches(
     batch_directories: List[pathlib.Path],
     spotfinding_params: SpotfindingParams,
@@ -641,116 +857,8 @@ def process_batches(
     setup_data: dict,
     options: AlgorithmParams,
 ):
-    class ProgressReport(object):
 
-        # class to store progress for reporting.
-        # Either add and report after each step, or add all at the end (so can
-        # distribute batch processing and not have mixed up reporting)
-        # Then at the end of each batch report the cumulative processing stats.
-        # Also allow reporting for stepwise processsing (e.g only find_spots, index or integrate)
-
-        def __init__(self):
-            self.cumulative_images_spotfinding: int = 0
-            self.cumulative_images_indexing: int = 0
-            self.cumulative_images_integration: int = 0
-            self.cumulative_hits: int = 0
-            self.cumulative_images_indexed: int = 0
-            self.cumulative_crystals_integrated: int = 0
-
-        def add_find_spots_result(self, summary_data):
-            n_images_this_batch = setup_data["images_per_batch"][
-                summary_data["directory"]
-            ]
-            self.cumulative_images_spotfinding += n_images_this_batch
-            self.cumulative_hits += summary_data["n_hits"]
-            this_hit_rate = (
-                f"{100.0 * summary_data['n_hits'] / n_images_this_batch:.1f}"
-            )
-            overall_hit_rate = f"{100.0 * self.cumulative_hits / self.cumulative_images_spotfinding:.1f}"
-            number = summary_data["directory"].split("_")[-1]
-            xia2_logger.info(
-                f"batch {number} hit rate {this_hit_rate}%, overall hit rate {overall_hit_rate}%"
-            )
-
-        def add_index_result(self, summary_data):
-            n_images_this_batch = setup_data["images_per_batch"][
-                summary_data["directory"]
-            ]
-            self.cumulative_images_indexing += n_images_this_batch
-            if summary_data["n_images_indexed"] is not None:
-                self.cumulative_images_indexed += summary_data["n_images_indexed"]
-            pc_indexed = f"{self.cumulative_images_indexed * 100 / self.cumulative_images_indexing:.1f}"
-            if self.cumulative_images_spotfinding:
-                pc_indexed_of_hits = (
-                    f"{self.cumulative_images_indexed * 100 / self.cumulative_hits:.1f}"
-                )
-            else:
-                self.cumulative_hits += summary_data["n_hits"]
-                pc_indexed_of_hits = (
-                    f"{self.cumulative_images_indexed * 100 / self.cumulative_hits:.1f}"
-                )
-            xia2_logger.info(
-                f"{self.cumulative_images_indexed} indexed images overall ({pc_indexed_of_hits}% of hits, {pc_indexed}% of overall)"
-            )
-
-        def add_integration_result(self, summary_data):
-            n_images_this_batch = setup_data["images_per_batch"][
-                summary_data["directory"]
-            ]
-            self.cumulative_images_integration += n_images_this_batch
-            if summary_data["n_cryst_integrated"] is not None:
-                self.cumulative_crystals_integrated += summary_data[
-                    "n_cryst_integrated"
-                ]
-            pc_integrated = f"{100 * self.cumulative_crystals_integrated / self.cumulative_images_integration}%"
-            xia2_logger.info(
-                f"{self.cumulative_crystals_integrated} integrated crystals overall ({pc_integrated})"
-            )
-
-        def summarise(self):
-            # We might just have done one processing step, so can't assume we have all the required quantities to report.
-            n_images = max(
-                [
-                    self.cumulative_images_spotfinding,
-                    self.cumulative_images_indexing,
-                    self.cumulative_images_integration,
-                ]
-            )
-            msg = f"Summary:\n  {n_images} processed images"
-            if self.cumulative_hits:
-                if self.cumulative_images_spotfinding:
-                    overall_hit_rate = f"{100.0 * self.cumulative_hits / self.cumulative_images_spotfinding:.1f}"
-                else:
-                    overall_hit_rate = f"{100.0 * self.cumulative_hits / self.cumulative_images_indexing:.1f}"
-                msg += f", {self.cumulative_hits} hits ({overall_hit_rate}%)"
-            if self.cumulative_images_indexing:
-                pc_indexed = f"{self.cumulative_images_indexed * 100 / self.cumulative_images_indexing:.1f}"
-                pc_indexed_of_hits = (
-                    f"{self.cumulative_images_indexed * 100 / self.cumulative_hits:.1f}"
-                )
-                msg += f"\n  {self.cumulative_images_indexed} indexed images ({pc_indexed_of_hits}% of hits, {pc_indexed}% of overall)"
-            if self.cumulative_images_integration:
-                pc_integrated = f"{100 * self.cumulative_crystals_integrated / self.cumulative_images_integration}%"
-                msg += f"\n  {self.cumulative_crystals_integrated} integrated crystals ({pc_integrated})"
-            xia2_logger.info(msg)
-
-        def add_all(self, summary_data: dict) -> None:
-            # Add complete summary data for a batch, in preparation for summarised report.
-            self.cumulative_images_spotfinding += setup_data["images_per_batch"][
-                summary_data["directory"]
-            ]
-            self.cumulative_images_indexing = self.cumulative_images_spotfinding
-            self.cumulative_images_integration = self.cumulative_images_spotfinding
-            if "n_hits" in summary_data:
-                self.cumulative_hits += summary_data["n_hits"]
-            if summary_data["n_images_indexed"] is not None:
-                self.cumulative_images_indexed += summary_data["n_images_indexed"]
-            if summary_data["n_cryst_integrated"] is not None:
-                self.cumulative_crystals_integrated += summary_data[
-                    "n_cryst_integrated"
-                ]
-
-    progress = ProgressReport()
+    progress = ProgressReport(setup_data)
 
     def process_output(summary_data, add_all_to_progress=True):
         if add_all_to_progress:
