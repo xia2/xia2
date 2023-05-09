@@ -16,7 +16,7 @@ logger = logging.getLogger(__name__)
 
 
 class DataManager:
-    def __init__(self, experiments, reflections, ssx_flag=False):
+    def __init__(self, experiments, reflections):
         self._input_experiments = experiments
         self._input_reflections = reflections
 
@@ -27,10 +27,20 @@ class DataManager:
             value: key for key, value in self.ids_to_identifiers_map.items()
         }
 
-        self._set_batches(ssx_flag)
+        if all(e.scan is None for e in self._experiments):
+            self.all_stills = True
+        elif all(e.scan is not None for e in self._experiments):
+            self.all_stills = False
+        else:
+            raise ValueError(
+                "cannot mix stills and rotation data for multi crystal analysis"
+            )
 
-    def _set_batches(self, ssx_flag):
-        if not ssx_flag:
+        self._set_batches()
+
+    def _set_batches(self):
+
+        if not self.all_stills:
             max_batches = max(e.scan.get_image_range()[1] for e in self._experiments)
             max_batches += 10  # allow some head room
         else:
@@ -41,7 +51,7 @@ class DataManager:
         n = int(math.ceil(math.log10(max_batches)))
 
         for i, expt in enumerate(self._experiments):
-            if not ssx_flag:
+            if not self.all_stills:
                 expt.scan.set_batch_offset(i * 10**n)
                 if expt.imageset:
                     # This may be a different scan instance ¯\_(ツ)_/¯
@@ -119,7 +129,7 @@ class DataManager:
             % (self._reflections.size(), n_refl_before)
         )
 
-    def reflections_as_miller_arrays(self, combined=False, ssx_flag=False):
+    def reflections_as_miller_arrays(self, combined=False):
         # offsets = calculate_batch_offsets(experiments)
         reflection_tables = []
         for id_ in set(self._reflections["id"]).difference({-1}):
@@ -127,7 +137,7 @@ class DataManager:
                 self._reflections.select(self._reflections["id"] == id_)
             )
 
-        if not ssx_flag:
+        if not self.all_stills:
             offsets = [expt.scan.get_batch_offset() for expt in self._experiments]
         else:
             offsets = self.ssx_batch_list

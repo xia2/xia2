@@ -26,53 +26,26 @@ logger = logging.getLogger(__name__)
 class MultiCrystalAnalysis:
     def __init__(self, params, experiments=None, reflections=None, data_manager=None):
         self.params = params
-
-        try:
-            self.ssx_flag = self.params.ssx_flag
-        except AttributeError:
-            self.ssx_flag = False
-
         self._cluster_analysis = None
         if data_manager is not None:
             self._data_manager = data_manager
         else:
             assert experiments is not None and reflections is not None
-            if self.ssx_flag:
-                self._data_manager = DataManager(
-                    experiments, reflections, self.ssx_flag
-                )
-            else:
-                self._data_manager = DataManager(experiments, reflections)
+            self._data_manager = DataManager(experiments, reflections)
 
-        if self.ssx_flag:
-            self._intensities_separate = (
-                self._data_manager.reflections_as_miller_arrays(ssx_flag=self.ssx_flag)
-            )
-        else:
-            self._intensities_separate = (
-                self._data_manager.reflections_as_miller_arrays()
-            )
-
-        if self.ssx_flag:
-            (
-                self.intensities,
-                self.batches,
-                self.scales,
-            ) = self._data_manager.reflections_as_miller_arrays(
-                combined=True, ssx_flag=self.ssx_flag
-            )
-        else:
-            (
-                self.intensities,
-                self.batches,
-                self.scales,
-            ) = self._data_manager.reflections_as_miller_arrays(combined=True)
+        self._intensities_separate = self._data_manager.reflections_as_miller_arrays()
+        (
+            self.intensities,
+            self.batches,
+            self.scales,
+        ) = self._data_manager.reflections_as_miller_arrays(combined=True)
         self.params.batch = []
         scope = phil.parse(batch_phil_scope)
         for expt in self._data_manager.experiments:
             batch_params = scope.extract().batch[0]
             batch_params.id = self._data_manager.identifiers_to_ids_map[expt.identifier]
-            if not self.ssx_flag:
+
+            if not self._data_manager.all_stills:
                 batch_params.range = expt.scan.get_batch_range()
                 self.params.batch.append(batch_params)
 
@@ -228,7 +201,8 @@ relatively isomorphous.
         d.update(result.normalised_scores())
         return d, result.get_table(html=True)
 
-    def interesting_cluster_identification(self, clusters):
+    @staticmethod
+    def interesting_cluster_identification(clusters, params):
 
         # Note: this algorithm could do with a second opinion and some work... but does an ok job on the test cases looked at
 
@@ -297,11 +271,11 @@ relatively isomorphous.
                             if set.intersection(x[0], y[0]) == set():
                                 if (
                                     abs(x[1] - y[1])
-                                    <= self.params.max_cluster_height_difference
+                                    <= params.max_cluster_height_difference
                                 ):
                                     if (
-                                        len(x[0]) >= self.params.min_cluster_size
-                                        and len(y[0]) >= self.params.min_cluster_size
+                                        len(x[0]) >= params.min_cluster_size
+                                        and len(y[0]) >= params.min_cluster_size
                                     ):
                                         final_clusters_to_compare.append(
                                             (x[2], y[2], mean([len(x[0]), len(y[0])]))
@@ -363,12 +337,12 @@ relatively isomorphous.
             if item[1] in dict_for_sub_clusters[item[0]]:
                 real_final_clusters_to_compare.append(item)
 
-        if len(real_final_clusters_to_compare) > self.params.max_output_clusters:
+        if len(real_final_clusters_to_compare) > params.max_output_clusters:
             limited_clusters_to_compare = sorted(
                 real_final_clusters_to_compare, key=lambda x: x[2], reverse=True
             )
             real_final_clusters_to_compare = limited_clusters_to_compare[
-                0 : self.params.max_output_clusters
+                0 : params.max_output_clusters
             ]
             clusters_for_analysis = []
             for i in real_final_clusters_to_compare:
@@ -376,7 +350,9 @@ relatively isomorphous.
                     if idx == 0 or idx == 1:
                         clusters_for_analysis.append(j)
         elif len(real_final_clusters_to_compare) == 0:
-            print("No interesting clusters found, rerun with different parameters")
+            logger.info(
+                "No interesting clusters found, rerun with different parameters"
+            )
             clusters_for_analysis = []
 
         clusters_for_analysis = list(dict.fromkeys(clusters_for_analysis))
@@ -393,18 +369,21 @@ relatively isomorphous.
         file_data.extend(
             [
                 "Selected with heights required to be closer than:"
-                + str(self.params.max_cluster_height_difference),
+                + str(params.max_cluster_height_difference),
                 "And a maximum number of cluster pairs set at:"
-                + str(self.params.max_output_clusters),
+                + str(params.max_output_clusters),
                 "Total Number of Clusters for Analysis:"
                 + str(len(clusters_for_analysis)),
-                "Discrete list of clusters: ",
+                "Discrete list of clusters saved: ",
             ]
         )
 
         for item in clusters_for_analysis:
             file_data.append(item)
             list_of_clusters.append(item)
+
+        for item in file_data:
+            logger.info(item)
 
         return file_data, list_of_clusters
 

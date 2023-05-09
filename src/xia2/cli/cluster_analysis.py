@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import copy
+import logging
 import os
 import random
 import sys
@@ -15,37 +16,43 @@ from dials.util.multi_dataset_handling import (
     parse_multiple_datasets,
 )
 from dials.util.options import ArgumentParser, flatten_experiments, flatten_reflections
+from dials.util.version import dials_version
 
+import xia2.Handlers.Streams
+from xia2.Modules.Analysis import batch_phil_scope
 from xia2.Modules.MultiCrystalAnalysis import MultiCrystalReport
 from xia2.XIA2Version import Version
 
-phil_scope = iotbx.phil.parse(
-    """
-include scope xia2.Modules.MultiCrystal.ScaleAndMerge.phil_scope
+logger = logging.getLogger("xia2.cluster_analysis")
 
-include scope dials.util.exclude_images.phil_scope
-
-seed = 42
-  .type = int(value_min=0)
-
-ssx_flag = False
-    .type = bool
-    .help = "Set this to true for analysing clusters of ssx_data"
-    .short_caption = "SSX flag"
-
-output {
-  log = xia2.multiplex.log
-    .type = str
-}
-""",
-    process_includes=True,
-)
+# phil_scope = iotbx.phil.parse(
+#    """
+# include scope xia2.Modules.MultiCrystal.ScaleAndMerge.phil_scope
+#
+# include scope dials.util.exclude_images.phil_scope
+#
+# seed = 42
+#  .type = int(value_min=0)
+#
+# ssx_flag = False
+#    .type = bool
+#    .help = "Set this to true for analysing clusters of ssx_data"
+#    .short_caption = "SSX flag"
+#
+# output {
+#  log = xia2.cluster_analysis.log
+#    .type = str
+# }
+# """,
+#    process_includes=True,
+# )
 
 mca_phil = iotbx.phil.parse(
     """
-include scope xia2.cli.report.phil_scope
-
-include scope xia2.Modules.MultiCrystal.ScaleAndMerge.phil_scope
+title = 'xia2 report'
+    .type = str
+prefix = 'xia2'
+    .type = str
 
 seed = 42
   .type = int(value_min=0)
@@ -59,17 +66,23 @@ unit_cell_clustering {
     .help = 'Display the dendrogram with a log scale'
 }
 
-ssx_flag = False
-    .type = bool
-    .help = "Set this to true for analysing clusters of ssx_data"
-    .short_caption = "SSX flag"
+max_cluster_height_difference = 0.5
+  .type = float
+  .short_caption = "Maximum hight difference between clusters"
+max_output_clusters = 10
+  .type = int
+  .short_caption = "Maximum number of important clusters to be output"
+min_cluster_size = 5
+  .type = int
+  .short_caption = "Minimum number of datasets for an important cluster"
 
 output {
   log = xia2.multi_crystal_analysis.log
     .type = str
 }
-""",
-    process_includes=True,
+%s
+"""
+    % batch_phil_scope
 )
 
 
@@ -83,7 +96,7 @@ def run(args=sys.argv[1:]):
     """
     parser = ArgumentParser(
         usage=usage,
-        phil=phil_scope,
+        phil=mca_phil,
         read_reflections=True,
         read_experiments=True,
         check_format=False,
@@ -92,16 +105,29 @@ def run(args=sys.argv[1:]):
 
     # Parse the command line
     params, options = parser.parse_args(args=args, show_diff_phil=False)
-    params_mca = mca_phil.extract()
 
-    params_mca.ssx_flag = params.ssx_flag
+    xia2.Handlers.Streams.setup_logging(
+        logfile=params.output.log, verbose=options.verbose
+    )
+
+    logger.info(dials_version())
+
+    # params_mca = mca_phil.extract()
+
+    # params_mca.ssx_flag = params.ssx_flag
+
+    # Log the diff phil
+    diff_phil = parser.diff_phil.as_str()
+    if diff_phil != "":
+        logger.info("The following parameters have been modified:\n")
+        logger.info(diff_phil)
 
     if len(params.input.experiments) == 0:
-        print("No Experiments found in the input")
+        logger.info("No Experiments found in the input")
         parser.print_help()
         return
     if len(params.input.reflections) == 0:
-        print("No reflection data found in the input")
+        logger.info("No reflection data found in the input")
         parser.print_help()
         return
     try:
@@ -131,7 +157,7 @@ def run(args=sys.argv[1:]):
     reflections_all.assert_experiment_identifiers_are_consistent(experiments)
 
     try:
-        MCA = MultiCrystalReport(params_mca, experiments, reflections_all)
+        MCA = MultiCrystalReport(params, experiments, reflections_all)
 
     except ValueError as e:
         sys.exit(str(e))
@@ -139,17 +165,15 @@ def run(args=sys.argv[1:]):
 
         MCA.cluster_analysis()
 
+        logger.info("Correlation Clusters:")
         cc_file_data, cc_list = MCA.interesting_cluster_identification(
-            MCA._cluster_analysis.cc_clusters
+            MCA._cluster_analysis.cc_clusters, params
         )
+        logger.info("===================================================")
+        logger.info("Cos Angle Clusters:")
         cos_file_data, cos_list = MCA.interesting_cluster_identification(
-            MCA._cluster_analysis.cos_angle_clusters
+            MCA._cluster_analysis.cos_angle_clusters, params
         )
-
-        with open("cc_clusters_to_compare.txt", "w") as f:
-            f.write("\n".join(cc_file_data))
-        with open("cos_clusters_to_compare.txt", "w") as f:
-            f.write("\n".join(cos_file_data))
 
         if not os.path.exists("cc_clusters"):
             os.mkdir("cc_clusters")
@@ -215,7 +239,7 @@ def run(args=sys.argv[1:]):
 
         template = env.get_template("clusters.html")
         html = template.render(
-            page_title=params_mca.title,
+            page_title=params.title,
             cc_cluster_table=MCA._cc_cluster_table,
             cc_cluster_json=MCA._cc_cluster_json,
             cos_angle_cluster_table=MCA._cos_angle_cluster_table,
@@ -224,5 +248,7 @@ def run(args=sys.argv[1:]):
             xia2_version=Version,
         )
 
-        with open("%s.html" % params_mca.prefix, "wb") as f:
+        with open("xia2.cluster_analysis.html", "wb") as f:
             f.write(html.encode("utf-8", "xmlcharrefreplace"))
+
+        print("Clusters recommended for comparison in xia2.cluster_analysis.log")
