@@ -61,8 +61,15 @@ fully perpendicular to the z-axis, which will typically not be the case after ge
 The detector origin, distance, fast and slow axis can be displayed by running :samp:`dials.show import/imported.expt`.
 Importantly, using the option :samp:`dials_import.phil=` is the way to improve an already refined geometry. Simply set the
 origin and fast and slow axes based on the values displayed in :samp:`dials.show geometry_refinement/refined.expt`. This
-can help to increase the indexing rate further and hence get a more accurate detector geometry. 
+can help to increase the indexing rate further and hence get a more accurate detector geometry. Note that to specify multiple
+panel options such as origin and fast and slow axes, one must use the following form of phil specification to enable them to be
+all assigned to the same panel::
 
+    geometry.detector.panel{
+      origin=-80,90,-115
+      fast_axis=0.9999,0.0001,0
+      slow_axis=-0.0001,0.9999,0
+    }
 
 ---------------------------------
 Relaxing restraints in refinement
