@@ -50,6 +50,8 @@ class ReductionParams:
     grouping: Optional[Path] = None
     dose_series_repeat: Optional[int] = None
     steps: List[str] = field(default_factory=lambda: ["scale", "merge"])
+    reference_ksol: float = 0.35
+    reference_bsol: float = 46.0
 
     @classmethod
     def from_phil(cls, params: iotbx.phil.scope_extract):
@@ -89,4 +91,6 @@ class ReductionParams:
             grouping,
             params.dose_series_repeat,
             params.workflow.steps,
+            params.reference_model.k_sol,
+            params.reference_model.b_sol,
         )
