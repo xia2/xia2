@@ -16,7 +16,15 @@ space group and unit cell. A suitable pdb model file is also recommended to enab
 data reduction using a reference. Typically, a reference geometry and mask should
 also be provided, as described below.
 
+**Table of contents of xia2 SSX processing documentation**
 
+| :ref:`DataIntegration`
+| :ref:`DataReduction`
+| :ref:`GeometryRefinement`
+| :ref:`MergingInGroups`
+
+
+.. _DataIntegration:
 
 ----------------
 Data Integration
@@ -69,6 +77,8 @@ options for the individual programs. Additionally, stepwise processing can be
 performed by running the program multiple times with the option :samp:`steps=find_spots`,
 then :samp:`steps=index` and finally :samp:`steps=integrate`.
 
+.. _DataReduction:
+
 --------------
 Data Reduction
 --------------
@@ -103,6 +113,23 @@ cutoffs e.g.::
     xia2.ssx_reduce ../xia2_ssx_reduce/DataFiles/scaled*.{expt,refl} steps=merge d_min=1.8
 
     xia2.ssx_reduce steps=merge ../{chip1,chip2}/DataFiles/scaled*.{expt,refl}
+
+.. _GeometryRefinement:
+
+----------------------------------------------
+Overcoming difficulties in geometry refinement
+----------------------------------------------
+The first step of processing with :samp:`xia2.ssx` is to improve the detector geometry in order to
+improve the indexing rate. The starting assumption is that the initial geometry is good enough to
+successfully index a fraction of the images. When this is not the case, it will be necessary to
+change some of the program parameters. Examples and suggestions of how to tackle trickier
+processing cases are described in the link below.
+
+.. toctree::
+  Overcoming problems with the detector geometry <xia2-ssx-geometry-refinement>
+
+
+.. _MergingInGroups:
 
 -----------------
 Merging in groups
