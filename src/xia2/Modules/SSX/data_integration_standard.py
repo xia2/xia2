@@ -124,6 +124,10 @@ def process_batch(
             xia2_logger.warning(
                 f"No images successfully indexed in {str(working_directory)}"
             )
+            if (
+                "integrate" in options.steps
+            ):  # make sure integration rate is reported correctly
+                progress_reporter.add_integration_result(data)
             return data
     if "integrate" in options.steps:
         integration_summary = ssx_integrate(working_directory, integration_params)
@@ -780,11 +784,15 @@ class ProgressReport(object):
         if self.cumulative_images_spotfinding:
             pc_indexed_of_hits = (
                 f"{self.cumulative_images_indexed * 100 / self.cumulative_hits:.1f}"
+                if self.cumulative_hits
+                else "-"
             )
         else:
             self.cumulative_hits += summary_data["n_hits"]
             pc_indexed_of_hits = (
                 f"{self.cumulative_images_indexed * 100 / self.cumulative_hits:.1f}"
+                if self.cumulative_hits
+                else "-"
             )
         xia2_logger.info(
             f"{self.cumulative_images_indexed} indexed images overall ({pc_indexed_of_hits}% of hits, {pc_indexed}% of overall)"
@@ -797,7 +805,7 @@ class ProgressReport(object):
         self.cumulative_images_integration += n_images_this_batch
         if summary_data["n_cryst_integrated"] is not None:
             self.cumulative_crystals_integrated += summary_data["n_cryst_integrated"]
-        pc_integrated = f"{100 * self.cumulative_crystals_integrated / self.cumulative_images_integration}%"
+        pc_integrated = f"{100 * self.cumulative_crystals_integrated / self.cumulative_images_integration:.1f}%"
         xia2_logger.info(
             f"{self.cumulative_crystals_integrated} integrated crystals overall ({pc_integrated})"
         )
@@ -815,7 +823,7 @@ class ProgressReport(object):
             ]
         )
         msg = f"Progress summary:\n  {n_images} processed images"
-        if self.cumulative_hits:
+        if self.cumulative_images_spotfinding or self.cumulative_images_indexing:
             if self.cumulative_images_spotfinding:
                 overall_hit_rate = f"{100.0 * self.cumulative_hits / self.cumulative_images_spotfinding:.1f}"
             else:
@@ -825,10 +833,12 @@ class ProgressReport(object):
             pc_indexed = f"{self.cumulative_images_indexed * 100 / self.cumulative_images_indexing:.1f}"
             pc_indexed_of_hits = (
                 f"{self.cumulative_images_indexed * 100 / self.cumulative_hits:.1f}"
+                if self.cumulative_hits
+                else "-"
             )
             msg += f"\n  {self.cumulative_images_indexed} indexed images ({pc_indexed_of_hits}% of hits, {pc_indexed}% of overall)"
         if self.cumulative_images_integration:
-            pc_integrated = f"{100 * self.cumulative_crystals_integrated / self.cumulative_images_integration}%"
+            pc_integrated = f"{100 * self.cumulative_crystals_integrated / self.cumulative_images_integration:.1f}%"
             msg += f"\n  {self.cumulative_crystals_integrated} integrated crystals ({pc_integrated})"
         if self.cell_clustering:
             msg += "\n" + "\n".join("  " + l for l in self.cell_clustering.split("\n"))
