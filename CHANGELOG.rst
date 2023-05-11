@@ -1,3 +1,30 @@
+xia2 3.14.0 (2023-04-12)
+========================
+
+Features
+--------
+
+- ``xia2.ssx``: Enable arbitrary grouping of data for merging by specifying a grouping yml, add dose_series_repeat=$n option to indicate dose series for merging. (`#713 <https://github.com/xia2/xia2/issues/713>`_)
+- Add handling for small-molecule chemical formula data, and extra help output when using ``xia2.small_molecule``. (`#723 <https://github.com/xia2/xia2/issues/723>`_)
+- ``xia2.ssx``: Improve unit cell assessment and reporting when unit cell is not known. (`#731 <https://github.com/xia2/xia2/issues/731>`_)
+- ``xia2.multiplex``: Generate ``FreeR_flag`` column in merged mtz output, ensuring flags are consistent across all clusters/filtered reflections. (`#732 <https://github.com/xia2/xia2/issues/732>`_)
+
+
+Bugfixes
+--------
+
+- CPU allocation limits will now be correctly inherited from the Slurm cluster scheduler. (`#722 <https://github.com/xia2/xia2/issues/722>`_)
+- ``xia2.ssx``: Don't use the beam model from a reference geometry. (`#724 <https://github.com/xia2/xia2/issues/724>`_)
+- ``xia2.ssx``: If rerunning in same directory, make sure correct batch folders are generated. (`#725 <https://github.com/xia2/xia2/issues/725>`_)
+- ``xia2.ssx``: When re-importing with the self-determined reference geometry, don't overwrite the detector model with manually specified phil options. (`#726 <https://github.com/xia2/xia2/issues/726>`_)
+
+
+Misc
+----
+
+- `#728 <https://github.com/xia2/xia2/issues/728>`_, `#729 <https://github.com/xia2/xia2/issues/729>`_, `#730 <https://github.com/xia2/xia2/issues/730>`_
+
+
 xia2 3.13.0 (2023-01-26)
 ========================
 

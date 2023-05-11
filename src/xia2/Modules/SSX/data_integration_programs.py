@@ -79,6 +79,7 @@ class IndexingParams:
     space_group: Optional[sgtbx.space_group] = None
     unit_cell: Optional[uctbx.unit_cell] = None
     max_lattices: int = 1
+    min_spots: int = 10
     nproc: int = 1
     phil: Optional[Path] = None
     output_nuggets_dir: Optional[Path] = None
@@ -103,6 +104,7 @@ class IndexingParams:
             params.space_group,
             params.indexing.unit_cell,
             params.indexing.max_lattices,
+            params.indexing.min_spots,
             params.multiprocessing.nproc,
             indexing_phil,
         )
@@ -284,6 +286,7 @@ def ssx_index(
             input.experiments = imported.expt
             input.reflections = strong.refl
             indexing.nproc={indexing_params.nproc}
+            min_spots={indexing_params.min_spots}
             """
             if indexing_params.unit_cell:
                 uc = ",".join(str(i) for i in indexing_params.unit_cell.parameters())
@@ -343,6 +346,10 @@ def ssx_index(
             )
 
             dials_logger.info(report)
+            n_hits = sum(
+                v[0]["n_strong"] > indexing_params.min_spots
+                for v in summary_data.values()
+            )
 
             # Report on clustering, and generate html report and json output
             if indexed_experiments:
@@ -355,8 +362,9 @@ def ssx_index(
             summary_plots = {}
             if indexed_experiments:
                 summary_plots = generate_plots(summary_data)
+            indexing_rate = f"{100 * n_images / n_hits:.2f}"
             output_ = (
-                f"{indexed_reflections.size()} spots indexed on {n_images} images\n"
+                f"{indexed_reflections.size()} spots indexed on {n_images} images ({indexing_rate}% of hits indexed)\n"
                 + f"{indexing_summary_output(summary_data, summary_plots)}"
             )
             xia2_logger.info(output_)
@@ -369,6 +377,7 @@ def ssx_index(
                 "n_images_indexed": n_images,
                 "large_clusters": large_clusters,
                 "success_per_image": indexing_success_per_image,
+                "n_hits": n_hits,
             }
     return indexed_experiments, indexed_reflections, summary_for_xia2
 
