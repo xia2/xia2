@@ -360,7 +360,7 @@ def ssx_index(
             summary_plots = {}
             if indexed_experiments:
                 summary_plots = generate_plots(summary_data)
-            indexing_rate = f"{100 * n_images / n_hits:.2f}"
+            indexing_rate = f"{100 * n_images / n_hits:.2f}" if n_hits else "-"
             output_ = (
                 f"{indexed_reflections.size()} spots indexed on {n_images} images ({indexing_rate}% of hits indexed)\n"
                 + f"{indexing_summary_output(summary_data, summary_plots)}"
