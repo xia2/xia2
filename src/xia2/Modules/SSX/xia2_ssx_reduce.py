@@ -5,6 +5,7 @@ from pathlib import Path
 
 import iotbx.phil
 from dials.util.mp import available_cores
+from dials.util.reference import reference_phil_str
 from libtbx import Auto
 
 from xia2.Modules.SSX.data_reduction_definitions import ReductionParams
@@ -64,7 +65,8 @@ dose_series_repeat = None
           "point will be merged separately"
 """
 
-data_reduction_phil_str = """
+data_reduction_phil_str = (
+    """
 reduction_batch_size=1000
   .type = int
   .help = "The minimum batch size for consistent reindexing of data with cosym."
@@ -75,6 +77,7 @@ reference = None
           "Can be a model pdb/cif file or a cif/mtz data file contaning"
           "intensity information."
   .expert_level = 1
+%s
 clustering {
   threshold=None
     .type = float(value_min=0, allow_none=True)
@@ -137,6 +140,8 @@ scaling {
     .expert_level = 3
 }
 """
+    % reference_phil_str
+)
 
 full_phil_str = phil_str + data_reduction_phil_str
 
