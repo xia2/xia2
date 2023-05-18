@@ -279,6 +279,43 @@ def check_previous_import(
     return (same_as_previous, previous)
 
 
+def _handle_slices(images_or_templates, path_type="image"):
+    assert path_type == "image" or path_type == "template"
+    # We want to allow image/template slicing e.g. image.h5:1:100, but only if there is a single image (
+    # except for multiple images if all the slices are the same)
+    starts = []
+    ends = []
+    import_command = []
+    for obj in images_or_templates:
+        # here we only care about ':' which are later than C:\
+        if ":" in obj:
+            tokens = obj.split(":")
+            # cope with windows drives i.e. C:\data\blah\thing_0001.cbf:1:100
+            if len(tokens[0]) == 1:
+                tokens = [f"{tokens[0]}:{tokens[1]}"] + tokens[2:]
+            if len(tokens) != 3:
+                raise RuntimeError("/path/to/image.h5:start:end")
+            dataset = tokens[0]
+            starts.append(int(tokens[1]))
+            ends.append(int(tokens[2]))
+            import_command.append(
+                dataset if path_type == "image" else f"template={dataset}"
+            )
+        else:
+            import_command.append(obj if path_type == "image" else f"template={obj}")
+    if len(starts) and (len(starts) != len(images_or_templates)):
+        raise ValueError(
+            f"Can't import multiple {path_type}s with slices, unless the slices are the same"
+        )
+    if len(set(starts)) > 1 or len(set(ends)) > 1:
+        raise ValueError(
+            f"Can't import multiple {path_type}s with slices, unless the slices are the same"
+        )
+    if starts and ends:
+        import_command.append(f"image_range={starts[0]},{ends[0]}")
+    return import_command
+
+
 def run_import(
     working_directory: pathlib.Path,
     file_input: FileInput,
@@ -328,10 +365,9 @@ def run_import(
         else:
             import_command.insert(1, os.fspath(file_input.import_phil))
     if file_input.images:
-        import_command += file_input.images
+        import_command += _handle_slices(file_input.images, path_type="image")
     elif file_input.templates:
-        for t in file_input.templates:
-            import_command.append(f"template={t}")
+        import_command += _handle_slices(file_input.templates, path_type="template")
     elif file_input.directories:
         for d in file_input.directories:
             import_command.append(f"directory={d}")
