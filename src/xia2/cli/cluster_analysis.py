@@ -75,6 +75,12 @@ max_output_clusters = 10
 min_cluster_size = 5
   .type = int
   .short_caption = "Minimum number of datasets for an important cluster"
+output_correlation_cluster_number = 0
+  .type = int
+  .short_caption = "Option to output a specific correlation cluster when re-running the code"
+output_cos_cluster_number = 0
+  .type = int
+  .short_caption = "Option to output a specific cos cluster when re-running the code"
 
 output {
   log = xia2.multi_crystal_analysis.log
@@ -181,7 +187,10 @@ def run(args=sys.argv[1:]):
             os.mkdir("cos_angle_clusters")
 
         for cluster in MCA._cluster_analysis.cc_clusters:
-            if "cluster_" + str(cluster.cluster_id) in cc_list:
+            if (
+                "cluster_" + str(cluster.cluster_id) in cc_list
+                or cluster.cluster_id == params.output_correlation_cluster_number
+            ):
                 new_folder = "cc_clusters/" + "cluster_" + str(cluster.cluster_id)
                 data_manager = copy.deepcopy(MCA._data_manager)
                 if not os.path.exists(new_folder):
@@ -199,7 +208,10 @@ def run(args=sys.argv[1:]):
                 )
 
         for cluster in MCA._cluster_analysis.cos_angle_clusters:
-            if "cluster_" + str(cluster.cluster_id) in cos_list:
+            if (
+                "cluster_" + str(cluster.cluster_id) in cos_list
+                or cluster.cluster_id == params.output_cos_cluster_number
+            ):
                 new_folder = (
                     "cos_angle_clusters/" + "cluster_" + str(cluster.cluster_id)
                 )
