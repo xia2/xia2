@@ -5,9 +5,22 @@ import os
 # import pathlib
 import subprocess
 
-# import pytest
+import pytest
 
-# from xia2.Modules.MultiCrystalAnalysis import MultiCrystalReport
+from libtbx.phil import scope_extract
+
+from xia2.Modules.MultiCrystal import ClusterInfo
+from xia2.Modules.MultiCrystalAnalysis import MultiCrystalAnalysis
+
+# Setup Test Clusters
+test_1 = [
+    ClusterInfo(1, [1, 2, 3], 5, 100, [1, 1, 1, 90, 90, 90], 0.3),
+    ClusterInfo(2, [1, 2, 3, 4, 5], 5, 100, [1, 1, 1, 90, 90, 90], 0.35),
+]
+params_1 = scope_extract("test", "test", "test")
+params_1.__inject__("max_cluster_height_difference", 0.05)
+params_1.__inject__("max_output_clusters", 10)
+params_1.__inject__("min_cluster_size", 2)
 
 
 def test_serial_data(dials_data, tmp_path):
@@ -77,5 +90,11 @@ def check_output(main_dir):
     assert (main_dir / "xia2.cluster_analysis.html").is_file()
 
 
-# @pytest.mark.parametrize(("clusters", "expected_interesting"), [({"Cluster Number": ['cluster_1', 'cluster_2', 'cluster_3'], "Height": [], "Datasets": []},'BLAH'),({"Cluster Number": [], "Height": [], "Datasets": []},'BLAH'),({"Cluster Number": [], "Height": [], "Datasets": []},'BLAH')])
-# def check_interesting_cluster_algorithm(clusters, expected_interesting):
+@pytest.mark.parametrize("clusters,params,expected", [(test_1, params_1, [])])
+def test_interesting_cluster_algorithm(clusters, params, expected):
+    (
+        file_data,
+        list_of_clusters,
+    ) = MultiCrystalAnalysis.interesting_cluster_identification(clusters, params)
+
+    assert list_of_clusters == expected
