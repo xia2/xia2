@@ -5,8 +5,6 @@ import logging
 import os
 from collections import OrderedDict
 
-import pandas as pd
-
 import iotbx.phil
 from cctbx import sgtbx, uctbx
 from dials.array_family import flex
@@ -150,18 +148,6 @@ reference = None
             "this reference file."
     .expert_level = 2
 
-output_cluster_mtz = True
-    .type = bool
-    .help = "This will determine how the clustering is output."
-            "This parameter is True by default. When set to true,"
-            "analysing clusters (defining the cluster_method) will"
-            "provide a scaled.mtz as an output. When analysing large"
-            "numbers of datasets, this may be computationally expensive."
-            "Setting this parameter to False will output a .csv file"
-            "containing details about the datasets in the cluster instead."
-            "This is helpful in re-running multiplex on only specific clusters."
-    .short_caption = "Output cluster mtz"
-
 resolution
   .short_caption = "Resolution"
 {
@@ -248,16 +234,6 @@ max_clusters = None
 cluster_method = *cos_angle correlation
   .type = choice
   .short_caption = "Metric on which to perform clustering"
-
-max_cluster_height_difference = 0.5
-  .type = float
-  .short_caption = "Maximum hight difference between clusters"
-max_output_clusters = 10
-  .type = int
-  .short_caption = "Maximum number of important clusters to be output"
-min_cluster_size = 5
-  .type = int
-  .short_caption = "Minimum number of datasets for an important cluster"
 
 
 identifiers = None
@@ -438,17 +414,6 @@ class MultiCrystalScale:
             self._data_manager_original = self._data_manager
             cwd = os.path.abspath(os.getcwd())
             n_processed = 0
-
-            if not self._params.output_cluster_mtz:
-                template = {
-                    "Cluster Number": [],
-                    "Number of Datasets": [],
-                    "Completeness": [],
-                    "Multiplicity": [],
-                    "Height": [],
-                }
-                cluster_summary = pd.DataFrame(template)
-
             for cluster in reversed(clusters):
                 if max_clusters is not None and n_processed == max_clusters:
                     break
@@ -478,51 +443,25 @@ class MultiCrystalScale:
                 ]
                 data_manager.select(cluster_identifiers)
 
-                if not self._params.output_cluster_mtz:
-                    el = data_manager._experiments
-                    ids = list(el.identifiers())
-                    cluster_template = {"Datasets": []}
-                    cluster_datasets = pd.DataFrame(cluster_template)
+                scaled = Scale(data_manager, self._params)
 
-                    for item in cluster_identifiers:
-                        e = el[ids.index(item)]
-                        i = e.imageset
-                        cluster_datasets.loc[len(cluster_datasets)] = [i.paths()[0]]
+                data_manager.export_unmerged_mtz(
+                    "scaled_unmerged.mtz", d_min=scaled.d_min
+                )
+                data_manager.export_merged_mtz(
+                    "scaled.mtz",
+                    d_min=scaled.d_min,
+                    r_free_params=self._params.r_free_flags,
+                )
+                data_manager.export_experiments("scaled.expt")
+                data_manager.export_reflections("scaled.refl", d_min=scaled.d_min)
+                convert_merged_mtz_to_sca("scaled.mtz")
+                convert_unmerged_mtz_to_sca("scaled_unmerged.mtz")
 
-                    cluster_datasets.to_csv("Cluster_datasets.csv", index=False)
-
-                    cluster_data = [
-                        "cluster_" + str(int(cluster.cluster_id)),
-                        len(cluster.labels),
-                        cluster.completeness * 100,
-                        cluster.multiplicity,
-                        cluster.height,
-                    ]
-                    cluster_summary.loc[len(cluster_summary)] = cluster_data
-                else:
-
-                    scaled = Scale(data_manager, self._params)
-
-                    data_manager.export_unmerged_mtz(
-                        "scaled_unmerged.mtz", d_min=scaled.d_min
-                    )
-                    data_manager.export_merged_mtz(
-                        "scaled.mtz",
-                        d_min=scaled.d_min,
-                        r_free_params=self._params.r_free_flags,
-                    )
-                    data_manager.export_experiments("scaled.expt")
-                    data_manager.export_reflections("scaled.refl", d_min=scaled.d_min)
-                    convert_merged_mtz_to_sca("scaled.mtz")
-                    convert_unmerged_mtz_to_sca("scaled_unmerged.mtz")
-
-                    self._record_individual_report(
-                        data_manager, scaled.report(), cluster_dir.replace("_", " ")
-                    )
+                self._record_individual_report(
+                    data_manager, scaled.report(), cluster_dir.replace("_", " ")
+                )
                 os.chdir(cwd)
-
-            if not self._params.output_cluster_mtz:
-                cluster_summary.to_csv("Cluster_summary.csv", index=False)
 
         if self._params.filtering.method:
             # Final round of scaling, this time filtering out any bad datasets
@@ -820,7 +759,7 @@ class MultiCrystalScale:
         cosym.set_lattice_symmetry_max_delta(
             self._params.symmetry.cosym.lattice_symmetry_max_delta
         )
-        cosym.set_reference_pdb(self._params.reference)
+        cosym.set_reference_file(self._params.reference)
         cosym.run()
         self._cosym_analysis = cosym.get_cosym_analysis()
         self._experiments_filename = cosym.get_reindexed_experiments()
