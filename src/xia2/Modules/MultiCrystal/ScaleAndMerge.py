@@ -140,16 +140,6 @@ symmetry
     .short_caption = "Space group"
 }
 
-reference = None
-    .type = path
-    .help = "A file containing a reference set of intensities e.g. MTZ/cif, or a"
-            "file from which a reference set of intensities can be calculated"
-            "e.g. .pdb or .cif . The space group of the reference file will"
-            "be used and if an indexing ambiguity is present, the input"
-            "data will be reindexed to be consistent with the indexing mode of"
-            "this reference file."
-    .expert_level = 2
-
 output_cluster_mtz = True
     .type = bool
     .help = "This will determine how the clustering is output."
@@ -248,18 +238,6 @@ max_clusters = None
 cluster_method = *cos_angle correlation
   .type = choice
   .short_caption = "Metric on which to perform clustering"
-
-max_cluster_height_difference = 0.5
-  .type = float
-  .short_caption = "Maximum hight difference between clusters"
-max_output_clusters = 10
-  .type = int
-  .short_caption = "Maximum number of important clusters to be output"
-min_cluster_size = 5
-  .type = int
-  .short_caption = "Minimum number of datasets for an important cluster"
-
-
 identifiers = None
   .type = strings
   .short_caption = "Identifiers"
@@ -820,7 +798,6 @@ class MultiCrystalScale:
         cosym.set_lattice_symmetry_max_delta(
             self._params.symmetry.cosym.lattice_symmetry_max_delta
         )
-        cosym.set_reference_pdb(self._params.reference)
         cosym.run()
         self._cosym_analysis = cosym.get_cosym_analysis()
         self._experiments_filename = cosym.get_reindexed_experiments()
@@ -836,7 +813,6 @@ class MultiCrystalScale:
             [
                 self._params.symmetry.space_group,
                 self._params.symmetry.laue_group,
-                self._params.reference,
             ]
         ):
             best_solution = cosym.get_best_solution()
