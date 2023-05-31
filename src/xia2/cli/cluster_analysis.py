@@ -25,28 +25,6 @@ from xia2.XIA2Version import Version
 
 logger = logging.getLogger("xia2.cluster_analysis")
 
-# phil_scope = iotbx.phil.parse(
-#    """
-# include scope xia2.Modules.MultiCrystal.ScaleAndMerge.phil_scope
-#
-# include scope dials.util.exclude_images.phil_scope
-#
-# seed = 42
-#  .type = int(value_min=0)
-#
-# ssx_flag = False
-#    .type = bool
-#    .help = "Set this to true for analysing clusters of ssx_data"
-#    .short_caption = "SSX flag"
-#
-# output {
-#  log = xia2.cluster_analysis.log
-#    .type = str
-# }
-# """,
-#    process_includes=True,
-# )
-
 mca_phil = iotbx.phil.parse(
     """
 title = 'xia2 report'
@@ -117,10 +95,6 @@ def run(args=sys.argv[1:]):
     )
 
     logger.info(dials_version())
-
-    # params_mca = mca_phil.extract()
-
-    # params_mca.ssx_flag = params.ssx_flag
 
     # Log the diff phil
     diff_phil = parser.diff_phil.as_str()
