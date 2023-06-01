@@ -174,10 +174,10 @@ def run(args=sys.argv[1:]):
                 ]
                 data_manager.select(cluster_identifiers)
 
-                MCA._data_manager.export_experiments(
+                data_manager.export_experiments(
                     new_folder + "/cluster_" + str(cluster.cluster_id) + ".expt"
                 )
-                MCA._data_manager.export_reflections(
+                data_manager.export_reflections(
                     new_folder + "/cluster_" + str(cluster.cluster_id) + ".refl"
                 )
 
@@ -197,10 +197,10 @@ def run(args=sys.argv[1:]):
                 ]
                 data_manager.select(cluster_identifiers)
 
-                MCA._data_manager.export_experiments(
+                data_manager.export_experiments(
                     new_folder + "/cluster_" + str(cluster.cluster_id) + ".expt"
                 )
-                MCA._data_manager.export_reflections(
+                data_manager.export_reflections(
                     new_folder + "/cluster_" + str(cluster.cluster_id) + ".refl"
                 )
 
