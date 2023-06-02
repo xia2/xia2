@@ -59,9 +59,15 @@ output_correlation_cluster_number = 0
 output_cos_cluster_number = 0
   .type = int
   .short_caption = "Option to output a specific cos cluster when re-running the code"
+exclude_correlation_cluster_number = 0
+  .type = int
+  .short_caption = "Option to output all data excluding a specific correlation cluster"
+exclude_cos_cluster_number = 0
+  .type = int
+  .short_caption = "option to output all data excluding a specific cos cluster"
 
 output {
-  log = xia2.multi_crystal_analysis.log
+  log = xia2.cluster_analysis.log
     .type = str
 }
 %s
@@ -166,19 +172,32 @@ def run(args=sys.argv[1:]):
                 or cluster.cluster_id == params.output_correlation_cluster_number
             ):
                 new_folder = "cc_clusters/" + "cluster_" + str(cluster.cluster_id)
-                data_manager = copy.deepcopy(MCA._data_manager)
-                if not os.path.exists(new_folder):
-                    os.mkdir(new_folder)
                 cluster_identifiers = [
                     MCA._data_manager.ids_to_identifiers_map[l] for l in cluster.labels
                 ]
-                data_manager.select(cluster_identifiers)
-
-                data_manager.export_experiments(
-                    new_folder + "/cluster_" + str(cluster.cluster_id) + ".expt"
+                output_cluster(
+                    new_folder, cluster, MCA._data_manager, cluster_identifiers
                 )
-                data_manager.export_reflections(
-                    new_folder + "/cluster_" + str(cluster.cluster_id) + ".refl"
+
+            if params.exclude_correlation_cluster_number == cluster.cluster_id:
+                new_folder = (
+                    "cc_clusters/" + "excluded_cluster_" + str(cluster.cluster_id)
+                )
+                overall_cluster = MCA._cluster_analysis.cc_clusters[-1]
+                identifiers_overall_cluster = [
+                    MCA._data_manager.ids_to_identifiers_map[l]
+                    for l in overall_cluster.labels
+                ]
+                identifiers_to_exclude = [
+                    MCA._data_manager.ids_to_identifiers_map[l] for l in cluster.labels
+                ]
+                identifiers_to_output = [
+                    i
+                    for i in identifiers_overall_cluster
+                    if i not in identifiers_to_exclude
+                ]
+                output_cluster(
+                    new_folder, cluster, MCA._data_manager, identifiers_to_output
                 )
 
         for cluster in MCA._cluster_analysis.cos_angle_clusters:
@@ -189,19 +208,31 @@ def run(args=sys.argv[1:]):
                 new_folder = (
                     "cos_angle_clusters/" + "cluster_" + str(cluster.cluster_id)
                 )
-                data_manager = copy.deepcopy(MCA._data_manager)
-                if not os.path.exists(new_folder):
-                    os.mkdir(new_folder)
-                cluster_identifiers = [
+                output_cluster(
+                    new_folder, cluster, MCA._data_manager, cluster_identifiers
+                )
+
+            if params.exclude_cos_cluster_number == cluster.cluster_id:
+                new_folder = (
+                    "cos_angle_clusters/"
+                    + "excluded_cluster_"
+                    + str(cluster.cluster_id)
+                )
+                overall_cluster = MCA._cluster_analysis.cos_angle_clusters[-1]
+                identifiers_overall_cluster = [
+                    MCA._data_manager.ids_to_identifiers_map[l]
+                    for l in overall_cluster.labels
+                ]
+                identifiers_to_exclude = [
                     MCA._data_manager.ids_to_identifiers_map[l] for l in cluster.labels
                 ]
-                data_manager.select(cluster_identifiers)
-
-                data_manager.export_experiments(
-                    new_folder + "/cluster_" + str(cluster.cluster_id) + ".expt"
-                )
-                data_manager.export_reflections(
-                    new_folder + "/cluster_" + str(cluster.cluster_id) + ".refl"
+                identifiers_to_output = [
+                    i
+                    for i in identifiers_overall_cluster
+                    if i not in identifiers_to_exclude
+                ]
+                output_cluster(
+                    new_folder, cluster, MCA._data_manager, identifiers_to_output
                 )
 
         id_list = []
@@ -237,4 +268,17 @@ def run(args=sys.argv[1:]):
         with open("xia2.cluster_analysis.html", "wb") as f:
             f.write(html.encode("utf-8", "xmlcharrefreplace"))
 
-        print("Clusters recommended for comparison in xia2.cluster_analysis.log")
+        logger.info("Clusters recommended for comparison in xia2.cluster_analysis.log")
+
+
+def output_cluster(new_folder, cluster, original_data_manager, cluster_identifiers):
+    data_manager = copy.deepcopy(original_data_manager)
+    if not os.path.exists(new_folder):
+        os.mkdir(new_folder)
+    data_manager.select(cluster_identifiers)
+    data_manager.export_experiments(
+        new_folder + "/cluster_" + str(cluster.cluster_id) + ".expt"
+    )
+    data_manager.export_reflections(
+        new_folder + "/cluster_" + str(cluster.cluster_id) + ".refl"
+    )
