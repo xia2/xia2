@@ -27,13 +27,9 @@ logger = logging.getLogger("xia2.cluster_analysis")
 
 mca_phil = iotbx.phil.parse(
     """
-title = 'xia2 report'
-    .type = str
-prefix = 'xia2'
-    .type = str
-
 seed = 42
   .type = int(value_min=0)
+  .help = "Seed value for random number generators used"
 
 unit_cell_clustering {
   threshold = 5000
@@ -256,7 +252,7 @@ def run(args=sys.argv[1:]):
 
         template = env.get_template("clusters.html")
         html = template.render(
-            page_title=params.title,
+            page_title="xia2 cluster analysis",
             cc_cluster_table=MCA._cc_cluster_table,
             cc_cluster_json=MCA._cc_cluster_json,
             cos_angle_cluster_table=MCA._cos_angle_cluster_table,
