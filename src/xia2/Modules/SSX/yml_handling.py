@@ -117,7 +117,7 @@ def save_scaled_array_for_merge(
             intensity_choice=["scale"],
             d_min=input_.params.d_min,
             combine_partials=False,
-            partiality_threshold=0.4,  # make this setable?
+            partiality_threshold=input_.params.partiality_threshold,
         )
         tmp = flex.reflection_table()
         tmp["miller_index"] = refls["miller_index"]

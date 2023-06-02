@@ -374,6 +374,7 @@ class BaseDataReduction(object):
                         elist,
                         self._reduction_params.d_min,
                         best_unit_cell,
+                        self._reduction_params.partiality_threshold,
                         name,
                     )
                 )

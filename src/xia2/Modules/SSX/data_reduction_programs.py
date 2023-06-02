@@ -275,6 +275,7 @@ def merge(
     experiments: ExperimentList,
     d_min: float = None,
     best_unit_cell: Optional[uctbx.unit_cell] = None,
+    partiality_threshold: float = 0.25,
     name: str = "",
 ) -> MergeResult:
     logfile = "dials.merge.log"
@@ -297,7 +298,9 @@ def merge(
             input_ += f"  d_min = {d_min}\n"
         if best_unit_cell:
             params.best_unit_cell = best_unit_cell
-            input_ += f"  best_unit_cell = {best_unit_cell.parameters()}"
+            input_ += f"  best_unit_cell = {best_unit_cell.parameters()}\n"
+        params.partiality_threshold = partiality_threshold
+        input_ += f"  partiality_threshold = {partiality_threshold}"
         params.assess_space_group = False
         params.combine_partials = False
 
@@ -397,12 +400,13 @@ def _extract_scaling_params(reduction_params):
         reflection_selection.intensity_choice=sum
         reflection_selection.method=intensity_ranges
         reflection_selection.Isigma_range=2.0,0.0
-        reflection_selection.min_partiality=0.4
         output.additional_stats=True
         scaling_options.nproc=8
     """
     xia2_phil = f"""
         anomalous={reduction_params.anomalous}
+        reflection_selection.min_partiality={reduction_params.partiality_threshold}
+        cut_data.partiality_cutoff={reduction_params.partiality_threshold}
     """
     if reduction_params.d_min:
         xia2_phil += f"\ncut_data.d_min={reduction_params.d_min}"
@@ -456,12 +460,13 @@ def _extract_scaling_params_for_scale_against_reference(reduction_params, name):
         reflection_selection.intensity_choice=sum
         reflection_selection.method=intensity_ranges
         reflection_selection.Isigma_range=2.0,0.0
-        reflection_selection.min_partiality=0.4
         output.additional_stats=True
         cut_data.small_scale_cutoff=1e-9
     """
     xia2_phil = f"""
         anomalous={reduction_params.anomalous}
+        reflection_selection.min_partiality={reduction_params.partiality_threshold}
+        cut_data.partiality_cutoff={reduction_params.partiality_threshold}
         output.experiments={name}.expt
         output.reflections={name}.refl
         output.html=None
@@ -629,6 +634,7 @@ def _extract_cosym_params(reduction_params, index):
         min_i_mean_over_sigma_mean=2
         unit_cell_clustering.threshold=None
         lattice_symmetry_max_delta={reduction_params.lattice_symmetry_max_delta}
+        partiality_threshold={reduction_params.partiality_threshold}
     """
     if reduction_params.d_min:
         # note - allow user phil to override the overall xia2 d_min - might
