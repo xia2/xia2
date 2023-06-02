@@ -268,7 +268,7 @@ def run(args=sys.argv[1:]):
         with open("xia2.cluster_analysis.html", "wb") as f:
             f.write(html.encode("utf-8", "xmlcharrefreplace"))
 
-        logger.info("Clusters recommended for comparison in xia2.cluster_analysis.log")
+        logger.info(f"Clusters recommended for comparison in {params.output.log}")
 
 
 def output_cluster(new_folder, cluster, original_data_manager, cluster_identifiers):

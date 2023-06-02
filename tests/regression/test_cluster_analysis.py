@@ -147,7 +147,7 @@ def check_output(main_dir):
     assert (main_dir / "cos_angle_clusters").exists()
     assert (main_dir / "intensity_clusters.json").is_file()
     assert (main_dir / "cos_angle_clusters.json").is_file()
-    assert (main_dir / "xia2.multi_crystal_analysis.log").is_file()
+    assert (main_dir / "xia2.cluster_analysis.log").is_file()
     assert (main_dir / "xia2.cluster_analysis.html").is_file()
 
 
