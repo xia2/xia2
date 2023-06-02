@@ -7,6 +7,7 @@ import pytest
 
 from libtbx.phil import scope_extract
 
+from xia2.cli.multiplex import run as run_multiplex
 from xia2.Modules.MultiCrystal import ClusterInfo
 from xia2.Modules.MultiCrystalAnalysis import MultiCrystalAnalysis
 
@@ -106,7 +107,7 @@ def test_serial_data(dials_data, tmp_path):
     check_output(tmp_path)
 
 
-def test_rotation_data(dials_data, tmp_path):
+def test_rotation_data(dials_data, run_in_tmp_path):
     rot = dials_data("vmxi_proteinase_k_sweeps", pathlib=True)
     expt_1 = os.fspath(rot / "experiments_0.expt")
     expt_2 = os.fspath(rot / "experiments_1.expt")
@@ -116,30 +117,29 @@ def test_rotation_data(dials_data, tmp_path):
     refl_2 = os.fspath(rot / "reflections_1.refl")
     refl_3 = os.fspath(rot / "reflections_2.refl")
     refl_4 = os.fspath(rot / "reflections_3.refl")
-    expt_scaled = os.fspath(tmp_path / "scaled.expt")
-    refl_scaled = os.fspath(tmp_path / "scaled.refl")
-    args_multiplex = [
-        "xia2.multiplex",
-        expt_1,
-        refl_1,
-        expt_2,
-        refl_2,
-        expt_3,
-        refl_3,
-        expt_4,
-        refl_4,
-    ]
+    expt_scaled = os.fspath(run_in_tmp_path / "scaled.expt")
+    refl_scaled = os.fspath(run_in_tmp_path / "scaled.refl")
+    run_multiplex(
+        [
+            expt_1,
+            refl_1,
+            expt_2,
+            refl_2,
+            expt_3,
+            refl_3,
+            expt_4,
+            refl_4,
+        ]
+    )
     args_clustering = [
         "xia2.cluster_analysis",
         "min_cluster_size=2",
         expt_scaled,
         refl_scaled,
     ]
-    result_multiplex = subprocess.run(args_multiplex, cwd=tmp_path, capture_output=True)
-    assert not result_multiplex.returncode and not result_multiplex.stderr
-    result = subprocess.run(args_clustering, cwd=tmp_path, capture_output=True)
+    result = subprocess.run(args_clustering, capture_output=True)
     assert not result.returncode and not result.stderr
-    check_output(tmp_path)
+    check_output(run_in_tmp_path)
 
 
 def check_output(main_dir):
