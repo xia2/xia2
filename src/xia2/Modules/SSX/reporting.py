@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import math
-from typing import Any, Dict, List
+from typing import Dict, List
 
 import numpy as np
 
@@ -12,7 +12,6 @@ from dials.algorithms.scaling.scaling_library import (
     scaled_data_as_miller_array,
 )
 from dials.report.analysis import format_statistics, table_1_stats
-from dials.util import tabulate
 from dials.util.resolution_analysis import resolution_cc_half
 
 
@@ -45,33 +44,6 @@ def condensed_metric_unit_cell_info(clusters: List[Cluster]) -> str:
         p = [f"{i:.2f}" for i in uc]
         out_str += f"\n{len(c):>7} {sg:>10} {p[0]:>7} {p[1]:>7} {p[2]:>7} {p[3]:>6} {p[4]:>6} {p[5]:>6}"
     return out_str
-
-
-def generate_refinement_step_table(refiner: Any) -> str:
-
-    rmsd_multipliers = []
-    header = ["Step", "Nref"]
-    for (name, units) in zip(refiner._target.rmsd_names, refiner._target.rmsd_units):
-        if units == "mm":
-            header.append(name + "\n(mm)")
-            rmsd_multipliers.append(1.0)
-        elif units == "rad":  # convert radians to degrees for reporting
-            header.append(name + "\n(deg)")
-            rmsd_multipliers.append(180 / math.pi)
-        else:  # leave unknown units alone
-            header.append(name + "\n(" + units + ")")
-
-    rows = []
-    for i in range(refiner._refinery.history.get_nrows()):
-        rmsds = [
-            r * m
-            for (r, m) in zip(refiner._refinery.history["rmsd"][i], rmsd_multipliers)
-        ]
-        rows.append(
-            [str(i), str(refiner._refinery.history["num_reflections"][i])]
-            + [f"{r:.5g}" for r in rmsds]
-        )
-    return tabulate(rows, header)
 
 
 def indexing_summary_output(summary_data: Dict, summary_plots: Dict) -> str:
