@@ -45,7 +45,6 @@ class DataManager:
             max_batches += 10  # allow some head room
         else:
             max_batches = 1
-            self.ssx_batch_dict = {}
             self.ssx_batch_list = []
 
         n = int(math.ceil(math.log10(max_batches)))
@@ -63,7 +62,6 @@ class DataManager:
                 )
 
             else:
-                self.ssx_batch_dict[expt] = i * 10**n
                 self.ssx_batch_list.append(i * 10**n)
 
     @property
