@@ -552,11 +552,11 @@ grouping:
     g1_mtz = mtz.object(
         file_name=os.fspath(tmp_path / "DataFiles" / f"{output_names[0]}.mtz")
     )
-    assert abs(g1_mtz.n_reflections() - 1271) < 10
+    assert abs(g1_mtz.n_reflections() - 1210) < 10
     g2_mtz = mtz.object(
         file_name=os.fspath(tmp_path / "DataFiles" / f"{output_names[1]}.mtz")
     )
-    assert abs(g2_mtz.n_reflections() - 468) < 10
+    assert abs(g2_mtz.n_reflections() - 491) < 10
     assert not (tmp_path / "DataFiles" / "merged.mtz").is_file()
 
     # now rerun with a res limit on one group. Should be able to just process straight from
@@ -582,7 +582,7 @@ grouping:
     assert not result.stderr.decode()
     assert (tmp_path / "DataFiles" / "merged.mtz").is_file()
     merged_mtz = mtz.object(file_name=os.fspath(tmp_path / "DataFiles" / "merged.mtz"))
-    assert abs(merged_mtz.n_reflections() - 341) < 10  # expect 341 from d_min=3.0
+    assert abs(merged_mtz.n_reflections() - 298) < 10  # expect 298 from d_min=3.0
 
 
 @pytest.mark.parametrize(

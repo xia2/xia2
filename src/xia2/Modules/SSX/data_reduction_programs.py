@@ -466,6 +466,8 @@ def _extract_scaling_params_for_scale_against_reference(reduction_params, name):
         output.reflections={name}.refl
         output.html=None
         scaling_options.reference={str(reduction_params.reference)}
+        scaling_options.reference_model.k_sol={reduction_params.reference_ksol}
+        scaling_options.reference_model.b_sol={reduction_params.reference_bsol}
     """
     if reduction_params.d_min:
         xia2_phil += f"\ncut_data.d_min={reduction_params.d_min}"
@@ -621,6 +623,8 @@ def _extract_cosym_params(reduction_params, index):
     """
     if reduction_params.reference:
         xia2_phil += f"\nreference={reduction_params.reference}"
+        xia2_phil += f"\nreference_model.k_sol={reduction_params.reference_ksol}"
+        xia2_phil += f"\nreference_model.b_sol={reduction_params.reference_bsol}"
     extra_defaults = f"""
         min_i_mean_over_sigma_mean=2
         unit_cell_clustering.threshold=None

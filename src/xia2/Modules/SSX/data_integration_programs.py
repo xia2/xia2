@@ -6,6 +6,7 @@ import logging
 import os
 from dataclasses import dataclass
 from functools import reduce
+from io import StringIO
 from pathlib import Path
 from typing import List, Optional, Tuple
 
@@ -41,10 +42,7 @@ from dxtbx.serialize import load
 from xia2.Driver.timing import record_step
 from xia2.Handlers.Files import FileHandler
 from xia2.Handlers.Streams import banner
-from xia2.Modules.SSX.reporting import (
-    generate_refinement_step_table,
-    indexing_summary_output,
-)
+from xia2.Modules.SSX.reporting import indexing_summary_output
 from xia2.Modules.SSX.util import log_to_file, run_in_directory
 
 xia2_logger = logging.getLogger(__name__)
@@ -362,7 +360,7 @@ def ssx_index(
             summary_plots = {}
             if indexed_experiments:
                 summary_plots = generate_plots(summary_data)
-            indexing_rate = f"{100 * n_images / n_hits:.2f}"
+            indexing_rate = f"{100 * n_images / n_hits:.2f}" if n_hits else "-"
             output_ = (
                 f"{indexed_reflections.size()} spots indexed on {n_images} images ({indexing_rate}% of hits indexed)\n"
                 + f"{indexing_summary_output(summary_data, summary_plots)}"
@@ -449,8 +447,16 @@ def run_refinement(
         FileHandler.record_log_file(
             "dials.refine", working_directory / "dials.refine.log"
         )
-        step_table = generate_refinement_step_table(refiner)
-        xia2_logger.info("Summary of joint refinement steps:\n" + step_table)
+    # add a stream handler to capture printing of summary tables for output to xia2 log.
+    stream = StringIO()
+    sh = logging.StreamHandler(stream)
+    refine_logger = logging.getLogger("dials.algorithms.refinement.refiner")
+    # no other stream handlers are added, so don't need to worry about removing them.
+    refine_logger.addHandler(sh)
+    refiner.print_step_table()
+    refiner.print_panel_rmsd_table()
+    sh.flush()
+    xia2_logger.info(stream.getvalue())
 
 
 def ssx_integrate(
