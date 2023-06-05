@@ -77,6 +77,9 @@ reference = None
           "Can be a model pdb/cif file or a cif/mtz data file contaning"
           "intensity information."
   .expert_level = 1
+partiality_threshold = 0.25
+  .type = float
+  .help = "Filter out reflections below this partiality in data reduction."
 %s
 clustering {
   threshold=None
