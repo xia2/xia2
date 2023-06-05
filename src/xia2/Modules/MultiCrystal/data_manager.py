@@ -27,22 +27,42 @@ class DataManager:
             value: key for key, value in self.ids_to_identifiers_map.items()
         }
 
+        if all(e.scan is None for e in self._experiments):
+            self.all_stills = True
+        elif all(e.scan is not None for e in self._experiments):
+            self.all_stills = False
+        else:
+            raise ValueError(
+                "cannot mix stills and rotation data for multi crystal analysis"
+            )
+
         self._set_batches()
 
     def _set_batches(self):
-        max_batches = max(e.scan.get_image_range()[1] for e in self._experiments)
-        max_batches += 10  # allow some head room
+
+        if not self.all_stills:
+            max_batches = max(e.scan.get_image_range()[1] for e in self._experiments)
+            max_batches += 10  # allow some head room
+        else:
+            max_batches = 1
+            self.ssx_batch_list = []
 
         n = int(math.ceil(math.log10(max_batches)))
 
         for i, expt in enumerate(self._experiments):
-            expt.scan.set_batch_offset(i * 10**n)
-            if expt.imageset:
-                # This may be a different scan instance ¯\_(ツ)_/¯
-                expt.imageset.get_scan().set_batch_offset(expt.scan.get_batch_offset())
-            logger.debug(
-                f"{expt.scan.get_batch_offset()} {expt.scan.get_batch_range()}"
-            )
+            if not self.all_stills:
+                expt.scan.set_batch_offset(i * 10**n)
+                if expt.imageset:
+                    # This may be a different scan instance ¯\_(ツ)_/¯
+                    expt.imageset.get_scan().set_batch_offset(
+                        expt.scan.get_batch_offset()
+                    )
+                logger.debug(
+                    f"{expt.scan.get_batch_offset()} {expt.scan.get_batch_range()}"
+                )
+
+            else:
+                self.ssx_batch_list.append(i * 10**n)
 
     @property
     def experiments(self):
@@ -115,7 +135,11 @@ class DataManager:
                 self._reflections.select(self._reflections["id"] == id_)
             )
 
-        offsets = [expt.scan.get_batch_offset() for expt in self._experiments]
+        if not self.all_stills:
+            offsets = [expt.scan.get_batch_offset() for expt in self._experiments]
+        else:
+            offsets = self.ssx_batch_list
+
         reflection_tables = assign_batches_to_reflections(reflection_tables, offsets)
 
         if combined:

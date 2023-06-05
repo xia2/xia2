@@ -225,6 +225,8 @@ cluster_method = *cos_angle correlation
   .type = choice
   .short_caption = "Metric on which to perform clustering"
 
+
+
 identifiers = None
   .type = strings
   .short_caption = "Identifiers"

@@ -3,6 +3,9 @@ from __future__ import annotations
 import json
 import logging
 from collections import OrderedDict
+from statistics import mean
+
+import pandas as pd
 
 from dials.algorithms.clustering.unit_cell import cluster_unit_cells
 from dials.algorithms.scaling.scale_and_filter import make_scaling_filtering_plots
@@ -31,7 +34,6 @@ class MultiCrystalAnalysis:
             self._data_manager = DataManager(experiments, reflections)
 
         self._intensities_separate = self._data_manager.reflections_as_miller_arrays()
-
         (
             self.intensities,
             self.batches,
@@ -42,8 +44,10 @@ class MultiCrystalAnalysis:
         for expt in self._data_manager.experiments:
             batch_params = scope.extract().batch[0]
             batch_params.id = self._data_manager.identifiers_to_ids_map[expt.identifier]
-            batch_params.range = expt.scan.get_batch_range()
-            self.params.batch.append(batch_params)
+
+            if not self._data_manager.all_stills:
+                batch_params.range = expt.scan.get_batch_range()
+                self.params.batch.append(batch_params)
 
         self.intensities.set_observation_type_xray_intensity()
 
@@ -196,6 +200,192 @@ relatively isomorphous.
         d.update(result.histogram())
         d.update(result.normalised_scores())
         return d, result.get_table(html=True)
+
+    @staticmethod
+    def interesting_cluster_identification(clusters, params):
+
+        # Note: this algorithm could do with a second opinion and some work... but does an ok job on the test cases looked at
+
+        cluster_numbers = []
+        heights = []
+        labels = []
+        for cluster in clusters:
+            cluster_numbers.append("cluster_" + str(cluster.cluster_id))
+            heights.append(cluster.height)
+            labels.append(cluster.labels)
+
+        c_data = {
+            "Cluster Number": cluster_numbers,
+            "Height": heights,
+            "Datasets": labels,
+        }
+
+        cluster_data = pd.DataFrame(c_data)
+
+        dataset_dict = {}
+
+        for i, j in zip(cluster_data["Cluster Number"], cluster_data["Datasets"]):
+            dataset_dict[i] = j
+
+        reversed_dataset_dict = dict(reversed(list(dataset_dict.items())))
+
+        array_of_clusters_and_heights = []
+        for item in sorted(
+            reversed_dataset_dict,
+            key=lambda k: len(reversed_dataset_dict[k]),
+            reverse=False,
+        ):
+            new_cluster_data = [
+                set(dataset_dict[item]),
+                float(
+                    cluster_data.loc[
+                        cluster_data["Cluster Number"] == item, "Height"
+                    ].iloc[0]
+                ),
+                item,
+            ]
+            array_of_clusters_and_heights.append(new_cluster_data)
+
+        series_of_covering_clusters = []
+
+        for x, i in enumerate(array_of_clusters_and_heights):
+            do_i_need_a_new_series = True
+            for j in series_of_covering_clusters:
+                if i[0].issuperset(j[-1][0]):
+                    j.append(i)
+                    do_i_need_a_new_series = False
+                    break
+            if do_i_need_a_new_series:
+                series_of_covering_clusters.append([i])
+
+        final_clusters_to_compare = []
+        clusters_for_analysis = []
+        first_ones = []
+
+        for f, i in enumerate(series_of_covering_clusters):
+            for j in series_of_covering_clusters[f:]:
+                if set.intersection(i[0][0], j[0][0]) == set():
+                    flag = False
+                    for x in reversed(i):
+                        for y in reversed(j):
+                            if set.intersection(x[0], y[0]) == set():
+                                if (
+                                    abs(x[1] - y[1])
+                                    <= params.max_cluster_height_difference
+                                ):
+                                    if (
+                                        len(x[0]) >= params.min_cluster_size
+                                        and len(y[0]) >= params.min_cluster_size
+                                    ):
+                                        final_clusters_to_compare.append(
+                                            (x[2], y[2], mean([len(x[0]), len(y[0])]))
+                                        )
+                                        clusters_for_analysis.append(x[2])
+                                        first_ones.append(x[2])
+                                        clusters_for_analysis.append(y[2])
+                                        flag = True
+                                        break
+                        if flag:
+                            break
+
+        # Getting rid of cases of sub clusters - first, find all that have subsets - then choose the one closest in height to the parent
+
+        first_ones = sorted(dict.fromkeys(first_ones))
+
+        dict_for_sub_clusters = {}
+
+        for item in first_ones:
+            clusters = []
+            for j in final_clusters_to_compare:
+                if j[0] == item:
+                    clusters.append(j[1])
+            dict_for_sub_clusters[item] = clusters
+
+        for key in dict_for_sub_clusters:
+            good_clusters = []
+            for idx, item in enumerate(dict_for_sub_clusters[key]):
+                if idx > 0:
+                    subset_flag = False
+                    for j in good_clusters:
+                        if set(dataset_dict[item]).issubset(set(dataset_dict[j])):
+                            subset_flag = True
+                            height_in_list = cluster_data.loc[
+                                cluster_data["Cluster Number"] == j, "Height"
+                            ].iloc[0]
+                            height_of_new = cluster_data.loc[
+                                cluster_data["Cluster Number"] == item, "Height"
+                            ].iloc[0]
+                            height_of_parent = cluster_data.loc[
+                                cluster_data["Cluster Number"] == key, "Height"
+                            ].iloc[0]
+                            list_diff = abs(height_in_list - height_of_parent)
+                            new_diff = abs(height_of_new - height_of_parent)
+
+                            if list_diff > new_diff:
+                                good_clusters.remove(j)
+                                good_clusters.append(item)
+                    if not subset_flag:
+                        good_clusters.append(item)
+                elif idx == 0:
+                    good_clusters.append(item)
+
+            dict_for_sub_clusters[key] = good_clusters
+
+        real_final_clusters_to_compare = []
+
+        for item in final_clusters_to_compare:
+            if item[1] in dict_for_sub_clusters[item[0]]:
+                real_final_clusters_to_compare.append(item)
+
+        if len(real_final_clusters_to_compare) > params.max_output_clusters:
+            limited_clusters_to_compare = sorted(
+                real_final_clusters_to_compare, key=lambda x: x[2], reverse=True
+            )
+            real_final_clusters_to_compare = limited_clusters_to_compare[
+                0 : params.max_output_clusters
+            ]
+            clusters_for_analysis = []
+            for i in real_final_clusters_to_compare:
+                for idx, j in enumerate(i):
+                    if idx == 0 or idx == 1:
+                        clusters_for_analysis.append(j)
+        elif len(real_final_clusters_to_compare) == 0:
+            logger.info(
+                "No interesting clusters found, rerun with different parameters"
+            )
+            clusters_for_analysis = []
+
+        clusters_for_analysis = list(dict.fromkeys(clusters_for_analysis))
+
+        list_of_clusters = []
+        file_data = [
+            "Compare each pair of clusters below",
+            "They have no datasets in common",
+        ]
+
+        for item in real_final_clusters_to_compare:
+            file_data.append(item[0] + " and " + item[1])
+
+        file_data.extend(
+            [
+                "Selected with heights required to be closer than:"
+                + str(params.max_cluster_height_difference),
+                "And a maximum number of cluster pairs set at:"
+                + str(params.max_output_clusters),
+                "Total Number of Clusters for Analysis:"
+                + str(len(clusters_for_analysis)),
+                "Discrete list of clusters saved: ",
+            ]
+        )
+
+        for item in clusters_for_analysis:
+            file_data.append(item)
+            list_of_clusters.append(item)
+
+        for item in file_data:
+            logger.info(item)
+
+        return file_data, list_of_clusters
 
 
 class MultiCrystalReport(MultiCrystalAnalysis):
