@@ -5,8 +5,6 @@ import logging
 import os
 from collections import OrderedDict
 
-import pandas as pd
-
 import iotbx.phil
 from cctbx import sgtbx, uctbx
 from dials.array_family import flex
@@ -418,16 +416,20 @@ class MultiCrystalScale:
             n_processed = 0
 
             if not self._params.output_cluster_mtz:
-                template = {
-                    "Cluster Number": [],
-                    "Number of Datasets": [],
-                    "Completeness": [],
-                    "Multiplicity": [],
-                    "Height": [],
-                }
-                cluster_summary = pd.DataFrame(template)
+                filtered_mtz_path = cwd + "/filtered.mtz"
+                # Map ids to .expt/.refl files input into multiplex for generation of individual cluster submission files
+                ids_to_expt = {}
+                for expt in params.input.experiments:
+                    i = list(expt.data.identifiers())[0]
+                    ids_to_expt[i] = (
+                        expt.filename + " " + expt.filename.replace(".expt", ".refl")
+                    )
 
             for cluster in reversed(clusters):
+                submission_text = (
+                    "xia2.multiplex filtering.method=deltacchalf r_free_flags.reference="
+                    + filtered_mtz_path
+                )
                 if max_clusters is not None and n_processed == max_clusters:
                     break
                 if (
@@ -444,8 +446,6 @@ class MultiCrystalScale:
                     continue
                 n_processed += 1
 
-                logger.info("Scaling cluster %i:" % cluster.cluster_id)
-                logger.info(cluster)
                 cluster_dir = "cluster_%i" % cluster.cluster_id
                 if not os.path.exists(cluster_dir):
                     os.mkdir(cluster_dir)
@@ -457,28 +457,23 @@ class MultiCrystalScale:
                 data_manager.select(cluster_identifiers)
 
                 if not self._params.output_cluster_mtz:
+                    logger.info(
+                        "Outputting input command for cluster %i:" % cluster.cluster_id
+                    )
+                    logger.info(cluster)
                     el = data_manager._experiments
                     ids = list(el.identifiers())
-                    cluster_template = {"Datasets": []}
-                    cluster_datasets = pd.DataFrame(cluster_template)
+                    for i in ids:
+                        submission_text += " "
+                        submission_text += ids_to_expt[i]
 
-                    for item in cluster_identifiers:
-                        e = el[ids.index(item)]
-                        i = e.imageset
-                        cluster_datasets.loc[len(cluster_datasets)] = [i.paths()[0]]
+                    with open("multiplex_submission.txt", "w") as f:
+                        f.write(submission_text)
 
-                    cluster_datasets.to_csv("Cluster_datasets.csv", index=False)
-
-                    cluster_data = [
-                        "cluster_" + str(int(cluster.cluster_id)),
-                        len(cluster.labels),
-                        cluster.completeness * 100,
-                        cluster.multiplicity,
-                        cluster.height,
-                    ]
-                    cluster_summary.loc[len(cluster_summary)] = cluster_data
                 else:
 
+                    logger.info("Scaling cluster %i:" % cluster.cluster_id)
+                    logger.info(cluster)
                     scaled = Scale(data_manager, self._params)
 
                     data_manager.export_unmerged_mtz(
@@ -498,9 +493,6 @@ class MultiCrystalScale:
                         data_manager, scaled.report(), cluster_dir.replace("_", " ")
                     )
                 os.chdir(cwd)
-
-            if not self._params.output_cluster_mtz:
-                cluster_summary.to_csv("Cluster_summary.csv", index=False)
 
         if self._params.filtering.method:
             # Final round of scaling, this time filtering out any bad datasets
