@@ -1,1 +1,1 @@
-``xia2.ssx``: Report hit rate and indexing rate during processing.
+``xia2.ssx``: Report hit and indexing rates during processing.
