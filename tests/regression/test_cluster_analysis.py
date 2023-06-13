@@ -58,21 +58,28 @@ params_3.__inject__("min_cluster_size", 3)
 data_4 = [
     ClusterInfo(1, [1, 2, 3], 5, 100, [1, 1, 1, 90, 90, 90], 0.32),
     ClusterInfo(2, [4, 5], 5, 100, [1, 1, 1, 90, 90, 90], 0.33),
-    ClusterInfo(3, [6, 7, 8, 9], 5, 100, [1, 1, 1, 90, 90, 90], 0.34),
-    ClusterInfo(4, [10, 11, 12, 13], 5, 100, [1, 1, 1, 90, 90, 90], 0.35),
+    ClusterInfo(3, [1, 2, 3, 4, 5], 5, 100, [1, 1, 1, 90, 90, 90], 0.34),
+    ClusterInfo(4, [6, 7, 8, 9, 10], 5, 100, [1, 1, 1, 90, 90, 90], 0.35),
     ClusterInfo(
         5,
-        [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13],
+        [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
         5,
         100,
         [1, 1, 1, 90, 90, 90],
         0.36,
     ),
-    ClusterInfo(6, [14, 15, 16, 17], 5, 100, [1, 1, 1, 90, 90, 90], 0.37),
-    ClusterInfo(7, [18, 19, 20, 21], 5, 100, [1, 1, 1, 90, 90, 90], 0.375),
+    ClusterInfo(
+        6,
+        [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13],
+        5,
+        100,
+        [1, 1, 1, 90, 90, 90],
+        0.37,
+    ),
+    ClusterInfo(7, [14, 15, 16, 17], 5, 100, [1, 1, 1, 90, 90, 90], 0.375),
     ClusterInfo(
         8,
-        [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21],
+        [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17],
         5,
         100,
         [1, 1, 1, 90, 90, 90],
@@ -156,9 +163,9 @@ def check_output(main_dir):
     [
         (data_1, params_1, []),
         (data_2, params_2, []),
-        (data_2, params_2_5, ["cluster_2", "cluster_1"]),
+        (data_2, params_2_5, ["cluster_1", "cluster_2"]),
         (data_3, params_3, ["cluster_4", "cluster_5"]),
-        (data_4, params_4, ["cluster_5", "cluster_7", "cluster_6"]),
+        (data_4, params_4, ["cluster_3", "cluster_4", "cluster_6", "cluster_7"]),
     ],
 )
 def test_interesting_cluster_algorithm(clusters, params, expected):
