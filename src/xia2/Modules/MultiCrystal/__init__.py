@@ -277,7 +277,11 @@ class multi_crystal_analysis:
         assert matrix_type in ("correlation", "cos_angle")
 
         ddict = hierarchy.dendrogram(
-            linkage_matrix, color_threshold=0.05, labels=labels, show_leaf_counts=False
+            linkage_matrix,
+            color_threshold=0.05,
+            labels=labels,
+            show_leaf_counts=False,
+            no_plot=True,
         )
 
         y2_dict = scipy_dendrogram_to_plotly_json(ddict)  # above heatmap
