@@ -1,3 +1,29 @@
+xia2 3.15.0 (2023-06-13)
+========================
+
+Features
+--------
+
+- ``xia2.cluster_analysis``: The clustering algorithm from ``xia2.multiplex`` is now available as a separated module, applicable to any merged data from dials (rotation or stills). (`#733 <https://github.com/xia2/xia2/issues/733>`_)
+- ``xia2.ssx``: Report hit and indexing rates during processing. (`#735 <https://github.com/xia2/xia2/issues/735>`_)
+- ``xia2.ssx_reduce``: Allow setting of the partiality threshold (default now 0.25). (`#743 <https://github.com/xia2/xia2/issues/743>`_)
+
+
+Bugfixes
+--------
+
+- ``xia2.ssx``: Include solvent contribution when generating reference intensities from a model. Adds k_sol and b_sol parameters. (`#737 <https://github.com/xia2/xia2/issues/737>`_)
+- ``xia2.ssx``: Fix error in progress reporting when no hits found, or when no images indexed in a batch. (`#739 <https://github.com/xia2/xia2/issues/739>`_)
+- ``xia2.cluster_analysis``: Improved cluster selection algorithm to more robustly handle edge cases. (`#744 <https://github.com/xia2/xia2/issues/744>`_)
+- Don't import matplotlib in scipy.hierarchy.dendrrogram, causing errors on headless machines. (`#745 <https://github.com/xia2/xia2/issues/745>`_)
+
+
+Misc
+----
+
+- `#736 <https://github.com/xia2/xia2/issues/736>`_, `#742 <https://github.com/xia2/xia2/issues/742>`_
+
+
 xia2 3.14.0 (2023-04-12)
 ========================
 
