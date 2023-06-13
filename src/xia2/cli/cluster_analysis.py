@@ -204,6 +204,9 @@ def run(args=sys.argv[1:]):
                 new_folder = (
                     "cos_angle_clusters/" + "cluster_" + str(cluster.cluster_id)
                 )
+                cluster_identifiers = [
+                    MCA._data_manager.ids_to_identifiers_map[l] for l in cluster.labels
+                ]
                 output_cluster(
                     new_folder, cluster, MCA._data_manager, cluster_identifiers
                 )
