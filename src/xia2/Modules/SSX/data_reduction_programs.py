@@ -37,6 +37,7 @@ from iotbx.phil import parse
 
 from xia2.Driver.timing import record_step
 from xia2.Handlers.Files import FileHandler
+from xia2.Modules.SSX.batch_scale import BatchScale
 from xia2.Modules.SSX.data_reduction_definitions import FilePair, ReductionParams
 from xia2.Modules.SSX.reporting import condensed_unit_cell_info
 from xia2.Modules.SSX.util import log_to_file, run_in_directory
@@ -390,18 +391,25 @@ class MergeResult:
     name: str = ""
 
 
-def _extract_scaling_params(reduction_params):
+def _extract_scaling_params(reduction_params, for_batch_scale=False):
     # scaling options for scaling without a reference
     extra_defaults = """
         model=KB
         scaling_options.full_matrix=False
         weighting.error_model.error_model=None
-        scaling_options.outlier_rejection=simple
         reflection_selection.intensity_choice=sum
-        reflection_selection.method=intensity_ranges
-        reflection_selection.Isigma_range=2.0,0.0
         output.additional_stats=True
         scaling_options.nproc=8
+    """
+    if for_batch_scale:
+        extra_defaults += """
+        scaling_options.outlier_rejection=standard
+    """
+    else:
+        extra_defaults += """
+        scaling_options.outlier_rejection=simple   
+        reflection_selection.method=intensity_ranges
+        reflection_selection.Isigma_range=2.0,0.0 
     """
     xia2_phil = f"""
         anomalous={reduction_params.anomalous}
@@ -563,6 +571,48 @@ def scale_against_reference(
         None,
         None,
     )
+
+
+def batch_scale(
+    working_directory: Path,
+    files_to_scale: List[FilePair],
+    reduction_params: ReductionParams,
+    name="",
+) -> ProgramResult:
+
+    input_ = ""
+    expts = []
+    tables = []
+    for fp in files_to_scale:
+        expts.append(load.experiment_list(fp.expt, check_format=False))
+        tables.append(flex.reflection_table.from_file(fp.refl))
+        input_ += f"reflections = {fp.refl}\nexperiments = {fp.expt}\n"
+    logfile = "dials.scale.log"
+    with run_in_directory(working_directory), log_to_file(
+        logfile
+    ) as dials_logger, record_step("dials.scale"):
+        params, diff_phil = _extract_scaling_params(
+            reduction_params, for_batch_scale=True
+        )
+        dials_logger.info(
+            "The following parameters have been modified:\n"
+            + input_
+            + f"{diff_phil.as_str()}"
+        )
+        scaler = BatchScale(params, expts, tables)
+        scaler.run()
+        scaler.finish()
+        outexpt, outrefl = scaler.export()
+        FileHandler.record_html_file(
+            "dials.scale", working_directory / "dials.scale.html"
+        )
+        FileHandler.record_log_file(logfile.rstrip(".log"), working_directory / logfile)
+        outfiles = []
+        for expt, refl in zip(outexpt, outrefl):
+            outfiles.append(
+                FilePair(working_directory / expt, working_directory / refl)
+            )
+        return outfiles
 
 
 def scale(
