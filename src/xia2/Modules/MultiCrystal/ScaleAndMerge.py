@@ -28,6 +28,7 @@ from xia2.Modules.Scaler.DialsScaler import (
 from xia2.Wrappers.Dials.Cosym import DialsCosym
 from xia2.Wrappers.Dials.EstimateResolution import EstimateResolution
 from xia2.Wrappers.Dials.Refine import Refine
+from xia2.Wrappers.Dials.Reindex import Reindex
 from xia2.Wrappers.Dials.Scale import DialsScale
 from xia2.Wrappers.Dials.Symmetry import DialsSymmetry
 from xia2.Wrappers.Dials.TwoThetaRefine import TwoThetaRefine
@@ -137,6 +138,16 @@ symmetry
             "analysis of systematically absent reflections to determine the space group."
     .short_caption = "Space group"
 }
+
+reference = None
+    .type = path
+    .help = "A file containing a reference set of intensities e.g. MTZ/cif, or a"
+            "file from which a reference set of intensities can be calculated"
+            "e.g. .pdb or .cif . The space group of the reference file will"
+            "be used and if an indexing ambiguity is present, the input"
+            "data will be reindexed to be consistent with the indexing mode of"
+            "this reference file."
+    .expert_level = 2
 
 resolution
   .short_caption = "Resolution"
@@ -367,6 +378,8 @@ class MultiCrystalScale:
         self._reflections_filename = self._scaled._reflections_filename
 
         self.decide_space_group()
+
+        self.reindex()
 
         self._data_manager.export_unmerged_mtz(
             "scaled_unmerged.mtz", d_min=self._scaled.d_min
@@ -770,6 +783,31 @@ class MultiCrystalScale:
             logger.info(
                 "Laue group determined by dials.cosym: %s" % best_space_group.info()
             )
+
+    def reindex(self):
+        logger.debug("Running reindexing")
+        logger.info("Re-indexing to reference")
+        experiments_filename = self._data_manager.export_experiments("tmp.expt")
+        reflections_filename = self._data_manager.export_reflections("tmp.refl")
+        reindex = Reindex()
+        auto_logfiler(reindex)
+        reindex.set_experiments_filename(experiments_filename)
+        reindex.set_indexed_filename(reflections_filename)
+        reindex.set_reference_file(self._params.reference)
+
+        if self._params.symmetry.space_group is not None:
+            reindex.set_space_group(self._params.symmetry.space_group)
+
+        reindex.run()
+
+        self._experiments_filename = reindex.get_reindexed_experiments_filename()
+        self._reflections_filename = reindex.get_reindexed_reflections_filename()
+        self._data_manager.experiments = load.experiment_list(
+            self._experiments_filename, check_format=False
+        )
+        self._data_manager.reflections = flex.reflection_table.from_file(
+            self._reflections_filename
+        )
 
     def decide_space_group(self):
 
