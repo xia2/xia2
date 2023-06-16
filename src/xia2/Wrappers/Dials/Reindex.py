@@ -22,6 +22,7 @@ def Reindex(DriverType=None):
             self._indexed_filename = None
             self._reference_filename = None
             self._reference_reflections = None
+            self._reference_file = None
             self._space_group = None
             self._cb_op = None
             self._hkl_offset = None
@@ -39,6 +40,9 @@ def Reindex(DriverType=None):
 
         def set_reference_reflections(self, reference_reflections):
             self._reference_reflections = reference_reflections
+
+        def set_reference_file(self, reference_file):
+            self._reference_file = reference_file
 
         def set_space_group(self, space_group):
             self._space_group = space_group
@@ -88,6 +92,8 @@ def Reindex(DriverType=None):
                 self.add_command_line(
                     "reference.reflections=%s" % self._reference_reflections
                 )
+            if self._reference_file is not None:
+                self.add_command_line("reference.file=%s" % self._reference_file)
             if self._cb_op:
                 self.add_command_line("change_of_basis_op=%s" % self._cb_op)
             if self._space_group:
