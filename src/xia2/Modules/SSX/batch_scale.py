@@ -1,54 +1,23 @@
 from __future__ import annotations
 
-import itertools
-import json
+import copy
 import logging
-import time
 
-from libtbx import Auto
-
-from dials.algorithms.scaling.observers import (
-    ScalingHTMLContextManager,
-    ScalingSummaryContextManager,
-)
-from dials.algorithms.scaling.scale_and_filter import AnalysisResults, log_cycle_results
-from dials.algorithms.scaling.scaler_factory import MultiScalerFactory, create_scaler
+from dials.algorithms.scaling.algorithm import ScalingAlgorithm
+from dials.algorithms.scaling.scaler_factory import create_scaler
 from dials.algorithms.scaling.scaling_library import (
     create_datastructures_for_reference_file,
     create_scaling_model,
     determine_best_unit_cell,
-    merging_stats_from_scaled_array,
-    scaled_data_as_miller_array,
-    set_image_ranges_in_scaling_models,
 )
-from dials.algorithms.scaling.scaling_utilities import (
-    DialsMergingStatisticsError,
-    log_memory_usage,
-)
-from dials.algorithms.statistics.cc_half_algorithm import (
-    CCHalfFromDials as deltaccscript,
-)
+from dials.algorithms.scaling.scaling_utilities import log_memory_usage
 from dials.array_family import flex
-from dials.command_line.compute_delta_cchalf import phil_scope as deltacc_phil_scope
-from dials.command_line.cosym import cosym
-from dials.command_line.cosym import phil_scope as cosym_phil_scope
-from dials.util.exclude_images import (
-    exclude_image_ranges_for_scaling,
-    get_valid_image_ranges,
-)
-from dials.util.multi_dataset_handling import (
-    assign_unique_identifiers,
-    parse_multiple_datasets,
-    select_datasets_on_ids,
-    update_imageset_ids,
-)
-import copy
-
-from dials.algorithms.scaling.algorithm import ScalingAlgorithm
+from libtbx import Auto
 
 logger = logging.getLogger("dials")
 
-# need to set up a scaling job to do scaling in addition to existing 
+# need to set up a scaling job to do scaling in addition to existing
+
 
 class BatchScale(ScalingAlgorithm):
     def __init__(self, params, experiments, reflections):
@@ -75,6 +44,7 @@ class BatchScale(ScalingAlgorithm):
         best_unit_cell = self.params.reflection_selection.best_unit_cell
         if best_unit_cell is None:
             from dxtbx.model import ExperimentList
+
             all_expts = ExperimentList([])
             new_expts = ExperimentList([])
             for e in experiments:
@@ -97,7 +67,9 @@ class BatchScale(ScalingAlgorithm):
                 )
             # need to scale intensities
             reflection["intensity.sum.value"] /= reflection["inverse_scale_factor"]
-            reflection["intensity.sum.variance"] /= (reflection["inverse_scale_factor"]**2)
+            reflection["intensity.sum.variance"] /= (
+                reflection["inverse_scale_factor"] ** 2
+            )
             del reflection["inverse_scale_factor"]
 
         if self.params.scaling_options.reference:
@@ -115,19 +87,16 @@ class BatchScale(ScalingAlgorithm):
             )
             new_expts.append(expt)
             reflections.append(reflection_table)
-        
+
         for m in new_expts.scaling_models():
             del m
         self.experiments = new_expts
         self.reflections = reflections
         for i, (e, t) in enumerate(zip(self.experiments, self.reflections)):
-            print(e, t, i)
             for k in list(t.experiment_identifiers().keys()):
                 del t.experiment_identifiers()[k]
             t["id"] = flex.int(t.size(), i)
-            print(e.identifier)
             t.experiment_identifiers()[i] = e.identifier
-
 
     def create_model_and_scaler(self):
         """Create the scaling models and scaler."""
@@ -145,15 +114,19 @@ class BatchScale(ScalingAlgorithm):
         self.scaler._set_outliers()
         for inp, scaled in zip(self.input_reflections, self.reflections):
             inp["inverse_scale_factor"] *= scaled["inverse_scale_factor"]
-            inp["inverse_scale_factor_variance"] += scaled["inverse_scale_factor_variance"]
+            inp["inverse_scale_factor_variance"] += scaled[
+                "inverse_scale_factor_variance"
+            ]
             flags = scaled.get_flags(scaled.flags.scaled)
             inp.unset_flags(flex.bool(inp.size(), True), inp.flags.scaled)
+            inp.unset_flags(flex.bool(inp.size(), True), inp.flags.outlier_in_scaling)
             inp.set_flags(flags, inp.flags.scaled)
-            sel = (
-                inp["inverse_scale_factor"]
-                < self.params.cut_data.small_scale_cutoff
-            )
+            sel = inp["inverse_scale_factor"] < self.params.cut_data.small_scale_cutoff
             inp.set_flags(sel, inp.flags.excluded_for_scaling)
+            inp.set_flags(
+                scaled.get_flags(scaled.flags.outlier_in_scaling),
+                inp.flags.outlier_in_scaling,
+            )
         for inp, scaled in zip(self.input_experiments, self.experiments):
             scale = scaled.scaling_model.components["scale"].parameters[0]
             B = scaled.scaling_model.components["decay"].parameters[0]
@@ -166,6 +139,7 @@ class BatchScale(ScalingAlgorithm):
 
         This includes the cosym.json, reflections and experiments files."""
         import functools
+
         template = functools.partial(
             "scaled_{index:0{fmt:d}d}".format,
             fmt=len(str(len(self.input_experiments))),

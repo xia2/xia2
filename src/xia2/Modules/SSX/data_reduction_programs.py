@@ -407,9 +407,9 @@ def _extract_scaling_params(reduction_params, for_batch_scale=False):
     """
     else:
         extra_defaults += """
-        scaling_options.outlier_rejection=simple   
+        scaling_options.outlier_rejection=simple
         reflection_selection.method=intensity_ranges
-        reflection_selection.Isigma_range=2.0,0.0 
+        reflection_selection.Isigma_range=2.0,0.0
     """
     xia2_phil = f"""
         anomalous={reduction_params.anomalous}
@@ -478,6 +478,9 @@ def _extract_scaling_params_for_scale_against_reference(reduction_params, name):
         output.experiments={name}.expt
         output.reflections={name}.refl
         output.html=None
+    """
+    if reduction_params.reference:
+        xia2_phil += f"""
         scaling_options.reference={str(reduction_params.reference)}
         scaling_options.reference_model.k_sol={reduction_params.reference_ksol}
         scaling_options.reference_model.b_sol={reduction_params.reference_bsol}
@@ -573,12 +576,51 @@ def scale_against_reference(
     )
 
 
+def parallel_scale(
+    working_directory: Path,
+    files: FilePair,
+    reduction_params,
+    name="",
+) -> ProgramResult:
+    logfile = f"dials.scale.{name}.log"
+    with run_in_directory(working_directory), log_to_file(logfile) as dials_logger:
+        # Setup scaling
+        expts = load.experiment_list(files.expt, check_format=False)
+        table = flex.reflection_table.from_file(files.refl)
+        params, diff_phil = _extract_scaling_params_for_scale_against_reference(
+            reduction_params, name
+        )
+        dials_logger.info(
+            "The following parameters have been modified:\n"
+            + f"input.experiments = {files.expt}\n"
+            + f"input.reflections = {files.refl}\n"
+            + f"{diff_phil.as_str()}"
+        )
+        # Run the scaling using the algorithm class to give access to scaler
+        scaler = ScalingAlgorithm(params, expts, [table])
+        scaler.run()
+        scaled_expts, scaled_table = scaler.finish()
+
+        dials_logger.info(f"Saving scaled experiments to {params.output.experiments}")
+        scaled_expts.as_file(params.output.experiments)
+        dials_logger.info(f"Saving scaled reflections to {params.output.reflections}")
+        scaled_table.as_file(params.output.reflections)
+
+    return ProgramResult(
+        working_directory / params.output.experiments,
+        working_directory / params.output.reflections,
+        working_directory / logfile,
+        None,
+        None,
+    )
+
+
 def batch_scale(
     working_directory: Path,
     files_to_scale: List[FilePair],
     reduction_params: ReductionParams,
     name="",
-) -> ProgramResult:
+) -> List[FilePair]:
 
     input_ = ""
     expts = []
