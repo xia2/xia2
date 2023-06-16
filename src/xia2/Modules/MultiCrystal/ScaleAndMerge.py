@@ -461,6 +461,7 @@ class MultiCrystalScale:
             scaled = Scale(data_manager, params, filtering=True)
             self.scale_and_filter_results = scaled.scale_and_filter_results
             logger.info("Scale and filtering:\n%s", self.scale_and_filter_results)
+            self._params.r_free_flags.extend = True
 
             data_manager.export_unmerged_mtz(
                 "filtered_unmerged.mtz", d_min=scaled.d_min
