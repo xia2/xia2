@@ -379,7 +379,8 @@ class MultiCrystalScale:
 
         self.decide_space_group()
 
-        self.reindex()
+        if self._params.reference is not None:
+            self.reindex()
 
         self._data_manager.export_unmerged_mtz(
             "scaled_unmerged.mtz", d_min=self._scaled.d_min
@@ -794,9 +795,6 @@ class MultiCrystalScale:
         reindex.set_experiments_filename(experiments_filename)
         reindex.set_indexed_filename(reflections_filename)
         reindex.set_reference_file(self._params.reference)
-
-        if self._params.symmetry.space_group is not None:
-            reindex.set_space_group(self._params.symmetry.space_group)
 
         reindex.run()
 
