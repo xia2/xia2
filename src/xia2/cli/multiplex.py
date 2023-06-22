@@ -171,21 +171,17 @@ def run(args=sys.argv[1:]):
     if params.reference is not None:
         intensity_array = intensities_from_reference_file(params.reference)
         if params.symmetry.space_group is not None:
-            try:
-                assert (
-                    params.symmetry.space_group.type().number()
-                    == intensity_array.space_group().type().number()
-                )
-            except AssertionError:
+            intensity_sg_no = intensity_array.space_group().type().number()
+            params_sg_no = params.symmetry.space_group.type().number()
+            if intensity_sg_no != params_sg_no:
                 raise sys.exit(
-                    "The input space group does not match the reference file"
+                    f"The input space group (#{params_sg_no}) does not match the reference file (#{intensity_sg_no})"
                 )
-            else:
-                logger.info("Input space group matches reference space group")
         else:
             params.symmetry.space_group = intensity_array.space_group_info()
-            logger.info("symmetry.space_group has been set to:")
-            logger.info(params.symmetry.space_group)
+            logger.info(
+                f"symmetry.space_group has been set to: {params.symmetry.space_group}"
+            )
 
     try:
         ScaleAndMerge.MultiCrystalScale(experiments, reflections_all, params)
