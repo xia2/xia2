@@ -788,12 +788,10 @@ class MultiCrystalScale:
     def reindex(self):
         logger.debug("Running reindexing")
         logger.info("Re-indexing to reference")
-        experiments_filename = self._data_manager.export_experiments("tmp.expt")
-        reflections_filename = self._data_manager.export_reflections("tmp.refl")
         reindex = Reindex()
         auto_logfiler(reindex)
-        reindex.set_experiments_filename(experiments_filename)
-        reindex.set_indexed_filename(reflections_filename)
+        reindex.set_experiments_filename(self._experiments_filename)
+        reindex.set_indexed_filename(self._reflections_filename)
         reindex.set_reference_file(self._params.reference)
 
         reindex.run()
