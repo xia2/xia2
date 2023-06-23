@@ -325,3 +325,34 @@ def test_data_manager_filter_dose_out_of_range(protk_experiments_and_reflections
     assert len(data_manager.experiments) < len(experiments)
     for expt in data_manager.experiments:
         assert expt.scan.get_image_range() == (12, 25)
+
+
+def test_run_with_reference_pdb(run_in_tmp_path, dials_data):
+    # Test that use case of providing a reference file to consistently reindex against
+    # In this case there is no indexing ambiguity, so we're just testing it
+    # completes as expected with the set space group from the pdb file.
+    data_dir = dials_data("multi_crystal_proteinase_k", pathlib=True)
+    expts = [
+        os.fspath(data_dir / "experiments_1.json"),
+        os.fspath(data_dir / "experiments_2.json"),
+    ]
+    refls = [
+        os.fspath(data_dir / "reflections_1.pickle"),
+        os.fspath(data_dir / "reflections_2.pickle"),
+    ]
+    command_line_args = [f"reference={os.fspath(data_dir/'2id8.pdb')}"] + expts + refls
+    run_multiplex(command_line_args)
+
+    assert (run_in_tmp_path / "dials.reindex.log").is_file()
+    assert (run_in_tmp_path / "scaled.expt").is_file()
+    multiplex_expts = load.experiment_list("scaled.expt", check_format=False)
+    for expt in multiplex_expts:
+        assert expt.crystal.get_space_group().type().lookup_symbol() == "P 43 21 2"
+
+    # test EXIT if incompatible space group
+    command_line_args = (
+        ["reference=~/Downloads/2id8.pdb", "symmetry.space_group=P1"] + expts + refls
+    )
+
+    with pytest.raises(SystemExit):
+        run_multiplex(command_line_args)
