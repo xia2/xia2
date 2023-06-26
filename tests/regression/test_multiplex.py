@@ -351,7 +351,9 @@ def test_run_with_reference_pdb(run_in_tmp_path, dials_data):
 
     # test EXIT if incompatible space group
     command_line_args = (
-        ["reference=~/Downloads/2id8.pdb", "symmetry.space_group=P1"] + expts + refls
+        [f"reference={os.fspath(data_dir/'2id8.pdb')}", "symmetry.space_group=P1"]
+        + expts
+        + refls
     )
 
     with pytest.raises(SystemExit):
