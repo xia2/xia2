@@ -42,14 +42,16 @@ class BatchScale(ScalingAlgorithm):
 
         #### Perform any non-batch cutting of the datasets, including the target dataset
         best_unit_cell = self.params.reflection_selection.best_unit_cell
-        if best_unit_cell is None:
-            from dxtbx.model import ExperimentList
 
+        from dxtbx.model import ExperimentList
+
+        new_expts = ExperimentList([])
+        for e in experiments:
+            new_expts.append(e[0])  # single expt per elist
+        if best_unit_cell is None:
             all_expts = ExperimentList([])
-            new_expts = ExperimentList([])
             for e in experiments:
                 all_expts.extend(e)
-                new_expts.append(e[0])
             best_unit_cell = determine_best_unit_cell(all_expts)
         for reflection in reflections:
             if self.params.cut_data.d_min or self.params.cut_data.d_max:
@@ -71,14 +73,15 @@ class BatchScale(ScalingAlgorithm):
                 reflection["inverse_scale_factor"] ** 2
             )
             del reflection["inverse_scale_factor"]
-
+        for m in new_expts.scaling_models():
+            del m
         if self.params.scaling_options.reference:
             # Set a suitable d_min in the case when we might have a model file
             d_min_for_structure_model = 2.0
             if self.params.cut_data.d_min not in (None, Auto):
                 d_min_for_structure_model = self.params.cut_data.d_min
             expt, reflection_table = create_datastructures_for_reference_file(
-                experiments,
+                experiments[0],
                 self.params.scaling_options.reference,
                 self.params.anomalous,
                 d_min=d_min_for_structure_model,
@@ -88,10 +91,10 @@ class BatchScale(ScalingAlgorithm):
             new_expts.append(expt)
             reflections.append(reflection_table)
 
-        for m in new_expts.scaling_models():
-            del m
         self.experiments = new_expts
         self.reflections = reflections
+        print(self.experiments)
+        print(self.reflections)
         for i, (e, t) in enumerate(zip(self.experiments, self.reflections)):
             for k in list(t.experiment_identifiers().keys()):
                 del t.experiment_identifiers()[k]

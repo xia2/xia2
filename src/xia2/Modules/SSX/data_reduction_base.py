@@ -30,6 +30,8 @@ from xia2.Modules.SSX.data_reduction_programs import (
     merge,
     parallel_cosym,
     prepare_scaled_array,
+    reindex_and_scale_to_reference,
+    scale,
     scale_against_reference,
     split_integrated_data,
 )
@@ -235,10 +237,15 @@ class BaseDataReduction(object):
             self._split_data_for_reindex(good_crystals_data)
             # self._reindex()
             self._reindex_and_scale_in_batches()
+            # now reindex against reference and scale against ref
+            if self._reduction_params.reference:
+                self._reindex_and_scale_against_ref()
         else:
             self._prepare_for_scaling(good_crystals_data)
 
             xia2_logger.notice(banner("Scaling"))  # type: ignore
+            # parallel scale in batches
+            # scale all batches together with or without ref.
             if self._reduction_params.reference:
                 self._scale()  # i.e. data reduction with reference scale method
             else:
@@ -247,6 +254,11 @@ class BaseDataReduction(object):
 
         xia2_logger.notice(banner("Merging"))  # type: ignore
         self._merge()
+
+    def _reindex_and_scale_against_ref(self):
+        self._files_to_merge = reindex_and_scale_to_reference(
+            self._scale_wd, self._files_to_merge, self._reduction_params
+        )
 
     def _scale_in_batches(self):
         # now scale all batches
@@ -332,9 +344,9 @@ class BaseDataReduction(object):
         ) as pool:
             scale_futures: Dict[Any, str] = {
                 pool.submit(
-                    scale_against_reference,
+                    scale,
                     self._reindex_wd,
-                    files,
+                    [files],
                     self._reduction_params,
                     name,
                 ): name

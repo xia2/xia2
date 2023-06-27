@@ -391,6 +391,81 @@ class MergeResult:
     name: str = ""
 
 
+from dials.algorithms.symmetry.reindex_to_reference import (
+    determine_reindex_operator_against_reference,
+)
+from dials.command_line.reindex import reindex_experiments
+from dials.util.reference import intensities_from_reference_file
+
+
+def reindex_and_scale_to_reference(working_directory: Path, files, reduction_params):
+
+    # convert to miller array
+    fullma = None
+    expt = load.experiment_list(files[0].expt)[0]
+    for fp in files:
+        refl = flex.reflection_table.from_file(fp.refl)
+        refl = refl.select(refl.get_flags(refl.flags.scaled))
+        refl = refl.select(~refl.get_flags(refl.flags.outlier_in_scaling))
+        refl = refl.select(refl["partiality"] > reduction_params.partiality_threshold)
+        refl["intensity.scale.value"] /= refl["inverse_scale_factor"]
+        refl["intensity.scale.variance"] /= refl["inverse_scale_factor"] ** 2
+        ma = refl.as_miller_array(expt, "scale")
+        if not fullma:
+            fullma = ma
+        else:
+            fullma = fullma.concatenate(ma)
+    logfile = "dials.reindex.log"
+    reference_miller_set = intensities_from_reference_file(
+        os.fspath(reduction_params.reference)
+    )
+
+    with log_to_file(logfile) as dials_logger:
+        change_of_basis_op = determine_reindex_operator_against_reference(
+            fullma, reference_miller_set
+        )
+
+    expts_list = []
+    tables = []
+
+    for f in files:
+        expts = load.experiment_list(f.expt)
+        refls = flex.reflection_table.from_file(f.refl)
+        if str(change_of_basis_op) != str(sgtbx.change_of_basis_op("a,b,c")):
+            expts = reindex_experiments(expts, change_of_basis_op)
+            refls["miller_index"] = change_of_basis_op.apply(refls["miller_index"])
+        expts_list.append(expts)
+        tables.append(refls)
+
+    input_ = ""
+    logfile = "dials.scale.log"
+    with run_in_directory(working_directory), log_to_file(
+        logfile
+    ) as dials_logger, record_step("dials.scale"):
+        params, diff_phil = _extract_scaling_params_for_scale_against_reference(
+            reduction_params, name="final"
+        )
+        dials_logger.info(
+            "The following parameters have been modified:\n"
+            + input_
+            + f"{diff_phil.as_str()}"
+        )
+        scaler = BatchScale(params, expts_list, tables)
+        scaler.run()
+        scaler.finish()
+        outexpt, outrefl = scaler.export()
+        FileHandler.record_html_file(
+            "dials.scale", working_directory / "dials.scale.html"
+        )
+        FileHandler.record_log_file(logfile.rstrip(".log"), working_directory / logfile)
+        outfiles = []
+        for expt, refl in zip(outexpt, outrefl):
+            outfiles.append(
+                FilePair(working_directory / expt, working_directory / refl)
+            )
+        return outfiles
+
+
 def _extract_scaling_params(reduction_params, for_batch_scale=False):
     # scaling options for scaling without a reference
     extra_defaults = """
@@ -718,10 +793,10 @@ def _extract_cosym_params(reduction_params, index):
         output.reflections=processed_{index}.refl
         output.experiments=processed_{index}.expt
     """
-    if reduction_params.reference:
-        xia2_phil += f"\nreference={reduction_params.reference}"
-        xia2_phil += f"\nreference_model.k_sol={reduction_params.reference_ksol}"
-        xia2_phil += f"\nreference_model.b_sol={reduction_params.reference_bsol}"
+    # if reduction_params.reference:
+    #    xia2_phil += f"\nreference={reduction_params.reference}"
+    #    xia2_phil += f"\nreference_model.k_sol={reduction_params.reference_ksol}"
+    #    xia2_phil += f"\nreference_model.b_sol={reduction_params.reference_bsol}"
     extra_defaults = f"""
         min_i_mean_over_sigma_mean=2
         unit_cell_clustering.threshold=None
@@ -864,6 +939,7 @@ def cosym_reindex(
     files_for_reindex: List[FilePair],
     d_min: float = None,
     max_delta: float = 2.0,
+    partiality_threshold=0.25,
 ) -> List[FilePair]:
     from dials.command_line.cosym import phil_scope as cosym_scope
 
@@ -879,6 +955,7 @@ def cosym_reindex(
         refls.append(flex.reflection_table.from_file(filepair.refl))
     params.space_group = expts[0][0].crystal.get_space_group().info()
     params.lattice_symmetry_max_delta = max_delta
+    params.partiality_threshold = partiality_threshold
     if d_min:
         params.d_min = d_min
 
