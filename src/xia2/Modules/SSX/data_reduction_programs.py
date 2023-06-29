@@ -1021,6 +1021,9 @@ def parallel_cosym(
                     )
                 else:
                     reindexed_results.append(FilePair(result.exptfile, result.reflfile))
+                    if "cosym" not in reduction_params.output_save_files:
+                        FileHandler.record_temporary_file(result.exptfile)
+                        FileHandler.record_temporary_file(result.reflfile)
                     FileHandler.record_log_file(
                         result.logfile.name.rstrip(".log"), result.logfile
                     )
@@ -1196,6 +1199,8 @@ def split_filtered_data(
                 )
                 sub_expt.as_file(out_expt)
                 sub_refl.as_file(out_refl)
+                FileHandler.record_temporary_file(out_expt)
+                FileHandler.record_temporary_file(out_refl)
                 data_to_reindex.append(FilePair(out_expt, out_refl))
                 n_batch_output += 1
                 if n_batch_output == len(splits) - 1:

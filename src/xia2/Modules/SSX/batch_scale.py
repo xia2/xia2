@@ -31,6 +31,7 @@ class BatchScale(ScalingAlgorithm):
         self.merging_statistics_result = None
         self.anom_merging_statistics_result = None
         self.filtering_results = None
+        self.original_identifiers_map = {}
         self.prepare_input(experiments, reflections)
         self.create_model_and_scaler()
         logger.debug("Initialised scaling script object")
@@ -85,6 +86,7 @@ class BatchScale(ScalingAlgorithm):
             reflection["intensity.sum.variance"] /= (
                 reflection["inverse_scale_factor"] ** 2
             )
+            reflection["id.original"] = reflection["id"]
             del reflection["inverse_scale_factor"]
         for m in new_expts.scaling_models():
             del m
@@ -108,7 +110,9 @@ class BatchScale(ScalingAlgorithm):
         self.reflections = reflections
 
         for i, (e, t) in enumerate(zip(self.experiments, self.reflections)):
+            self.original_identifiers_map[i] = {}
             for k in list(t.experiment_identifiers().keys()):
+                self.original_identifiers_map[i][k] = t.experiment_identifiers()[k]
                 del t.experiment_identifiers()[k]
             t["id"] = flex.int(t.size(), i)
             t.experiment_identifiers()[i] = e.identifier
@@ -128,17 +132,22 @@ class BatchScale(ScalingAlgorithm):
         # now copy results to original data
         self.scaler._set_outliers()
         assert self.input_reflections[0] is self.reflections[0]
-        for inp in self.input_reflections:
+        for i, inp in enumerate(self.input_reflections):
+            del inp.experiment_identifiers()[i]
+            for k, v in self.original_identifiers_map[i].items():
+                inp.experiment_identifiers()[k] = v
             inp["inverse_scale_factor"] *= inp["inverse_scale_factor.original"]
             inp["intensity.sum.value"] = inp["intensity.sum.value.original"]
             inp["intensity.sum.variance"] = inp["intensity.sum.variance.original"]
             inp["intensity.scale.value"] = inp["intensity.scale.value.original"]
             inp["intensity.scale.variance"] = inp["intensity.scale.variance.original"]
+            inp["id"] = inp["id.original"]
             del inp["intensity.sum.variance.original"]
             del inp["intensity.sum.value.original"]
             del inp["inverse_scale_factor.original"]
             del inp["intensity.scale.value.original"]
             del inp["intensity.scale.variance.original"]
+            del inp["id.original"]
 
         for inp, scaled in zip(self.input_experiments, self.experiments):
             scale = scaled.scaling_model.components["scale"].parameters[0]

@@ -69,8 +69,6 @@ class SimpleDataReduction(BaseDataReduction):
                         f"Completed scaling of data reduction batch {name.lstrip('batch')}"
                     )
                     scaled_results.append(FilePair(result.exptfile, result.reflfile))
-                    # FileHandler.record_data_file(result.exptfile)
-                    # FileHandler.record_data_file(result.reflfile)
                     FileHandler.record_log_file(
                         result.logfile.name.rstrip(".log"), result.logfile
                     )
@@ -80,7 +78,12 @@ class SimpleDataReduction(BaseDataReduction):
 
         if len(scaled_results) > 1:
             # now batch cosym and batch scale
+            if "scale" not in self._reduction_params.output_save_files:
+                for result in scaled_results:
+                    FileHandler.record_temporary_file(result.expt)
+                    FileHandler.record_temporary_file(result.refl)
             xia2_logger.notice(banner("Reindexing"))  # type: ignore
+
             files_to_scale = cosym_reindex(
                 self._reindex_wd,
                 scaled_results,
@@ -88,6 +91,10 @@ class SimpleDataReduction(BaseDataReduction):
                 self._reduction_params.lattice_symmetry_max_delta,
             )
             xia2_logger.info(f"Consistently reindexed {len(scaled_results)} batches")
+            if "cosym" not in self._reduction_params.output_save_files:
+                for fp in files_to_scale:
+                    FileHandler.record_temporary_file(fp.expt)
+                    FileHandler.record_temporary_file(fp.refl)
             xia2_logger.notice(banner("Scaling"))  # type: ignore
             outfiles = batch_scale(
                 self._scale_wd, files_to_scale, self._reduction_params
@@ -150,6 +157,10 @@ class SimpleDataReduction(BaseDataReduction):
                     )
 
         if len(scaled_results) > 1:
+            if "scale" not in self._reduction_params.output_save_files:
+                for fp in scaled_results:
+                    FileHandler.record_temporary_file(fp.expt)
+                    FileHandler.record_temporary_file(fp.refl)
             self._files_to_merge = batch_scale(
                 self._scale_wd, scaled_results, self._reduction_params
             )
@@ -164,3 +175,7 @@ class SimpleDataReduction(BaseDataReduction):
             FileHandler.record_data_file(new_expt_f)
             FileHandler.record_data_file(new_refl_f)
             self._files_to_merge = [FilePair(new_expt_f, new_refl_f)]
+
+        # The final scaled files should be kept, to allow further analysis
+
+        # The merged files should be kept to allow quick merging (allowing for merge groups too).

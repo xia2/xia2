@@ -142,6 +142,13 @@ scaling {
             "over identical options defined in the phil file."
     .expert_level = 3
 }
+output {
+  save_files = cosym scale *None
+    .type = choice(multi=True)
+    .help = "Instruct the program to save extra output datafiles. This will at least"
+            "double the size of the processing directory if enabled."
+    .expert_level=3
+}
 """
     % reference_phil_str
 )
