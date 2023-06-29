@@ -797,7 +797,7 @@ def _extract_cosym_params(reduction_params, index: str):
     #    xia2_phil += f"\nreference_model.k_sol={reduction_params.reference_ksol}"
     #    xia2_phil += f"\nreference_model.b_sol={reduction_params.reference_bsol}"
     extra_defaults = f"""
-        min_i_mean_over_sigma_mean=2
+        min_i_mean_over_sigma_mean=0.5
         unit_cell_clustering.threshold=None
         lattice_symmetry_max_delta={reduction_params.lattice_symmetry_max_delta}
         partiality_threshold={reduction_params.partiality_threshold}
