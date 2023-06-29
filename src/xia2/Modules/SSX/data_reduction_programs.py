@@ -475,12 +475,9 @@ def _extract_scaling_params(reduction_params, for_batch_scale=False):
         reflection_selection.intensity_choice=sum
         output.additional_stats=True
         scaling_options.nproc=8
+        scaling_options.outlier_rejection=simple
     """
-    if for_batch_scale:
-        extra_defaults += """
-        scaling_options.outlier_rejection=standard
-    """
-    else:
+    if not for_batch_scale:
         extra_defaults += """
         scaling_options.outlier_rejection=simple
         reflection_selection.method=intensity_ranges

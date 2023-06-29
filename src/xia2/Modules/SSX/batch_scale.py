@@ -137,9 +137,7 @@ class BatchScale(ScalingAlgorithm):
                 expt.scaling_model.components["decay"].parameters[0] += B
 
     def export(self):
-        """Output the datafiles for cosym.
-
-        This includes the cosym.json, reflections and experiments files."""
+        """Output the datafiles"""
         import functools
 
         template = functools.partial(
@@ -150,10 +148,10 @@ class BatchScale(ScalingAlgorithm):
             zip(self.input_experiments, self.input_reflections)
         ):
             fname = template(index=i + 1)
-            logger.info(f"Saving reindexed reflections to {fname}.refl")
+            logger.info(f"Saving scaled reflections to {fname}.refl")
             refls.as_file(f"{fname}.refl")
             self.output_refl_files.append(f"{fname}.refl")
-            logger.info(f"Saving reindexed experiments to {fname}.expt")
+            logger.info(f"Saving scaled experiments to {fname}.expt")
             expts.as_file(f"{fname}.expt")
             self.output_expt_files.append(f"{fname}.expt")
         return self.output_expt_files, self.output_refl_files
