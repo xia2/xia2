@@ -1,3 +1,12 @@
+xia2 3.15.1 (2023-06-29)
+========================
+
+Bugfixes
+--------
+
+- Don't import matplotlib in scipy.hierarchy.dendrrogram, causing errors on headless machines. (`#745 <https://github.com/xia2/xia2/issues/745>`_)
+
+
 xia2 3.15.0 (2023-06-13)
 ========================
 
