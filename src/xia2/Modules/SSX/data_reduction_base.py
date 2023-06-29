@@ -30,7 +30,6 @@ from xia2.Modules.SSX.data_reduction_programs import (
     merge,
     parallel_cosym,
     prepare_scaled_array,
-    reindex_and_scale_to_reference,
     scale,
     scale_against_reference,
     split_integrated_data,
@@ -259,9 +258,10 @@ class BaseDataReduction(object):
         self._merge()
 
     def _reindex_and_scale_against_ref(self):
-        self._files_to_merge = reindex_and_scale_to_reference(
-            self._scale_wd, self._files_to_merge, self._reduction_params
-        )
+        pass
+        # self._files_to_merge = reindex_and_scale_to_reference(
+        #    self._scale_wd, self._files_to_merge, self._reduction_params
+        # )
 
     def _scale_in_batches(self):
         # now scale all batches

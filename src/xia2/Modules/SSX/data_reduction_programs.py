@@ -399,12 +399,10 @@ from dials.command_line.reindex import reindex_experiments
 from dials.util.reference import intensities_from_reference_file
 
 
-def reindex_and_scale_to_reference(working_directory: Path, files, reduction_params):
+def reindex_against_reference(working_directory, fp, reduction_params, index: str):
 
-    # convert to miller array
-    fullma = None
-    expt = load.experiment_list(files[0].expt)[0]
-    for fp in files:
+    with run_in_directory(working_directory):
+        expt = load.experiment_list(fp.expt)[0]
         refl = flex.reflection_table.from_file(fp.refl)
         refl = refl.select(refl.get_flags(refl.flags.scaled))
         refl = refl.select(~refl.get_flags(refl.flags.outlier_in_scaling))
@@ -412,59 +410,27 @@ def reindex_and_scale_to_reference(working_directory: Path, files, reduction_par
         refl["intensity.scale.value"] /= refl["inverse_scale_factor"]
         refl["intensity.scale.variance"] /= refl["inverse_scale_factor"] ** 2
         ma = refl.as_miller_array(expt, "scale")
-        if not fullma:
-            fullma = ma
-        else:
-            fullma = fullma.concatenate(ma)
-    logfile = "dials.reindex.log"
-    reference_miller_set = intensities_from_reference_file(
-        os.fspath(reduction_params.reference)
-    )
-
-    with log_to_file(logfile) as dials_logger:
-        change_of_basis_op = determine_reindex_operator_against_reference(
-            fullma, reference_miller_set
+        logfile = f"dials.reindex.{index}.log"
+        reference_miller_set = intensities_from_reference_file(
+            os.fspath(reduction_params.reference)
         )
 
-    expts_list = []
-    tables = []
-
-    for f in files:
-        expts = load.experiment_list(f.expt)
-        refls = flex.reflection_table.from_file(f.refl)
-        if str(change_of_basis_op) != str(sgtbx.change_of_basis_op("a,b,c")):
-            expts = reindex_experiments(expts, change_of_basis_op)
-            refls["miller_index"] = change_of_basis_op.apply(refls["miller_index"])
-        expts_list.append(expts)
-        tables.append(refls)
-
-    input_ = ""
-    logfile = "dials.scale.log"
-    with run_in_directory(working_directory), log_to_file(
-        logfile
-    ) as dials_logger, record_step("dials.scale"):
-        params, diff_phil = _extract_scaling_params_for_scale_against_reference(
-            reduction_params, name="final"
-        )
-        dials_logger.info(
-            "The following parameters have been modified:\n"
-            + input_
-            + f"{diff_phil.as_str()}"
-        )
-        scaler = BatchScale(params, expts_list, tables)
-        scaler.run()
-        scaler.finish()
-        outexpt, outrefl = scaler.export()
-        FileHandler.record_html_file(
-            "dials.scale", working_directory / "dials.scale.html"
-        )
-        FileHandler.record_log_file(logfile.rstrip(".log"), working_directory / logfile)
-        outfiles = []
-        for expt, refl in zip(outexpt, outrefl):
-            outfiles.append(
-                FilePair(working_directory / expt, working_directory / refl)
+        with log_to_file(logfile):
+            change_of_basis_op = determine_reindex_operator_against_reference(
+                ma, reference_miller_set
             )
-        return outfiles
+        if str(change_of_basis_op) != str(sgtbx.change_of_basis_op("a,b,c")):
+            expts = load.experiment_list(fp.expt)
+            refls = flex.reflection_table.from_file(fp.refl)
+            if str(change_of_basis_op) != str(sgtbx.change_of_basis_op("a,b,c")):
+                expts = reindex_experiments(expts, change_of_basis_op)
+                refls["miller_index"] = change_of_basis_op.apply(refls["miller_index"])
+            expout = f"reindexed_{index}.expt"
+            reflout = f"reindexed_{index}.refl"
+            expts.as_file(expout)
+            refl.as_file(reflout)
+            return FilePair(working_directory / expout, working_directory / reflout)
+        return fp
 
 
 def _extract_scaling_params(reduction_params, for_batch_scale=False):
