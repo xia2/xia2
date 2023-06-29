@@ -101,6 +101,13 @@ class BatchCosym(Subject):
                 subgroup["best_subsym"].space_group().build_derived_acentric_group()
             )
         unique_ids = set(self.cosym_analysis.dataset_ids)
+        import functools
+
+        template = functools.partial(
+            "processed_{index:0{fmt:d}d}".format,
+            fmt=len(str(len(unique_ids))),
+        )
+
         for i, (cb_op, dataset_id) in enumerate(zip(reindexing_ops, unique_ids)):
             cb_op = sgtbx.change_of_basis_op(cb_op)
             logger.debug(
@@ -125,7 +132,10 @@ class BatchCosym(Subject):
                     )
                 )
             refls["miller_index"] = cb_op.apply(refls["miller_index"])
-            expts.as_file(f"processed_{i}.expt")
-            refls.as_file(f"processed_{i}.refl")
-            self._output_expt_files.append(f"processed_{i}.expt")
-            self._output_refl_files.append(f"processed_{i}.refl")
+            outexpt = template(index=i + 1) + ".expt"
+            outref = template(index=i + 1) + ".refl"
+
+            expts.as_file(outexpt)
+            refls.as_file(outref)
+            self._output_expt_files.append(outexpt)
+            self._output_refl_files.append(outref)

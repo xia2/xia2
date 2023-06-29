@@ -93,8 +93,7 @@ class BatchScale(ScalingAlgorithm):
 
         self.experiments = new_expts
         self.reflections = reflections
-        print(self.experiments)
-        print(self.reflections)
+
         for i, (e, t) in enumerate(zip(self.experiments, self.reflections)):
             for k in list(t.experiment_identifiers().keys()):
                 del t.experiment_identifiers()[k]
@@ -150,7 +149,7 @@ class BatchScale(ScalingAlgorithm):
         for i, (expts, refls) in enumerate(
             zip(self.input_experiments, self.input_reflections)
         ):
-            fname = template(index=i)
+            fname = template(index=i + 1)
             logger.info(f"Saving reindexed reflections to {fname}.refl")
             refls.as_file(f"{fname}.refl")
             self.output_refl_files.append(f"{fname}.refl")

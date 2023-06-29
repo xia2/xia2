@@ -344,8 +344,8 @@ def check_data_reduction_files(tmp_path, reindex=True, reference=False):
     assert (tmp_path / "data_reduction").is_dir()
     assert (tmp_path / "data_reduction" / "prefilter").is_dir()
     assert reindex is (tmp_path / "data_reduction" / "reindex").is_dir()
-    assert reindex is (tmp_path / "LogFiles" / "dials.cosym.0.log").is_file()
-    assert reindex is (tmp_path / "LogFiles" / "dials.cosym.0.html").is_file()
+    assert reindex is (tmp_path / "LogFiles" / "dials.cosym.1.log").is_file()
+    assert reindex is (tmp_path / "LogFiles" / "dials.cosym.1.html").is_file()
     assert (tmp_path / "data_reduction" / "scale").is_dir()
     assert (tmp_path / "data_reduction" / "merge" / "all" / "merged.mtz").is_file()
     assert (tmp_path / "DataFiles" / "merged.mtz").is_file()
@@ -357,17 +357,17 @@ def check_data_reduction_files(tmp_path, reindex=True, reference=False):
         assert (tmp_path / "DataFiles" / "scaled_batch1.expt").is_file()
         assert (tmp_path / "LogFiles" / "dials.scale.scaled_batch1.log").is_file()
     else:
-        assert (tmp_path / "DataFiles" / "scaled.refl").is_file()
-        assert (tmp_path / "DataFiles" / "scaled.expt").is_file()
-        assert (tmp_path / "LogFiles" / "dials.scale.log").is_file()
+        assert (tmp_path / "DataFiles" / "scaled_1.refl").is_file()
+        assert (tmp_path / "DataFiles" / "scaled_1.expt").is_file()
+        assert (tmp_path / "LogFiles" / "dials.scale.batch1.log").is_file()
 
 
 def check_data_reduction_files_on_scaled_only(tmp_path, reference=False):
     assert (tmp_path / "data_reduction").is_dir()
     assert not (tmp_path / "data_reduction" / "prefilter").is_dir()
     assert not (tmp_path / "data_reduction" / "reindex").is_dir()
-    assert not (tmp_path / "LogFiles" / "dials.cosym.0.log").is_file()
-    assert not (tmp_path / "LogFiles" / "dials.cosym.0.html").is_file()
+    assert not (tmp_path / "LogFiles" / "dials.cosym.1.log").is_file()
+    assert not (tmp_path / "LogFiles" / "dials.cosym.1.html").is_file()
     assert (tmp_path / "data_reduction" / "merge").is_dir()
     assert (tmp_path / "data_reduction" / "merge" / "all" / "merged.mtz").is_file()
     assert (tmp_path / "DataFiles" / "merged.mtz").is_file()

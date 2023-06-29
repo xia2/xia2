@@ -729,6 +729,8 @@ def batch_scale(
             outfiles.append(
                 FilePair(working_directory / expt, working_directory / refl)
             )
+            FileHandler.record_data_file(working_directory / expt)
+            FileHandler.record_data_file(working_directory / refl)
         return outfiles
 
 
@@ -785,7 +787,7 @@ def scale(
     )
 
 
-def _extract_cosym_params(reduction_params, index):
+def _extract_cosym_params(reduction_params, index: str):
     xia2_phil = f"""
         space_group={reduction_params.space_group}
         output.html=dials.cosym.{index}.html
@@ -845,7 +847,7 @@ def _extract_cosym_params(reduction_params, index):
 def cosym_against_reference(
     working_directory: Path,
     files: FilePair,
-    index: int,
+    index: str,
     reduction_params,
 ) -> ProgramResult:
     with run_in_directory(working_directory):
@@ -874,7 +876,7 @@ def cosym_against_reference(
             joint_refls = flex.reflection_table.concat(cosym_instance.reflections)
             joint_refls.as_file(cosym_params.output.reflections)
             xia2_logger.info(
-                f"Consistently indexed {len(cosym_instance.experiments)} crystals in data reduction batch {index+1} against reference"
+                f"Consistently indexed {len(cosym_instance.experiments)} crystals in data reduction batch {index} against reference"
             )
 
     return ProgramResult(
@@ -889,7 +891,7 @@ def cosym_against_reference(
 def individual_cosym(
     working_directory: Path,
     files: FilePair,
-    index: int,
+    index: str,
     reduction_params,
 ) -> ProgramResult:
     """Run  cosym an the expt and refl file."""
@@ -922,7 +924,7 @@ def individual_cosym(
         joint_refls = flex.reflection_table.concat(cosym_instance.reflections)
         joint_refls.as_file(cosym_params.output.reflections)
         xia2_logger.info(
-            f"Consistently indexed {len(cosym_instance.experiments)} crystals in data reduction batch {index+1}"
+            f"Consistently indexed {len(cosym_instance.experiments)} crystals in data reduction batch {index}"
         )
 
     return ProgramResult(
@@ -989,6 +991,10 @@ def parallel_cosym(
         Path.mkdir(working_directory)
 
     reindexed_results = []
+    template = functools.partial(
+        "{index:0{fmt:d}d}".format,
+        fmt=len(str(len(data_to_reindex))),
+    )
 
     with open(os.devnull, "w") as devnull:
         sys.stdout = devnull  # block printing from cosym
@@ -1002,10 +1008,10 @@ def parallel_cosym(
                     individual_cosym,
                     working_directory,
                     files,
-                    index,
+                    template(index=i + 1),
                     reduction_params,
                 )
-                for index, files in enumerate(data_to_reindex)
+                for i, files in enumerate(data_to_reindex)
             ]
             for future in concurrent.futures.as_completed(cosym_futures):
                 try:

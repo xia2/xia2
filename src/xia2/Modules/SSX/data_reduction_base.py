@@ -233,24 +233,27 @@ class BaseDataReduction(object):
 
         if sym_requires_reindex:
             # split good crystals based on batchsize
-            xia2_logger.notice(banner("Reindexing"))  # type: ignore
+            # xia2_logger.notice(banner("Reindexing"))  # type: ignore
             self._split_data_for_reindex(good_crystals_data)
+            self._reindex()
+            """
             # self._reindex()
             self._reindex_and_scale_in_batches()
             # now reindex against reference and scale against ref
             if self._reduction_params.reference:
-                self._reindex_and_scale_against_ref()
+                self._reindex_and_scale_against_ref()"""
         else:
             self._prepare_for_scaling(good_crystals_data)
+            self._scale()
 
-            xia2_logger.notice(banner("Scaling"))  # type: ignore
+            """#xia2_logger.notice(banner("Scaling"))  # type: ignore
             # parallel scale in batches
             # scale all batches together with or without ref.
             if self._reduction_params.reference:
                 self._scale()  # i.e. data reduction with reference scale method
             else:
                 # want to do batch scaling then scale
-                self._scale_in_batches()
+                self._scale_in_batches()"""
 
         xia2_logger.notice(banner("Merging"))  # type: ignore
         self._merge()
