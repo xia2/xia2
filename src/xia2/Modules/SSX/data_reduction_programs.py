@@ -107,6 +107,7 @@ def split_integrated_data(
         integrated_data,
         good_crystals_data,
         reduction_params.batch_size,
+        reduction_params.partiality_threshold,
     )
     return new_files_to_process
 
@@ -955,6 +956,7 @@ def cosym_reindex(
     params.space_group = expts[0][0].crystal.get_space_group().info()
     params.lattice_symmetry_max_delta = max_delta
     params.partiality_threshold = partiality_threshold
+    params.min_i_mean_over_sigma_mean = 0.5
     if d_min:
         params.d_min = d_min
 
@@ -1138,6 +1140,7 @@ def split_filtered_data(
     new_data: List[FilePair],
     good_crystals_data: CrystalsDict,
     min_batch_size: int,
+    partiality_threshold: float,
 ) -> List[FilePair]:
     if not Path.is_dir(working_directory):
         Path.mkdir(working_directory)
@@ -1159,6 +1162,7 @@ def split_filtered_data(
         for file_pair in new_data:
             expts = load.experiment_list(file_pair.expt, check_format=False)
             refls = flex.reflection_table.from_file(file_pair.refl)
+            refls = refls.select(refls["partiality"] > partiality_threshold)
             good_crystals_this = good_crystals_data[str(file_pair.expt)]
             if not good_crystals_this.crystals:
                 continue
