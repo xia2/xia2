@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import copy
 import logging
 
 from dials.algorithms.scaling.algorithm import ScalingAlgorithm
@@ -12,6 +11,7 @@ from dials.algorithms.scaling.scaling_library import (
 )
 from dials.algorithms.scaling.scaling_utilities import log_memory_usage
 from dials.array_family import flex
+from dxtbx.model import ExperimentList
 from libtbx import Auto
 
 logger = logging.getLogger("dials")
@@ -23,8 +23,8 @@ class BatchScale(ScalingAlgorithm):
     def __init__(self, params, experiments, reflections):
         self.scaler = None
         self.params = params
-        self.input_experiments = copy.deepcopy(experiments)
-        self.input_reflections = copy.deepcopy(reflections)
+        self.input_experiments = experiments
+        self.input_reflections = reflections
         self.output_refl_files = []
         self.output_expt_files = []
         self.scaled_miller_array = None
@@ -42,8 +42,6 @@ class BatchScale(ScalingAlgorithm):
 
         #### Perform any non-batch cutting of the datasets, including the target dataset
         best_unit_cell = self.params.reflection_selection.best_unit_cell
-
-        from dxtbx.model import ExperimentList
 
         new_expts = ExperimentList([])
         for e in experiments:
@@ -68,6 +66,21 @@ class BatchScale(ScalingAlgorithm):
                     reflection.flags.user_excluded_in_scaling,
                 )
             # need to scale intensities
+            reflection["intensity.sum.value.original"] = reflection[
+                "intensity.sum.value"
+            ]
+            reflection["intensity.sum.variance.original"] = reflection[
+                "intensity.sum.variance"
+            ]
+            reflection["intensity.scale.value.original"] = reflection[
+                "intensity.scale.value"
+            ]
+            reflection["intensity.scale.variance.original"] = reflection[
+                "intensity.scale.variance"
+            ]
+            reflection["inverse_scale_factor.original"] = reflection[
+                "inverse_scale_factor"
+            ]
             reflection["intensity.sum.value"] /= reflection["inverse_scale_factor"]
             reflection["intensity.sum.variance"] /= (
                 reflection["inverse_scale_factor"] ** 2
@@ -114,21 +127,19 @@ class BatchScale(ScalingAlgorithm):
     def finish(self):
         # now copy results to original data
         self.scaler._set_outliers()
-        for inp, scaled in zip(self.input_reflections, self.reflections):
-            inp["inverse_scale_factor"] *= scaled["inverse_scale_factor"]
-            inp["inverse_scale_factor_variance"] += scaled[
-                "inverse_scale_factor_variance"
-            ]
-            flags = scaled.get_flags(scaled.flags.scaled)
-            inp.unset_flags(flex.bool(inp.size(), True), inp.flags.scaled)
-            inp.unset_flags(flex.bool(inp.size(), True), inp.flags.outlier_in_scaling)
-            inp.set_flags(flags, inp.flags.scaled)
-            sel = inp["inverse_scale_factor"] < self.params.cut_data.small_scale_cutoff
-            inp.set_flags(sel, inp.flags.excluded_for_scaling)
-            inp.set_flags(
-                scaled.get_flags(scaled.flags.outlier_in_scaling),
-                inp.flags.outlier_in_scaling,
-            )
+        assert self.input_reflections[0] is self.reflections[0]
+        for inp in self.input_reflections:
+            inp["inverse_scale_factor"] *= inp["inverse_scale_factor.original"]
+            inp["intensity.sum.value"] = inp["intensity.sum.value.original"]
+            inp["intensity.sum.variance"] = inp["intensity.sum.variance.original"]
+            inp["intensity.scale.value"] = inp["intensity.scale.value.original"]
+            inp["intensity.scale.variance"] = inp["intensity.scale.variance.original"]
+            del inp["intensity.sum.variance.original"]
+            del inp["intensity.sum.value.original"]
+            del inp["inverse_scale_factor.original"]
+            del inp["intensity.scale.value.original"]
+            del inp["intensity.scale.variance.original"]
+
         for inp, scaled in zip(self.input_experiments, self.experiments):
             scale = scaled.scaling_model.components["scale"].parameters[0]
             B = scaled.scaling_model.components["decay"].parameters[0]

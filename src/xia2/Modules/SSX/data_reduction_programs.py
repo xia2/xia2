@@ -1163,6 +1163,7 @@ def split_filtered_data(
             expts = load.experiment_list(file_pair.expt, check_format=False)
             refls = flex.reflection_table.from_file(file_pair.refl)
             refls = refls.select(refls["partiality"] > partiality_threshold)
+            refls = refls.select(refls.get_flags(refls.flags.integrated, all=False))
             good_crystals_this = good_crystals_data[str(file_pair.expt)]
             if not good_crystals_this.crystals:
                 continue
