@@ -906,6 +906,7 @@ def cosym_reindex(
     d_min: float = None,
     max_delta: float = 2.0,
     partiality_threshold=0.25,
+    reference=None,
 ) -> List[FilePair]:
     from dials.command_line.cosym import phil_scope as cosym_scope
 
@@ -930,7 +931,7 @@ def cosym_reindex(
         working_directory
     ), log_to_file(logfile), record_step("cosym_reindex"):
         sys.stdout = devnull  # block printing from cosym
-        cosym_instance = BatchCosym(expts, refls, params)
+        cosym_instance = BatchCosym(expts, refls, params, reference=reference)
         register_default_cosym_observers(cosym_instance)
         cosym_instance.run()
     sys.stdout = sys.__stdout__

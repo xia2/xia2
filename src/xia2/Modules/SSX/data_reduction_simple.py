@@ -89,6 +89,7 @@ class SimpleDataReduction(BaseDataReduction):
                 scaled_results,
                 self._reduction_params.d_min,
                 self._reduction_params.lattice_symmetry_max_delta,
+                self._reduction_params.partiality_threshold,
             )
             xia2_logger.info(f"Consistently reindexed {len(scaled_results)} batches")
             if "cosym" not in self._reduction_params.output_save_files:

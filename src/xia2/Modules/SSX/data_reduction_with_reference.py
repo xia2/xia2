@@ -4,7 +4,7 @@ import concurrent.futures
 import functools
 import logging
 from pathlib import Path
-from typing import Any, Dict, List, Tuple
+from typing import Any, Dict, Tuple
 
 from cctbx import sgtbx, uctbx
 
@@ -15,6 +15,7 @@ from xia2.Modules.SSX.data_reduction_base import BaseDataReduction
 from xia2.Modules.SSX.data_reduction_programs import (
     CrystalsDict,
     FilePair,
+    cosym_reindex,
     filter_,
     parallel_cosym,
     reindex_against_reference,
@@ -97,8 +98,50 @@ class DataReductionWithReference(BaseDataReduction):
         if not scaled_results:
             raise ValueError("No groups successfully scaled")
 
+        if len(scaled_results) > 1:
+            # now batch cosym and batch scale
+            if "scale" not in self._reduction_params.output_save_files:
+                for result in scaled_results:
+                    FileHandler.record_temporary_file(result.expt)
+                    FileHandler.record_temporary_file(result.refl)
+            xia2_logger.notice(banner("Reindexing"))  # type: ignore
+
+            files_to_scale = cosym_reindex(
+                self._reindex_wd,
+                scaled_results,
+                self._reduction_params.d_min,
+                self._reduction_params.lattice_symmetry_max_delta,
+                self._reduction_params.partiality_threshold,
+                reference=self._reduction_params.reference,
+            )
+            self._files_to_scale = files_to_scale
+            xia2_logger.info(f"Consistently reindexed {len(scaled_results)} batches")
+            if "cosym" not in self._reduction_params.output_save_files:
+                for fp in files_to_scale:
+                    FileHandler.record_temporary_file(fp.expt)
+                    FileHandler.record_temporary_file(fp.refl)
+            """xia2_logger.notice(banner("Scaling"))  # type: ignore
+            outfiles = batch_scale(
+                self._scale_wd, files_to_scale, self._reduction_params
+            )
+            xia2_logger.info("Completed joint scaling of all batches")
+            self._files_to_merge = outfiles"""
+        else:
+            template = functools.partial(
+                "{index:0{maxindexlength:d}d}".format,
+                maxindexlength=len(str(len(scaled_results))),
+            )
+            result = reindex_against_reference(
+                self._reindex_wd,
+                scaled_results[0],
+                self._reduction_params,
+                template(index=0),
+            )
+            xia2_logger.info("Reindexed against reference")
+            self._files_to_scale = [result]
+
         # Now reindex each batch against reference with dials.reindex
-        reindex_results = []
+        '''reindex_results = []
         template = functools.partial(
             "{index:0{maxindexlength:d}d}".format,
             maxindexlength=len(str(len(scaled_results))),
@@ -131,10 +174,10 @@ class DataReductionWithReference(BaseDataReduction):
                     xia2_logger.info("Reindexed against reference")
                     """FileHandler.record_log_file(
                         result.logfile.name.rstrip(".log"), result.logfile
-                    )"""
+                    )"""'''
 
-        self._files_to_scale = reindex_results
-        print(self._files_to_scale)
+        # self._files_to_scale = reindex_results
+        # print(self._files_to_scale)
         self._scale()
         # then scale in batches against ref
 
