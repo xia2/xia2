@@ -52,6 +52,7 @@ class ReductionParams:
     steps: List[str] = field(default_factory=lambda: ["scale", "merge"])
     reference_ksol: float = 0.35
     reference_bsol: float = 46.0
+    partiality_threshold: float = 0.25
 
     @classmethod
     def from_phil(cls, params: iotbx.phil.scope_extract):
@@ -93,4 +94,5 @@ class ReductionParams:
             params.workflow.steps,
             params.reference_model.k_sol,
             params.reference_model.b_sol,
+            params.partiality_threshold,
         )

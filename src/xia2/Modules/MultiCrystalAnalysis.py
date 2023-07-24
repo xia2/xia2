@@ -3,6 +3,9 @@ from __future__ import annotations
 import json
 import logging
 from collections import OrderedDict
+from itertools import combinations
+
+import pandas as pd
 
 from dials.algorithms.clustering.unit_cell import cluster_unit_cells
 from dials.algorithms.scaling.scale_and_filter import make_scaling_filtering_plots
@@ -31,7 +34,6 @@ class MultiCrystalAnalysis:
             self._data_manager = DataManager(experiments, reflections)
 
         self._intensities_separate = self._data_manager.reflections_as_miller_arrays()
-
         (
             self.intensities,
             self.batches,
@@ -42,8 +44,10 @@ class MultiCrystalAnalysis:
         for expt in self._data_manager.experiments:
             batch_params = scope.extract().batch[0]
             batch_params.id = self._data_manager.identifiers_to_ids_map[expt.identifier]
-            batch_params.range = expt.scan.get_batch_range()
-            self.params.batch.append(batch_params)
+
+            if not self._data_manager.all_stills:
+                batch_params.range = expt.scan.get_batch_range()
+                self.params.batch.append(batch_params)
 
         self.intensities.set_observation_type_xray_intensity()
 
@@ -196,6 +200,145 @@ relatively isomorphous.
         d.update(result.histogram())
         d.update(result.normalised_scores())
         return d, result.get_table(html=True)
+
+    @staticmethod
+    def interesting_cluster_identification(clusters, params):
+
+        cluster_numbers = []
+        heights = []
+        labels = []
+        number_of_datasets = []
+        for cluster in clusters:
+
+            # Because analysing each possible pair of clusters, to cut down computation time do initial filtering here
+
+            if len(cluster.labels) >= params.min_cluster_size:
+                cluster_numbers.append("cluster_" + str(cluster.cluster_id))
+                heights.append(cluster.height)
+                labels.append(cluster.labels)
+                number_of_datasets.append(len(cluster.labels))
+
+        c_data = {
+            "Cluster Number": cluster_numbers,
+            "Height": heights,
+            "Datasets": labels,
+            "Length": number_of_datasets,
+        }
+
+        cluster_data = pd.DataFrame(c_data)
+
+        clusters_to_compare_unfiltered = []
+        clusters_to_compare_height_compared = []
+        clusters_for_analysis = []
+
+        if len(cluster_data["Cluster Number"]) > 0:
+
+            # Find all combinations of pairs
+
+            cluster_pairs = list(combinations(cluster_data["Cluster Number"], 2))
+
+            # Add together length, and see if there are any common datasets
+
+            for pair in cluster_pairs:
+                length_1 = cluster_data.loc[
+                    cluster_data["Cluster Number"] == pair[0], "Length"
+                ].iloc[0]
+                length_2 = cluster_data.loc[
+                    cluster_data["Cluster Number"] == pair[1], "Length"
+                ].iloc[0]
+                datasets_1 = cluster_data.loc[
+                    cluster_data["Cluster Number"] == pair[0], "Datasets"
+                ].iloc[0]
+                datasets_2 = cluster_data.loc[
+                    cluster_data["Cluster Number"] == pair[1], "Datasets"
+                ].iloc[0]
+                c1 = set(datasets_1)
+                c2 = set(datasets_2)
+                duplicates = c1.intersection(c2)
+
+                # If no common datasets, see if length AND combined dataset list match a real cluster
+
+                if len(duplicates) == 0:
+                    total_number_of_datasets = length_1 + length_2
+                    datasets_to_look_for = sorted(datasets_1 + datasets_2)
+                    try:
+                        test = cluster_data.loc[
+                            (cluster_data["Length"] == total_number_of_datasets)
+                        ]
+                    except ValueError:
+                        print("Not a real cluster")
+                    else:
+                        for item in test["Datasets"]:
+                            if item == datasets_to_look_for:
+                                clusters_to_compare_unfiltered.append(pair)
+
+            # Compare against maximum allowed height difference
+
+            for pair in clusters_to_compare_unfiltered:
+                height_1 = cluster_data.loc[
+                    cluster_data["Cluster Number"] == pair[0], "Height"
+                ].iloc[0]
+                height_2 = cluster_data.loc[
+                    cluster_data["Cluster Number"] == pair[1], "Height"
+                ].iloc[0]
+                difference = abs(height_1 - height_2)
+                if difference < params.max_cluster_height_difference:
+                    clusters_to_compare_height_compared.append(pair)
+
+            # Finally filter by maximum number allowed to output
+
+            final_clusters_to_compare = clusters_to_compare_height_compared[
+                -params.max_output_clusters :
+            ]
+
+            if len(final_clusters_to_compare) > 0:
+                for pair in final_clusters_to_compare:
+                    clusters_for_analysis.append(pair[0])
+                    clusters_for_analysis.append(pair[1])
+
+            elif len(final_clusters_to_compare) == 0:
+                logger.info(
+                    "No interesting clusters found, rerun with different parameters"
+                )
+
+            clusters_for_analysis = list(dict.fromkeys(clusters_for_analysis))
+
+        else:
+            logger.info(
+                "Min cluster size of "
+                + str(params.min_cluster_size)
+                + " excludes all clusters. Please re-run using a smaller minimum size."
+            )
+            clusters_for_analysis = []
+            final_clusters_to_compare = []
+
+        file_data = [
+            "Compare each pair of clusters below",
+            "They have no datasets in common",
+        ]
+
+        for item in final_clusters_to_compare:
+            file_data.append(item[0] + " and " + item[1])
+
+        file_data.extend(
+            [
+                "Selected with heights required to be closer than:"
+                + str(params.max_cluster_height_difference),
+                "And a maximum number of cluster pairs set at:"
+                + str(params.max_output_clusters),
+                "Total Number of Clusters for Analysis:"
+                + str(len(clusters_for_analysis)),
+                "Discrete list of clusters saved: ",
+            ]
+        )
+
+        for item in clusters_for_analysis:
+            file_data.append(item)
+
+        for item in file_data:
+            logger.info(item)
+
+        return file_data, clusters_for_analysis
 
 
 class MultiCrystalReport(MultiCrystalAnalysis):

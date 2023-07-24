@@ -6,6 +6,7 @@ import sys
 
 import numpy as np
 
+import iotbx.cif
 import iotbx.phil
 from dials.array_family import flex
 from dials.util.exclude_images import exclude_image_ranges_for_scaling
@@ -14,6 +15,7 @@ from dials.util.multi_dataset_handling import (
     parse_multiple_datasets,
 )
 from dials.util.options import ArgumentParser, flatten_experiments, flatten_reflections
+from dials.util.reference import intensities_from_reference_file
 from dials.util.version import dials_version
 
 import xia2.Handlers.Streams
@@ -162,6 +164,24 @@ def run(args=sys.argv[1:]):
         for identifier in params.identifiers:
             identifiers.extend(identifier.split(","))
         params.identifiers = identifiers
+
+    # If a reference file is defined, will make sure that multiplex output is consistent space group
+    # dials.reindex is later used on the scaled and merged result to retain consistent setting
+
+    if params.reference is not None:
+        intensity_array = intensities_from_reference_file(params.reference)
+        if params.symmetry.space_group is not None:
+            intensity_sg_no = intensity_array.space_group().type().number()
+            params_sg_no = params.symmetry.space_group.type().number()
+            if intensity_sg_no != params_sg_no:
+                raise sys.exit(
+                    f"The input space group (#{params_sg_no}) does not match the reference file (#{intensity_sg_no})"
+                )
+        else:
+            params.symmetry.space_group = intensity_array.space_group_info()
+            logger.info(
+                f"symmetry.space_group has been set to: {params.symmetry.space_group}"
+            )
 
     try:
         ScaleAndMerge.MultiCrystalScale(experiments, reflections_all, params)
