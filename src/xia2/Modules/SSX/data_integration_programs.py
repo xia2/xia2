@@ -125,7 +125,7 @@ class RefinementParams:
 @dataclass
 class IntegrationParams:
     algorithm: str = "ellipsoid"
-    rlp_mosaicity: str = "angular4"
+    rlp_mosaicity: str = "simple6"
     d_min: Optional[float] = None
     nproc: int = 1
     phil: Optional[Path] = None
@@ -502,10 +502,11 @@ def ssx_integrate(
                 ).num_free()
                 n_orientation_params = 3
                 n_mosaicity_params = {
-                    "angular4": 4,
-                    "angular2": 2,
                     "simple1": 1,
                     "simple6": 6,
+                    "simple1angular1": 2,
+                    "simple1angular3": 4,
+                    "simple6angular1": 7,
                 }[integration_params.rlp_mosaicity]
                 min_n_reflections = max(
                     n_uc_params + n_orientation_params + 1, n_mosaicity_params + 1

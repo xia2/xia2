@@ -139,7 +139,7 @@ integration {
   algorithm = stills *ellipsoid
     .type = choice
     .expert_level=2
-  ellipsoid.rlp_mosaicity = angular4 angular2 simple1 *simple6
+  ellipsoid.rlp_mosaicity = simple1 *simple6 simple1angular1 simple1angular3 simple6angular1
     .type = choice
     .expert_level=3
   phil = None
