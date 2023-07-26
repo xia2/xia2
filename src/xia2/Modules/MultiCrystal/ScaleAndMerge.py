@@ -10,6 +10,7 @@ from cctbx import sgtbx, uctbx
 from dials.array_family import flex
 from dials.command_line.unit_cell_histogram import plot_uc_histograms
 from dials.util import tabulate
+from dials.util.export_mtz import match_wavelengths
 from dials.util.mp import available_cores
 from dxtbx.serialize import load
 from libtbx import Auto
@@ -382,22 +383,70 @@ class MultiCrystalScale:
         if self._params.reference is not None:
             self.reindex()
 
-        self._data_manager.export_unmerged_mtz(
-            "scaled_unmerged.mtz", d_min=self._scaled.d_min
-        )
-        d_spacings = self._scaled.data_manager._reflections["d"]
-        self._params.r_free_flags.d_min = flex.min(d_spacings.select(d_spacings > 0))
-        self._params.r_free_flags.d_max = flex.max(d_spacings)
-        self._data_manager.export_merged_mtz(
-            "scaled.mtz",
-            d_min=self._scaled.d_min,
-            r_free_params=self._params.r_free_flags,
-        )
-        self._params.r_free_flags.reference = os.path.join(os.getcwd(), "scaled.mtz")
-        self._data_manager.export_experiments("scaled.expt")
-        self._data_manager.export_reflections("scaled.refl", d_min=self._scaled.d_min)
-        convert_merged_mtz_to_sca("scaled.mtz")
-        convert_unmerged_mtz_to_sca("scaled_unmerged.mtz")
+        self.wavelengths = match_wavelengths(
+            self._data_manager.experiments, self._params.wavelength_tolerance
+        )  # in experiments order
+
+        if len(self.wavelengths) > 1:
+            self._data_manager.split_by_wavelength(self._params.wavelength_tolerance)
+            for wl in self.wavelengths:
+                name = self._data_manager.export_unmerged_wave_mtz(
+                    wl,
+                    "scaled_unmerged",
+                    d_min=self._scaled.d_min,
+                    wavelength_tolerance=self._params.wavelength_tolerance,
+                )
+                convert_unmerged_mtz_to_sca(name)
+            d_spacings = self._scaled.data_manager._reflections["d"]
+            self._params.r_free_flags.d_min = flex.min(
+                d_spacings.select(d_spacings > 0)
+            )
+            self._params.r_free_flags.d_max = flex.max(d_spacings)
+            self._data_manager.export_merged_mtz(
+                "scaled.mtz",
+                d_min=self._scaled.d_min,
+                r_free_params=self._params.r_free_flags,
+                wavelength_tolerance=self._params.wavelength_tolerance,
+            )
+            self._params.r_free_flags.reference = os.path.join(
+                os.getcwd(), "scaled.mtz"
+            )
+            # now export merged of each
+            for wl in self.wavelengths:
+                name = self._data_manager.export_merged_wave_mtz(
+                    wl,
+                    "scaled",
+                    d_min=self._scaled.d_min,
+                    r_free_params=self._params.r_free_flags,
+                    wavelength_tolerance=self._params.wavelength_tolerance,
+                )
+                convert_merged_mtz_to_sca(name)
+        else:
+            self._data_manager.export_unmerged_mtz(
+                "scaled_unmerged.mtz",
+                d_min=self._scaled.d_min,
+                wavelength_tolerance=self._params.wavelength_tolerance,
+            )
+            d_spacings = self._scaled.data_manager._reflections["d"]
+            self._params.r_free_flags.d_min = flex.min(
+                d_spacings.select(d_spacings > 0)
+            )
+            self._params.r_free_flags.d_max = flex.max(d_spacings)
+            self._data_manager.export_merged_mtz(
+                "scaled.mtz",
+                d_min=self._scaled.d_min,
+                r_free_params=self._params.r_free_flags,
+                wavelength_tolerance=self._params.wavelength_tolerance,
+            )
+            self._params.r_free_flags.reference = os.path.join(
+                os.getcwd(), "scaled.mtz"
+            )
+            self._data_manager.export_experiments("scaled.expt")
+            self._data_manager.export_reflections(
+                "scaled.refl", d_min=self._scaled.d_min
+            )
+            convert_merged_mtz_to_sca("scaled.mtz")
+            convert_unmerged_mtz_to_sca("scaled_unmerged.mtz")
 
         self._record_individual_report(
             self._data_manager, self._scaled.report(), "All data"
@@ -449,18 +498,44 @@ class MultiCrystalScale:
                 data_manager.select(cluster_identifiers)
                 scaled = Scale(data_manager, self._params)
 
-                data_manager.export_unmerged_mtz(
-                    "scaled_unmerged.mtz", d_min=scaled.d_min
-                )
-                data_manager.export_merged_mtz(
-                    "scaled.mtz",
-                    d_min=scaled.d_min,
-                    r_free_params=self._params.r_free_flags,
-                )
-                data_manager.export_experiments("scaled.expt")
-                data_manager.export_reflections("scaled.refl", d_min=scaled.d_min)
-                convert_merged_mtz_to_sca("scaled.mtz")
-                convert_unmerged_mtz_to_sca("scaled_unmerged.mtz")
+                if len(self.wavelengths) > 1:
+                    data_manager.split_by_wavelength(self._params.wavelength_tolerance)
+                    for wl in self.wavelengths:
+                        name = data_manager.export_unmerged_wave_mtz(
+                            wl,
+                            "scaled_unmerged",
+                            d_min=scaled.d_min,
+                            wavelength_tolerance=self._params.wavelength_tolerance,
+                        )
+                        if name:
+                            convert_unmerged_mtz_to_sca(name)
+                    # now export merged of each
+                    for wl in self.wavelengths:
+                        name = data_manager.export_merged_wave_mtz(
+                            wl,
+                            "scaled",
+                            d_min=scaled.d_min,
+                            r_free_params=self._params.r_free_flags,
+                            wavelength_tolerance=self._params.wavelength_tolerance,
+                        )
+                        if name:
+                            convert_merged_mtz_to_sca(name)
+                else:
+                    data_manager.export_unmerged_mtz(
+                        "scaled_unmerged.mtz",
+                        d_min=scaled.d_min,
+                        wavelength_tolerance=self._params.wavelength_tolerance,
+                    )
+                    data_manager.export_merged_mtz(
+                        "scaled.mtz",
+                        d_min=scaled.d_min,
+                        r_free_params=self._params.r_free_flags,
+                        wavelength_tolerance=self._params.wavelength_tolerance,
+                    )
+                    data_manager.export_experiments("scaled.expt")
+                    data_manager.export_reflections("scaled.refl", d_min=scaled.d_min)
+                    convert_merged_mtz_to_sca("scaled.mtz")
+                    convert_unmerged_mtz_to_sca("scaled_unmerged.mtz")
 
                 self._record_individual_report(
                     data_manager, scaled.report(), cluster_dir.replace("_", " ")
@@ -476,16 +551,42 @@ class MultiCrystalScale:
             self.scale_and_filter_results = scaled.scale_and_filter_results
             logger.info("Scale and filtering:\n%s", self.scale_and_filter_results)
 
-            data_manager.export_unmerged_mtz(
-                "filtered_unmerged.mtz", d_min=scaled.d_min
-            )
-            data_manager.export_merged_mtz(
-                "filtered.mtz",
-                d_min=scaled.d_min,
-                r_free_params=self._params.r_free_flags,
-            )
-            convert_merged_mtz_to_sca("filtered.mtz")
-            convert_unmerged_mtz_to_sca("filtered_unmerged.mtz")
+            if len(self.wavelengths) > 1:
+                data_manager.split_by_wavelength(self._params.wavelength_tolerance)
+                for wl in self.wavelengths:
+                    name = data_manager.export_unmerged_wave_mtz(
+                        wl,
+                        "filtered_unmerged",
+                        d_min=scaled.d_min,
+                        wavelength_tolerance=self._params.wavelength_tolerance,
+                    )
+                    if name:
+                        convert_unmerged_mtz_to_sca(name)
+                # now export merged of each
+                for wl in self.wavelengths:
+                    name = data_manager.export_merged_wave_mtz(
+                        wl,
+                        "filtered",
+                        d_min=scaled.d_min,
+                        r_free_params=self._params.r_free_flags,
+                        wavelength_tolerance=self._params.wavelength_tolerance,
+                    )
+                    if name:
+                        convert_merged_mtz_to_sca(name)
+            else:
+                data_manager.export_unmerged_mtz(
+                    "filtered_unmerged.mtz",
+                    d_min=scaled.d_min,
+                    wavelength_tolerance=self._params.wavelength_tolerance,
+                )
+                data_manager.export_merged_mtz(
+                    "filtered.mtz",
+                    d_min=scaled.d_min,
+                    r_free_params=self._params.r_free_flags,
+                    wavelength_tolerance=self._params.wavelength_tolerance,
+                )
+                convert_merged_mtz_to_sca("filtered.mtz")
+                convert_unmerged_mtz_to_sca("filtered_unmerged.mtz")
 
             self._record_individual_report(data_manager, scaled.report(), "Filtered")
             data_manager.export_experiments("filtered.expt")

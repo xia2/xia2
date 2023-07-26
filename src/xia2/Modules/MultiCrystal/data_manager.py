@@ -26,6 +26,9 @@ class DataManager:
         self.identifiers_to_ids_map = {
             value: key for key, value in self.ids_to_identifiers_map.items()
         }
+        self.wavelengths = (
+            {}
+        )  # map of wl to list of experiment ids of input experiments.
 
         if all(e.scan is None for e in self._experiments):
             self.all_stills = True
@@ -185,6 +188,64 @@ class DataManager:
                 cryst_reindexed.set_space_group(space_group)
             expt.crystal.update(cryst_reindexed)
 
+    def split_by_wavelength(self, wavelength_tolerance):
+        from dials.util.export_mtz import match_wavelengths
+
+        if (
+            not self.wavelengths
+        ):  # don't want this to update after filtering/clustering etc
+            self.wavelengths = match_wavelengths(self.experiments, wavelength_tolerance)
+            for wl in sorted(self.wavelengths.keys()):
+                exp_nos = self.wavelengths[wl]
+                ids = [self.experiments[no].identifier for no in exp_nos]
+                self.wavelengths[wl] = ids
+
+        self.data_split_by_wl = {}  # do want to update this based on current data
+
+        for wl in sorted(self.wavelengths.keys()):
+            new_exps = copy.deepcopy(self.experiments)
+            new_exps.select_on_experiment_identifiers(self.wavelengths[wl])
+            new_refls = self.reflections.select_on_experiment_identifiers(
+                new_exps.identifiers()
+            )
+            self.data_split_by_wl[wl] = {"expt": new_exps, "refl": new_refls}
+
+    def export_unmerged_wave_mtz(self, wl, prefix, d_min, wavelength_tolerance):
+        data = self.data_split_by_wl[wl]
+        nn = len(self.wavelengths)
+        fmt = "%%0%dd" % (math.log10(nn) + 1)
+        index = sorted(self.wavelengths.keys()).index(wl)
+        params = export.phil_scope.extract()
+        params.mtz.d_min = d_min
+        params.mtz.hklout = f"{prefix}_WAVE{fmt % (index+1)}.mtz"
+        params.mtz.wavelength_tolerance = wavelength_tolerance
+        params.intensity = ["scale"]
+        if data["expt"]:
+            export.export_mtz(params, data["expt"], [data["refl"]])
+            return params.mtz.hklout
+        return None
+
+    def export_merged_wave_mtz(
+        self, wl, prefix, d_min=None, r_free_params=None, wavelength_tolerance=None
+    ):
+        data = self.data_split_by_wl[wl]
+        nn = len(self.wavelengths)
+        fmt = "%%0%dd" % (math.log10(nn) + 1)
+        index = sorted(self.wavelengths.keys()).index(wl)
+
+        params = merge.phil_scope.extract()
+        params.d_min = d_min
+        params.assess_space_group = False
+        params.wavelength_tolerance = wavelength_tolerance
+        if r_free_params:
+            params.r_free_flags = r_free_params
+        filename = f"{prefix}_WAVE{fmt % (index+1)}.mtz"
+        if data["expt"]:
+            mtz_obj = merge.merge_data_to_mtz(params, data["expt"], [data["refl"]])
+            mtz_obj.write(filename)
+            return filename
+        return None
+
     def export_reflections(self, filename, d_min=None):
         reflections = self._reflections
         if d_min:
@@ -196,17 +257,21 @@ class DataManager:
         self._experiments.as_file(filename)
         return filename
 
-    def export_unmerged_mtz(self, filename, d_min=None):
+    def export_unmerged_mtz(self, filename, d_min=None, wavelength_tolerance=0.0001):
         params = export.phil_scope.extract()
         params.mtz.d_min = d_min
         params.mtz.hklout = filename
+        params.mtz.wavelength_tolerance = wavelength_tolerance
         params.intensity = ["scale"]
         export.export_mtz(params, self._experiments, [self._reflections])
 
-    def export_merged_mtz(self, filename, d_min=None, r_free_params=None):
+    def export_merged_mtz(
+        self, filename, d_min=None, r_free_params=None, wavelength_tolerance=0.0001
+    ):
         params = merge.phil_scope.extract()
         params.d_min = d_min
         params.assess_space_group = False
+        params.wavelength_tolerance = wavelength_tolerance
         if r_free_params:
             params.r_free_flags = r_free_params
         mtz_obj = merge.merge_data_to_mtz(
