@@ -306,6 +306,76 @@ def test_data_manager_filter_dose(protk_experiments_and_reflections):
         assert expt.scan.get_image_range() == (1, 20)
 
 
+def test_prot_k_multiwave_single(run_in_tmp_path, protk_experiments_and_reflections):
+    experiments, reflections = protk_experiments_and_reflections
+    experiments[0].beam.set_wavelength(1.0)
+    experiments = experiments[:2]
+    reflections = reflections.select_on_experiment_identifiers(
+        experiments.identifiers()
+    )
+    # just use first two
+    experiments.as_file(run_in_tmp_path / "tmp.expt")
+    reflections.as_file(run_in_tmp_path / "tmp.refl")
+    run_multiplex(["tmp.expt", "tmp.refl", "wavelength_tolerance=0.1"])
+
+    for f in expected_data_files:
+        assert (run_in_tmp_path / f).is_file(), f"expected file {f} missing"
+
+
+def test_prot_k_multiwave_double(run_in_tmp_path, protk_experiments_and_reflections):
+    experiments, reflections = protk_experiments_and_reflections
+    for i in range(0, 4):
+        experiments[i].beam.set_wavelength(1.0)
+    experiments.as_file(run_in_tmp_path / "tmp.expt")
+    reflections.as_file(run_in_tmp_path / "tmp.refl")
+    run_multiplex(
+        [
+            "tmp.expt",
+            "tmp.refl",
+            "wavelength_tolerance=0.001",
+            "min_completeness=0.7",
+            "filtering.method=deltacchalf",
+        ]
+    )
+
+    expected_multi_data_files = [
+        "scaled.expt",
+        "scaled.refl",
+        "scaled_unmerged_WAVE1.mtz",
+        "scaled_unmerged_WAVE2.mtz",
+        "scaled_unmerged_WAVE1.sca",
+        "scaled_unmerged_WAVE2.sca",
+        "scaled_WAVE1.mtz",
+        "scaled_WAVE2.mtz",
+        "scaled_WAVE1.sca",
+        "scaled_WAVE2.sca",
+        "xia2.multiplex.html",
+        "xia2.multiplex.json",
+    ]
+
+    expected_filtered = [
+        "filtered.expt",
+        "filtered.refl",
+        "filtered_unmerged_WAVE1.mtz",
+        "filtered_unmerged_WAVE2.mtz",
+        "filtered_unmerged_WAVE1.sca",
+        "filtered_unmerged_WAVE2.sca",
+        "filtered_WAVE1.mtz",
+        "filtered_WAVE2.mtz",
+        "filtered_WAVE1.sca",
+        "filtered_WAVE2.sca",
+    ]
+
+    for f in expected_multi_data_files + ["scaled.mtz"]:
+        assert (run_in_tmp_path / f).is_file(), f"expected file {f} missing"
+    for f in expected_multi_data_files[:-2]:
+        assert (
+            run_in_tmp_path / "cluster_6" / f
+        ).is_file(), f"expected file {f} missing"
+    for f in expected_filtered:
+        assert (run_in_tmp_path / f).is_file(), f"expected file {f} missing"
+
+
 def test_data_manager_filter_dose_out_of_range(protk_experiments_and_reflections):
     experiments, reflections = protk_experiments_and_reflections
 

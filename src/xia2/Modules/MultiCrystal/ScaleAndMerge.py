@@ -383,6 +383,19 @@ class MultiCrystalScale:
         if self._params.reference is not None:
             self.reindex()
 
+        d_spacings = self._scaled.data_manager._reflections["d"]
+        self._params.r_free_flags.d_min = flex.min(d_spacings.select(d_spacings > 0))
+        self._params.r_free_flags.d_max = flex.max(d_spacings)
+        self._data_manager.export_experiments("scaled.expt")
+        self._data_manager.export_reflections("scaled.refl", d_min=self._scaled.d_min)
+        self._data_manager.export_merged_mtz(
+            "scaled.mtz",
+            d_min=self._scaled.d_min,
+            r_free_params=self._params.r_free_flags,
+            wavelength_tolerance=self._params.wavelength_tolerance,
+        )
+        self._params.r_free_flags.reference = os.path.join(os.getcwd(), "scaled.mtz")
+
         self.wavelengths = match_wavelengths(
             self._data_manager.experiments, self._params.wavelength_tolerance
         )  # in experiments order
@@ -397,20 +410,6 @@ class MultiCrystalScale:
                     wavelength_tolerance=self._params.wavelength_tolerance,
                 )
                 convert_unmerged_mtz_to_sca(name)
-            d_spacings = self._scaled.data_manager._reflections["d"]
-            self._params.r_free_flags.d_min = flex.min(
-                d_spacings.select(d_spacings > 0)
-            )
-            self._params.r_free_flags.d_max = flex.max(d_spacings)
-            self._data_manager.export_merged_mtz(
-                "scaled.mtz",
-                d_min=self._scaled.d_min,
-                r_free_params=self._params.r_free_flags,
-                wavelength_tolerance=self._params.wavelength_tolerance,
-            )
-            self._params.r_free_flags.reference = os.path.join(
-                os.getcwd(), "scaled.mtz"
-            )
             # now export merged of each
             for wl in self.wavelengths:
                 name = self._data_manager.export_merged_wave_mtz(
@@ -426,24 +425,6 @@ class MultiCrystalScale:
                 "scaled_unmerged.mtz",
                 d_min=self._scaled.d_min,
                 wavelength_tolerance=self._params.wavelength_tolerance,
-            )
-            d_spacings = self._scaled.data_manager._reflections["d"]
-            self._params.r_free_flags.d_min = flex.min(
-                d_spacings.select(d_spacings > 0)
-            )
-            self._params.r_free_flags.d_max = flex.max(d_spacings)
-            self._data_manager.export_merged_mtz(
-                "scaled.mtz",
-                d_min=self._scaled.d_min,
-                r_free_params=self._params.r_free_flags,
-                wavelength_tolerance=self._params.wavelength_tolerance,
-            )
-            self._params.r_free_flags.reference = os.path.join(
-                os.getcwd(), "scaled.mtz"
-            )
-            self._data_manager.export_experiments("scaled.expt")
-            self._data_manager.export_reflections(
-                "scaled.refl", d_min=self._scaled.d_min
             )
             convert_merged_mtz_to_sca("scaled.mtz")
             convert_unmerged_mtz_to_sca("scaled_unmerged.mtz")
@@ -497,6 +478,8 @@ class MultiCrystalScale:
                 ]
                 data_manager.select(cluster_identifiers)
                 scaled = Scale(data_manager, self._params)
+                data_manager.export_experiments("scaled.expt")
+                data_manager.export_reflections("scaled.refl", d_min=scaled.d_min)
 
                 if len(self.wavelengths) > 1:
                     data_manager.split_by_wavelength(self._params.wavelength_tolerance)
@@ -532,8 +515,6 @@ class MultiCrystalScale:
                         r_free_params=self._params.r_free_flags,
                         wavelength_tolerance=self._params.wavelength_tolerance,
                     )
-                    data_manager.export_experiments("scaled.expt")
-                    data_manager.export_reflections("scaled.refl", d_min=scaled.d_min)
                     convert_merged_mtz_to_sca("scaled.mtz")
                     convert_unmerged_mtz_to_sca("scaled_unmerged.mtz")
 
