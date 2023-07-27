@@ -26,9 +26,7 @@ class DataManager:
         self.identifiers_to_ids_map = {
             value: key for key, value in self.ids_to_identifiers_map.items()
         }
-        self.wavelengths = (
-            {}
-        )  # map of wl to list of experiment ids of input experiments.
+        self.wavelengths = {}  # map of wl to wavelength group.
 
         if all(e.scan is None for e in self._experiments):
             self.all_stills = True
@@ -195,16 +193,12 @@ class DataManager:
             not self.wavelengths
         ):  # don't want this to update after filtering/clustering etc
             self.wavelengths = match_wavelengths(self.experiments, wavelength_tolerance)
-            for wl in sorted(self.wavelengths.keys()):
-                exp_nos = self.wavelengths[wl]
-                ids = [self.experiments[no].identifier for no in exp_nos]
-                self.wavelengths[wl] = ids
 
         self.data_split_by_wl = {}  # do want to update this based on current data
 
         for wl in sorted(self.wavelengths.keys()):
             new_exps = copy.deepcopy(self.experiments)
-            new_exps.select_on_experiment_identifiers(self.wavelengths[wl])
+            new_exps.select_on_experiment_identifiers(self.wavelengths[wl].identifiers)
             new_refls = self.reflections.select_on_experiment_identifiers(
                 new_exps.identifiers()
             )
