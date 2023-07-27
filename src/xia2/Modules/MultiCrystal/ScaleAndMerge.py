@@ -401,6 +401,19 @@ class MultiCrystalScale:
         )  # in experiments order
 
         if len(self.wavelengths) > 1:
+            identifiers_list = list(self._data_manager.experiments.identifiers())
+            logger.info(
+                "Multiple wavelengths found, wavelengths will be grouped for MTZ writing: \n%s",
+                "\n".join(
+                    f"  Wavlength range: {v.min_wl:.5f} - {v.max_possible_wl:.5f}, experiment numbers: %s "
+                    % (
+                        ",".join(
+                            map(str, [identifiers_list.index(i) for i in v.identifiers])
+                        )
+                    )
+                    for v in self.wavelengths.values()
+                ),
+            )
             self._data_manager.split_by_wavelength(self._params.wavelength_tolerance)
             for wl in self.wavelengths:
                 name = self._data_manager.export_unmerged_wave_mtz(
