@@ -709,7 +709,7 @@ pipeline=dials (supported for pipeline=dials-aimless).
         dnames_set = OrderedSet()
         experiments = load.experiment_list(self._scaled_experiments)
         wavelengths = flex.double(
-            match_wavelengths(experiments).keys()
+            list(match_wavelengths(experiments).keys())
         )  # in experiments order
         for si in self.sweep_infos:
             dnames_set.add(
