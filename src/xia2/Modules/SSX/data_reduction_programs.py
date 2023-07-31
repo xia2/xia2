@@ -399,18 +399,31 @@ from dials.command_line.reindex import reindex_experiments
 from dials.util.reference import intensities_from_reference_file
 
 
-def reindex_against_reference(working_directory, fp, reduction_params, index: str):
+def reindex_against_reference(working_directory, files, reduction_params):
+
+    template = functools.partial(
+        "{index:0{maxindexlength:d}d}".format,
+        maxindexlength=len(str(len(files))),
+    )
 
     with run_in_directory(working_directory):
-        expt = load.experiment_list(fp.expt)[0]
-        refl = flex.reflection_table.from_file(fp.refl)
-        refl = refl.select(refl.get_flags(refl.flags.scaled))
-        refl = refl.select(~refl.get_flags(refl.flags.outlier_in_scaling))
-        refl = refl.select(refl["partiality"] > reduction_params.partiality_threshold)
-        refl["intensity.scale.value"] /= refl["inverse_scale_factor"]
-        refl["intensity.scale.variance"] /= refl["inverse_scale_factor"] ** 2
-        ma = refl.as_miller_array(expt, "scale")
-        logfile = f"dials.reindex.{index}.log"
+        overall_ma = None
+        for fp in files:
+            expt = load.experiment_list(fp.expt)[0]
+            refl = flex.reflection_table.from_file(fp.refl)
+            refl = refl.select(refl.get_flags(refl.flags.scaled))
+            refl = refl.select(~refl.get_flags(refl.flags.outlier_in_scaling))
+            refl = refl.select(
+                refl["partiality"] > reduction_params.partiality_threshold
+            )
+            refl["intensity.scale.value"] /= refl["inverse_scale_factor"]
+            refl["intensity.scale.variance"] /= refl["inverse_scale_factor"] ** 2
+            ma = refl.as_miller_array(expt, "scale")
+            if overall_ma:
+                overall_ma = overall_ma.concatenate(ma)
+            else:
+                overall_ma = ma
+        logfile = "dials.reindex.log"
         reference_miller_set = intensities_from_reference_file(
             os.fspath(reduction_params.reference)
         )
@@ -419,18 +432,25 @@ def reindex_against_reference(working_directory, fp, reduction_params, index: st
             change_of_basis_op = determine_reindex_operator_against_reference(
                 ma, reference_miller_set
             )
+
         if str(change_of_basis_op) != str(sgtbx.change_of_basis_op("a,b,c")):
-            expts = load.experiment_list(fp.expt)
-            refls = flex.reflection_table.from_file(fp.refl)
-            if str(change_of_basis_op) != str(sgtbx.change_of_basis_op("a,b,c")):
+            outfiles = []
+            for i, fp in enumerate(files):
+                expts = load.experiment_list(fp.expt)
+                refls = flex.reflection_table.from_file(fp.refl)
                 expts = reindex_experiments(expts, change_of_basis_op)
                 refls["miller_index"] = change_of_basis_op.apply(refls["miller_index"])
-            expout = f"reindexed_{index}.expt"
-            reflout = f"reindexed_{index}.refl"
-            expts.as_file(expout)
-            refl.as_file(reflout)
-            return FilePair(working_directory / expout, working_directory / reflout)
-        return fp
+                fno = template(index=i)
+                expout = f"reindexed_{fno}.expt"
+                reflout = f"reindexed_{fno}.refl"
+                expts.as_file(expout)
+                refls.as_file(reflout)
+                outfiles.append(
+                    FilePair(working_directory / expout, working_directory / reflout)
+                )
+
+            return outfiles
+        return files
 
 
 def _extract_scaling_params(reduction_params, for_batch_scale=False):
@@ -658,7 +678,6 @@ def batch_scale(
     working_directory: Path,
     files_to_scale: List[FilePair],
     reduction_params: ReductionParams,
-    name="",
 ) -> List[FilePair]:
 
     input_ = ""
@@ -693,8 +712,6 @@ def batch_scale(
             outfiles.append(
                 FilePair(working_directory / expt, working_directory / refl)
             )
-            FileHandler.record_data_file(working_directory / expt)
-            FileHandler.record_data_file(working_directory / refl)
         return outfiles
 
 
@@ -906,7 +923,6 @@ def cosym_reindex(
     d_min: float = None,
     max_delta: float = 0.5,
     partiality_threshold=0.25,
-    reference=None,
 ) -> List[FilePair]:
     from dials.command_line.cosym import phil_scope as cosym_scope
 
@@ -931,7 +947,7 @@ def cosym_reindex(
         working_directory
     ), log_to_file(logfile), record_step("cosym_reindex"):
         sys.stdout = devnull  # block printing from cosym
-        cosym_instance = BatchCosym(expts, refls, params, reference=reference)
+        cosym_instance = BatchCosym(expts, refls, params)
         register_default_cosym_observers(cosym_instance)
         cosym_instance.run()
     sys.stdout = sys.__stdout__

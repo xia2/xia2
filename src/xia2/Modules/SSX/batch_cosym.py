@@ -23,14 +23,12 @@ logger = logging.getLogger("dials")
 
 
 class BatchCosym(Subject):
-    def __init__(self, experiments, reflections, params=None, reference=None):
+    def __init__(self, experiments, reflections, params=None):
         super().__init__(events=["run_cosym", "performed_unit_cell_clustering"])
         self.params = params
         self.input_experiments = experiments
         self.input_reflections = reflections
-        self.reference = reference
-        # self._experiments = None
-        self._reflections = None
+
         self._output_expt_files = []
         self._output_refl_files = []
 
@@ -133,45 +131,6 @@ class BatchCosym(Subject):
                     )
                 )
             refls["miller_index"] = cb_op.apply(refls["miller_index"])
-        if self.reference:
-            import os
-
-            from dials.algorithms.symmetry.reindex_to_reference import (
-                determine_reindex_operator_against_reference,
-            )
-            from dials.command_line.reindex import reindex_experiments
-            from dials.util.reference import intensities_from_reference_file
-
-            from xia2.Modules.SSX.util import log_to_file
-
-            reference_miller_set = intensities_from_reference_file(
-                os.fspath(self.reference)
-            )
-            # now reindex against reference
-            expt = self.input_experiments[0][0]
-            full_ma = None
-            for i, refl in enumerate(self.input_reflections):
-                tmp = refl.select(refl.get_flags(refl.flags.scaled))
-                tmp = tmp.select(~tmp.get_flags(tmp.flags.outlier_in_scaling))
-                tmp = tmp.select(tmp["partiality"] > self.params.partiality_threshold)
-                tmp["intensity.scale.value"] /= tmp["inverse_scale_factor"]
-                tmp["intensity.scale.variance"] /= tmp["inverse_scale_factor"] ** 2
-                ma = tmp.as_miller_array(expt, "scale")
-                if full_ma:
-                    full_ma = full_ma.concatenate(ma)
-                else:
-                    full_ma = ma
-            logfile = "dials.reindex.log"
-            with log_to_file(logfile):
-                change_of_basis_op = determine_reindex_operator_against_reference(
-                    full_ma, reference_miller_set
-                )
-            if str(change_of_basis_op) != str(sgtbx.change_of_basis_op("a,b,c")):
-                for refls, expts in zip(self.input_reflections, self.input_experiments):
-                    expts = reindex_experiments(expts, change_of_basis_op)
-                    refls["miller_index"] = change_of_basis_op.apply(
-                        refls["miller_index"]
-                    )
 
         for i, (refls, expts) in enumerate(
             zip(self.input_reflections, self.input_experiments)

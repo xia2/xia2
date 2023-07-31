@@ -22,6 +22,59 @@ xia2_logger = logging.getLogger(__name__)
 
 
 class SimpleDataReduction(BaseDataReduction):
+    def _prepare_for_scaling(self, good_crystals_data) -> None:
+        # Really this means prepare for the final scale, so do parallel
+        # batch scaling if >1 batch.
+        super()._prepare_for_scaling(good_crystals_data)
+        if len(self._files_to_scale) > 1:
+            self._files_to_scale = self._scale_parallel_batches(self._files_to_scale)
+
+    def _scale_parallel_batches(self, files):
+        # scale multiple batches in parallel
+        scaled_results = []
+        batch_template = functools.partial(
+            "batch{index:0{maxindexlength:d}d}".format,
+            maxindexlength=len(str(len(files))),
+        )
+        jobs = {f"{batch_template(index=i+1)}": fp for i, fp in enumerate(files)}
+        xia2_logger.notice(banner("Scaling"))  # type: ignore
+        with record_step(
+            "dials.scale (parallel)"
+        ), concurrent.futures.ProcessPoolExecutor(
+            max_workers=min(self._reduction_params.nproc, len(files))
+        ) as pool:
+            scale_futures: Dict[Any, str] = {
+                pool.submit(
+                    scale,
+                    self._scale_wd,
+                    [files],
+                    self._reduction_params,
+                    name,
+                ): name
+                for name, files in jobs.items()
+            }
+            for future in concurrent.futures.as_completed(scale_futures):
+                try:
+                    result = future.result()
+                    name = scale_futures[future]
+                except Exception as e:
+                    xia2_logger.warning(f"Unsuccessful scaling of group. Error:\n{e}")
+                else:
+                    xia2_logger.info(
+                        f"Completed scaling of data reduction batch {name.lstrip('batch')}"
+                    )
+                    scaled_results.append(FilePair(result.exptfile, result.reflfile))
+                    FileHandler.record_log_file(
+                        result.logfile.name.rstrip(".log"), result.logfile
+                    )
+                    if "scale" not in self._reduction_params.output_save_files:
+                        FileHandler.record_temporary_file(result.exptfile)
+                        FileHandler.record_temporary_file(result.reflfile)
+
+        if not scaled_results:
+            raise ValueError("No groups successfully scaled")
+        return scaled_results
+
     def _reindex(self) -> None:
         # First do parallel reindexing of each batch
         xia2_logger.notice(banner("Reindexing"))  # type: ignore
@@ -32,150 +85,57 @@ class SimpleDataReduction(BaseDataReduction):
             nproc=self._reduction_params.nproc,
         )
 
-        # now scale all batches
-        scaled_results = []
-        batch_template = functools.partial(
-            "batch{index:0{maxindexlength:d}d}".format,
-            maxindexlength=len(str(len(reindexed_new_files))),
-        )
-        jobs = {
-            f"{batch_template(index=i+1)}": fp
-            for i, fp in enumerate(reindexed_new_files)
-        }
-        xia2_logger.notice(banner("Scaling"))  # type: ignore
-        with record_step(
-            "dials.scale (parallel)"
-        ), concurrent.futures.ProcessPoolExecutor(
-            max_workers=self._reduction_params.nproc
-        ) as pool:
-            scale_futures: Dict[Any, str] = {
-                pool.submit(
-                    scale,
-                    self._scale_wd,
-                    [files],
-                    self._reduction_params,
-                    name,
-                ): name
-                for name, files in jobs.items()  # .items()
-            }
-            for future in concurrent.futures.as_completed(scale_futures):
-                try:
-                    result = future.result()
-                    name = scale_futures[future]
-                except Exception as e:
-                    xia2_logger.warning(f"Unsuccessful scaling of group. Error:\n{e}")
-                else:
-                    xia2_logger.info(
-                        f"Completed scaling of data reduction batch {name.lstrip('batch')}"
-                    )
-                    scaled_results.append(FilePair(result.exptfile, result.reflfile))
-                    FileHandler.record_log_file(
-                        result.logfile.name.rstrip(".log"), result.logfile
-                    )
+        if len(reindexed_new_files) > 1:
+            scaled_results = self._scale_parallel_batches(reindexed_new_files)
 
-        if not scaled_results:
-            raise ValueError("No groups successfully scaled")
+            if len(scaled_results) > 1:
+                # now batch cosym to finish internal resolution of ambiguity
+                if "scale" not in self._reduction_params.output_save_files:
+                    for result in scaled_results:
+                        FileHandler.record_temporary_file(result.expt)
+                        FileHandler.record_temporary_file(result.refl)
+                xia2_logger.notice(banner("Reindexing"))  # type: ignore
 
-        if len(scaled_results) > 1:
-            # now batch cosym and batch scale
-            if "scale" not in self._reduction_params.output_save_files:
-                for result in scaled_results:
-                    FileHandler.record_temporary_file(result.expt)
-                    FileHandler.record_temporary_file(result.refl)
-            xia2_logger.notice(banner("Reindexing"))  # type: ignore
+                self._files_to_scale = cosym_reindex(
+                    self._reindex_wd,
+                    scaled_results,
+                    self._reduction_params.d_min,
+                    self._reduction_params.lattice_symmetry_max_delta,
+                    self._reduction_params.partiality_threshold,
+                )
+                xia2_logger.info(
+                    f"Consistently reindexed {len(scaled_results)} batches"
+                )
+                if "cosym" not in self._reduction_params.output_save_files:
+                    for fp in self._files_to_scale:
+                        FileHandler.record_temporary_file(fp.expt)
+                        FileHandler.record_temporary_file(fp.refl)
 
-            files_to_scale = cosym_reindex(
-                self._reindex_wd,
-                scaled_results,
-                self._reduction_params.d_min,
-                self._reduction_params.lattice_symmetry_max_delta,
-                self._reduction_params.partiality_threshold,
-            )
-            xia2_logger.info(f"Consistently reindexed {len(scaled_results)} batches")
-            if "cosym" not in self._reduction_params.output_save_files:
-                for fp in files_to_scale:
-                    FileHandler.record_temporary_file(fp.expt)
-                    FileHandler.record_temporary_file(fp.refl)
-            xia2_logger.notice(banner("Scaling"))  # type: ignore
-            outfiles = batch_scale(
-                self._scale_wd, files_to_scale, self._reduction_params
-            )
-            xia2_logger.info("Completed joint scaling of all batches")
-            self._files_to_merge = outfiles
         else:
-            expt_f = scaled_results[0].expt
-            new_expt_f = expt_f.parent / "scaled_1.expt"
-            expt_f.rename(new_expt_f)
-            refl_f = scaled_results[0].refl
-            new_refl_f = refl_f.parent / "scaled_1.refl"
-            refl_f.rename(new_refl_f)
-            FileHandler.record_data_file(new_expt_f)
-            FileHandler.record_data_file(new_refl_f)
-            self._files_to_merge = [FilePair(new_expt_f, new_refl_f)]
+            self._files_to_scale = reindexed_new_files
 
     def _scale(self) -> None:
+        # Do the final scaling job i.e. batch scaling if njobs > 1, standard scale job if njobs=1
         xia2_logger.notice(banner("Scaling"))  # type: ignore
         if not Path.is_dir(self._scale_wd):
             Path.mkdir(self._scale_wd)
 
-        scaled_results = []
-        batch_template = functools.partial(
-            "batch{index:0{maxindexlength:d}d}".format,
-            maxindexlength=len(str(len(self._files_to_scale))),
-        )
-        jobs = {
-            f"{batch_template(index=i+1)}": fp
-            for i, fp in enumerate(self._files_to_scale)
-        }
-        with record_step(
-            "dials.scale (parallel)"
-        ), concurrent.futures.ProcessPoolExecutor(
-            max_workers=self._reduction_params.nproc
-        ) as pool:
-            scale_futures: Dict[Any, str] = {
-                pool.submit(
-                    scale,
-                    self._scale_wd,
-                    [files],
-                    self._reduction_params,
-                    name,
-                ): name
-                for name, files in jobs.items()  # .items()
-            }
-            for future in concurrent.futures.as_completed(scale_futures):
-                try:
-                    result = future.result()
-                    name = scale_futures[future]
-                except Exception as e:
-                    xia2_logger.warning(f"Unsuccessful scaling of group. Error:\n{e}")
-                else:
-                    xia2_logger.info(
-                        f"Completed scaling of data reduction batch {name.lstrip('batch')}"
-                    )
-                    scaled_results.append(FilePair(result.exptfile, result.reflfile))
-                    FileHandler.record_log_file(
-                        result.logfile.name.rstrip(".log"), result.logfile
-                    )
-
-        if len(scaled_results) > 1:
-            if "scale" not in self._reduction_params.output_save_files:
-                for fp in scaled_results:
-                    FileHandler.record_temporary_file(fp.expt)
-                    FileHandler.record_temporary_file(fp.refl)
+        if len(self._files_to_scale) > 1:
+            # batch scale
             self._files_to_merge = batch_scale(
-                self._scale_wd, scaled_results, self._reduction_params
+                self._scale_wd, self._files_to_scale, self._reduction_params
             )
+            for fp in self._files_to_merge:
+                FileHandler.record_data_file(fp.expt)
+                FileHandler.record_data_file(fp.refl)
             xia2_logger.info("Completed joint scaling of all batches")
         else:
-            expt_f = scaled_results[0].expt
-            new_expt_f = expt_f.parent / "scaled_1.expt"
-            expt_f.rename(new_expt_f)
-            refl_f = scaled_results[0].refl
-            new_refl_f = refl_f.parent / "scaled_1.refl"
-            refl_f.rename(new_refl_f)
-            FileHandler.record_data_file(new_expt_f)
-            FileHandler.record_data_file(new_refl_f)
-            self._files_to_merge = [FilePair(new_expt_f, new_refl_f)]
+            result = scale(self._scale_wd, self._files_to_scale, self._reduction_params)
+            xia2_logger.info("Completed scaling of data reduction batch 1")
+            self._files_to_merge = [FilePair(result.exptfile, result.reflfile)]
+            FileHandler.record_log_file(
+                result.logfile.name.rstrip(".log"), result.logfile
+            )
 
         # The final scaled files should be kept, to allow further analysis
 

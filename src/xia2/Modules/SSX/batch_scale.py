@@ -161,7 +161,7 @@ class BatchScale(ScalingAlgorithm):
         import functools
 
         template = functools.partial(
-            "scaled_{index:0{fmt:d}d}".format,
+            "scaledinbatch_{index:0{fmt:d}d}".format,
             fmt=len(str(len(self.input_experiments))),
         )
         for i, (expts, refls) in enumerate(
