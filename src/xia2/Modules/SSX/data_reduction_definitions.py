@@ -39,7 +39,7 @@ class ReductionParams:
     nproc: int = 1
     d_min: Optional[float] = None
     anomalous: bool = False
-    lattice_symmetry_max_delta: float = 2.0
+    lattice_symmetry_max_delta: float = 0.5
     cluster_threshold: float = 1000.0
     absolute_angle_tolerance: float = 0.5
     absolute_length_tolerance: float = 0.2

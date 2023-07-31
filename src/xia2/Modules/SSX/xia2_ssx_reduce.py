@@ -114,7 +114,7 @@ symmetry {
   space_group = None
     .type = space_group
     .expert_level = 2
-  lattice_symmetry_max_delta = 2
+  lattice_symmetry_max_delta = 0.5
     .type = float
     .help = "Tolerance for lattice symmetry analysis, used for example when"
             "determining possible symmetries for ambiguity resolution."
