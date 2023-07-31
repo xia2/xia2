@@ -125,9 +125,6 @@ class SimpleDataReduction(BaseDataReduction):
             self._files_to_merge = batch_scale(
                 self._scale_wd, self._files_to_scale, self._reduction_params
             )
-            for fp in self._files_to_merge:
-                FileHandler.record_data_file(fp.expt)
-                FileHandler.record_data_file(fp.refl)
             xia2_logger.info("Completed joint scaling of all batches")
         else:
             result = scale(self._scale_wd, self._files_to_scale, self._reduction_params)
@@ -136,6 +133,9 @@ class SimpleDataReduction(BaseDataReduction):
             FileHandler.record_log_file(
                 result.logfile.name.rstrip(".log"), result.logfile
             )
+        for fp in self._files_to_merge:
+            FileHandler.record_data_file(fp.expt)
+            FileHandler.record_data_file(fp.refl)
 
         # The final scaled files should be kept, to allow further analysis
 

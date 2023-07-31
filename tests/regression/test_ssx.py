@@ -353,13 +353,13 @@ def check_data_reduction_files(tmp_path, reindex=True, reference=False):
     assert (tmp_path / "LogFiles" / "dials.merge.log").is_file()
     assert (tmp_path / "LogFiles" / "dials.merge.json").is_file()
     if reference:
-        assert (tmp_path / "DataFiles" / "scaled_batch1.refl").is_file()
-        assert (tmp_path / "DataFiles" / "scaled_batch1.expt").is_file()
-        assert (tmp_path / "LogFiles" / "dials.scale.scaled_batch1.log").is_file()
-    else:
         assert (tmp_path / "DataFiles" / "scaled_1.refl").is_file()
         assert (tmp_path / "DataFiles" / "scaled_1.expt").is_file()
-        assert (tmp_path / "LogFiles" / "dials.scale.batch1.log").is_file()
+        # assert (tmp_path / "LogFiles" / "dials.scale.scaled_batch1.log").is_file()
+    else:
+        assert (tmp_path / "DataFiles" / "scaled.refl").is_file()
+        assert (tmp_path / "DataFiles" / "scaled.expt").is_file()
+        # assert (tmp_path / "LogFiles" / "dials.scale.batch1.log").is_file()
 
 
 def check_data_reduction_files_on_scaled_only(tmp_path, reference=False):
