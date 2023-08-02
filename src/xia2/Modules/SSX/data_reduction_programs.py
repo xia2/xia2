@@ -711,11 +711,7 @@ def batch_scale(
 ) -> List[FilePair]:
 
     input_ = ""
-    expts = []
-    tables = []
     for fp in files_to_scale:
-        expts.append(load.experiment_list(fp.expt, check_format=False))
-        tables.append(flex.reflection_table.from_file(fp.refl))
         input_ += f"reflections = {fp.refl}\nexperiments = {fp.expt}\n"
     logfile = "dials.scale.log"
     with run_in_directory(working_directory), log_to_file(
@@ -729,20 +725,16 @@ def batch_scale(
             + input_
             + f"{diff_phil.as_str()}"
         )
-        scaler = BatchScale(params, expts, tables)
+        scaler = BatchScale(
+            working_directory, params, files_to_scale, reduction_params.nproc
+        )
         scaler.run()
         scaler.finish()
-        outexpt, outrefl = scaler.export()
         FileHandler.record_html_file(
             "dials.scale", working_directory / "dials.scale.html"
         )
         FileHandler.record_log_file(logfile.rstrip(".log"), working_directory / logfile)
-        outfiles = []
-        for expt, refl in zip(outexpt, outrefl):
-            outfiles.append(
-                FilePair(working_directory / expt, working_directory / refl)
-            )
-        return outfiles
+        return scaler.outfiles
 
 
 def scale(

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import concurrent.futures
 import logging
 
 from dials.algorithms.scaling.algorithm import ScalingAlgorithm
@@ -12,82 +13,116 @@ from dials.algorithms.scaling.scaling_library import (
 from dials.algorithms.scaling.scaling_utilities import log_memory_usage
 from dials.array_family import flex
 from dxtbx.model import ExperimentList
+from dxtbx.serialize import load
 from libtbx import Auto
+
+from xia2.Modules.SSX.data_reduction_definitions import FilePair
 
 logger = logging.getLogger("dials")
 
 # need to set up a scaling job to do scaling in addition to existing
 
 
+def _finish_individual(wd, i, fp, new_refl, new_expt, template):
+    table = flex.reflection_table.from_file(fp.refl)
+    table["inverse_scale_factor"] *= new_refl["inverse_scale_factor"]
+    table.unset_flags(flex.bool(table.size(), True), table.flags.scaled)
+    table.set_flags(new_refl.get_flags(new_refl.flags.scaled), table.flags.scaled)
+    table.unset_flags(
+        flex.bool(table.size(), True), table.flags.user_excluded_in_scaling
+    )
+    table.set_flags(
+        new_refl.get_flags(new_refl.flags.user_excluded_in_scaling),
+        table.flags.user_excluded_in_scaling,
+    )
+    table.unset_flags(flex.bool(table.size(), True), table.flags.outlier_in_scaling)
+    table.set_flags(
+        new_refl.get_flags(new_refl.flags.outlier_in_scaling),
+        table.flags.outlier_in_scaling,
+    )
+
+    scale = new_expt.scaling_model.components["scale"].parameters[0]
+    B = new_expt.scaling_model.components["decay"].parameters[0]
+    input_expt = load.experiment_list(fp.expt, check_format=False)
+    for expt in input_expt:
+        expt.scaling_model.components["scale"].parameters[0] *= scale
+        expt.scaling_model.components["decay"].parameters[0] += B
+    fname = template(index=i + 1)
+    logger.info(f"Saving scaled reflections to {fname}.refl")
+    table.as_file(wd / f"{fname}.refl")
+    logger.info(f"Saving scaled experiments to {fname}.expt")
+    input_expt.as_file(wd / f"{fname}.expt")
+    return (i, FilePair(wd / f"{fname}.expt", wd / f"{fname}.refl"))
+
+
+def _prepare_single_input(fp, best_unit_cell, params, i):
+
+    table = flex.reflection_table.from_file(fp.refl)
+    table.unset_flags(flex.bool(table.size(), True), table.flags.scaled)
+
+    #### Perform any non-batch cutting of the datasets, including the target dataset
+
+    if params.cut_data.d_min or params.cut_data.d_max:
+        d = best_unit_cell.d(table["miller_index"])
+        if params.cut_data.d_min:
+            sel = d < params.cut_data.d_min
+            table.set_flags(sel, table.flags.user_excluded_in_scaling)
+        if params.cut_data.d_max:
+            sel = d > params.cut_data.d_max
+            table.set_flags(sel, table.flags.user_excluded_in_scaling)
+    if params.cut_data.partiality_cutoff and "partiality" in table:
+        table.set_flags(
+            table["partiality"] < params.cut_data.partiality_cutoff,
+            table.flags.user_excluded_in_scaling,
+        )
+    table["intensity.sum.value"] /= table["inverse_scale_factor"]
+    table["intensity.sum.variance"] /= table["inverse_scale_factor"] ** 2
+    del table["inverse_scale_factor"]
+
+    return (i, table)
+
+
 class BatchScale(ScalingAlgorithm):
-    def __init__(self, params, experiments, reflections):
+    def __init__(self, working_directory, params, files_to_scale, nproc):
         self.scaler = None
         self.params = params
-        self.input_experiments = experiments
-        self.input_reflections = reflections
-        self.output_refl_files = []
-        self.output_expt_files = []
+        self.nproc = nproc
+        self.input_files = files_to_scale
+        self.working_directory = working_directory
+        self.outfiles = [None] * len(self.input_files)
         self.scaled_miller_array = None
         self.merging_statistics_result = None
         self.anom_merging_statistics_result = None
         self.filtering_results = None
-        self.original_identifiers_map = {}
-        self.prepare_input(experiments, reflections)
+        self.prepare_input(files_to_scale)
         self.create_model_and_scaler()
         logger.debug("Initialised scaling script object")
         log_memory_usage()
 
-    def prepare_input(self, experiments, reflections):
-        for r in reflections:
-            r.unset_flags(flex.bool(r.size(), True), r.flags.scaled)
+    def prepare_input(self, files_to_scale):
 
-        #### Perform any non-batch cutting of the datasets, including the target dataset
         best_unit_cell = self.params.reflection_selection.best_unit_cell
-
+        reflections = [None] * len(files_to_scale)
         new_expts = ExperimentList([])
-        for e in experiments:
-            new_expts.append(e[0])  # single expt per elist
         if best_unit_cell is None:
             all_expts = ExperimentList([])
-            for e in experiments:
-                all_expts.extend(e)
+            for fp in files_to_scale:
+                all_expts.extend(load.experiment_list(fp.expt, check_format=False))
             best_unit_cell = determine_best_unit_cell(all_expts)
-        for reflection in reflections:
-            if self.params.cut_data.d_min or self.params.cut_data.d_max:
-                d = best_unit_cell.d(reflection["miller_index"])
-                if self.params.cut_data.d_min:
-                    sel = d < self.params.cut_data.d_min
-                    reflection.set_flags(sel, reflection.flags.user_excluded_in_scaling)
-                if self.params.cut_data.d_max:
-                    sel = d > self.params.cut_data.d_max
-                    reflection.set_flags(sel, reflection.flags.user_excluded_in_scaling)
-            if self.params.cut_data.partiality_cutoff and "partiality" in reflection:
-                reflection.set_flags(
-                    reflection["partiality"] < self.params.cut_data.partiality_cutoff,
-                    reflection.flags.user_excluded_in_scaling,
-                )
-            # need to scale intensities
-            reflection["intensity.sum.value.original"] = reflection[
-                "intensity.sum.value"
+        for fp in files_to_scale:
+            new_expts.append(
+                load.experiment_list(fp.expt, check_format=False)[0]
+            )  # single expt per elist
+
+        with concurrent.futures.ProcessPoolExecutor(max_workers=self.nproc) as pool:
+            futures = [
+                pool.submit(_prepare_single_input, fp, best_unit_cell, self.params, i)
+                for i, fp in enumerate(files_to_scale)
             ]
-            reflection["intensity.sum.variance.original"] = reflection[
-                "intensity.sum.variance"
-            ]
-            reflection["intensity.scale.value.original"] = reflection[
-                "intensity.scale.value"
-            ]
-            reflection["intensity.scale.variance.original"] = reflection[
-                "intensity.scale.variance"
-            ]
-            reflection["inverse_scale_factor.original"] = reflection[
-                "inverse_scale_factor"
-            ]
-            reflection["intensity.sum.value"] /= reflection["inverse_scale_factor"]
-            reflection["intensity.sum.variance"] /= (
-                reflection["inverse_scale_factor"] ** 2
-            )
-            reflection["id.original"] = reflection["id"]
-            del reflection["inverse_scale_factor"]
+            for future in concurrent.futures.as_completed(futures):
+                i, table = future.result()
+                reflections[i] = table
+
         for m in new_expts.scaling_models():
             del m
         if self.params.scaling_options.reference:
@@ -96,7 +131,7 @@ class BatchScale(ScalingAlgorithm):
             if self.params.cut_data.d_min not in (None, Auto):
                 d_min_for_structure_model = self.params.cut_data.d_min
             expt, reflection_table = create_datastructures_for_reference_file(
-                experiments[0],
+                new_expts[0],
                 self.params.scaling_options.reference,
                 self.params.anomalous,
                 d_min=d_min_for_structure_model,
@@ -110,9 +145,7 @@ class BatchScale(ScalingAlgorithm):
         self.reflections = reflections
 
         for i, (e, t) in enumerate(zip(self.experiments, self.reflections)):
-            self.original_identifiers_map[i] = {}
             for k in list(t.experiment_identifiers().keys()):
-                self.original_identifiers_map[i][k] = t.experiment_identifiers()[k]
                 del t.experiment_identifiers()[k]
             t["id"] = flex.int(t.size(), i)
             t.experiment_identifiers()[i] = e.identifier
@@ -129,49 +162,29 @@ class BatchScale(ScalingAlgorithm):
         self.scaler = create_scaler(self.params, self.experiments, self.reflections)
 
     def finish(self):
-        # now copy results to original data
+        # now apply scale factors to original data
         self.scaler._set_outliers()
-        assert self.input_reflections[0] is self.reflections[0]
-        for i, inp in enumerate(self.input_reflections):
-            del inp.experiment_identifiers()[i]
-            for k, v in self.original_identifiers_map[i].items():
-                inp.experiment_identifiers()[k] = v
-            inp["inverse_scale_factor"] *= inp["inverse_scale_factor.original"]
-            inp["intensity.sum.value"] = inp["intensity.sum.value.original"]
-            inp["intensity.sum.variance"] = inp["intensity.sum.variance.original"]
-            inp["intensity.scale.value"] = inp["intensity.scale.value.original"]
-            inp["intensity.scale.variance"] = inp["intensity.scale.variance.original"]
-            inp["id"] = inp["id.original"]
-            del inp["intensity.sum.variance.original"]
-            del inp["intensity.sum.value.original"]
-            del inp["inverse_scale_factor.original"]
-            del inp["intensity.scale.value.original"]
-            del inp["intensity.scale.variance.original"]
-            del inp["id.original"]
-
-        for inp, scaled in zip(self.input_experiments, self.experiments):
-            scale = scaled.scaling_model.components["scale"].parameters[0]
-            B = scaled.scaling_model.components["decay"].parameters[0]
-            for expt in inp:
-                expt.scaling_model.components["scale"].parameters[0] *= scale
-                expt.scaling_model.components["decay"].parameters[0] += B
-
-    def export(self):
-        """Output the datafiles"""
         import functools
 
         template = functools.partial(
             "scaledinbatch_{index:0{fmt:d}d}".format,
-            fmt=len(str(len(self.input_experiments))),
+            fmt=len(str(len(self.input_files))),
         )
-        for i, (expts, refls) in enumerate(
-            zip(self.input_experiments, self.input_reflections)
-        ):
-            fname = template(index=i + 1)
-            logger.info(f"Saving scaled reflections to {fname}.refl")
-            refls.as_file(f"{fname}.refl")
-            self.output_refl_files.append(f"{fname}.refl")
-            logger.info(f"Saving scaled experiments to {fname}.expt")
-            expts.as_file(f"{fname}.expt")
-            self.output_expt_files.append(f"{fname}.expt")
-        return self.output_expt_files, self.output_refl_files
+        with concurrent.futures.ProcessPoolExecutor(max_workers=self.nproc) as pool:
+            futures = [
+                pool.submit(
+                    _finish_individual,
+                    self.working_directory,
+                    i,
+                    fp,
+                    new_refl,
+                    new_expt,
+                    template,
+                )
+                for i, (fp, new_refl, new_expt) in enumerate(
+                    zip(self.input_files, self.reflections, self.experiments)
+                )
+            ]
+            for future in concurrent.futures.as_completed(futures):
+                i, fpout = future.result()
+                self.outfiles[i] = fpout
