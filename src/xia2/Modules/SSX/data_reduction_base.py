@@ -81,22 +81,36 @@ def validate(expt: Path, refl: Path):
         return fp
 
 
+def inspect_file(i, expt, refl):
+    fp = FilePair(expt, refl)
+    fp.check()
+    try:
+        fp.validate()
+    except AssertionError:
+        raise ValueError(
+            f"Files {fp.expt} & {fp.refl} not consistent, please check input order"
+        )
+    else:
+        return (i, fp)
+
+
 def inspect_files(
-    reflection_files: List[Path], experiment_files: List[Path]
+    reflection_files: List[Path], experiment_files: List[Path], nproc
 ) -> List[FilePair]:
     """Inspect the input data, matching by the order of input."""
-    new_data: List[FilePair] = []
-    for refl_file, expt_file in zip(reflection_files, experiment_files):
-        fp = FilePair(expt_file, refl_file)
-        fp.check()
-        try:
-            fp.validate()
-        except AssertionError:
-            raise ValueError(
-                f"Files {fp.expt} & {fp.refl} not consistent, please check input order"
+    new_data: List[FilePair] = [FilePair(Path(), Path())] * len(reflection_files)
+    with concurrent.futures.ProcessPoolExecutor(
+        max_workers=min(nproc, len(reflection_files))
+    ) as pool:
+        futures = [
+            pool.submit(inspect_file, i, expt_file, refl_file)
+            for i, (refl_file, expt_file) in enumerate(
+                zip(reflection_files, experiment_files)
             )
-        else:
-            new_data.append(fp)
+        ]
+        for future in concurrent.futures.as_completed(futures):
+            i, fp = future.result()
+            new_data[i] = fp
     return new_data
 
 
@@ -198,7 +212,9 @@ class BaseDataReduction(object):
     ):
         # load and check all integrated files
         try:
-            new_data = inspect_files(reflection_files, experiment_files)
+            new_data = inspect_files(
+                reflection_files, experiment_files, reduction_params.nproc
+            )
         except FileNotFoundError as e:
             raise ValueError(e)
         return cls(main_directory, new_data, reduction_params)

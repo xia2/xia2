@@ -110,6 +110,7 @@ class DataReductionWithReference(BaseDataReduction):
                 self._reduction_params.d_min,
                 self._reduction_params.lattice_symmetry_max_delta,
                 self._reduction_params.partiality_threshold,
+                self._reduction_params.nproc,
             )
             self._files_to_scale = files_to_scale
             xia2_logger.info(f"Consistently reindexed {len(scaled_results)} batches")

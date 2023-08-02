@@ -23,6 +23,9 @@ from dials.algorithms.merging.merge import (
 )
 from dials.algorithms.merging.reporting import generate_html_report as merge_html_report
 from dials.algorithms.scaling.algorithm import ScalingAlgorithm
+from dials.algorithms.symmetry.reindex_to_reference import (
+    determine_reindex_operator_against_reference,
+)
 from dials.array_family import flex
 from dials.command_line.cluster_unit_cell import do_cluster_analysis
 from dials.command_line.cluster_unit_cell import phil_scope as cluster_phil_scope
@@ -30,7 +33,9 @@ from dials.command_line.cosym import cosym
 from dials.command_line.cosym import phil_scope as cosym_phil_scope
 from dials.command_line.cosym import register_default_cosym_observers
 from dials.command_line.merge import phil_scope as merge_phil_scope
+from dials.command_line.reindex import reindex_experiments
 from dials.command_line.scale import phil_scope as scaling_phil_scope
+from dials.util.reference import intensities_from_reference_file
 from dxtbx.model import Crystal, ExperimentList
 from dxtbx.serialize import load
 from iotbx.phil import parse
@@ -392,11 +397,30 @@ class MergeResult:
     name: str = ""
 
 
-from dials.algorithms.symmetry.reindex_to_reference import (
-    determine_reindex_operator_against_reference,
-)
-from dials.command_line.reindex import reindex_experiments
-from dials.util.reference import intensities_from_reference_file
+def _prepare_reindex_data(fp, partiality_threshold):
+    expt = load.experiment_list(fp.expt, check_format=False)[0]
+    refl = flex.reflection_table.from_file(fp.refl)
+    refl = refl.select(refl.get_flags(refl.flags.scaled))
+    refl = refl.select(~refl.get_flags(refl.flags.outlier_in_scaling))
+    if "partiality" in refl:
+        refl = refl.select(refl["partiality"] > partiality_threshold)
+    refl["intensity.scale.value"] /= refl["inverse_scale_factor"]
+    refl["intensity.scale.variance"] /= refl["inverse_scale_factor"] ** 2
+    ma = refl.as_miller_array(expt, "scale")
+    return ma
+
+
+def _reindex_data(fp, change_of_basis_op, working_directory, template, i):
+    expts = load.experiment_list(fp.expt, check_format=False)
+    refls = flex.reflection_table.from_file(fp.refl)
+    expts = reindex_experiments(expts, change_of_basis_op)
+    refls["miller_index"] = change_of_basis_op.apply(refls["miller_index"])
+    fno = template(index=i)
+    expout = f"reindexed_{fno}.expt"
+    reflout = f"reindexed_{fno}.refl"
+    expts.as_file(working_directory / expout)
+    refls.as_file(working_directory / reflout)
+    return (i, FilePair(working_directory / expout, working_directory / reflout))
 
 
 def reindex_against_reference(working_directory, files, reduction_params):
@@ -408,21 +432,22 @@ def reindex_against_reference(working_directory, files, reduction_params):
 
     with run_in_directory(working_directory):
         overall_ma = None
-        for fp in files:
-            expt = load.experiment_list(fp.expt)[0]
-            refl = flex.reflection_table.from_file(fp.refl)
-            refl = refl.select(refl.get_flags(refl.flags.scaled))
-            refl = refl.select(~refl.get_flags(refl.flags.outlier_in_scaling))
-            refl = refl.select(
-                refl["partiality"] > reduction_params.partiality_threshold
-            )
-            refl["intensity.scale.value"] /= refl["inverse_scale_factor"]
-            refl["intensity.scale.variance"] /= refl["inverse_scale_factor"] ** 2
-            ma = refl.as_miller_array(expt, "scale")
-            if overall_ma:
-                overall_ma = overall_ma.concatenate(ma)
-            else:
-                overall_ma = ma
+        with concurrent.futures.ProcessPoolExecutor(
+            max_workers=min(reduction_params.nproc, len(files))
+        ) as pool:
+            futures = [
+                pool.submit(
+                    _prepare_reindex_data, fp, reduction_params.partiality_threshold
+                )
+                for fp in files
+            ]
+            for future in concurrent.futures.as_completed(futures):
+                ma = future.result()
+                if overall_ma:
+                    overall_ma = overall_ma.concatenate(ma)
+                else:
+                    overall_ma = ma
+
         logfile = "dials.reindex.log"
         reference_miller_set = intensities_from_reference_file(
             os.fspath(reduction_params.reference)
@@ -430,25 +455,30 @@ def reindex_against_reference(working_directory, files, reduction_params):
 
         with log_to_file(logfile):
             change_of_basis_op = determine_reindex_operator_against_reference(
-                ma, reference_miller_set
+                overall_ma, reference_miller_set
             )
 
         if str(change_of_basis_op) != str(sgtbx.change_of_basis_op("a,b,c")):
-            outfiles = []
-            for i, fp in enumerate(files):
-                expts = load.experiment_list(fp.expt)
-                refls = flex.reflection_table.from_file(fp.refl)
-                expts = reindex_experiments(expts, change_of_basis_op)
-                refls["miller_index"] = change_of_basis_op.apply(refls["miller_index"])
-                fno = template(index=i)
-                expout = f"reindexed_{fno}.expt"
-                reflout = f"reindexed_{fno}.refl"
-                expts.as_file(expout)
-                refls.as_file(reflout)
-                outfiles.append(
-                    FilePair(working_directory / expout, working_directory / reflout)
-                )
-
+            outfiles = [0] * len(files)
+            with concurrent.futures.ProcessPoolExecutor(
+                max_workers=min(reduction_params.nproc, len(files))
+            ) as pool:
+                futures = [
+                    pool.submit(
+                        _reindex_data,
+                        fp,
+                        change_of_basis_op,
+                        working_directory,
+                        template,
+                        i,
+                    )
+                    for i, fp in enumerate(files)
+                ]
+                for future in concurrent.futures.as_completed(futures):
+                    i, outfile = future.result()
+                    outfiles[i] = outfile
+                    FileHandler.record_temporary_file(outfile.expt)
+                    FileHandler.record_temporary_file(outfile.refl)
             return outfiles
         return files
 
@@ -923,20 +953,15 @@ def cosym_reindex(
     d_min: float = None,
     max_delta: float = 0.5,
     partiality_threshold=0.25,
+    nproc: int = 1,
 ) -> List[FilePair]:
     from dials.command_line.cosym import phil_scope as cosym_scope
 
     from xia2.Modules.SSX.batch_cosym import BatchCosym
 
-    expts = []
-    refls = []
     params = cosym_scope.extract()
 
     logfile = "dials.cosym_reindex.log"
-    for filepair in files_for_reindex:
-        expts.append(load.experiment_list(filepair.expt, check_format=False))
-        refls.append(flex.reflection_table.from_file(filepair.refl))
-    params.space_group = expts[0][0].crystal.get_space_group().info()
     params.lattice_symmetry_max_delta = max_delta
     params.partiality_threshold = partiality_threshold
     params.min_i_mean_over_sigma_mean = 0.5
@@ -947,18 +972,14 @@ def cosym_reindex(
         working_directory
     ), log_to_file(logfile), record_step("cosym_reindex"):
         sys.stdout = devnull  # block printing from cosym
-        cosym_instance = BatchCosym(expts, refls, params)
+        cosym_instance = BatchCosym(working_directory, files_for_reindex, params, nproc)
         register_default_cosym_observers(cosym_instance)
         cosym_instance.run()
     sys.stdout = sys.__stdout__
     FileHandler.record_log_file(logfile.rstrip(".log"), working_directory / logfile)
     FileHandler.record_html_file("dials.cosym", working_directory / "dials.cosym.html")
-    outfiles = []
-    for expt, refl in zip(
-        cosym_instance._output_expt_files, cosym_instance._output_refl_files
-    ):
-        outfiles.append(FilePair(working_directory / expt, working_directory / refl))
-    return outfiles
+
+    return cosym_instance.output_files
 
 
 def parallel_cosym(
@@ -1148,7 +1169,8 @@ def split_filtered_data(
         for file_pair in new_data:
             expts = load.experiment_list(file_pair.expt, check_format=False)
             refls = flex.reflection_table.from_file(file_pair.refl)
-            refls = refls.select(refls["partiality"] > partiality_threshold)
+            if "partiality" in refls:
+                refls = refls.select(refls["partiality"] > partiality_threshold)
             refls = refls.select(refls.get_flags(refls.flags.integrated, all=False))
             good_crystals_this = good_crystals_data[str(file_pair.expt)]
             if not good_crystals_this.crystals:

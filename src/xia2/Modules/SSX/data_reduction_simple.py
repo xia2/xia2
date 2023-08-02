@@ -102,6 +102,7 @@ class SimpleDataReduction(BaseDataReduction):
                     self._reduction_params.d_min,
                     self._reduction_params.lattice_symmetry_max_delta,
                     self._reduction_params.partiality_threshold,
+                    self._reduction_params.nproc,
                 )
                 xia2_logger.info(
                     f"Consistently reindexed {len(scaled_results)} batches"
