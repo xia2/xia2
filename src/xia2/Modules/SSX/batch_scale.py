@@ -23,7 +23,7 @@ logger = logging.getLogger("dials")
 # need to set up a scaling job to do scaling in addition to existing
 
 
-def _finish_individual(wd, i, fp, new_refl, new_expt, template):
+def _finish_individual(working_directory, index, fp, new_refl, new_expt, template):
     table = flex.reflection_table.from_file(fp.refl)
     table["inverse_scale_factor"] *= new_refl["inverse_scale_factor"]
     table.unset_flags(flex.bool(table.size(), True), table.flags.scaled)
@@ -47,15 +47,20 @@ def _finish_individual(wd, i, fp, new_refl, new_expt, template):
     for expt in input_expt:
         expt.scaling_model.components["scale"].parameters[0] *= scale
         expt.scaling_model.components["decay"].parameters[0] += B
-    fname = template(index=i + 1)
+    fname = template(index=index + 1)
     logger.info(f"Saving scaled reflections to {fname}.refl")
-    table.as_file(wd / f"{fname}.refl")
+    table.as_file(working_directory / f"{fname}.refl")
     logger.info(f"Saving scaled experiments to {fname}.expt")
-    input_expt.as_file(wd / f"{fname}.expt")
-    return (i, FilePair(wd / f"{fname}.expt", wd / f"{fname}.refl"))
+    input_expt.as_file(working_directory / f"{fname}.expt")
+    return (
+        index,
+        FilePair(
+            working_directory / f"{fname}.expt", working_directory / f"{fname}.refl"
+        ),
+    )
 
 
-def _prepare_single_input(fp, best_unit_cell, params, i):
+def _prepare_single_input(fp, best_unit_cell, params, index):
 
     table = flex.reflection_table.from_file(fp.refl)
     table.unset_flags(flex.bool(table.size(), True), table.flags.scaled)
@@ -79,7 +84,7 @@ def _prepare_single_input(fp, best_unit_cell, params, i):
     table["intensity.sum.variance"] /= table["inverse_scale_factor"] ** 2
     del table["inverse_scale_factor"]
 
-    return (i, table)
+    return (index, table)
 
 
 class BatchScale(ScalingAlgorithm):

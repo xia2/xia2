@@ -28,7 +28,7 @@ logger = logging.getLogger("dials")
 import concurrent.futures
 
 
-def _prepare_file_for_cosym(fp, params, best_unit_cell, i):
+def _prepare_file_for_cosym(fp, params, best_unit_cell, index):
     expts = load.experiment_list(fp.expt, check_format=False)
     table = flex.reflection_table.from_file(fp.refl)
     wavelength = np.mean([expt.beam.get_wavelength() for expt in expts])
@@ -54,10 +54,10 @@ def _prepare_file_for_cosym(fp, params, best_unit_cell, i):
         outlier_rejection_after_filter=False,
         partiality_threshold=params.partiality_threshold,
     )[0]
-    tables[0].as_file(f"tmp{i}.refl")
-    expts.as_file(f"tmp{i}.expt")
+    tables[0].as_file(f"tmp{index}.refl")
+    expts.as_file(f"tmp{index}.expt")
 
-    return (i, arr.as_non_anomalous_array().merge_equivalents().array())
+    return (index, arr.as_non_anomalous_array().merge_equivalents().array())
 
 
 def _reindex_data(

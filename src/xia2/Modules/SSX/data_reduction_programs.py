@@ -410,17 +410,17 @@ def _prepare_reindex_data(fp, partiality_threshold):
     return ma
 
 
-def _reindex_data(fp, change_of_basis_op, working_directory, template, i):
+def _reindex_data(fp, change_of_basis_op, working_directory, template, index):
     expts = load.experiment_list(fp.expt, check_format=False)
     refls = flex.reflection_table.from_file(fp.refl)
     expts = reindex_experiments(expts, change_of_basis_op)
     refls["miller_index"] = change_of_basis_op.apply(refls["miller_index"])
-    fno = template(index=i)
+    fno = template(index=index)
     expout = f"reindexed_{fno}.expt"
     reflout = f"reindexed_{fno}.refl"
     expts.as_file(working_directory / expout)
     refls.as_file(working_directory / reflout)
-    return (i, FilePair(working_directory / expout, working_directory / reflout))
+    return (index, FilePair(working_directory / expout, working_directory / reflout))
 
 
 def reindex_against_reference(working_directory, files, reduction_params):
