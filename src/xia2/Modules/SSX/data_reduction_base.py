@@ -81,7 +81,8 @@ def validate(expt: Path, refl: Path):
         return fp
 
 
-def inspect_file(i, expt, refl):
+def inspect_file(tup):
+    expt, refl = tup
     fp = FilePair(expt, refl)
     fp.check()
     try:
@@ -91,7 +92,7 @@ def inspect_file(i, expt, refl):
             f"Files {fp.expt} & {fp.refl} not consistent, please check input order"
         )
     else:
-        return (i, fp)
+        return fp
 
 
 def inspect_files(
@@ -99,18 +100,10 @@ def inspect_files(
 ) -> List[FilePair]:
     """Inspect the input data, matching by the order of input."""
     new_data: List[FilePair] = [FilePair(Path(), Path())] * len(reflection_files)
-    with concurrent.futures.ProcessPoolExecutor(
-        max_workers=min(nproc, len(reflection_files))
-    ) as pool:
-        futures = [
-            pool.submit(inspect_file, i, expt_file, refl_file)
-            for i, (refl_file, expt_file) in enumerate(
-                zip(reflection_files, experiment_files)
-            )
-        ]
-        for future in concurrent.futures.as_completed(futures):
-            i, fp = future.result()
-            new_data[i] = fp
+    from multiprocessing import Pool
+
+    with Pool(min(nproc, len(reflection_files))) as pool:
+        new_data = pool.map(inspect_file, zip(experiment_files, reflection_files))
     return new_data
 
 
