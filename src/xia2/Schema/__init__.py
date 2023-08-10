@@ -225,9 +225,8 @@ def load_imagesets(
                 image_range[0] >= scan_image_range[0]
                 and image_range[1] <= scan_image_range[1]
             ):
-                b0 = scan.get_batch_offset()
-                i0 = image_range[0] - scan_image_range[0] + b0
-                i1 = image_range[1] - scan_image_range[0] + b0
+                i0 = image_range[0] - scan_image_range[0]
+                i1 = image_range[1] - scan_image_range[0]
                 imagesets = [imageset[i0 : i1 + 1]]
                 assert len(imagesets[0]) == image_range[1] - image_range[0] + 1, len(
                     imagesets[0]
