@@ -508,10 +508,9 @@ class XSweep:
 
         if self._frames_to_process:
             summary.append("Images: %d to %d" % tuple(self._frames_to_process))
-            off = self._imageset.get_scan().get_batch_offset()
             first = self._frames_to_process[0]
-            start = self._frames_to_process[0] - first + off
-            end = self._frames_to_process[1] - first + 1 + off
+            start = self._frames_to_process[0] - first
+            end = self._frames_to_process[1] - first + 1
             self._imageset = self._imageset[start:end]
 
         indxr = self._get_indexer()
