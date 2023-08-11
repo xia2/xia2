@@ -333,8 +333,9 @@ def test_prot_k_multiwave_double(run_in_tmp_path, protk_experiments_and_reflecti
             "tmp.expt",
             "tmp.refl",
             "wavelength_tolerance=0.001",
-            "min_completeness=0.7",
+            "min_completeness=0.6",
             "filtering.method=deltacchalf",
+            "resolution.d_min=2.6",
         ]
     )
 
