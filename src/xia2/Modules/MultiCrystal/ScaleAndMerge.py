@@ -1035,14 +1035,6 @@ class Scale:
         )
 
     @property
-    def scaled_mtz(self):
-        return self._scaled_mtz
-
-    @property
-    def scaled_unmerged_mtz(self):
-        return self._scaled_unmerged_mtz
-
-    @property
     def data_manager(self):
         return self._data_manager
 
@@ -1076,16 +1068,6 @@ class Scale:
         auto_logfiler(scaler)
         scaler.add_experiments_json(self._experiments_filename)
         scaler.add_reflections_file(self._reflections_filename)
-
-        # need to set unmerged_mtz, merged_mtz in Scale wrapper
-        unmerged_mtz = os.path.join(
-            scaler.get_working_directory(), "%i_scaled_unmerged.mtz" % scaler.get_xpid()
-        )
-        merged_mtz = os.path.join(
-            scaler.get_working_directory(), "%i_scaled.mtz" % scaler.get_xpid()
-        )
-        scaler.set_scaled_unmerged_mtz(unmerged_mtz)
-        scaler.set_scaled_mtz(merged_mtz)
 
         scaler.set_anomalous(self._params.scaling.anomalous)
 
@@ -1154,8 +1136,6 @@ class Scale:
             )
 
         scaler.scale()
-        self._scaled_mtz = scaler.get_scaled_mtz()
-        self._scaled_unmerged_mtz = scaler.get_scaled_unmerged_mtz()
         self._experiments_filename = scaler.get_scaled_experiments()
         self._reflections_filename = scaler.get_scaled_reflections()
         self._data_manager.experiments = load.experiment_list(
