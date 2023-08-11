@@ -213,9 +213,10 @@ class DataManager:
         params.mtz.d_min = d_min
         params.mtz.hklout = f"{prefix}_WAVE{fmt % (index+1)}.mtz"
         params.mtz.wavelength_tolerance = wavelength_tolerance
+        expt_to_export = copy.deepcopy(data["expt"])
         params.intensity = ["scale"]
         if data["expt"]:
-            export.export_mtz(params, data["expt"], [data["refl"]])
+            export.export_mtz(params, expt_to_export, [data["refl"]])
             return params.mtz.hklout
         return None
 
@@ -253,11 +254,12 @@ class DataManager:
 
     def export_unmerged_mtz(self, filename, d_min=None, wavelength_tolerance=0.0001):
         params = export.phil_scope.extract()
+        expt_to_export = copy.deepcopy(self._experiments)
         params.mtz.d_min = d_min
         params.mtz.hklout = filename
         params.mtz.wavelength_tolerance = wavelength_tolerance
         params.intensity = ["scale"]
-        export.export_mtz(params, self._experiments, [self._reflections])
+        export.export_mtz(params, expt_to_export, [self._reflections])
 
     def export_merged_mtz(
         self, filename, d_min=None, r_free_params=None, wavelength_tolerance=0.0001
