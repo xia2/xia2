@@ -1,0 +1,1 @@
+``xia2.cluster_analysis``: The cluster selection algorithm now handles edge cases more robustly.

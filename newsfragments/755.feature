@@ -1,1 +1,1 @@
-``xia2.multiplex``: Add support for multi-wavelength processing
+``xia2.multiplex``: Add support for multi-wavelength processing.

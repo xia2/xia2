@@ -1,1 +1,1 @@
-``xia2.multiplex``: Added option to use a reference pdb for consistent indexing
+``xia2.multiplex``: Added option ``reference=``, to use a reference pdb for consistent indexing.

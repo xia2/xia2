@@ -1,0 +1,1 @@
+Don't import matplotlib in ``scipy.hierarchy.dendrogram``, causing errors on headless machines.
