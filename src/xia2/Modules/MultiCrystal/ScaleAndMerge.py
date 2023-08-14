@@ -388,13 +388,23 @@ class MultiCrystalScale:
         self._params.r_free_flags.d_max = flex.max(d_spacings)
         self._data_manager.export_experiments("scaled.expt")
         self._data_manager.export_reflections("scaled.refl", d_min=self._scaled.d_min)
+        # by default, always want to extend to the full resolution range once we have a reference
+        if self._params.r_free_flags.extend is Auto:
+            self._params.r_free_flags.extend = True
+        free_flags_in_full_set = False
+        if self._params.r_free_flags.reference:
+            free_flags_in_full_set = (
+                True  # will be after this first export if extend=True.
+            )
         self._data_manager.export_merged_mtz(
             "scaled.mtz",
             d_min=self._scaled.d_min,
             r_free_params=self._params.r_free_flags,
             wavelength_tolerance=self._params.wavelength_tolerance,
         )
+        # whether there was an external reference or not, we can use the scaled.mtz going forward for the reference rfree
         self._params.r_free_flags.reference = os.path.join(os.getcwd(), "scaled.mtz")
+        # however, if extend=True, we will need to record the next merged mtz as the reference going forward.
 
         self.wavelengths = match_wavelengths(
             self._data_manager.experiments, self._params.wavelength_tolerance
@@ -458,6 +468,7 @@ class MultiCrystalScale:
             clusters = self._cc_clusters
         else:
             raise ValueError("Invalid cluster method: %s" % self._params.cluster_method)
+
         if max_clusters or min_completeness is not None or min_multiplicity is not None:
             self._data_manager_original = self._data_manager
             cwd = os.path.abspath(os.getcwd())
@@ -494,6 +505,22 @@ class MultiCrystalScale:
                 data_manager.export_experiments("scaled.expt")
                 data_manager.export_reflections("scaled.refl", d_min=scaled.d_min)
 
+                # if we didn't have an external reference for the free_flags set, we need to make
+                # and record one here.
+                data_manager.export_merged_mtz(
+                    "scaled.mtz",
+                    d_min=scaled.d_min,
+                    r_free_params=self._params.r_free_flags,
+                    wavelength_tolerance=self._params.wavelength_tolerance,
+                )
+                if (not free_flags_in_full_set) and (
+                    self._params.r_free_flags.extend is True
+                ):
+                    self._params.r_free_flags.reference = os.path.join(
+                        os.getcwd(), "scaled.mtz"
+                    )
+                    free_flags_in_full_set = True
+
                 if len(self.wavelengths) > 1:
                     data_manager.split_by_wavelength(self._params.wavelength_tolerance)
                     for wl in self.wavelengths:
@@ -522,12 +549,6 @@ class MultiCrystalScale:
                         d_min=scaled.d_min,
                         wavelength_tolerance=self._params.wavelength_tolerance,
                     )
-                    data_manager.export_merged_mtz(
-                        "scaled.mtz",
-                        d_min=scaled.d_min,
-                        r_free_params=self._params.r_free_flags,
-                        wavelength_tolerance=self._params.wavelength_tolerance,
-                    )
                     convert_merged_mtz_to_sca("scaled.mtz")
                     convert_unmerged_mtz_to_sca("scaled_unmerged.mtz")
 
@@ -544,7 +565,20 @@ class MultiCrystalScale:
             scaled = Scale(data_manager, params, filtering=True)
             self.scale_and_filter_results = scaled.scale_and_filter_results
             logger.info("Scale and filtering:\n%s", self.scale_and_filter_results)
-            self._params.r_free_flags.extend = True
+
+            data_manager.export_merged_mtz(
+                "filtered.mtz",
+                d_min=scaled.d_min,
+                r_free_params=self._params.r_free_flags,
+                wavelength_tolerance=self._params.wavelength_tolerance,
+            )
+            if (not free_flags_in_full_set) and (
+                self._params.r_free_flags.extend is True
+            ):
+                self._params.r_free_flags.reference = os.path.join(
+                    os.getcwd(), "filtered.mtz"
+                )
+                free_flags_in_full_set = True
 
             if len(self.wavelengths) > 1:
                 data_manager.split_by_wavelength(self._params.wavelength_tolerance)
@@ -572,12 +606,6 @@ class MultiCrystalScale:
                 data_manager.export_unmerged_mtz(
                     "filtered_unmerged.mtz",
                     d_min=scaled.d_min,
-                    wavelength_tolerance=self._params.wavelength_tolerance,
-                )
-                data_manager.export_merged_mtz(
-                    "filtered.mtz",
-                    d_min=scaled.d_min,
-                    r_free_params=self._params.r_free_flags,
                     wavelength_tolerance=self._params.wavelength_tolerance,
                 )
                 convert_merged_mtz_to_sca("filtered.mtz")

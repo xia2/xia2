@@ -1,1 +1,1 @@
-``xia2.multiplex``: Fixed issue where R-free flags were not compatible with filtered.mtz.
+``xia2.multiplex``: Automatically extend r_free flags for clusters and filtered datasets.
