@@ -53,7 +53,7 @@ class MultiplicityViewPng(render_2d):
         self._filled_circle_colors.append(color)
 
     def render(self, ax):
-        from matplotlib import colors, pyplot
+        from matplotlib import colormaps, colors
 
         render_2d.render(self, ax)
         if self._open_circle_points.size():
@@ -86,7 +86,7 @@ class MultiplicityViewPng(render_2d):
             }
             cm = cmap_d.get(self.settings.color_scheme, self.settings.color_scheme)
             if isinstance(cm, str):
-                cm = pyplot.cm.get_cmap(cm)
+                cm = colormaps[cm]
             im = ax.scatter(
                 x.as_numpy_array(),
                 y.as_numpy_array(),

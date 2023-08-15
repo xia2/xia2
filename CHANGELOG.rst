@@ -1,3 +1,20 @@
+xia2 3.16.0 (2023-08-14)
+========================
+
+Features
+--------
+
+- ``xia2.cluster_analysis``: The cluster selection algorithm now handles edge cases more robustly. (`#744 <https://github.com/xia2/xia2/issues/744>`_)
+- ``xia2.multiplex``: Added option ``reference=``, to use a reference pdb for consistent indexing. (`#748 <https://github.com/xia2/xia2/issues/748>`_)
+- ``xia2.multiplex``: Add support for multi-wavelength processing. (`#755 <https://github.com/xia2/xia2/issues/755>`_)
+
+
+Misc
+----
+
+- `#745 <https://github.com/xia2/xia2/issues/745>`_, `#752 <https://github.com/xia2/xia2/issues/752>`_, `#753 <https://github.com/xia2/xia2/issues/753>`_, `#754 <https://github.com/xia2/xia2/issues/754>`_, `#756 <https://github.com/xia2/xia2/issues/756>`_, `#757 <https://github.com/xia2/xia2/issues/757>`_
+
+
 xia2 3.15.0 (2023-06-12)
 ========================
 

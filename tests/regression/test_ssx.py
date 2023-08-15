@@ -222,6 +222,49 @@ def test_run_with_reference(dials_data, tmp_path, refined_expt):
     assert not (tmp_path / "LogFiles" / "dials.refine.log").is_file()
 
 
+def test_slice_cbfs(dials_data, tmp_path, refined_expt):
+    """
+    Test slicing an image range from the cbf template
+    """
+    refined_expt.as_file(tmp_path / "refined.expt")
+
+    ssx = dials_data("cunir_serial", pathlib=True)
+
+    args = [
+        "xia2.ssx",
+        "unit_cell=96.4,96.4,96.4,90,90,90",
+        "space_group=P213",
+        "integration.algorithm=stills",
+        f"reference_geometry={os.fspath(tmp_path / 'refined.expt')}",
+        "steps=find_spots+index",
+        "max_lattices=1",
+    ]
+    args.append(
+        "template=" + os.fspath(ssx / "merlin0047_1700#.cbf:2:4")
+    )  # i.e. 17002,17003,17004
+
+    result = subprocess.run(args, cwd=tmp_path, capture_output=True)
+    assert not result.returncode and not result.stderr
+    check_output(tmp_path, find_spots=True, index=True, integrate=False)
+
+    indexed = load.experiment_list(tmp_path / "batch_1" / "indexed.expt")
+    images = [
+        iset.get_image_identifier(0).split("_")[-1].rstrip(".cbf")
+        for iset in indexed.imagesets()
+    ]
+    assert images == ["17002", "17003", "17004"]
+    # Also check the correct images were reported in the indexing report.
+    images = []
+    with open(tmp_path / "batch_1" / "dials.ssx_index.log", "r") as f:
+        lines = f.readlines()
+        for l in lines:
+            if "merlin" in l:
+                for p in l.split():
+                    if "merlin" in p:
+                        images.append(p.split("_")[-1].rstrip(".cbf"))
+    assert images == ["17002", "17003", "17004"]
+
+
 def test_full_run_without_reference(dials_data, tmp_path):
     ssx = dials_data("cunir_serial", pathlib=True)
 
@@ -666,3 +709,40 @@ def test_on_sacla_data(dials_data, tmp_path):
     assert len(imported) == 4
     assert len(imported.imagesets()) == 1
     assert (tmp_path / "DataFiles" / "merged.mtz").is_file()
+
+
+def test_on_sacla_data_slice(dials_data, tmp_path):
+    "Just import to check the slicing functionality"
+    sacla_path = dials_data("image_examples", pathlib=True)
+    image = sacla_path / "SACLA-MPCCD-run266702-0-subset.h5:3:4"
+    geometry = (
+        sacla_path / "SACLA-MPCCD-run266702-0-subset-refined_experiments_level1.json"
+    )
+    find_spots_phil = """spotfinder.threshold.dispersion.gain=10"""
+    fp = tmp_path / "sf.phil"
+    with open(fp, "w") as f:
+        f.write(find_spots_phil)
+    args = [
+        "xia2.ssx",
+        f"image={image}",
+        f"reference_geometry={geometry}",
+        "space_group = P43212",
+        "unit_cell=78.9,78.9,38.1,90,90,90",
+        "min_spot_size=2",
+        "steps=find_spots+index",
+        f"spotfinding.phil={fp}",
+        "max_lattices=1",
+    ]
+    result = subprocess.run(args, cwd=tmp_path, capture_output=True)
+    assert not result.returncode and not result.stderr
+
+    imported = load.experiment_list(
+        tmp_path / "import" / "imported.expt", check_format=False
+    )
+    assert len(imported) == 2
+    assert len(imported.imagesets()) == 1
+    import json
+
+    with open(tmp_path / "batch_1" / "indexed.expt", "r") as f:
+        indexed = json.load(f)
+    assert indexed["imageset"][0]["single_file_indices"] == [2]  # i.e. the third image
