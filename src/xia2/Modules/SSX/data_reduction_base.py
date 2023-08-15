@@ -11,7 +11,6 @@ from xia2.Handlers.Streams import banner
 xia2_logger = logging.getLogger(__name__)
 
 import concurrent.futures
-import functools
 
 from dials.array_family import flex
 from dials.util.image_grouping import ParsedYAML
@@ -102,13 +101,9 @@ def inspect_files(
     reflection_files: List[Path], experiment_files: List[Path], nproc, validate=False
 ) -> List[FilePair]:
     """Inspect the input data, matching by the order of input."""
-    new_data: List[FilePair] = [FilePair(Path(), Path())] * len(reflection_files)
-    from multiprocessing import Pool
-
-    inspect = functools.partial(inspect_file, validate=validate)
-    print(validate, nproc)
-    with Pool(min(nproc, len(reflection_files))) as pool:
-        new_data = pool.map(inspect, zip(experiment_files, reflection_files))
+    new_data: List[FilePair] = []
+    for tup in zip(experiment_files, reflection_files):
+        new_data.append(inspect_file(tup, validate))
     return new_data
 
 
