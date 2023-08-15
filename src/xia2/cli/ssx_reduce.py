@@ -86,3 +86,7 @@ def run(args=sys.argv[1:]):
             "Please send the contents of xia2.ssx_reduce.log and xia2-error.txt to xia2.support@gmail.com"
         )
         sys.exit(1)
+
+
+if __name__ == "__main__":
+    run()

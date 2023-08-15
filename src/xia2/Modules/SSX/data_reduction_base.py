@@ -11,6 +11,7 @@ from xia2.Handlers.Streams import banner
 xia2_logger = logging.getLogger(__name__)
 
 import concurrent.futures
+import functools
 
 from dials.array_family import flex
 from dials.util.image_grouping import ParsedYAML
@@ -81,10 +82,12 @@ def validate(expt: Path, refl: Path):
         return fp
 
 
-def inspect_file(tup):
+def inspect_file(tup, validate=False):
     expt, refl = tup
     fp = FilePair(expt, refl)
     fp.check()
+    if not validate:
+        return fp
     try:
         fp.validate()
     except AssertionError:
@@ -96,14 +99,16 @@ def inspect_file(tup):
 
 
 def inspect_files(
-    reflection_files: List[Path], experiment_files: List[Path], nproc
+    reflection_files: List[Path], experiment_files: List[Path], nproc, validate=False
 ) -> List[FilePair]:
     """Inspect the input data, matching by the order of input."""
     new_data: List[FilePair] = [FilePair(Path(), Path())] * len(reflection_files)
     from multiprocessing import Pool
 
+    inspect = functools.partial(inspect_file, validate=validate)
+    print(validate, nproc)
     with Pool(min(nproc, len(reflection_files))) as pool:
-        new_data = pool.map(inspect_file, zip(experiment_files, reflection_files))
+        new_data = pool.map(inspect, zip(experiment_files, reflection_files))
     return new_data
 
 
@@ -206,7 +211,10 @@ class BaseDataReduction(object):
         # load and check all integrated files
         try:
             new_data = inspect_files(
-                reflection_files, experiment_files, reduction_params.nproc
+                reflection_files,
+                experiment_files,
+                reduction_params.nproc,
+                reduction_params.validate,
             )
         except FileNotFoundError as e:
             raise ValueError(e)

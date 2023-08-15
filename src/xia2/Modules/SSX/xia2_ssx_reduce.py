@@ -34,6 +34,10 @@ input {
     .multiple = True
     .help = "DEPRECATED, please use steps=merge to just merge data"
     .expert_level = 1
+  validate = False
+    .type = str
+    .expert_level = 3
+    .help = "Validate that the input file order is correctly matched."
 }
 workflow {
   steps = *scale *merge
