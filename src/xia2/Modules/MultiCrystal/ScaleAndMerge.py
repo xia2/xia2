@@ -388,9 +388,7 @@ class MultiCrystalScale:
         self._params.r_free_flags.d_max = flex.max(d_spacings)
         self._data_manager.export_experiments("scaled.expt")
         self._data_manager.export_reflections("scaled.refl", d_min=self._scaled.d_min)
-        # by default, always want to extend to the full resolution range once we have a reference
-        if self._params.r_free_flags.extend is Auto:
-            self._params.r_free_flags.extend = True
+        # by default, extend=True, i.e. we want to extend to the full resolution range once we have a reference
         free_flags_in_full_set = False
         if self._params.r_free_flags.reference:
             free_flags_in_full_set = (

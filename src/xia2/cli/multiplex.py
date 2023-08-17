@@ -98,7 +98,7 @@ output {
 phil_scope = phil_scope.fetch(
     source=iotbx.phil.parse(
         """\
-r_free_flags.extend = auto
+r_free_flags.extend = True
 """
     )
 )
