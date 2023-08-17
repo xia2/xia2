@@ -34,6 +34,9 @@ input {
     .multiple = True
     .help = "DEPRECATED, please use steps=merge to just merge data"
     .expert_level = 1
+  validate = False
+    .type = bool
+    .help = "Validate input order of datafiles"
 }
 workflow {
   steps = *scale *merge
@@ -182,6 +185,7 @@ def run_xia2_ssx_reduce(
             root_working_directory,
             directories,
             reduction_params,
+            validate=params.input.validate,
         )
     elif params.input.reflections or params.input.experiments:
         if not (params.input.reflections and params.input.experiments):
@@ -193,6 +197,7 @@ def run_xia2_ssx_reduce(
             reflections,
             experiments,
             reduction_params,
+            validate=params.input.validate,
         )
     else:
         raise ValueError(reducer_class._no_input_error_msg)

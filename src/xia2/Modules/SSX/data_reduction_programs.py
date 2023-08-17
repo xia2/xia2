@@ -100,14 +100,14 @@ def filter_(
 
 def split_integrated_data(
     working_directory, good_crystals_data, integrated_data, reduction_params
-) -> List[FilePair]:
-    new_files_to_process = split_filtered_data(
+) -> List[Batch]:
+    new_batches_to_process = split_filtered_data_2(
         working_directory,
         integrated_data,
         good_crystals_data,
         reduction_params.batch_size,
     )
-    return new_files_to_process
+    return new_batches_to_process
 
 
 def assess_for_indexing_ambiguities(
@@ -721,7 +721,7 @@ def cosym_against_reference(
 
 def individual_cosym(
     working_directory: Path,
-    files: FilePair,
+    batch: Batch,
     index: int,
     reduction_params,
 ) -> ProgramResult:
@@ -733,14 +733,29 @@ def individual_cosym(
         cosym_params, diff_phil = _extract_cosym_params(reduction_params, index)
         dials_logger.info(
             "The following parameters have been modified:\n"
-            + f"input.experiments = {files.expt}\n"
-            + f"input.reflections = {files.refl}\n"
+            # + f"input.experiments = {files.expt}\n"
+            # + f"input.reflections = {files.refl}\n"
             + f"{diff_phil.as_str()}"
         )
         # cosym_params.cc_star_threshold = 0.1
         # cosym_params.angular_separation_threshold = 5
-        table = flex.reflection_table.from_file(files.refl)
-        expts = load.experiment_list(files.expt, check_format=False)
+        all_expts = ExperimentList([])
+        tables = []
+        for fp, ids in batch.file_to_identifiers.items():
+            table = flex.reflection_table.from_file(fp.refl)
+            expts = load.experiment_list(fp.expt, check_format=False)
+            if len(ids) < len(expts):
+                expts.select_on_experiment_identifiers(list(ids))
+                table = table.select_on_experiment_identifiers(list(ids))
+                table.reset_ids()
+            all_expts.extend(expts)
+            tables.append(table)
+        if len(tables) > 1:
+            table = flex.reflection_table.concat(tables)
+            table.reset_ids()
+        else:
+            table = tables[0]
+        expts = all_expts
 
         tables = table.split_by_experiment_id()
         # now run cosym
@@ -813,7 +828,7 @@ def cosym_reindex(
 
 def parallel_cosym(
     working_directory: Path,
-    data_to_reindex: List[FilePair],
+    data_to_reindex: List[Batch],
     reduction_params,
     nproc: int = 1,
 ) -> List[FilePair]:
@@ -835,11 +850,11 @@ def parallel_cosym(
                 pool.submit(
                     individual_cosym,
                     working_directory,
-                    files,
+                    batch,
                     index,
                     reduction_params,
                 )
-                for index, files in enumerate(data_to_reindex)
+                for index, batch in enumerate(data_to_reindex)
             ]
             for future in concurrent.futures.as_completed(cosym_futures):
                 try:
@@ -1032,6 +1047,49 @@ def split_filtered_data(
         for table in leftover_refls:
             assert table.size() == 0
     return data_to_reindex
+
+
+class Batch(object):
+    def __init__(self):
+        self.file_to_identifiers = {}  # FilePair to identifiers
+
+
+def split_filtered_data_2(
+    working_directory: Path,
+    new_data: List[FilePair],
+    good_crystals_data: CrystalsDict,
+    min_batch_size: int,
+) -> List[FilePair]:
+
+    n_cryst = sum(len(v.identifiers) for v in good_crystals_data.values())
+    n_batches = max(math.floor(n_cryst / min_batch_size), 1)
+    batches = [Batch() for _ in range(n_batches)]
+
+    stride = n_cryst / n_batches
+    # make sure last batch has at least the batch size
+    splits = [int(math.floor(i * stride)) for i in range(n_batches)]
+    splits.append(n_cryst)
+    leftover_identifiers = flex.std_string([])
+    n_batch_output = 0
+    n_required = splits[1] - splits[0]
+    for file_pair in new_data:
+        good_crystals_this = good_crystals_data[str(file_pair.expt)]
+        if not good_crystals_this.crystals:
+            continue
+        good_identifiers = good_crystals_this.identifiers
+        leftover_identifiers.extend(good_identifiers)
+        while len(leftover_identifiers) >= n_required:
+            sub_identifiers = leftover_identifiers[0:n_required]
+            leftover_identifiers = leftover_identifiers[n_required:]
+            batches[n_batch_output].file_to_identifiers[file_pair] = sub_identifiers
+            n_batch_output += 1
+            if n_batch_output == len(splits) - 1:
+                break
+            n_required = splits[n_batch_output + 1] - splits[n_batch_output]
+    assert n_batch_output == len(splits) - 1
+    assert not len(leftover_identifiers)
+
+    return batches
 
 
 def prepare_scaled_array(

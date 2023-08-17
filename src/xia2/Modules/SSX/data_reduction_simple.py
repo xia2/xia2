@@ -20,7 +20,7 @@ class SimpleDataReduction(BaseDataReduction):
         # First do parallel reindexing of each batch
         reindexed_new_files = parallel_cosym(
             self._reindex_wd,
-            self._filtered_files_to_process,
+            self._filtered_batches_to_process,
             self._reduction_params,
             nproc=self._reduction_params.nproc,
         )

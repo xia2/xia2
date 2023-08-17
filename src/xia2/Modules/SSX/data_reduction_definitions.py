@@ -12,8 +12,8 @@ from dxtbx.serialize import load
 
 @dataclass(eq=False)
 class FilePair:
-    expt: Path
-    refl: Path
+    _expt: Path
+    _refl: Path
 
     def check(self):
         if not self.expt.is_file():
@@ -30,6 +30,17 @@ class FilePair:
         if self.expt == other.expt and self.refl == other.refl:
             return True
         return False
+
+    def __hash__(self):
+        return hash((str(self._expt), str(self._refl)))
+
+    @property
+    def expt(self):
+        return self._expt
+
+    @property
+    def refl(self):
+        return self._refl
 
 
 @dataclass
