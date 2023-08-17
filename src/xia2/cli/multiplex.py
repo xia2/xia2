@@ -94,6 +94,15 @@ output {
     process_includes=True,
 )
 
+# override default parameters
+phil_scope = phil_scope.fetch(
+    source=iotbx.phil.parse(
+        """\
+r_free_flags.extend = True
+"""
+    )
+)
+
 
 def run(args=sys.argv[1:]):
     Citations.cite("xia2.multiplex")
