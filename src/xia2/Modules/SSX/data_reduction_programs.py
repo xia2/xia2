@@ -1072,17 +1072,36 @@ def split_filtered_data_2(
     leftover_identifiers = flex.std_string([])
     n_batch_output = 0
     n_required = splits[1] - splits[0]
+    current_fps = []
+    current_identifier_lists = []
     for file_pair in new_data:
         good_crystals_this = good_crystals_data[str(file_pair.expt)]
         if not good_crystals_this.crystals:
             continue
         good_identifiers = good_crystals_this.identifiers
         leftover_identifiers.extend(good_identifiers)
+        current_fps.append(file_pair)
+        current_identifier_lists.append(good_identifiers)
+
         while len(leftover_identifiers) >= n_required:
-            sub_identifiers = leftover_identifiers[0:n_required]
-            leftover_identifiers = leftover_identifiers[n_required:]
-            batches[n_batch_output].file_to_identifiers[file_pair] = sub_identifiers
+            n_leftover = len(leftover_identifiers)
+
+            last_fp = current_fps.pop()
+            ids = current_identifier_lists.pop()
+            if n_required == n_leftover:
+                sub_ids_last = ids
+                sub_ids_last_leftover = flex.std_string([])
+            else:
+                sub_ids_last = ids[: (n_required - n_leftover)]
+                sub_ids_last_leftover = ids[(n_required - n_leftover) :]
+
+            for fp, ids in zip(current_fps, current_identifier_lists):
+                batches[n_batch_output].file_to_identifiers[fp] = ids
+            batches[n_batch_output].file_to_identifiers[last_fp] = sub_ids_last
+            current_fps = [last_fp]
+            current_identifier_lists = [sub_ids_last_leftover]
             n_batch_output += 1
+            leftover_identifiers = leftover_identifiers[n_required:]
             if n_batch_output == len(splits) - 1:
                 break
             n_required = splits[n_batch_output + 1] - splits[n_batch_output]
