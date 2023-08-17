@@ -9,7 +9,8 @@ from xia2.Modules.SSX.data_reduction_programs import (
     FilePair,
     cosym_reindex,
     parallel_cosym,
-    scale,
+    scale_on_batches,
+    scale_on_files,
 )
 
 xia2_logger = logging.getLogger(__name__)
@@ -43,8 +44,14 @@ class SimpleDataReduction(BaseDataReduction):
 
         if not Path.is_dir(self._scale_wd):
             Path.mkdir(self._scale_wd)
-
-        result = scale(self._scale_wd, self._files_to_scale, self._reduction_params)
+        if self._batches_to_scale:
+            result = scale_on_batches(
+                self._scale_wd, self._batches_to_scale, self._reduction_params
+            )
+        else:
+            result = scale_on_files(
+                self._scale_wd, self._files_to_scale, self._reduction_params
+            )
         xia2_logger.info("Completed scaling of all data")
         self._files_to_merge = [FilePair(result.exptfile, result.reflfile)]
         FileHandler.record_data_file(result.exptfile)

@@ -133,6 +133,7 @@ class BaseDataReduction(object):
         self._integrated_data: List[FilePair] = []
         self._filtered_batches_to_process: List[Batch] = []
         self._files_to_scale: List[FilePair] = []
+        self._batches_to_scale: List[Batch] = []
         self._files_to_merge: List[FilePair] = []
 
         if not data:
@@ -258,7 +259,7 @@ class BaseDataReduction(object):
         raise NotImplementedError
 
     def _prepare_for_scaling(self, good_crystals_data) -> None:
-        self._files_to_scale = split_integrated_data(
+        self._batches_to_scale = split_integrated_data(
             self._filter_wd,
             good_crystals_data,
             self._integrated_data,
