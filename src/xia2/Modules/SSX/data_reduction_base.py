@@ -20,9 +20,9 @@ from xia2.Driver.timing import record_step
 from xia2.Handlers.Files import FileHandler
 from xia2.Modules.SSX.data_reduction_definitions import FilePair, ReductionParams
 from xia2.Modules.SSX.data_reduction_programs import (
-    Batch,
     CrystalsDict,
     MergeResult,
+    ProcessingBatch,
     assess_for_indexing_ambiguities,
     filter_,
     merge,
@@ -131,9 +131,9 @@ class BaseDataReduction(object):
         self._merge_wd = self._data_reduction_wd / "merge"
 
         self._integrated_data: List[FilePair] = []
-        self._filtered_batches_to_process: List[Batch] = []
-        self._files_to_scale: List[FilePair] = []
-        self._batches_to_scale: List[Batch] = []
+        self._filtered_batches_to_process: List[ProcessingBatch] = []
+        # self._files_to_scale: List[FilePair] = []
+        self._batches_to_scale: List[ProcessingBatch] = []
         self._files_to_merge: List[FilePair] = []
 
         if not data:
@@ -246,7 +246,6 @@ class BaseDataReduction(object):
     def _split_data_for_reindex(self, good_crystals_data):
 
         self._filtered_batches_to_process = split_integrated_data(
-            self._filter_wd,
             good_crystals_data,
             self._integrated_data,
             self._reduction_params,
@@ -260,7 +259,6 @@ class BaseDataReduction(object):
 
     def _prepare_for_scaling(self, good_crystals_data) -> None:
         self._batches_to_scale = split_integrated_data(
-            self._filter_wd,
             good_crystals_data,
             self._integrated_data,
             self._reduction_params,
