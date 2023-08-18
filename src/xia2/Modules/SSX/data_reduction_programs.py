@@ -113,7 +113,7 @@ def split_integrated_data(
 def assess_for_indexing_ambiguities(
     space_group: sgtbx.space_group_info,
     unit_cell: uctbx.unit_cell,
-    max_delta: float = 2.0,
+    max_delta: float = 0.5,
 ) -> bool:
     # if lattice symmetry higher than space group symmetry, then need to
     # assess for indexing ambiguity.
@@ -771,7 +771,7 @@ def cosym_reindex(
     working_directory: Path,
     files_for_reindex: List[FilePair],
     d_min: float = None,
-    max_delta: float = 2.0,
+    max_delta: float = 0.5,
     partiality_threshold: float = 0.2,
 ) -> List[FilePair]:
     from dials.command_line.cosym import phil_scope as cosym_scope
