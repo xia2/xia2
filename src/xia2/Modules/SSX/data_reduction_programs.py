@@ -113,7 +113,7 @@ def split_integrated_data(
 def assess_for_indexing_ambiguities(
     space_group: sgtbx.space_group_info,
     unit_cell: uctbx.unit_cell,
-    max_delta: float = 2.0,
+    max_delta: float = 0.5,
 ) -> bool:
     # if lattice symmetry higher than space group symmetry, then need to
     # assess for indexing ambiguity.
@@ -631,7 +631,7 @@ def _extract_cosym_params(reduction_params, index):
         xia2_phil += f"\nreference_model.k_sol={reduction_params.reference_ksol}"
         xia2_phil += f"\nreference_model.b_sol={reduction_params.reference_bsol}"
     extra_defaults = f"""
-        min_i_mean_over_sigma_mean=2
+        min_i_mean_over_sigma_mean=0.5
         unit_cell_clustering.threshold=None
         lattice_symmetry_max_delta={reduction_params.lattice_symmetry_max_delta}
         partiality_threshold={reduction_params.partiality_threshold}
@@ -771,7 +771,8 @@ def cosym_reindex(
     working_directory: Path,
     files_for_reindex: List[FilePair],
     d_min: float = None,
-    max_delta: float = 2.0,
+    max_delta: float = 0.5,
+    partiality_threshold: float = 0.2,
 ) -> List[FilePair]:
     from dials.command_line.cosym import phil_scope as cosym_scope
 
@@ -787,6 +788,8 @@ def cosym_reindex(
         refls.append(flex.reflection_table.from_file(filepair.refl))
     params.space_group = expts[0][0].crystal.get_space_group().info()
     params.lattice_symmetry_max_delta = max_delta
+    params.partiality_threshold = partiality_threshold
+    params.min_i_mean_over_sigma_mean = 0.5
     if d_min:
         params.d_min = d_min
 
