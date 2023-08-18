@@ -658,8 +658,12 @@ def scale_on_batches(
         # Run the scaling using the algorithm class to give access to scaler
         scaler = ScalingAlgorithm(params, expts, tables)
         scaler.run()
-
-        d_min = resolution_cc_half(scaler.merging_statistics_result, limit=0.3).d_min
+        try:
+            d_min = resolution_cc_half(
+                scaler.merging_statistics_result, limit=0.3
+            ).d_min
+        except RuntimeError:
+            d_min = None
         scaled_expts, scaled_table = scaler.finish()
         if name:
             out_expt = f"scaled.{name}.expt"
