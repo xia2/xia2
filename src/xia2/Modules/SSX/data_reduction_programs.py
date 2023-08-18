@@ -627,60 +627,6 @@ def scale_on_batches(
     )
 
 
-"""def scale_on_files(
-    working_directory: Path,
-    files_to_scale: List[FilePair],
-    reduction_params: ReductionParams,
-    name="",
-) -> ProgramResult:
-    logfile = "dials.scale.log"
-    if name:
-        logfile = f"dials.scale.{name}.log"
-    with run_in_directory(working_directory), log_to_file(
-        logfile
-    ) as dials_logger, record_step("dials.scale"):
-        # Setup scaling
-        input_ = ""
-        expts = ExperimentList()
-        tables = []
-        for fp in files_to_scale:
-            expts.extend(load.experiment_list(fp.expt, check_format=False))
-            tables.append(flex.reflection_table.from_file(fp.refl))
-            input_ += f"reflections = {fp.refl}\nexperiments = {fp.expt}\n"
-
-        params, diff_phil = _extract_scaling_params(reduction_params)
-        dials_logger.info(
-            "The following parameters have been modified:\n"
-            + input_
-            + f"{diff_phil.as_str()}"
-        )
-
-        # Run the scaling using the algorithm class to give access to scaler
-        scaler = ScalingAlgorithm(params, expts, tables)
-        scaler.run()
-        scaled_expts, scaled_table = scaler.finish()
-        if name:
-            out_expt = f"scaled.{name}.expt"
-            out_refl = f"scaled.{name}.refl"
-        else:
-            out_expt = "scaled.expt"
-            out_refl = "scaled.refl"
-
-        dials_logger.info(f"Saving scaled experiments to {out_expt}")
-        scaled_expts.as_file(out_expt)
-        dials_logger.info(f"Saving scaled reflections to {out_refl}")
-        scaled_table.as_file(out_refl)
-
-    return ProgramResult(
-        working_directory / out_expt,
-        working_directory / out_refl,
-        working_directory / logfile,
-        None,
-        None,
-    )
-"""
-
-
 def _extract_cosym_params(reduction_params, index):
     xia2_phil = f"""
         space_group={reduction_params.space_group}
@@ -893,7 +839,7 @@ def cosym_reindex(
         cosym_instance._output_expt_files, cosym_instance._output_refl_files
     ):
         outbatch = ProcessingBatch()
-        outbatch.filepairs.append(
+        outbatch.add_filepair(
             FilePair(working_directory / expt, working_directory / refl)
         )
         outfiles.append(outbatch)
@@ -939,7 +885,7 @@ def parallel_cosym(
                     )
                 else:
                     processed_batch = ProcessingBatch()
-                    processed_batch.filepairs.append(
+                    processed_batch.add_filepair(
                         FilePair(result.exptfile, result.reflfile)
                     )
                     reindexed_results.append(processed_batch)
@@ -995,7 +941,7 @@ def parallel_cosym_reference(
                     )
                 else:
                     processed_batch = ProcessingBatch()
-                    processed_batch.filepairs.append(
+                    processed_batch.add_filepair(
                         FilePair(result.exptfile, result.reflfile)
                     )
                     reindexed_results.append(processed_batch)
@@ -1070,10 +1016,11 @@ class ProcessingBatch(object):
         self.filepairs = []
         self.filepair_to_good_identifiers = {}
 
-
-"""class Batch(object):
-    def __init__(self):
-        self.file_to_identifiers = {}  # FilePair to identifiers"""
+    def add_filepair(self, fp, identifiers=None):
+        self.filepairs.append(fp)
+        if identifiers:
+            assert fp not in self.filepair_to_good_identifiers
+            self.filepair_to_good_identifiers[fp] = identifiers
 
 
 def split_filtered_data(
@@ -1090,7 +1037,7 @@ def split_filtered_data(
     # make sure last batch has at least the batch size
     splits = [int(math.floor(i * stride)) for i in range(n_batches)]
     splits.append(n_cryst)
-    # leftover_identifiers = flex.std_string([])
+
     n_leftover = 0
     n_batch_output = 0
     n_required = splits[1] - splits[0]
@@ -1101,13 +1048,11 @@ def split_filtered_data(
         if not good_crystals_this.crystals:
             continue
         good_identifiers = good_crystals_this.identifiers
-        # leftover_identifiers.extend(good_identifiers)
         n_leftover += len(good_identifiers)
         current_fps.append(file_pair)
         current_identifier_lists.append(good_identifiers)
 
         while n_leftover >= n_required:
-            # n_leftover = len(leftover_identifiers)
 
             last_fp = current_fps.pop()
             ids = current_identifier_lists.pop()
@@ -1119,20 +1064,17 @@ def split_filtered_data(
                 sub_ids_last_leftover = ids[(n_required - n_leftover) :]
 
             for fp, ids in zip(current_fps, current_identifier_lists):
-                batches[n_batch_output].filepair_to_good_identifiers[fp] = ids
-                batches[n_batch_output].filepairs.append(fp)
-            batches[n_batch_output].filepair_to_good_identifiers[last_fp] = sub_ids_last
-            batches[n_batch_output].filepairs.append(last_fp)
+                batches[n_batch_output].add_filepair(fp, ids)
+            batches[n_batch_output].add_filepair(last_fp, sub_ids_last)
             current_fps = [last_fp]
             current_identifier_lists = [sub_ids_last_leftover]
             n_batch_output += 1
-            # leftover_identifiers = leftover_identifiers[n_required:]
             n_leftover -= n_required
             if n_batch_output == len(splits) - 1:
                 break
             n_required = splits[n_batch_output + 1] - splits[n_batch_output]
     assert n_batch_output == len(splits) - 1
-    assert not n_leftover  # len(leftover_identifiers)
+    assert not n_leftover
 
     return batches
 

@@ -306,6 +306,7 @@ class BaseDataReduction(object):
                 # move the data into subdirs
                 for g, flist in groups_for_merge.items():
                     if flist:
+                        new_files = []
                         if not Path(self._merge_wd / g).is_dir():
                             Path.mkdir(self._merge_wd / g)
                         for f in flist:
@@ -313,8 +314,8 @@ class BaseDataReduction(object):
                             new_refl = f.refl.parent / g / f.refl.name
                             f.expt.rename(new_expt)
                             f.refl.rename(new_refl)
-                            f.expt = new_expt
-                            f.refl = new_refl
+                            new_files.append(FilePair(new_expt, new_refl))
+                        groups_for_merge[g] = new_files
                 for g, flist in groups_for_merge.items():
                     if flist:
                         merge_input[f"{g}"] = flist

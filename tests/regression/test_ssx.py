@@ -385,7 +385,6 @@ def test_stepwise_run_without_reference(dials_data, tmp_path):
 
 def check_data_reduction_files(tmp_path, reindex=True, reference=False):
     assert (tmp_path / "data_reduction").is_dir()
-    assert (tmp_path / "data_reduction" / "prefilter").is_dir()
     assert reindex is (tmp_path / "data_reduction" / "reindex").is_dir()
     assert reindex is (tmp_path / "LogFiles" / "dials.cosym.0.log").is_file()
     assert reindex is (tmp_path / "LogFiles" / "dials.cosym.0.html").is_file()
@@ -407,7 +406,6 @@ def check_data_reduction_files(tmp_path, reindex=True, reference=False):
 
 def check_data_reduction_files_on_scaled_only(tmp_path, reference=False):
     assert (tmp_path / "data_reduction").is_dir()
-    assert not (tmp_path / "data_reduction" / "prefilter").is_dir()
     assert not (tmp_path / "data_reduction" / "reindex").is_dir()
     assert not (tmp_path / "LogFiles" / "dials.cosym.0.log").is_file()
     assert not (tmp_path / "LogFiles" / "dials.cosym.0.html").is_file()
