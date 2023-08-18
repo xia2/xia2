@@ -852,6 +852,7 @@ def cosym_reindex(
     d_min: float = None,
     max_delta: float = 0.5,
     partiality_threshold: float = 0.2,
+    reference=None,
 ) -> List[ProcessingBatch]:
     from dials.command_line.cosym import phil_scope as cosym_scope
 
@@ -870,6 +871,8 @@ def cosym_reindex(
     params.lattice_symmetry_max_delta = max_delta
     params.partiality_threshold = partiality_threshold
     params.min_i_mean_over_sigma_mean = 0.5
+    if reference:
+        params.reference = os.fspath(reference)
     if d_min:
         params.d_min = d_min
 

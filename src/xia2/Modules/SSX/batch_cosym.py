@@ -8,7 +8,7 @@ import numpy as np
 
 from cctbx import sgtbx
 from dials.algorithms.scaling.scaling_library import determine_best_unit_cell
-from dials.algorithms.symmetry.cosym import CosymAnalysis
+from dials.algorithms.symmetry.cosym import CosymAnalysis, extract_reference_intensities
 from dials.array_family import flex
 from dials.command_line.symmetry import (
     apply_change_of_basis_ops,
@@ -80,7 +80,16 @@ class BatchCosym(Subject):
             ma.as_non_anomalous_array().merge_equivalents().array() for ma in datasets
         ]
 
-        self.cosym_analysis = CosymAnalysis(datasets, params)
+        if self.params.reference:
+            reference_intensities, _ = extract_reference_intensities(
+                params, wavelength=wavelength
+            )
+            datasets.append(reference_intensities)
+            self.cosym_analysis = CosymAnalysis(
+                datasets, self.params, seed_dataset=len(datasets) - 1
+            )
+        else:
+            self.cosym_analysis = CosymAnalysis(datasets, params)
 
     @Subject.notify_event(event="run_cosym")
     def run(self):
@@ -100,7 +109,11 @@ class BatchCosym(Subject):
             acentric_sg = (
                 subgroup["best_subsym"].space_group().build_derived_acentric_group()
             )
-        unique_ids = set(self.cosym_analysis.dataset_ids)
+        if self.params.reference:
+            unique_ids = sorted(set(self.cosym_analysis.dataset_ids))[:-1]
+            reindexing_ops = reindexing_ops[:-1]
+        else:
+            unique_ids = set(self.cosym_analysis.dataset_ids)
         for i, (cb_op, dataset_id) in enumerate(zip(reindexing_ops, unique_ids)):
             cb_op = sgtbx.change_of_basis_op(cb_op)
             logger.debug(
