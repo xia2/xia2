@@ -744,49 +744,6 @@ def _extract_cosym_params(reduction_params, index):
     return cosym_params, diff_phil
 
 
-def cosym_against_reference(
-    working_directory: Path,
-    batch: ProcessingBatch,
-    index: int,
-    reduction_params,
-) -> ProgramResult:
-    with run_in_directory(working_directory):
-        logfile = f"dials.cosym.{index}.log"
-        with record_step("dials.cosym"), log_to_file(logfile) as dials_logger:
-            cosym_params, diff_phil = _extract_cosym_params(reduction_params, index)
-            dials_logger.info(
-                "The following parameters have been modified:\n"
-                + f"{diff_phil.as_str()}"
-            )
-            # cosym_params.cc_star_threshold = 0.1
-            # cosym_params.angular_separation_threshold = 5
-            expts, table = combined_files_for_batch(batch)
-
-            tables = table.split_by_experiment_id()
-            # now run cosym
-            if cosym_params.seed is not None:
-                flex.set_random_seed(cosym_params.seed)
-                np.random.seed(cosym_params.seed)
-                random.seed(cosym_params.seed)
-            cosym_instance = cosym(expts, tables, cosym_params)
-            register_default_cosym_observers(cosym_instance)
-            cosym_instance.run()
-            cosym_instance.experiments.as_file(cosym_params.output.experiments)
-            joint_refls = flex.reflection_table.concat(cosym_instance.reflections)
-            joint_refls.as_file(cosym_params.output.reflections)
-            xia2_logger.info(
-                f"Consistently indexed {len(cosym_instance.experiments)} crystals in data reduction batch {index+1} against reference"
-            )
-
-    return ProgramResult(
-        working_directory / cosym_params.output.experiments,
-        working_directory / cosym_params.output.reflections,
-        working_directory / logfile,
-        working_directory / cosym_params.output.html,
-        working_directory / cosym_params.output.json,
-    )
-
-
 def combined_files_for_batch(batch):
     all_expts = ExperimentList([])
     tables = []
@@ -932,62 +889,6 @@ def parallel_cosym(
             cosym_futures: List[Any] = [
                 pool.submit(
                     individual_cosym,
-                    working_directory,
-                    batch,
-                    index,
-                    reduction_params,
-                )
-                for index, batch in enumerate(data_to_reindex)
-            ]
-            for future in concurrent.futures.as_completed(cosym_futures):
-                try:
-                    result = future.result()
-                except Exception as e:
-                    raise ValueError(
-                        f"Unsuccessful scaling and symmetry analysis of the new data. Error:\n{e}"
-                    )
-                else:
-                    processed_batch = ProcessingBatch()
-                    processed_batch.add_filepair(
-                        FilePair(result.exptfile, result.reflfile)
-                    )
-                    reindexed_results.append(processed_batch)
-                    FileHandler.record_log_file(
-                        result.logfile.name.rstrip(".log"), result.logfile
-                    )
-                    FileHandler.record_html_file(
-                        result.htmlfile.name.rstrip(".html"), result.htmlfile
-                    )
-
-    sys.stdout = sys.__stdout__  # restore printing
-    return reindexed_results
-
-
-def parallel_cosym_reference(
-    working_directory: Path,
-    data_to_reindex: List[ProcessingBatch],
-    reduction_params,
-    nproc: int = 1,
-) -> List[ProcessingBatch]:
-    """
-    Runs dials.cosym on each batch to resolve indexing ambiguities
-    """
-
-    if not Path.is_dir(working_directory):
-        Path.mkdir(working_directory)
-
-    reindexed_results = []
-
-    with open(os.devnull, "w") as devnull:
-        sys.stdout = devnull  # block printing from cosym
-
-        with record_step(
-            "dials.scale/dials.cosym (parallel)"
-        ), concurrent.futures.ProcessPoolExecutor(max_workers=nproc) as pool:
-
-            cosym_futures: List[Any] = [
-                pool.submit(
-                    cosym_against_reference,
                     working_directory,
                     batch,
                     index,
