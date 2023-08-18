@@ -10,6 +10,7 @@ from xia2.Modules.SSX.data_reduction_programs import (
     cosym_reindex,
     parallel_cosym,
     scale_on_batches,
+    scale_parallel_batches,
 )
 
 xia2_logger = logging.getLogger(__name__)
@@ -26,6 +27,11 @@ class SimpleDataReduction(BaseDataReduction):
         )
         batches_to_scale = reindexed_new_batches
         if len(batches_to_scale) > 1:
+            # first scale each batch
+            batches_to_scale = scale_parallel_batches(
+                self._reindex_wd, batches_to_scale, self._reduction_params
+            )
+
             # Reindex all batches together.
             batches_to_scale = cosym_reindex(
                 self._reindex_wd,

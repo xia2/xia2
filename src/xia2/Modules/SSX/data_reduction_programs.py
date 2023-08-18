@@ -564,6 +564,55 @@ def scale_against_reference(
     )
 
 
+import functools
+
+
+def scale_parallel_batches(
+    working_directory, batches: List[ProcessingBatch], reduction_params
+) -> List[ProcessingBatch]:
+    # scale multiple batches in parallel
+    scaled_results = []
+    batch_template = functools.partial(
+        "batch{index:0{maxindexlength:d}d}".format,
+        maxindexlength=len(str(len(batches))),
+    )
+    jobs = {f"{batch_template(index=i+1)}": fp for i, fp in enumerate(batches)}
+    # xia2_logger.notice(banner("Scaling"))  # type: ignore
+    with record_step("dials.scale (parallel)"), concurrent.futures.ProcessPoolExecutor(
+        max_workers=min(reduction_params.nproc, len(batches))
+    ) as pool:
+        scale_futures: Dict[Any, str] = {
+            pool.submit(
+                scale_on_batches,
+                working_directory,
+                [batch],
+                reduction_params,
+                name,
+            ): name
+            for name, batch in jobs.items()
+        }
+        for future in concurrent.futures.as_completed(scale_futures):
+            try:
+                result = future.result()
+                name = scale_futures[future]
+            except Exception as e:
+                xia2_logger.warning(f"Unsuccessful scaling of group. Error:\n{e}")
+            else:
+                xia2_logger.info(
+                    f"Completed scaling of data reduction batch {name.lstrip('batch')}"
+                )
+                outbatch = ProcessingBatch()
+                outbatch.add_filepair(FilePair(result.exptfile, result.reflfile))
+                scaled_results.append(outbatch)
+                FileHandler.record_log_file(
+                    result.logfile.name.rstrip(".log"), result.logfile
+                )
+
+    if not scaled_results:
+        raise ValueError("No groups successfully scaled")
+    return scaled_results
+
+
 def scale_on_batches(
     working_directory: Path,
     batches_to_scale: List[ProcessingBatch],
@@ -1066,8 +1115,12 @@ def split_filtered_data(
             for fp, ids in zip(current_fps, current_identifier_lists):
                 batches[n_batch_output].add_filepair(fp, ids)
             batches[n_batch_output].add_filepair(last_fp, sub_ids_last)
-            current_fps = [last_fp]
-            current_identifier_lists = [sub_ids_last_leftover]
+            if len(sub_ids_last_leftover):
+                current_fps = [last_fp]
+                current_identifier_lists = [sub_ids_last_leftover]
+            else:
+                current_fps = []
+                current_identifier_lists = []
             n_batch_output += 1
             n_leftover -= n_required
             if n_batch_output == len(splits) - 1:
