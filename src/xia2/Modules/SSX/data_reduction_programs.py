@@ -30,6 +30,7 @@ from dials.command_line.cosym import phil_scope as cosym_phil_scope
 from dials.command_line.cosym import register_default_cosym_observers
 from dials.command_line.merge import phil_scope as merge_phil_scope
 from dials.command_line.scale import phil_scope as scaling_phil_scope
+from dials.util.resolution_analysis import resolution_cc_half
 from dxtbx.model import Crystal, ExperimentList
 from dxtbx.serialize import load
 from iotbx.phil import parse
@@ -522,6 +523,7 @@ class ProgramResult:
     logfile: Path
     htmlfile: Optional[Path]
     jsonfile: Optional[Path]
+    resolutionlimit: Optional[float] = None
 
 
 def scale_against_reference(
@@ -569,9 +571,10 @@ import functools
 
 def scale_parallel_batches(
     working_directory, batches: List[ProcessingBatch], reduction_params
-) -> List[ProcessingBatch]:
+) -> Tuple[List[ProcessingBatch], List[float]]:
     # scale multiple batches in parallel
     scaled_results = []
+    d_mins = []
     batch_template = functools.partial(
         "batch{index:0{maxindexlength:d}d}".format,
         maxindexlength=len(str(len(batches))),
@@ -607,10 +610,11 @@ def scale_parallel_batches(
                 FileHandler.record_log_file(
                     result.logfile.name.rstrip(".log"), result.logfile
                 )
+                d_mins.append(result.resolutionlimit)
 
     if not scaled_results:
         raise ValueError("No groups successfully scaled")
-    return scaled_results
+    return scaled_results, d_mins
 
 
 def scale_on_batches(
@@ -654,6 +658,8 @@ def scale_on_batches(
         # Run the scaling using the algorithm class to give access to scaler
         scaler = ScalingAlgorithm(params, expts, tables)
         scaler.run()
+
+        d_min = resolution_cc_half(scaler.merging_statistics_result, limit=0.3).d_min
         scaled_expts, scaled_table = scaler.finish()
         if name:
             out_expt = f"scaled.{name}.expt"
@@ -673,6 +679,7 @@ def scale_on_batches(
         working_directory / logfile,
         None,
         None,
+        d_min,
     )
 
 

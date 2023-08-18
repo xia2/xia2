@@ -4,6 +4,8 @@ import logging
 from pathlib import Path
 from typing import List, Tuple
 
+import numpy as np
+
 from cctbx import sgtbx, uctbx
 
 from xia2.Handlers.Streams import banner
@@ -24,9 +26,12 @@ from xia2.Modules.SSX.data_reduction_programs import (
     MergeResult,
     ProcessingBatch,
     assess_for_indexing_ambiguities,
+    cosym_reindex,
     filter_,
     merge,
+    parallel_cosym,
     prepare_scaled_array,
+    scale_parallel_batches,
     split_integrated_data,
 )
 from xia2.Modules.SSX.yml_handling import (
@@ -255,7 +260,36 @@ class BaseDataReduction(object):
         return filter_(self._filter_wd, self._integrated_data, self._reduction_params)
 
     def _reindex(self) -> None:
-        raise NotImplementedError
+        reindexed_new_batches = parallel_cosym(
+            self._reindex_wd,
+            self._filtered_batches_to_process,
+            self._reduction_params,
+            nproc=self._reduction_params.nproc,
+        )
+        batches_to_scale = reindexed_new_batches
+        if len(batches_to_scale) > 1:
+            # first scale each batch
+            batches_to_scale, dmins = scale_parallel_batches(
+                self._reindex_wd, batches_to_scale, self._reduction_params
+            )
+            user_dmin = self._reduction_params.d_min
+            if not user_dmin:
+                dmins = np.array([d for d in dmins if d])
+                if len(dmins):
+                    self._reduction_params.d_min = np.mean(dmins)
+            # Reindex all batches together.
+            batches_to_scale = cosym_reindex(
+                self._reindex_wd,
+                batches_to_scale,
+                self._reduction_params.d_min,
+                self._reduction_params.lattice_symmetry_max_delta,
+                self._reduction_params.partiality_threshold,
+                reference=self._reduction_params.reference,
+            )
+            if not user_dmin:
+                self._reduction_params.d_min = None
+            xia2_logger.info(f"Consistently reindexed {len( batches_to_scale)} batches")
+        self._batches_to_scale = batches_to_scale
 
     def _prepare_for_scaling(self, good_crystals_data) -> None:
         self._batches_to_scale = split_integrated_data(

@@ -14,11 +14,8 @@ from xia2.Modules.SSX.data_reduction_base import BaseDataReduction
 from xia2.Modules.SSX.data_reduction_programs import (
     CrystalsDict,
     FilePair,
-    cosym_reindex,
     filter_,
-    parallel_cosym,
     scale_against_reference,
-    scale_parallel_batches,
 )
 
 xia2_logger = logging.getLogger(__name__)
@@ -36,38 +33,6 @@ class DataReductionWithReference(BaseDataReduction):
         self._reduction_params.central_unit_cell = best_unit_cell  # store the
         # updated value to use in scaling
         return good_crystals_data, best_unit_cell, space_group
-
-    def _reindex(self) -> None:
-        """self._batches_to_scale = parallel_cosym_reference(
-            self._reindex_wd,
-            self._filtered_batches_to_process,
-            self._reduction_params,
-            nproc=self._reduction_params.nproc,
-        )"""
-        reindexed_new_batches = parallel_cosym(
-            self._reindex_wd,
-            self._filtered_batches_to_process,
-            self._reduction_params,
-            nproc=self._reduction_params.nproc,
-        )
-        batches_to_scale = reindexed_new_batches
-        if len(batches_to_scale) > 1:
-            # first scale each batch
-            batches_to_scale = scale_parallel_batches(
-                self._reindex_wd, batches_to_scale, self._reduction_params
-            )
-
-            # Reindex all batches together.
-            batches_to_scale = cosym_reindex(
-                self._reindex_wd,
-                batches_to_scale,
-                self._reduction_params.d_min,
-                self._reduction_params.lattice_symmetry_max_delta,
-                self._reduction_params.partiality_threshold,
-                reference=self._reduction_params.reference,
-            )
-            xia2_logger.info(f"Consistently reindexed {len( batches_to_scale)} batches")
-        self._batches_to_scale = batches_to_scale
 
     def _scale(self) -> None:
         """Run scaling"""
