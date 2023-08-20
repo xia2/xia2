@@ -15,7 +15,6 @@ from xia2.Modules.SSX.data_reduction_programs import (
     CrystalsDict,
     FilePair,
     filter_,
-    parallel_cosym_reference,
     scale_against_reference,
 )
 
@@ -35,14 +34,6 @@ class DataReductionWithReference(BaseDataReduction):
         # updated value to use in scaling
         return good_crystals_data, best_unit_cell, space_group
 
-    def _reindex(self) -> None:
-        self._files_to_scale = parallel_cosym_reference(
-            self._reindex_wd,
-            self._filtered_files_to_process,
-            self._reduction_params,
-            nproc=self._reduction_params.nproc,
-        )
-
     def _scale(self) -> None:
         """Run scaling"""
 
@@ -53,11 +44,11 @@ class DataReductionWithReference(BaseDataReduction):
 
         batch_template = functools.partial(
             "scaled_batch{index:0{maxindexlength:d}d}".format,
-            maxindexlength=len(str(len(self._files_to_scale))),
+            maxindexlength=len(str(len(self._batches_to_scale))),
         )
         jobs = {
             f"{batch_template(index=i+1)}": fp
-            for i, fp in enumerate(self._files_to_scale)
+            for i, fp in enumerate(self._batches_to_scale)
         }
 
         with record_step(
@@ -69,11 +60,11 @@ class DataReductionWithReference(BaseDataReduction):
                 pool.submit(
                     scale_against_reference,
                     self._scale_wd,
-                    files,
+                    batch,
                     self._reduction_params,
                     name,
                 ): name
-                for name, files in jobs.items()  # .items()
+                for name, batch in jobs.items()  # .items()
             }
             for future in concurrent.futures.as_completed(scale_futures):
                 try:

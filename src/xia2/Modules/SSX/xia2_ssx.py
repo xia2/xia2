@@ -318,6 +318,9 @@ def run_xia2_ssx(
     reduction_params = ReductionParams.from_phil(params)
     reducer_class = get_reducer(reduction_params)
     reducer = reducer_class.from_directories(
-        root_working_directory, integrated_batch_directories, reduction_params
+        root_working_directory,
+        integrated_batch_directories,
+        reduction_params,
+        validate=False,
     )
     reducer.run()

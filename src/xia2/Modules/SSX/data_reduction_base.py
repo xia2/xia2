@@ -4,6 +4,8 @@ import logging
 from pathlib import Path
 from typing import List, Tuple
 
+import numpy as np
+
 from cctbx import sgtbx, uctbx
 
 from xia2.Handlers.Streams import banner
@@ -22,10 +24,14 @@ from xia2.Modules.SSX.data_reduction_definitions import FilePair, ReductionParam
 from xia2.Modules.SSX.data_reduction_programs import (
     CrystalsDict,
     MergeResult,
+    ProcessingBatch,
     assess_for_indexing_ambiguities,
+    cosym_reindex,
     filter_,
     merge,
+    parallel_cosym,
     prepare_scaled_array,
+    scale_parallel_batches,
     split_integrated_data,
 )
 from xia2.Modules.SSX.yml_handling import (
@@ -35,7 +41,9 @@ from xia2.Modules.SSX.yml_handling import (
 )
 
 
-def inspect_directories(directories_to_process: List[Path]) -> List[FilePair]:
+def inspect_directories(
+    directories_to_process: List[Path], validate: bool = False
+) -> List[FilePair]:
     """
     Inspect the directories and match up integrated .expt and .refl files
     by name.
@@ -54,14 +62,14 @@ def inspect_directories(directories_to_process: List[Path]) -> List[FilePair]:
             )
         for expt, refl in zip(sorted(expts_this), sorted(refls_this)):
             fp = FilePair(expt, refl)
-            try:
-                fp.validate()
-            except AssertionError:
-                raise ValueError(
-                    f"Files {fp.expt} & {fp.refl} not consistent, please check input data"
-                )
-            else:
-                new_data.append(fp)
+            if validate:
+                try:
+                    fp.validate()
+                except AssertionError:
+                    raise ValueError(
+                        f"Files {fp.expt} & {fp.refl} not consistent, please check input data"
+                    )
+            new_data.append(fp)
         if not expts_this:
             xia2_logger.warning(f"No integrated data files found in {str(d)}")
     if not new_data:
@@ -82,21 +90,21 @@ def validate(expt: Path, refl: Path):
 
 
 def inspect_files(
-    reflection_files: List[Path], experiment_files: List[Path]
+    reflection_files: List[Path], experiment_files: List[Path], validate: bool = False
 ) -> List[FilePair]:
     """Inspect the input data, matching by the order of input."""
     new_data: List[FilePair] = []
     for refl_file, expt_file in zip(reflection_files, experiment_files):
         fp = FilePair(expt_file, refl_file)
         fp.check()
-        try:
-            fp.validate()
-        except AssertionError:
-            raise ValueError(
-                f"Files {fp.expt} & {fp.refl} not consistent, please check input order"
-            )
-        else:
-            new_data.append(fp)
+        if validate:
+            try:
+                fp.validate()
+            except AssertionError:
+                raise ValueError(
+                    f"Files {fp.expt} & {fp.refl} not consistent, please check input order"
+                )
+        new_data.append(fp)
     return new_data
 
 
@@ -128,8 +136,9 @@ class BaseDataReduction(object):
         self._merge_wd = self._data_reduction_wd / "merge"
 
         self._integrated_data: List[FilePair] = []
-        self._filtered_files_to_process: List[FilePair] = []
-        self._files_to_scale: List[FilePair] = []
+        self._filtered_batches_to_process: List[ProcessingBatch] = []
+        # self._files_to_scale: List[FilePair] = []
+        self._batches_to_scale: List[ProcessingBatch] = []
         self._files_to_merge: List[FilePair] = []
 
         if not data:
@@ -184,8 +193,9 @@ class BaseDataReduction(object):
         main_directory: Path,
         directories_to_process: List[Path],
         reduction_params,
+        validate=False,
     ):
-        new_data = inspect_directories(directories_to_process)
+        new_data = inspect_directories(directories_to_process, validate)
         return cls(main_directory, new_data, reduction_params)
 
     @classmethod
@@ -195,10 +205,11 @@ class BaseDataReduction(object):
         reflection_files: List[Path],
         experiment_files: List[Path],
         reduction_params,
+        validate=False,
     ):
         # load and check all integrated files
         try:
-            new_data = inspect_files(reflection_files, experiment_files)
+            new_data = inspect_files(reflection_files, experiment_files, validate)
         except FileNotFoundError as e:
             raise ValueError(e)
         return cls(main_directory, new_data, reduction_params)
@@ -239,8 +250,7 @@ class BaseDataReduction(object):
 
     def _split_data_for_reindex(self, good_crystals_data):
 
-        self._filtered_files_to_process = split_integrated_data(
-            self._filter_wd,
+        self._filtered_batches_to_process = split_integrated_data(
             good_crystals_data,
             self._integrated_data,
             self._reduction_params,
@@ -250,11 +260,39 @@ class BaseDataReduction(object):
         return filter_(self._filter_wd, self._integrated_data, self._reduction_params)
 
     def _reindex(self) -> None:
-        raise NotImplementedError
+        reindexed_new_batches = parallel_cosym(
+            self._reindex_wd,
+            self._filtered_batches_to_process,
+            self._reduction_params,
+            nproc=self._reduction_params.nproc,
+        )
+        batches_to_scale = reindexed_new_batches
+        if len(batches_to_scale) > 1:
+            # first scale each batch
+            batches_to_scale, dmins = scale_parallel_batches(
+                self._reindex_wd, batches_to_scale, self._reduction_params
+            )
+            user_dmin = self._reduction_params.d_min
+            if not user_dmin:
+                dmins = np.array([d for d in dmins if d])
+                if len(dmins):
+                    self._reduction_params.d_min = np.mean(dmins)
+            # Reindex all batches together.
+            batches_to_scale = cosym_reindex(
+                self._reindex_wd,
+                batches_to_scale,
+                self._reduction_params.d_min,
+                self._reduction_params.lattice_symmetry_max_delta,
+                self._reduction_params.partiality_threshold,
+                reference=self._reduction_params.reference,
+            )
+            if not user_dmin:
+                self._reduction_params.d_min = None
+            xia2_logger.info(f"Consistently reindexed {len( batches_to_scale)} batches")
+        self._batches_to_scale = batches_to_scale
 
     def _prepare_for_scaling(self, good_crystals_data) -> None:
-        self._files_to_scale = split_integrated_data(
-            self._filter_wd,
+        self._batches_to_scale = split_integrated_data(
             good_crystals_data,
             self._integrated_data,
             self._reduction_params,
@@ -302,6 +340,7 @@ class BaseDataReduction(object):
                 # move the data into subdirs
                 for g, flist in groups_for_merge.items():
                     if flist:
+                        new_files = []
                         if not Path(self._merge_wd / g).is_dir():
                             Path.mkdir(self._merge_wd / g)
                         for f in flist:
@@ -309,8 +348,8 @@ class BaseDataReduction(object):
                             new_refl = f.refl.parent / g / f.refl.name
                             f.expt.rename(new_expt)
                             f.refl.rename(new_refl)
-                            f.expt = new_expt
-                            f.refl = new_refl
+                            new_files.append(FilePair(new_expt, new_refl))
+                        groups_for_merge[g] = new_files
                 for g, flist in groups_for_merge.items():
                     if flist:
                         merge_input[f"{g}"] = flist

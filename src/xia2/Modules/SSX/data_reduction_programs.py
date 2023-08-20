@@ -3,7 +3,6 @@ from __future__ import annotations
 
 import concurrent.futures
 import copy
-import functools
 import json
 import logging
 import math
@@ -31,6 +30,7 @@ from dials.command_line.cosym import phil_scope as cosym_phil_scope
 from dials.command_line.cosym import register_default_cosym_observers
 from dials.command_line.merge import phil_scope as merge_phil_scope
 from dials.command_line.scale import phil_scope as scaling_phil_scope
+from dials.util.resolution_analysis import resolution_cc_half
 from dxtbx.model import Crystal, ExperimentList
 from dxtbx.serialize import load
 from iotbx.phil import parse
@@ -99,15 +99,14 @@ def filter_(
 
 
 def split_integrated_data(
-    working_directory, good_crystals_data, integrated_data, reduction_params
-) -> List[FilePair]:
-    new_files_to_process = split_filtered_data(
-        working_directory,
+    good_crystals_data, integrated_data, reduction_params
+) -> List[ProcessingBatch]:
+    new_batches_to_process = split_filtered_data(
         integrated_data,
         good_crystals_data,
         reduction_params.batch_size,
     )
-    return new_files_to_process
+    return new_batches_to_process
 
 
 def assess_for_indexing_ambiguities(
@@ -524,26 +523,28 @@ class ProgramResult:
     logfile: Path
     htmlfile: Optional[Path]
     jsonfile: Optional[Path]
+    resolutionlimit: Optional[float] = None
 
 
 def scale_against_reference(
     working_directory: Path,
-    files: FilePair,
+    batch: ProcessingBatch,
     reduction_params,
     name="",
 ) -> ProgramResult:
     logfile = f"dials.scale.{name}.log"
     with run_in_directory(working_directory), log_to_file(logfile) as dials_logger:
         # Setup scaling
-        expts = load.experiment_list(files.expt, check_format=False)
-        table = flex.reflection_table.from_file(files.refl)
+        # expts = load.experiment_list(files.expt, check_format=False)
+        # table = flex.reflection_table.from_file(files.refl)
+        expts, table = combined_files_for_batch(batch)
         params, diff_phil = _extract_scaling_params_for_scale_against_reference(
             reduction_params, name
         )
         dials_logger.info(
             "The following parameters have been modified:\n"
-            + f"input.experiments = {files.expt}\n"
-            + f"input.reflections = {files.refl}\n"
+            # + f"input.experiments = {files.expt}\n"
+            # + f"input.reflections = {files.refl}\n"
             + f"{diff_phil.as_str()}"
         )
         # Run the scaling using the algorithm class to give access to scaler
@@ -565,9 +566,60 @@ def scale_against_reference(
     )
 
 
-def scale(
+import functools
+
+
+def scale_parallel_batches(
+    working_directory, batches: List[ProcessingBatch], reduction_params
+) -> Tuple[List[ProcessingBatch], List[float]]:
+    # scale multiple batches in parallel
+    scaled_results = []
+    d_mins = []
+    batch_template = functools.partial(
+        "batch{index:0{maxindexlength:d}d}".format,
+        maxindexlength=len(str(len(batches))),
+    )
+    jobs = {f"{batch_template(index=i+1)}": fp for i, fp in enumerate(batches)}
+    # xia2_logger.notice(banner("Scaling"))  # type: ignore
+    with record_step("dials.scale (parallel)"), concurrent.futures.ProcessPoolExecutor(
+        max_workers=min(reduction_params.nproc, len(batches))
+    ) as pool:
+        scale_futures: Dict[Any, str] = {
+            pool.submit(
+                scale_on_batches,
+                working_directory,
+                [batch],
+                reduction_params,
+                name,
+            ): name
+            for name, batch in jobs.items()
+        }
+        for future in concurrent.futures.as_completed(scale_futures):
+            try:
+                result = future.result()
+                name = scale_futures[future]
+            except Exception as e:
+                xia2_logger.warning(f"Unsuccessful scaling of group. Error:\n{e}")
+            else:
+                xia2_logger.info(
+                    f"Completed scaling of data reduction batch {name.lstrip('batch')}"
+                )
+                outbatch = ProcessingBatch()
+                outbatch.add_filepair(FilePair(result.exptfile, result.reflfile))
+                scaled_results.append(outbatch)
+                FileHandler.record_log_file(
+                    result.logfile.name.rstrip(".log"), result.logfile
+                )
+                d_mins.append(result.resolutionlimit)
+
+    if not scaled_results:
+        raise ValueError("No groups successfully scaled")
+    return scaled_results, d_mins
+
+
+def scale_on_batches(
     working_directory: Path,
-    files_to_scale: List[FilePair],
+    batches_to_scale: List[ProcessingBatch],
     reduction_params: ReductionParams,
     name="",
 ) -> ProgramResult:
@@ -579,12 +631,22 @@ def scale(
     ) as dials_logger, record_step("dials.scale"):
         # Setup scaling
         input_ = ""
-        expts = ExperimentList()
+
+        all_expts = ExperimentList([])
         tables = []
-        for fp in files_to_scale:
-            expts.extend(load.experiment_list(fp.expt, check_format=False))
-            tables.append(flex.reflection_table.from_file(fp.refl))
-            input_ += f"reflections = {fp.refl}\nexperiments = {fp.expt}\n"
+        for batch in batches_to_scale:
+            for fp in batch.filepairs:
+                table = flex.reflection_table.from_file(fp.refl)
+                expts = load.experiment_list(fp.expt, check_format=False)
+                if fp in batch.filepair_to_good_identifiers:
+                    ids = batch.filepair_to_good_identifiers[fp]
+                    if len(ids) < len(expts):
+                        expts.select_on_experiment_identifiers(list(ids))
+                        table = table.select_on_experiment_identifiers(list(ids))
+                        table.reset_ids()
+                all_expts.extend(expts)
+                tables.append(table)
+        expts = all_expts
 
         params, diff_phil = _extract_scaling_params(reduction_params)
         dials_logger.info(
@@ -596,6 +658,12 @@ def scale(
         # Run the scaling using the algorithm class to give access to scaler
         scaler = ScalingAlgorithm(params, expts, tables)
         scaler.run()
+        try:
+            d_min = resolution_cc_half(
+                scaler.merging_statistics_result, limit=0.3
+            ).d_min
+        except RuntimeError:
+            d_min = None
         scaled_expts, scaled_table = scaler.finish()
         if name:
             out_expt = f"scaled.{name}.expt"
@@ -615,6 +683,7 @@ def scale(
         working_directory / logfile,
         None,
         None,
+        d_min,
     )
 
 
@@ -675,53 +744,32 @@ def _extract_cosym_params(reduction_params, index):
     return cosym_params, diff_phil
 
 
-def cosym_against_reference(
-    working_directory: Path,
-    files: FilePair,
-    index: int,
-    reduction_params,
-) -> ProgramResult:
-    with run_in_directory(working_directory):
-        logfile = f"dials.cosym.{index}.log"
-        with record_step("dials.cosym"), log_to_file(logfile) as dials_logger:
-            cosym_params, diff_phil = _extract_cosym_params(reduction_params, index)
-            dials_logger.info(
-                "The following parameters have been modified:\n"
-                + f"{diff_phil.as_str()}"
-            )
-            # cosym_params.cc_star_threshold = 0.1
-            # cosym_params.angular_separation_threshold = 5
-            table = flex.reflection_table.from_file(files.refl)
-            expts = load.experiment_list(files.expt, check_format=False)
-
-            tables = table.split_by_experiment_id()
-            # now run cosym
-            if cosym_params.seed is not None:
-                flex.set_random_seed(cosym_params.seed)
-                np.random.seed(cosym_params.seed)
-                random.seed(cosym_params.seed)
-            cosym_instance = cosym(expts, tables, cosym_params)
-            register_default_cosym_observers(cosym_instance)
-            cosym_instance.run()
-            cosym_instance.experiments.as_file(cosym_params.output.experiments)
-            joint_refls = flex.reflection_table.concat(cosym_instance.reflections)
-            joint_refls.as_file(cosym_params.output.reflections)
-            xia2_logger.info(
-                f"Consistently indexed {len(cosym_instance.experiments)} crystals in data reduction batch {index+1} against reference"
-            )
-
-    return ProgramResult(
-        working_directory / cosym_params.output.experiments,
-        working_directory / cosym_params.output.reflections,
-        working_directory / logfile,
-        working_directory / cosym_params.output.html,
-        working_directory / cosym_params.output.json,
-    )
+def combined_files_for_batch(batch):
+    all_expts = ExperimentList([])
+    tables = []
+    for fp in batch.filepairs:
+        table = flex.reflection_table.from_file(fp.refl)
+        expts = load.experiment_list(fp.expt, check_format=False)
+        if fp in batch.filepair_to_good_identifiers:
+            ids = batch.filepair_to_good_identifiers[fp]
+            if len(ids) < len(expts):
+                expts.select_on_experiment_identifiers(list(ids))
+                table = table.select_on_experiment_identifiers(list(ids))
+                table.reset_ids()
+        all_expts.extend(expts)
+        tables.append(table)
+    if len(tables) > 1:
+        table = flex.reflection_table.concat(tables)
+        table.reset_ids()
+    else:
+        table = tables[0]
+    expts = all_expts
+    return expts, table
 
 
 def individual_cosym(
     working_directory: Path,
-    files: FilePair,
+    batch: ProcessingBatch,
     index: int,
     reduction_params,
 ) -> ProgramResult:
@@ -733,14 +781,13 @@ def individual_cosym(
         cosym_params, diff_phil = _extract_cosym_params(reduction_params, index)
         dials_logger.info(
             "The following parameters have been modified:\n"
-            + f"input.experiments = {files.expt}\n"
-            + f"input.reflections = {files.refl}\n"
+            # + f"input.experiments = {files.expt}\n"
+            # + f"input.reflections = {files.refl}\n"
             + f"{diff_phil.as_str()}"
         )
         # cosym_params.cc_star_threshold = 0.1
         # cosym_params.angular_separation_threshold = 5
-        table = flex.reflection_table.from_file(files.refl)
-        expts = load.experiment_list(files.expt, check_format=False)
+        expts, table = combined_files_for_batch(batch)
 
         tables = table.split_by_experiment_id()
         # now run cosym
@@ -769,11 +816,12 @@ def individual_cosym(
 
 def cosym_reindex(
     working_directory: Path,
-    files_for_reindex: List[FilePair],
+    batches_for_reindex: List[ProcessingBatch],
     d_min: float = None,
     max_delta: float = 0.5,
     partiality_threshold: float = 0.2,
-) -> List[FilePair]:
+    reference=None,
+) -> List[ProcessingBatch]:
     from dials.command_line.cosym import phil_scope as cosym_scope
 
     from xia2.Modules.SSX.batch_cosym import BatchCosym
@@ -783,13 +831,16 @@ def cosym_reindex(
     params = cosym_scope.extract()
 
     logfile = "dials.cosym_reindex.log"
-    for filepair in files_for_reindex:
-        expts.append(load.experiment_list(filepair.expt, check_format=False))
-        refls.append(flex.reflection_table.from_file(filepair.refl))
+    for batch in batches_for_reindex:
+        for filepair in batch.filepairs:
+            expts.append(load.experiment_list(filepair.expt, check_format=False))
+            refls.append(flex.reflection_table.from_file(filepair.refl))
     params.space_group = expts[0][0].crystal.get_space_group().info()
     params.lattice_symmetry_max_delta = max_delta
     params.partiality_threshold = partiality_threshold
     params.min_i_mean_over_sigma_mean = 0.5
+    if reference:
+        params.reference = os.fspath(reference)
     if d_min:
         params.d_min = d_min
 
@@ -807,16 +858,20 @@ def cosym_reindex(
     for expt, refl in zip(
         cosym_instance._output_expt_files, cosym_instance._output_refl_files
     ):
-        outfiles.append(FilePair(working_directory / expt, working_directory / refl))
+        outbatch = ProcessingBatch()
+        outbatch.add_filepair(
+            FilePair(working_directory / expt, working_directory / refl)
+        )
+        outfiles.append(outbatch)
     return outfiles
 
 
 def parallel_cosym(
     working_directory: Path,
-    data_to_reindex: List[FilePair],
+    data_to_reindex: List[ProcessingBatch],
     reduction_params,
     nproc: int = 1,
-) -> List[FilePair]:
+) -> List[ProcessingBatch]:
     """Run dials.cosym on each batch to resolve indexing ambiguities."""
 
     if not Path.is_dir(working_directory):
@@ -835,11 +890,11 @@ def parallel_cosym(
                 pool.submit(
                     individual_cosym,
                     working_directory,
-                    files,
+                    batch,
                     index,
                     reduction_params,
                 )
-                for index, files in enumerate(data_to_reindex)
+                for index, batch in enumerate(data_to_reindex)
             ]
             for future in concurrent.futures.as_completed(cosym_futures):
                 try:
@@ -849,59 +904,11 @@ def parallel_cosym(
                         f"Unsuccessful scaling and symmetry analysis of the new data. Error:\n{e}"
                     )
                 else:
-                    reindexed_results.append(FilePair(result.exptfile, result.reflfile))
-                    FileHandler.record_log_file(
-                        result.logfile.name.rstrip(".log"), result.logfile
+                    processed_batch = ProcessingBatch()
+                    processed_batch.add_filepair(
+                        FilePair(result.exptfile, result.reflfile)
                     )
-                    FileHandler.record_html_file(
-                        result.htmlfile.name.rstrip(".html"), result.htmlfile
-                    )
-
-    sys.stdout = sys.__stdout__  # restore printing
-    return reindexed_results
-
-
-def parallel_cosym_reference(
-    working_directory: Path,
-    data_to_reindex: List[FilePair],
-    reduction_params,
-    nproc: int = 1,
-) -> List[FilePair]:
-    """
-    Runs dials.cosym on each batch to resolve indexing ambiguities
-    """
-
-    if not Path.is_dir(working_directory):
-        Path.mkdir(working_directory)
-
-    reindexed_results = []
-
-    with open(os.devnull, "w") as devnull:
-        sys.stdout = devnull  # block printing from cosym
-
-        with record_step(
-            "dials.scale/dials.cosym (parallel)"
-        ), concurrent.futures.ProcessPoolExecutor(max_workers=nproc) as pool:
-
-            cosym_futures: List[Any] = [
-                pool.submit(
-                    cosym_against_reference,
-                    working_directory,
-                    files,
-                    index,
-                    reduction_params,
-                )
-                for index, files in enumerate(data_to_reindex)
-            ]
-            for future in concurrent.futures.as_completed(cosym_futures):
-                try:
-                    result = future.result()
-                except Exception as e:
-                    raise ValueError(
-                        f"Unsuccessful scaling and symmetry analysis of the new data. Error:\n{e}"
-                    )
-                else:
-                    reindexed_results.append(FilePair(result.exptfile, result.reflfile))
+                    reindexed_results.append(processed_batch)
                     FileHandler.record_log_file(
                         result.logfile.name.rstrip(".log"), result.logfile
                     )
@@ -964,74 +971,80 @@ def select_crystals_close_to(
     return good_crystals_data
 
 
+class ProcessingBatch(object):
+    #  unit of file input for a processing job. Consisting of one or more filepairs,
+    # optionally with additional subsets of identifiers for selecting data out
+    # of those files.
+
+    def __init__(self):
+        self.filepairs = []
+        self.filepair_to_good_identifiers = {}
+
+    def add_filepair(self, fp, identifiers=None):
+        self.filepairs.append(fp)
+        if identifiers:
+            assert fp not in self.filepair_to_good_identifiers
+            self.filepair_to_good_identifiers[fp] = identifiers
+
+
 def split_filtered_data(
-    working_directory: Path,
     new_data: List[FilePair],
     good_crystals_data: CrystalsDict,
     min_batch_size: int,
-) -> List[FilePair]:
-    if not Path.is_dir(working_directory):
-        Path.mkdir(working_directory)
-    with record_step("splitting"):
-        data_to_reindex: List = []
-        n_cryst = sum(len(v.identifiers) for v in good_crystals_data.values())
-        n_batches = max(math.floor(n_cryst / min_batch_size), 1)
-        stride = n_cryst / n_batches
-        # make sure last batch has at least the batch size
-        splits = [int(math.floor(i * stride)) for i in range(n_batches)]
-        splits.append(n_cryst)
-        template = functools.partial(
-            "split_{index:0{fmt:d}d}".format, fmt=len(str(n_batches))
-        )
-        leftover_expts = ExperimentList([])
-        leftover_refls: List[flex.reflection_table] = []
-        n_batch_output = 0
-        n_required = splits[1] - splits[0]
-        for file_pair in new_data:
-            expts = load.experiment_list(file_pair.expt, check_format=False)
-            refls = flex.reflection_table.from_file(file_pair.refl)
-            good_crystals_this = good_crystals_data[str(file_pair.expt)]
-            if not good_crystals_this.crystals:
-                continue
-            good_identifiers = good_crystals_this.identifiers
-            if not good_crystals_this.keep_all_original:
-                expts.select_on_experiment_identifiers(good_identifiers)
-                refls = refls.select_on_experiment_identifiers(good_identifiers)
-            refls.reset_ids()
-            leftover_expts.extend(expts)
-            leftover_refls.append(refls)
-            while len(leftover_expts) >= n_required:
-                sub_expt = leftover_expts[0:n_required]
-                if len(leftover_refls) > 1:
-                    leftover_refls = [flex.reflection_table.concat(leftover_refls)]
-                # concat guarantees that ids are ordered 0...n-1
-                sub_refl = leftover_refls[0].select(
-                    leftover_refls[0]["id"] < n_required
-                )
-                leftover_refls = [
-                    leftover_refls[0].select(leftover_refls[0]["id"] >= n_required)
-                ]
-                leftover_refls[0].reset_ids()
-                sub_refl.reset_ids()  # necessary?
-                leftover_expts = leftover_expts[n_required:]
-                out_expt = working_directory / (
-                    template(index=n_batch_output) + ".expt"
-                )
-                out_refl = working_directory / (
-                    template(index=n_batch_output) + ".refl"
-                )
-                sub_expt.as_file(out_expt)
-                sub_refl.as_file(out_refl)
-                data_to_reindex.append(FilePair(out_expt, out_refl))
-                n_batch_output += 1
-                if n_batch_output == len(splits) - 1:
-                    break
-                n_required = splits[n_batch_output + 1] - splits[n_batch_output]
-        assert n_batch_output == len(splits) - 1
-        assert not len(leftover_expts)
-        for table in leftover_refls:
-            assert table.size() == 0
-    return data_to_reindex
+) -> List[ProcessingBatch]:
+
+    n_cryst = sum(len(v.identifiers) for v in good_crystals_data.values())
+    n_batches = max(math.floor(n_cryst / min_batch_size), 1)
+    batches = [ProcessingBatch() for _ in range(n_batches)]
+
+    stride = n_cryst / n_batches
+    # make sure last batch has at least the batch size
+    splits = [int(math.floor(i * stride)) for i in range(n_batches)]
+    splits.append(n_cryst)
+
+    n_leftover = 0
+    n_batch_output = 0
+    n_required = splits[1] - splits[0]
+    current_fps = []
+    current_identifier_lists = []
+    for file_pair in new_data:
+        good_crystals_this = good_crystals_data[str(file_pair.expt)]
+        if not good_crystals_this.crystals:
+            continue
+        good_identifiers = good_crystals_this.identifiers
+        n_leftover += len(good_identifiers)
+        current_fps.append(file_pair)
+        current_identifier_lists.append(good_identifiers)
+
+        while n_leftover >= n_required:
+
+            last_fp = current_fps.pop()
+            ids = current_identifier_lists.pop()
+            if n_required == n_leftover:
+                sub_ids_last = ids
+                sub_ids_last_leftover = flex.std_string([])
+            else:
+                sub_ids_last = ids[: (n_required - n_leftover)]
+                sub_ids_last_leftover = ids[(n_required - n_leftover) :]
+
+            for fp, ids in zip(current_fps, current_identifier_lists):
+                batches[n_batch_output].add_filepair(fp, ids)
+            batches[n_batch_output].add_filepair(last_fp, sub_ids_last)
+            if len(sub_ids_last_leftover):
+                current_fps = [last_fp]
+                current_identifier_lists = [sub_ids_last_leftover]
+            else:
+                current_fps = []
+                current_identifier_lists = []
+            n_batch_output += 1
+            n_leftover -= n_required
+            if n_batch_output == len(splits) - 1:
+                break
+            n_required = splits[n_batch_output + 1] - splits[n_batch_output]
+    assert n_batch_output == len(splits) - 1
+    assert not n_leftover
+
+    return batches
 
 
 def prepare_scaled_array(
