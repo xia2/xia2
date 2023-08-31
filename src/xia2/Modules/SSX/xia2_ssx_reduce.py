@@ -113,6 +113,12 @@ clustering {
             "parameters, rather than the median cell."
     .expert_level = 2
 }
+filtering {
+  isigma_filter = None
+    .type = float(allow_none=True)
+    .help = "Apply a per-image mean I/sigma filter, calculated on reflections with"
+            "partialities above the partiality_threshold."
+}
 symmetry {
   space_group = None
     .type = space_group
