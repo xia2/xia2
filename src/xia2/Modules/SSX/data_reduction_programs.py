@@ -118,7 +118,7 @@ def filter_(
 
     crystals_data = load_crystal_data_from_new_expts(
         integrated_data,
-        calculate_meanIsigma=bool(reduction_params.isigma_filter),
+        calculate_meanIsigma=bool(reduction_params.mean_i_over_sigma_threshold),
         partiality_thresold=reduction_params.partiality_threshold,
     )
     if not any(v.crystals for v in crystals_data.values()):
@@ -204,13 +204,15 @@ def determine_best_unit_cell_from_crystals(
     return best_unit_cell
 
 
-def apply_isigma_filter(good_crystals_data, isigma_filter):
+def apply_isigma_filter(
+    good_crystals_data: CrystalsDict, mean_i_over_sigma_threshold: float
+) -> CrystalsDict:
     new_good_crystals_data: CrystalsDict = {}
     n_good = 0
     n_tot = 0
     for file_, data in good_crystals_data.items():
         i_sig_vals = data.mean_I_over_sigma_vals
-        ids = [i for i, v in enumerate(i_sig_vals) if v > isigma_filter]
+        ids = [i for i, v in enumerate(i_sig_vals) if v > mean_i_over_sigma_threshold]
         if len(ids) == len(i_sig_vals):
             new_good_crystals_data[file_] = good_crystals_data[file_]
         else:
@@ -223,7 +225,7 @@ def apply_isigma_filter(good_crystals_data, isigma_filter):
         n_good += len(ids)
         n_tot += len(i_sig_vals)
     xia2_logger.info(
-        f"I/sigma filtering:\n  Selected {n_good}/{n_tot} crystals with <I/sigma> >= {isigma_filter}"
+        f"I/sigma filtering:\n  Selected {n_good}/{n_tot} crystals with <I/sigma> >= {mean_i_over_sigma_threshold}"
     )
     return new_good_crystals_data
 
@@ -264,9 +266,9 @@ def filter_new_data(
         xia2_logger.info("No unit cell filtering applied")
 
     # now filter on isigma
-    if reduction_params.isigma_filter:
+    if reduction_params.mean_i_over_sigma_threshold:
         good_crystals_data = apply_isigma_filter(
-            good_crystals_data, reduction_params.isigma_filter
+            good_crystals_data, reduction_params.mean_i_over_sigma_threshold
         )
     return good_crystals_data
 

@@ -114,7 +114,7 @@ clustering {
     .expert_level = 2
 }
 filtering {
-  isigma_filter = None
+  mean_i_over_sigma_threshold = None
     .type = float(allow_none=True)
     .help = "Apply a per-image mean I/sigma filter, calculated on reflections with"
             "partialities above the partiality_threshold."
