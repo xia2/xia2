@@ -1085,7 +1085,6 @@ def split_filtered_data(
         if not good_crystals_this.crystals:
             continue
         good_identifiers = good_crystals_this.identifiers
-        xia2_logger.info(len(good_identifiers))
         n_leftover += len(good_identifiers)
         current_fps.append(file_pair)
         current_identifier_lists.append(good_identifiers)
