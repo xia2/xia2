@@ -415,6 +415,7 @@ class BaseDataReduction(object):
                         best_unit_cell,
                         self._reduction_params.partiality_threshold,
                         name,
+                        self._reduction_params.r_free_flags_reference,
                     )
                 )
 

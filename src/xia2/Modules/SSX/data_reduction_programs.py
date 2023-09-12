@@ -276,6 +276,7 @@ def merge(
     best_unit_cell: Optional[uctbx.unit_cell] = None,
     partiality_threshold: float = 0.25,
     name: str = "",
+    r_free_flags_reference: Optional[Path] = None,
 ) -> MergeResult:
     logfile = "dials.merge.log"
     filename = "merged.mtz"
@@ -291,6 +292,8 @@ def merge(
     ) as dials_logger, record_step("dials.merge"):
         params = merge_phil_scope.extract()
         params.output.additional_stats = True
+        params.r_free_flags.extend = True
+        params.r_free_flags.relative_to_complete_set = True
         input_ = "Input parameters:\n"
         if d_min:
             params.d_min = d_min
@@ -298,6 +301,11 @@ def merge(
         if best_unit_cell:
             params.best_unit_cell = best_unit_cell
             input_ += f"  best_unit_cell = {best_unit_cell.parameters()}\n"
+        if r_free_flags_reference:
+            params.r_free_flags.reference = os.fspath(r_free_flags_reference)
+            input_ += (
+                f"  r_free_flags.reference = {os.fspath(r_free_flags_reference)}\n"
+            )
         params.partiality_threshold = partiality_threshold
         input_ += f"  partiality_threshold = {partiality_threshold}"
         params.assess_space_group = False

@@ -145,6 +145,11 @@ scaling {
             "over identical options defined in the phil file."
     .expert_level = 3
 }
+merging {
+  r_free_flags.reference = None
+    .type = path
+    .help = "Path to a reference MTZ file from which to extract r_free_flags."
+}
 """
     % reference_phil_str
 )
