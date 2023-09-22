@@ -655,6 +655,17 @@ def determine_reference_geometry_from_images(
     xia2_logger.info(
         f"Refined reference geometry saved to {working_directory}/refined.expt"
     )
+    subprocess.run(
+        [
+            "dxtbx.plot_detector_models",
+            "imported.expt",
+            "refined.expt",
+            "pdf_file=detector_models.pdf",
+        ],
+        cwd=working_directory,
+        capture_output=False,
+        encoding="utf-8",
+    )
 
 
 def cumulative_determine_reference_geometry(
@@ -746,6 +757,17 @@ def cumulative_determine_reference_geometry(
     run_refinement(working_directory, refinement_params)
     xia2_logger.info(
         f"Refined reference geometry saved to {working_directory}/refined.expt"
+    )
+    subprocess.run(
+        [
+            "dxtbx.plot_detector_models",
+            "imported.expt",
+            "refined.expt",
+            "pdf_file=detector_models.pdf",
+        ],
+        cwd=working_directory,
+        capture_output=False,
+        encoding="utf-8",
     )
 
 
