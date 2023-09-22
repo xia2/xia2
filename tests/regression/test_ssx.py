@@ -196,7 +196,11 @@ def refined_expt(dials_data, tmp_path):
     return refined_expts
 
 
-def test_run_with_reference(dials_data, tmp_path, refined_expt):
+@pytest.mark.parametrize(
+    "starting",
+    [True, False],
+)
+def test_run_with_reference(dials_data, tmp_path, refined_expt, starting):
     """
     Test running with a supplied reference geometry from a refined.expt.
     """
@@ -209,17 +213,24 @@ def test_run_with_reference(dials_data, tmp_path, refined_expt):
         "unit_cell=96.4,96.4,96.4,90,90,90",
         "space_group=P213",
         "integration.algorithm=stills",
-        f"reference_geometry={os.fspath(tmp_path / 'refined.expt')}",
         "steps=find_spots+index+integrate",
     ]
     args.append("image=" + os.fspath(ssx / "merlin0047_1700*.cbf"))
+    if starting:
+        args.append(f"starting_geometry={os.fspath(tmp_path / 'refined.expt')}")
+    else:
+        args.append(f"reference_geometry={os.fspath(tmp_path / 'refined.expt')}")
 
     result = subprocess.run(args, cwd=tmp_path, capture_output=True)
     assert not result.returncode and not result.stderr
     check_output(tmp_path, find_spots=True, index=True, integrate=True)
-
-    assert not (tmp_path / "DataFiles" / "refined.expt").is_file()
-    assert not (tmp_path / "LogFiles" / "dials.refine.log").is_file()
+    if starting:
+        assert (tmp_path / "DataFiles" / "refined.expt").is_file()
+        assert (tmp_path / "LogFiles" / "dials.refine.log").is_file()
+    else:
+        assert not (tmp_path / "DataFiles" / "refined.expt").is_file()
+        assert not (tmp_path / "LogFiles" / "dials.refine.log").is_file()
+    assert (tmp_path / "geometry_refinement" / "detector_models.pdf").is_file()
 
 
 def test_slice_cbfs(dials_data, tmp_path, refined_expt):
