@@ -268,6 +268,11 @@ def run(args=sys.argv[1:]):
             f.write(html.encode("utf-8", "xmlcharrefreplace"))
 
         logger.info(f"Clusters recommended for comparison in {params.output.log}")
+        logger.info("----------------")
+        logger.info("Output given as DIALS .expt/.refl files:")
+        logger.info("To merge rotation data: use dials.merge")
+        logger.info("To merge still data: use xia2.ssx_reduce")
+        logger.info("----------------")
 
 
 def output_cluster(new_folder, cluster, original_data_manager, cluster_identifiers):
