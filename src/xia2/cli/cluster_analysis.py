@@ -271,7 +271,7 @@ def run(args=sys.argv[1:]):
         logger.info("----------------")
         logger.info("Output given as DIALS .expt/.refl files:")
         logger.info("To merge rotation data: use dials.merge")
-        logger.info("To merge still data: use xia2.ssx_reduce")
+        logger.info("To merge still data: use xia2.ssx_reduce with the option steps=merge")
         logger.info("----------------")
 
 
