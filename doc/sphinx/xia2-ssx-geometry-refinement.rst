@@ -2,19 +2,26 @@
 Overcoming problems with the detector geometry for SSX data
 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
+There are three different ways to run :samp:`xia2.ssx` with regards to detector geometry refinement.
+
+* If a reference geometry (a DIALS :samp:`.expt` file) is provided as input to :samp:`xia2.ssx` with the option :samp:`reference_geometry=`, then no geometry refinement is performed and this reference geometry is used instead of the geometry from the image files.
+* If a starting geometry (a DIALS :samp:`.expt` file) is provided as input to :samp:`xia2.ssx` with the option :samp:`starting_geometry=`, then this geometry is used instead of the geometry from the image files and a round of geometry refinement is run.
+* If neither a reference geometry or starting geometry are given, the geometry is read from the image files and a round of geometry refinement is run.
+
 The automated geometry refinement in :samp:`xia2.ssx` is designed to improve an existing
 detector geometry that is reasonably accurate. Spotfinding and indexing are performed in
 batches until at least 250 crystals are successfully indexed (this can be changed with the option
 :samp:`geometry_refinement.n_crystals=`). Alternatively, an image range can be specified using e.g.
 :samp:`geometry_refinement.images_to_use=1001:2000`. As a reminder, to just run the geometry refinement part
-of the :samp:`xia2.ssx` pipeline, use the option :samp:`steps=None`, i.e. no processing steps. If a reference
-geometry (a DIALS :samp:`.expt` file) is provided as input to :samp:`xia2.ssx` with the option :samp:`reference_geometry=`,
-then no geometry refinement is performed.
+of the :samp:`xia2.ssx` pipeline, use the option :samp:`steps=None`, i.e. no processing steps.
 
 In cases where the initial geometry is not reasonably well known, or the hit/indexing rate is low,
 refining an accurate initial geometry is not straightforward, and can require experimenting
-with program input and performing several cycles of geometry refinement. Symptoms of a bad initial
-geometry include
+with program input and performing several cycles of geometry refinement i.e. using the :samp:`starting_geometry` option with 
+:samp:`steps=None`, and using the resultant refined geometry as the :samp:`starting_geometry` for another run of :samp:`xia2.ssx`
+and repeating until convergence.
+
+Symptoms of a bad initial geometry include
 
 * very low indexing success (i.e. low % of hits indexed)
 * indexing success followed by low integration success rate
@@ -59,17 +66,19 @@ fully perpendicular to the z-axis, which will typically not be the case after ge
 :samp:`fast_axis` and :samp:`slow_axis` of the detector.
 
 The detector origin, distance, fast and slow axis can be displayed by running :samp:`dials.show import/imported.expt`.
-Importantly, using the option :samp:`dials_import.phil=` is the way to improve an already refined geometry. Simply set the
-origin and fast and slow axes based on the values displayed in :samp:`dials.show geometry_refinement/refined.expt`. This
-can help to increase the indexing rate further and hence get a more accurate detector geometry. Note that to specify multiple
-panel options such as origin and fast and slow axes, one must use the following form of phil specification to enable them to be
-all assigned to the same panel::
+Note that to specify multiple panel options such as origin and fast and slow axes, one must use the following form of phil
+specification to enable them to be all assigned to the same panel::
 
     geometry.detector.panel{
       origin=-80,90,-115
       fast_axis=0.9999,0.0001,0
       slow_axis=-0.0001,0.9999,0
     }
+
+This can become cumbersome and error-prone for many-panel detectors. In these cases, it may be preferable to set only
+the distance and beam centre, and do multiple cycles of geometry refinement using the :samp:`starting_geometry` option
+as described above. Remember, it is also possible to manually edit :samp:`.expt` files in a text editor, as they are simply
+json format files.
 
 ---------------------------------
 Relaxing restraints in refinement
