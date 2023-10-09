@@ -429,3 +429,14 @@ def test_run_with_reference_pdb(run_in_tmp_path, dials_data):
 
     with pytest.raises(SystemExit):
         run_multiplex(command_line_args)
+
+
+def test_clean_exit_on_stills_data(dials_data, run_in_tmp_path):
+    ssx = dials_data("cunir_serial_processed", pathlib=True)
+    with pytest.raises(SystemExit):
+        run_multiplex(
+            [
+                f"{ssx / 'integrated.refl'}",
+                f"{ssx / 'integrated.expt'}",
+            ],
+        )
