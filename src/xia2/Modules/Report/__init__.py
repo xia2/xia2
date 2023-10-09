@@ -365,10 +365,10 @@ class Report:
             batch_params = scope.extract().batch[0]
             batch_params.id = data_manager.identifiers_to_ids_map[expt.identifier]
             offset = data_manager.batch_offset_list[i]
-            batch_params.range = tuple(offset + i for i in expt.scan.get_image_range())
+            batch_params.range = tuple(offset + j for j in expt.scan.get_image_range())
             params.batch.append(batch_params)
             dose_batch = copy.deepcopy(dose_phil.dose.batch[0])
-            dose_batch.range = tuple(offset + i for i in expt.scan.get_image_range())
+            dose_batch.range = tuple(offset + j for j in expt.scan.get_image_range())
             dose_batch.dose_start = 1
             dose_batch.dose_step = 1
             params.dose.batch.append(dose_batch)
