@@ -67,6 +67,11 @@ class DataManager:
         self._reflections = reflections
 
     def select(self, experiment_identifiers):
+        self.batch_offset_list = [
+            i
+            for (i, expt) in zip(self.batch_offset_list, self._experiments)
+            if expt.identifier in experiment_identifiers
+        ]
         self._experiments = ExperimentList(
             [
                 expt
