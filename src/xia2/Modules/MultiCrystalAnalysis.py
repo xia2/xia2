@@ -41,12 +41,15 @@ class MultiCrystalAnalysis:
         ) = self._data_manager.reflections_as_miller_arrays(combined=True)
         self.params.batch = []
         scope = phil.parse(batch_phil_scope)
-        for expt in self._data_manager.experiments:
+        for i, expt in enumerate(self._data_manager.experiments):
             batch_params = scope.extract().batch[0]
             batch_params.id = self._data_manager.identifiers_to_ids_map[expt.identifier]
 
             if not self._data_manager.all_stills:
-                batch_params.range = expt.scan.get_batch_range()
+                offset = self._data_manager.batch_offset_list[i]
+                batch_params.range = tuple(
+                    offset + j for j in expt.scan.get_image_range()
+                )
                 self.params.batch.append(batch_params)
 
         self.intensities.set_observation_type_xray_intensity()
