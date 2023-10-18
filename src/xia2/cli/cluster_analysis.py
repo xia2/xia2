@@ -40,6 +40,11 @@ unit_cell_clustering {
     .help = 'Display the dendrogram with a log scale'
 }
 
+run_cluster_identification = True
+  .type = bool
+  .short_caption = "If True, in addition to running clustering analysis, identify"
+                   "clusters of interest for further analysis."
+
 max_cluster_height_difference = 0.5
   .type = float
   .short_caption = "Maximum hight difference between clusters"
@@ -147,92 +152,103 @@ def run(args=sys.argv[1:]):
 
         MCA.cluster_analysis()
 
-        logger.info("Correlation Clusters:")
-        cc_file_data, cc_list = MCA.interesting_cluster_identification(
-            MCA._cluster_analysis.cc_clusters, params
-        )
-        logger.info("===================================================")
-        logger.info("Cos Angle Clusters:")
-        cos_file_data, cos_list = MCA.interesting_cluster_identification(
-            MCA._cluster_analysis.cos_angle_clusters, params
-        )
+        if params.run_cluster_identification:
+            logger.info("Correlation Clusters:")
+            cc_file_data, cc_list = MCA.interesting_cluster_identification(
+                MCA._cluster_analysis.cc_clusters, params
+            )
+            logger.info("===================================================")
+            logger.info("Cos Angle Clusters:")
+            cos_file_data, cos_list = MCA.interesting_cluster_identification(
+                MCA._cluster_analysis.cos_angle_clusters, params
+            )
 
-        if not os.path.exists("cc_clusters"):
-            os.mkdir("cc_clusters")
-        if not os.path.exists("cos_angle_clusters"):
-            os.mkdir("cos_angle_clusters")
+            if not os.path.exists("cc_clusters"):
+                os.mkdir("cc_clusters")
+            if not os.path.exists("cos_angle_clusters"):
+                os.mkdir("cos_angle_clusters")
 
-        for cluster in MCA._cluster_analysis.cc_clusters:
-            if (
-                "cluster_" + str(cluster.cluster_id) in cc_list
-                or cluster.cluster_id == params.output_correlation_cluster_number
-            ):
-                new_folder = "cc_clusters/" + "cluster_" + str(cluster.cluster_id)
-                cluster_identifiers = [
-                    MCA._data_manager.ids_to_identifiers_map[l] for l in cluster.labels
-                ]
-                output_cluster(
-                    new_folder, cluster, MCA._data_manager, cluster_identifiers
-                )
+            for cluster in MCA._cluster_analysis.cc_clusters:
+                if (
+                    "cluster_" + str(cluster.cluster_id) in cc_list
+                    or cluster.cluster_id == params.output_correlation_cluster_number
+                ):
+                    new_folder = "cc_clusters/" + "cluster_" + str(cluster.cluster_id)
+                    cluster_identifiers = [
+                        MCA._data_manager.ids_to_identifiers_map[l]
+                        for l in cluster.labels
+                    ]
+                    output_cluster(
+                        new_folder, cluster, MCA._data_manager, cluster_identifiers
+                    )
 
-            if params.exclude_correlation_cluster_number == cluster.cluster_id:
-                new_folder = (
-                    "cc_clusters/" + "excluded_cluster_" + str(cluster.cluster_id)
-                )
-                overall_cluster = MCA._cluster_analysis.cc_clusters[-1]
-                identifiers_overall_cluster = [
-                    MCA._data_manager.ids_to_identifiers_map[l]
-                    for l in overall_cluster.labels
-                ]
-                identifiers_to_exclude = [
-                    MCA._data_manager.ids_to_identifiers_map[l] for l in cluster.labels
-                ]
-                identifiers_to_output = [
-                    i
-                    for i in identifiers_overall_cluster
-                    if i not in identifiers_to_exclude
-                ]
-                output_cluster(
-                    new_folder, cluster, MCA._data_manager, identifiers_to_output
-                )
+                if params.exclude_correlation_cluster_number == cluster.cluster_id:
+                    new_folder = (
+                        "cc_clusters/" + "excluded_cluster_" + str(cluster.cluster_id)
+                    )
+                    overall_cluster = MCA._cluster_analysis.cc_clusters[-1]
+                    identifiers_overall_cluster = [
+                        MCA._data_manager.ids_to_identifiers_map[l]
+                        for l in overall_cluster.labels
+                    ]
+                    identifiers_to_exclude = [
+                        MCA._data_manager.ids_to_identifiers_map[l]
+                        for l in cluster.labels
+                    ]
+                    identifiers_to_output = [
+                        i
+                        for i in identifiers_overall_cluster
+                        if i not in identifiers_to_exclude
+                    ]
+                    output_cluster(
+                        new_folder, cluster, MCA._data_manager, identifiers_to_output
+                    )
 
-        for cluster in MCA._cluster_analysis.cos_angle_clusters:
-            if (
-                "cluster_" + str(cluster.cluster_id) in cos_list
-                or cluster.cluster_id == params.output_cos_cluster_number
-            ):
-                new_folder = (
-                    "cos_angle_clusters/" + "cluster_" + str(cluster.cluster_id)
-                )
-                cluster_identifiers = [
-                    MCA._data_manager.ids_to_identifiers_map[l] for l in cluster.labels
-                ]
-                output_cluster(
-                    new_folder, cluster, MCA._data_manager, cluster_identifiers
-                )
+            for cluster in MCA._cluster_analysis.cos_angle_clusters:
+                if (
+                    "cluster_" + str(cluster.cluster_id) in cos_list
+                    or cluster.cluster_id == params.output_cos_cluster_number
+                ):
+                    new_folder = (
+                        "cos_angle_clusters/" + "cluster_" + str(cluster.cluster_id)
+                    )
+                    cluster_identifiers = [
+                        MCA._data_manager.ids_to_identifiers_map[l]
+                        for l in cluster.labels
+                    ]
+                    output_cluster(
+                        new_folder, cluster, MCA._data_manager, cluster_identifiers
+                    )
 
-            if params.exclude_cos_cluster_number == cluster.cluster_id:
-                new_folder = (
-                    "cos_angle_clusters/"
-                    + "excluded_cluster_"
-                    + str(cluster.cluster_id)
-                )
-                overall_cluster = MCA._cluster_analysis.cos_angle_clusters[-1]
-                identifiers_overall_cluster = [
-                    MCA._data_manager.ids_to_identifiers_map[l]
-                    for l in overall_cluster.labels
-                ]
-                identifiers_to_exclude = [
-                    MCA._data_manager.ids_to_identifiers_map[l] for l in cluster.labels
-                ]
-                identifiers_to_output = [
-                    i
-                    for i in identifiers_overall_cluster
-                    if i not in identifiers_to_exclude
-                ]
-                output_cluster(
-                    new_folder, cluster, MCA._data_manager, identifiers_to_output
-                )
+                if params.exclude_cos_cluster_number == cluster.cluster_id:
+                    new_folder = (
+                        "cos_angle_clusters/"
+                        + "excluded_cluster_"
+                        + str(cluster.cluster_id)
+                    )
+                    overall_cluster = MCA._cluster_analysis.cos_angle_clusters[-1]
+                    identifiers_overall_cluster = [
+                        MCA._data_manager.ids_to_identifiers_map[l]
+                        for l in overall_cluster.labels
+                    ]
+                    identifiers_to_exclude = [
+                        MCA._data_manager.ids_to_identifiers_map[l]
+                        for l in cluster.labels
+                    ]
+                    identifiers_to_output = [
+                        i
+                        for i in identifiers_overall_cluster
+                        if i not in identifiers_to_exclude
+                    ]
+                    output_cluster(
+                        new_folder, cluster, MCA._data_manager, identifiers_to_output
+                    )
+            logger.info(f"Clusters recommended for comparison in {params.output.log}")
+            logger.info("----------------")
+            logger.info("Output given as DIALS .expt/.refl files:")
+            logger.info("To merge rotation data: use dials.merge")
+            logger.info("To merge still data: use xia2.ssx_reduce with the option steps=merge")
+            logger.info("----------------")
 
         id_list = []
         table_list = [["Experiment/Image Number", "Image Template"]]
@@ -266,14 +282,6 @@ def run(args=sys.argv[1:]):
 
         with open("xia2.cluster_analysis.html", "wb") as f:
             f.write(html.encode("utf-8", "xmlcharrefreplace"))
-
-        logger.info(f"Clusters recommended for comparison in {params.output.log}")
-        logger.info("----------------")
-        logger.info("Output given as DIALS .expt/.refl files:")
-        logger.info("To merge rotation data: use dials.merge")
-        logger.info("To merge still data: use xia2.ssx_reduce with the option steps=merge")
-        logger.info("----------------")
-
 
 def output_cluster(new_folder, cluster, original_data_manager, cluster_identifiers):
     data_manager = copy.deepcopy(original_data_manager)

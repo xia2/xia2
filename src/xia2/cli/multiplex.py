@@ -161,6 +161,12 @@ def run(args=sys.argv[1:]):
     reflections = flatten_reflections(params.input.reflections)
     if len(experiments) < 2:
         sys.exit("xia2.multiplex requires a minimum of two experiments")
+    for expt in experiments:
+        if (not expt.scan) or (expt.scan.get_oscillation()[1] == 0.0):
+            sys.exit(
+                "xia2.multiplex can only be used to process rotation data. To process still-shot images, use xia2.ssx_reduce"
+            )
+
     reflections = parse_multiple_datasets(reflections)
     experiments, reflections = assign_unique_identifiers(experiments, reflections)
 
