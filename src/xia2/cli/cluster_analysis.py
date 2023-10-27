@@ -244,6 +244,11 @@ def run(args=sys.argv[1:]):
                         new_folder, cluster, MCA._data_manager, identifiers_to_output
                     )
             logger.info(f"Clusters recommended for comparison in {params.output.log}")
+            logger.info("----------------")
+            logger.info("Output given as DIALS .expt/.refl files:")
+            logger.info("To merge rotation data: use dials.merge")
+            logger.info("To merge still data: use xia2.ssx_reduce with the option steps=merge")
+            logger.info("----------------")
 
         id_list = []
         table_list = [["Experiment/Image Number", "Image Template"]]
@@ -277,7 +282,6 @@ def run(args=sys.argv[1:]):
 
         with open("xia2.cluster_analysis.html", "wb") as f:
             f.write(html.encode("utf-8", "xmlcharrefreplace"))
-
 
 def output_cluster(new_folder, cluster, original_data_manager, cluster_identifiers):
     data_manager = copy.deepcopy(original_data_manager)

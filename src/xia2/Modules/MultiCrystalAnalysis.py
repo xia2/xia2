@@ -269,7 +269,7 @@ relatively isomorphous.
                         print("Not a real cluster")
                     else:
                         for item in test["Datasets"]:
-                            if item == datasets_to_look_for:
+                            if sorted(item) == datasets_to_look_for:
                                 clusters_to_compare_unfiltered.append(pair)
 
             # Compare against maximum allowed height difference
