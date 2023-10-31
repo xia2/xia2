@@ -114,28 +114,41 @@ def assess_for_indexing_ambiguities(
     unit_cell: uctbx.unit_cell,
     max_delta: float = 0.5,
 ) -> bool:
-    # if lattice symmetry higher than space group symmetry, then need to
-    # assess for indexing ambiguity.
+
+    # first test for 'true' indexing ambiguities - where the space group symmetry
+    # is lower than the lattice symmetry
     cs = crystal.symmetry(unit_cell=unit_cell, space_group=sgtbx.space_group())
     # Get cell reduction operator
     cb_op_inp_minimum = cs.change_of_basis_op_to_minimum_cell()
     # New symmetry object with changed basis
     minimum_symmetry = cs.change_basis(cb_op_inp_minimum)
 
+    # Get the exact lattice symmetry
+    exact_lattice_group = sgtbx.lattice_symmetry_group(
+        minimum_symmetry.unit_cell(),
+        max_delta=0,
+        enforce_max_delta_for_generated_two_folds=True,
+    )
+    need_to_assess_1 = exact_lattice_group.order_p() > space_group.group().order_p()
+    human_readable = {True: "yes", False: "no"}
+
+    # now test for accidental ambiguities due to lattice parameters being close to a higher symmetry
     # Get highest symmetry compatible with lattice
-    lattice_group = sgtbx.lattice_symmetry_group(
+    potential_lattice_group = sgtbx.lattice_symmetry_group(
         minimum_symmetry.unit_cell(),
         max_delta=max_delta,
         enforce_max_delta_for_generated_two_folds=True,
     )
-    need_to_assess = lattice_group.order_p() > space_group.group().order_p()
-    human_readable = {True: "yes", False: "no"}
+    need_to_assess_2 = potential_lattice_group.order_p() > exact_lattice_group.order_p()
     xia2_logger.info(
         "Indexing ambiguity assessment:\n"
-        f"  Lattice group: {str(lattice_group.info())}, Space group: {str(space_group)}\n"
-        f"  Potential indexing ambiguities: {human_readable[need_to_assess]}"
+        f"  Space group: {str(space_group)}\n"
+        f"  Lattice group: {str(exact_lattice_group.info())}\n"
+        f"  Highest symmetry lattice group (within tolerance): {str(potential_lattice_group.info())}\n"
+        f"  Indexing ambiguities due to symmetry: {human_readable[need_to_assess_1]}\n"
+        f"  Potential misindexing due to similar lattice parameters: {human_readable[need_to_assess_2]}"
     )
-    return need_to_assess
+    return need_to_assess_1 or need_to_assess_2
 
 
 def check_consistent_space_group(crystals_dict: CrystalsDict) -> sgtbx.space_group_info:
