@@ -9,7 +9,10 @@ from dials.array_family import flex
 from dials.command_line import export, merge
 from dials.command_line.slice_sequence import slice_experiments, slice_reflections
 from dials.report.analysis import scaled_data_as_miller_array
-from dials.util.batch_handling import assign_batches_to_reflections
+from dials.util.batch_handling import (
+    assign_batches_to_reflections,
+    calculate_batch_offsets,
+)
 from dxtbx.model import ExperimentList
 
 logger = logging.getLogger(__name__)
@@ -27,6 +30,7 @@ class DataManager:
             value: key for key, value in self.ids_to_identifiers_map.items()
         }
         self.wavelengths = {}  # map of wl to wavelength group.
+        self.batch_offset_list = []
 
         if all(e.scan is None for e in self._experiments):
             self.all_stills = True
@@ -42,28 +46,9 @@ class DataManager:
     def _set_batches(self):
 
         if not self.all_stills:
-            max_batches = max(e.scan.get_image_range()[1] for e in self._experiments)
-            max_batches += 10  # allow some head room
+            self.batch_offset_list = calculate_batch_offsets(self._experiments)
         else:
-            max_batches = 1
-            self.ssx_batch_list = []
-
-        n = int(math.ceil(math.log10(max_batches)))
-
-        for i, expt in enumerate(self._experiments):
-            if not self.all_stills:
-                expt.scan.set_batch_offset(i * 10**n)
-                if expt.imageset:
-                    # This may be a different scan instance ¯\_(ツ)_/¯
-                    expt.imageset.get_scan().set_batch_offset(
-                        expt.scan.get_batch_offset()
-                    )
-                logger.debug(
-                    f"{expt.scan.get_batch_offset()} {expt.scan.get_batch_range()}"
-                )
-
-            else:
-                self.ssx_batch_list.append(i * 10**n)
+            self.batch_offset_list = list(range(len(self._experiments)))
 
     @property
     def experiments(self):
@@ -82,6 +67,11 @@ class DataManager:
         self._reflections = reflections
 
     def select(self, experiment_identifiers):
+        self.batch_offset_list = [
+            i
+            for (i, expt) in zip(self.batch_offset_list, self._experiments)
+            if expt.identifier in experiment_identifiers
+        ]
         self._experiments = ExperimentList(
             [
                 expt
@@ -129,19 +119,16 @@ class DataManager:
         )
 
     def reflections_as_miller_arrays(self, combined=False):
-        # offsets = calculate_batch_offsets(experiments)
+
         reflection_tables = []
         for id_ in set(self._reflections["id"]).difference({-1}):
             reflection_tables.append(
                 self._reflections.select(self._reflections["id"] == id_)
             )
 
-        if not self.all_stills:
-            offsets = [expt.scan.get_batch_offset() for expt in self._experiments]
-        else:
-            offsets = self.ssx_batch_list
-
-        reflection_tables = assign_batches_to_reflections(reflection_tables, offsets)
+        reflection_tables = assign_batches_to_reflections(
+            reflection_tables, self.batch_offset_list
+        )
 
         if combined:
             # filter bad refls and negative scales
