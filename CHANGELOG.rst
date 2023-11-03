@@ -1,3 +1,49 @@
+xia2 3.17.0 (2023-11-03)
+========================
+
+Features
+--------
+
+- ``xia2.ssx``: Enable slicing a subset of images/templates using ``<filename>:start:end`` syntax. (`#740 <https://github.com/xia2/xia2/issues/740>`_)
+- ``xia2.ssx_reduce``: Improved workflow for resolving indexing ambiguity. (`#761 <https://github.com/xia2/xia2/issues/761>`_)
+- ``xia2.ssx``: Add ``starting_geometry=`` option, to set an initial geometry for further geometry refinement. (`#763 <https://github.com/xia2/xia2/issues/763>`_)
+- ``xia2.cluster_analysis``: Add ``run_cluster_identification=`` option to toggle cluster identification analysis. (`#767 <https://github.com/xia2/xia2/issues/767>`_)
+
+
+Bugfixes
+--------
+
+- ``xia2.multiplex``: Automatically extend r_free flags for clusters and filtered datasets. (`#747 <https://github.com/xia2/xia2/issues/747>`_)
+- ``xia2.ssx_reduce``: Improve data selection for indexing ambiguity resolution. (`#760 <https://github.com/xia2/xia2/issues/760>`_)
+- ``xia2.cluster_analysis``: Fixed bug where interesting clusters were not identified, due to inconsistency in file paths. (`#764 <https://github.com/xia2/xia2/issues/764>`_)
+- ``xia2.multiplex``: Fix duplicate-batch-offsets crash for multi-lattice data. (`#765 <https://github.com/xia2/xia2/issues/765>`_)
+- ``xia2.multiplex``: Exit cleanly when supplied with still-shot data. (`#766 <https://github.com/xia2/xia2/issues/766>`_)
+- ``xia2.ssx_reduce``: Fix test for potential accidental indexing ambiguities for non-MX space groups. (`#768 <https://github.com/xia2/xia2/issues/768>`_)
+
+
+Xia2 3.17 (2023-11-03)
+======================
+
+Features
+--------
+
+- ``xia2.ssx``: Enable slicing a subset of images/templates using file:start:end syntax (`#740 <https://github.com/xia2/xia2/issues/740>`_)
+- ``xia2.ssx_reduce``: Improved indexing ambiguity resolution workflow (`#761 <https://github.com/xia2/xia2/issues/761>`_)
+- ``xia2.ssx``: Add starting_geometry= option, which is used as an initial geometry with further geometry refinement run. (`#763 <https://github.com/xia2/xia2/issues/763>`_)
+- ``xia2.cluster_analysis``: Add run_cluster_identification option to toggle on/off cluster identification analysis (`#767 <https://github.com/xia2/xia2/issues/767>`_)
+
+
+Bugfixes
+--------
+
+- ``xia2.multiplex``: Automatically extend r_free flags for clusters and filtered datasets. (`#747 <https://github.com/xia2/xia2/issues/747>`_)
+- Improve data selection for indexing ambiguity resolution in ssx_reduce (`#760 <https://github.com/xia2/xia2/issues/760>`_)
+- ``xia2.cluster_analysis``: Fixed bug where interesting clusters were not identified due to inconsistency in file paths (`#764 <https://github.com/xia2/xia2/issues/764>`_)
+- ``xia2.multiplex``: Fix duplicate-batch-offsets crash for multi-lattice data (`#765 <https://github.com/xia2/xia2/issues/765>`_)
+- ``xia2.multiplex``: Exit cleanly when supplied with still-shot data (`#766 <https://github.com/xia2/xia2/issues/766>`_)
+- ``xia2.ssx_reduce``: Fix test for potential accidental indexing ambiguities for non-MX space groups (`#768 <https://github.com/xia2/xia2/issues/768>`_)
+
+
 xia2 3.16.0 (2023-08-14)
 ========================
 
