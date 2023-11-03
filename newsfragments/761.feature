@@ -1,1 +1,1 @@
-``xia2.ssx_reduce``: Improved indexing ambiguity resolution workflow
+``xia2.ssx_reduce``: Improved workflow for resolving indexing ambiguity.

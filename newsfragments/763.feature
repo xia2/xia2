@@ -1,1 +1,1 @@
-``xia2.ssx``: Add starting_geometry= option, which is used as an initial geometry with further geometry refinement run.
+``xia2.ssx``: Add ``starting_geometry=`` option, to set an initial geometry for further geometry refinement.

@@ -1,1 +1,1 @@
-``xia2.ssx``: Enable slicing a subset of images/templates using file:start:end syntax
+``xia2.ssx``: Enable slicing a subset of images/templates using ``<filename>:start:end`` syntax.
