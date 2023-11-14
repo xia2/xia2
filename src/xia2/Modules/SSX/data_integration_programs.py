@@ -225,6 +225,7 @@ def clusters_from_experiments(
             space_group=expt.crystal.get_space_group(),
         )
         for expt in experiments
+        if expt.crystal
     ]
 
     if threshold == "auto":
@@ -477,6 +478,14 @@ def ssx_integrate(
                 "indexed.refl"
             ).split_by_experiment_id()
             indexed_expts = load.experiment_list("indexed.expt", check_format=True)
+            indexed_reflections = []
+            indexed_experiments = []
+            for expt, table in zip(indexed_expts, indexed_refl):
+                if expt.crystal:
+                    indexed_experiments.append(expt)
+                    indexed_reflections.append(table)
+            indexed_refl = indexed_reflections
+            indexed_expts = ExperimentList(indexed_experiments)
 
             xia2_phil = f"""
                 nproc={integration_params.nproc}

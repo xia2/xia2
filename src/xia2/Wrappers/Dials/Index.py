@@ -235,7 +235,7 @@ def Index(DriverType=None):
             self._experiment_list = load.experiment_list(self._experiment_filename)
             self._reflections = flex.reflection_table.from_file(self._indexed_filename)
 
-            crystal = self._experiment_list.crystals()[0]
+            crystal = [c for c in self._experiment_list.crystals() if c][0]
             self._p1_cell = crystal.get_unit_cell().parameters()
 
             refined_sel = self._reflections.get_flags(
