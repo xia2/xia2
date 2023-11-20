@@ -752,7 +752,8 @@ def test_on_sacla_data_slice(dials_data, tmp_path):
     assert len(imported) == 2
     assert len(imported.imagesets()) == 1
 
-    with open(tmp_path / "batch_1" / "indexed.expt", "r") as f:
-        indexed = load.experiment_list(f, check_format=False)
+    indexed = load.experiment_list(
+        tmp_path / "batch_1" / "indexed.expt", check_format=False
+    )
 
     assert indexed[0].scan.get_image_range() == (3, 3)  # i.e. the third image
