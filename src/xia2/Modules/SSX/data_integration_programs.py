@@ -474,13 +474,29 @@ def ssx_integrate(
         logfile = "dials.ssx_integrate.log"
         with log_to_file(logfile) as dials_logger, record_step("dials.ssx_integrate"):
             # Set up the input and log it to the dials log file
-            indexed_refl = flex.reflection_table.from_file(
-                "indexed.refl"
-            ).split_by_experiment_id()
+            indexed_refl = flex.reflection_table.from_file("indexed.refl")
+            split_reflections = indexed_refl.split_by_experiment_id()
             indexed_expts = load.experiment_list("indexed.expt", check_format=True)
+            if len(split_reflections) != len(indexed_expts):
+                # spots may not have been found on every image. In this case, the length
+                # of the list of reflection tables will be less than the length of experiments.
+                # Add in empty items to the list, so that this can be reported on
+                obs = set(indexed_refl["id"])
+                no_refls = set(range(len(indexed_expts))).difference(obs)
+                # need to handle both cases where lots have no refls, or only a few do
+                for id_ in sorted(no_refls, reverse=True):
+                    del indexed_expts[id_]
+                reflections = split_reflections
+                if len(indexed_expts) != len(reflections):
+                    raise ValueError(
+                        f"Unequal number of reflection tables {len(reflections)} and experiments {len(indexed_expts)}"
+                    )
+            else:
+                reflections = split_reflections
+
             indexed_reflections = []
             indexed_experiments = []
-            for expt, table in zip(indexed_expts, indexed_refl):
+            for expt, table in zip(indexed_expts, reflections):
                 if expt.crystal:
                     indexed_experiments.append(expt)
                     indexed_reflections.append(table)
