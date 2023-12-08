@@ -915,6 +915,7 @@ class MultiCrystalScale:
         reindex.set_experiments_filename(self._experiments_filename)
         reindex.set_indexed_filename(self._reflections_filename)
         reindex.set_reference_file(self._params.reference)
+        reindex.set_space_group(self._params.symmetry.space_group)
 
         reindex.run()
 
