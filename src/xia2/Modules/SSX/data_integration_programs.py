@@ -227,6 +227,8 @@ def clusters_from_experiments(
         for expt in experiments
         if expt.crystal
     ]
+    if not crystal_symmetries:
+        return {}, []
 
     if threshold == "auto":
         threshold = 5000
@@ -359,7 +361,7 @@ def ssx_index(
                 cluster_plots, large_clusters = ({}, [])
 
             summary_plots = {}
-            if indexed_experiments:
+            if any(indexed_experiments.crystals()):
                 summary_plots = generate_plots(summary_data)
             indexing_rate = f"{100 * n_images / n_hits:.2f}" if n_hits else "-"
             output_ = (
@@ -404,6 +406,11 @@ def run_refinement(
 
         indexed_refl = flex.reflection_table.from_file("indexed.refl")
         indexed_expts = load.experiment_list("indexed.expt", check_format=False)
+        indexed_expts = ExperimentList([e for e in indexed_expts if e.crystal])
+        indexed_refl = indexed_refl.select_on_experiment_identifiers(
+            indexed_expts.identifiers()
+        )
+        indexed_refl.reset_ids()
 
         extra_defaults = """
             refinement.parameterisation.beam.fix="all"
