@@ -225,7 +225,9 @@ class DialsRefiner(Refiner):
             self.set_refiner_payload("observations.refl", self._refinr_indexed_filename)
 
             # this is the result of the cell refinement
-            self._refinr_cell = experiments.crystals()[0].get_unit_cell().parameters()
+            self._refinr_cell = (
+                [c for c in experiments.crystals() if c][0].get_unit_cell().parameters()
+            )
 
     def _refine_finish(self):
         # For multiple-sweep joint refinement, because integraters are fairly rigidly
