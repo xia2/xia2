@@ -122,10 +122,11 @@ def _exercise_dials_wrappers(image_file):
     shutil.copy(indexer.get_indexed_filename(), "copy.refl")
 
     expts = load.experiment_list("copy.expt")
-    expts[0].identifier = "0"
-    expts.as_file("copy.expt")
     refls = flex.reflection_table.from_file("copy.refl")
-    refls.experiment_identifiers()[0] = "0"
+    for i, expt in enumerate(expts):
+        expt.identifier = str(i)
+        refls.experiment_identifiers()[i] = str(i)
+    expts.as_file("copy.expt")
     refls.as_file("copy.refl")
 
     exporter = CombineExperiments()
