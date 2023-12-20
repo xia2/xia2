@@ -711,7 +711,6 @@ class Indexer:
         return self.LATTICE_POSSIBLE
 
     def set_indexer_experiment_list(self, experiments_list):
-
         self._indxr_experiment_list = ExperimentList(
             [e for e in experiments_list if e.crystal]
         )
