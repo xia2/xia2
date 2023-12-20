@@ -355,6 +355,14 @@ def merge(
             + f"Merged mtz file: {filename}\n"
             + f"{table_1_stats}"
         )
+        if table_1_stats:
+            for row in table_1_stats.split("\n"):
+                if "High resolution limit" in row:
+                    row = row.lstrip("High resolution limit")
+                    vals = row.split()
+                    if len(vals) == 4:
+                        suggested = float(vals[0])
+                        result.suggested_resolution = suggested
 
     return result
 
@@ -400,6 +408,7 @@ class MergeResult:
     summary: str = ""
     table_1_stats: str = ""
     name: str = ""
+    suggested_resolution: float = 0.0
 
 
 def _extract_scaling_params(reduction_params):

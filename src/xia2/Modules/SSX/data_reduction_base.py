@@ -399,6 +399,7 @@ class BaseDataReduction(object):
 
         future_list = []
         summaries = {name: "" for name in name_to_expts_arr.keys()}
+        resolutions = {name: 0.0 for name in name_to_expts_arr.keys()}
         with record_step(
             "dials.merge (parallel)"
         ), concurrent.futures.ProcessPoolExecutor(
@@ -423,6 +424,7 @@ class BaseDataReduction(object):
             if len(future_list) > 1:
                 xia2_logger.info(f"Merged {mergeresult.name}")
             summaries[mergeresult.name] = mergeresult.summary
+            resolutions[mergeresult.name] = mergeresult.suggested_resolution
             FileHandler.record_data_file(mergeresult.merge_file)
             FileHandler.record_log_file(
                 mergeresult.logfile.name.rstrip(".log"), mergeresult.logfile
@@ -438,3 +440,57 @@ class BaseDataReduction(object):
         for result in summaries.values():  # always print stats in same order
             if result:
                 xia2_logger.info(result)
+        if len(resolutions) == 1:
+            suggested = list(resolutions.values())[0]
+            name = list(resolutions.keys())[0]
+            if suggested:
+                with record_step("dials.merge (resolution cut)"):
+                    scaled_array, elist = name_to_expts_arr[name]
+                    scaled_array = scaled_array.resolution_filter(d_min=suggested)
+                    suggestedmergeresult: MergeResult = merge(
+                        merge_wds[name],
+                        scaled_array,
+                        elist,
+                        suggested,
+                        best_unit_cell,
+                        self._reduction_params.partiality_threshold,
+                        name + "_cut",
+                    )
+                FileHandler.record_data_file(suggestedmergeresult.merge_file)
+                FileHandler.record_log_file(
+                    suggestedmergeresult.logfile.name.rstrip(".log"),
+                    suggestedmergeresult.logfile,
+                )
+            else:
+                # run dials.estimate resolution with Isigma=1.0 limit
+                scaled_array, elist = name_to_expts_arr[name]
+                from dials.util.resolution_analysis import (
+                    Resolutionizer,
+                    metrics,
+                    phil_defaults,
+                )
+
+                params = phil_defaults.extract()
+                suggested = (
+                    Resolutionizer(scaled_array, params.resolution)
+                    .resolution(metric=metrics.I_MEAN_OVER_SIGMA_MEAN, limit=1)
+                    .d_min
+                )
+                if suggested:
+                    with record_step("dials.merge (resolution cut)"):
+                        scaled_array, elist = name_to_expts_arr[name]
+                        scaled_array = scaled_array.resolution_filter(d_min=suggested)
+                        suggestedmergeresult_isigma: MergeResult = merge(
+                            merge_wds[name],
+                            scaled_array,
+                            elist,
+                            suggested,
+                            best_unit_cell,
+                            self._reduction_params.partiality_threshold,
+                            name + "_cut",
+                        )
+                    FileHandler.record_data_file(suggestedmergeresult_isigma.merge_file)
+                    FileHandler.record_log_file(
+                        suggestedmergeresult_isigma.logfile.name.rstrip(".log"),
+                        suggestedmergeresult_isigma.logfile,
+                    )
