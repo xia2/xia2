@@ -363,6 +363,26 @@ def merge(
     return result
 
 
+def join_merge_summaries(overall_table_1_stats, cut_table_1_stats):
+    cut_table_1_stats = cut_table_1_stats.replace(
+        " Overall    Low     High", "Suggested   Low    High  Overall"
+    )
+    cut_table_1_stats = cut_table_1_stats.split("\n")
+    for i, r in enumerate(overall_table_1_stats.split("\n")[1:]):
+        row = r.split(" ")
+        val = row[-1]
+        n = 0
+        row.reverse()
+        for v in row[1:]:
+            if v:
+                break
+            n += 1
+        if val:
+            cut_table_1_stats[i + 1] += " " * (n + 1) + val
+    cut_table_1_stats = "\n".join(cut_table_1_stats)
+    return cut_table_1_stats
+
+
 scaled_cols_to_keep = [
     "miller_index",
     "inverse_scale_factor",

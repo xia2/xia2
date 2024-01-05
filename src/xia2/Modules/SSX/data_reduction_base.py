@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 import logging
 from pathlib import Path
 from typing import List, Tuple
@@ -28,6 +29,7 @@ from xia2.Modules.SSX.data_reduction_programs import (
     assess_for_indexing_ambiguities,
     cosym_reindex,
     filter_,
+    join_merge_summaries,
     merge,
     parallel_cosym,
     prepare_scaled_array,
@@ -400,7 +402,7 @@ class BaseDataReduction(object):
         future_list = []
         summaries = {name: "" for name in name_to_expts_arr.keys()}
         resolutions = {name: 0.0 for name in name_to_expts_arr.keys()}
-        merge_results_dict = {}
+        merge_results_dict = {name: {} for name in name_to_expts_arr.keys()}
         with record_step(
             "dials.merge (parallel)"
         ), concurrent.futures.ProcessPoolExecutor(
@@ -429,19 +431,8 @@ class BaseDataReduction(object):
             merge_results_dict[mergeresult.name] = mergeresult
             # don't save the files yet, as we may want to rename them, depending on if we need to rerun
             # with a resolution cutoff
-        for result in summaries.values():  # always print stats in same order
-            if result:
-                xia2_logger.info(result)
 
-        # if there is only a single merged dataset:
-        #     first use cc1/2=0.3 from dials.merge.
-        #     if that failed, try to calculate cutoff where Isigma=1.0
-        # if there is more than one merged dataset:
-        #     then apply the highest resolution cutoff to all data (cc1/2=0.3 from dials.merge)
-        #     if that failed, use highest cutoff where Isigma=1.0
-        if self._reduction_params.d_min:
-            # dmin was applied, so don't try to estimate resolution limit
-            # so just record the files and finish
+        def record_merge_files(merge_results_dict):
             for mergeresult in merge_results_dict.values():
                 FileHandler.record_data_file(mergeresult.merge_file)
                 FileHandler.record_log_file(
@@ -453,10 +444,25 @@ class BaseDataReduction(object):
                 FileHandler.record_html_file(
                     mergeresult.htmlfile.stem, mergeresult.htmlfile
                 )
+
+        if self._reduction_params.d_min:
+            # dmin was applied, so don't try to estimate resolution limit
+            # so just record the files, print a summary and finish
+            record_merge_files(merge_results_dict)
+            for result in summaries.values():  # always print stats in same order
+                if result:
+                    xia2_logger.info(result)
             return
 
-        suggested_nonzero = sorted(v for v in resolutions.values() if v)
-        if not suggested_nonzero:
+        # No d_min was specified, so try to work out a resolution cutoff from cc1/2 or misigma
+        suggested_nonzero = []
+        msg_to_print = ""
+        # dials.merge gives a suggestion based on cc1/2=0.3, so avoid repeating
+        # the calculation for this default value
+        if self._reduction_params.cc_half_limit == 0.3:
+            suggested_nonzero = sorted(v for v in resolutions.values() if v)
+            msg_to_print = "based on cc_half=0.3"
+        if not suggested_nonzero:  # i.e. cchalf fit failed or non-default value chosen.
             from dials.util.resolution_analysis import (
                 Resolutionizer,
                 metrics,
@@ -464,63 +470,84 @@ class BaseDataReduction(object):
             )
 
             params = phil_defaults.extract()
-            for name, (scaled_array, elist) in name_to_expts_arr.items():
-                suggested = (
-                    Resolutionizer(scaled_array, params.resolution)
-                    .resolution(metric=metrics.MISIGMA, limit=1)
-                    .d_min
+            if (
+                self._reduction_params.cc_half_limit != 0.3
+                and self._reduction_params.cc_half_limit is not None
+            ):
+                for name, (scaled_array, elist) in name_to_expts_arr.items():
+                    suggested = (
+                        Resolutionizer(scaled_array, params.resolution)
+                        .resolution(
+                            metric=metrics.CC_HALF,
+                            limit=self._reduction_params.cc_half_limit,
+                        )
+                        .d_min
+                    )
+                    if suggested:
+                        resolutions[name] = suggested
+                suggested_nonzero = sorted(
+                    round(v, 2) for v in resolutions.values() if v
                 )
-                if suggested:
-                    resolutions[name] = suggested
+                msg_to_print = (
+                    f"based on cc_half={self._reduction_params.cc_half_limit}"
+                )
+            if (
+                not suggested_nonzero
+            ):  # either all failed, or cc_half=None to trigger misigma
+                for name, (scaled_array, elist) in name_to_expts_arr.items():
+                    suggested = (
+                        Resolutionizer(scaled_array, params.resolution)
+                        .resolution(
+                            metric=metrics.MISIGMA,
+                            limit=self._reduction_params.misigma_limit,
+                        )
+                        .d_min
+                    )
+                    if suggested:
+                        resolutions[name] = suggested
+                msg_to_print = (
+                    f"based on misigma={self._reduction_params.misigma_limit}"
+                )
             suggested_nonzero = sorted(round(v, 2) for v in resolutions.values() if v)
 
         if not suggested_nonzero:
             xia2_logger.info("Unable to estimate resolution limit")
             # can't determine a resolution limit, so just use the current merge job as final.
-            for mergeresult in merge_results_dict.values():
-                FileHandler.record_data_file(mergeresult.merge_file)
-                FileHandler.record_log_file(
-                    mergeresult.logfile.stem, mergeresult.logfile
-                )
-                FileHandler.record_more_log_file(
-                    mergeresult.jsonfile.stem, mergeresult.jsonfile
-                )
-                FileHandler.record_html_file(
-                    mergeresult.htmlfile.stem, mergeresult.htmlfile
-                )
+            record_merge_files(merge_results_dict)
+            for result in summaries.values():  # always print stats in same order
+                if result:
+                    xia2_logger.info(result)
             return
         # rename the results files with _full appended
         for name, mergeresult in merge_results_dict.items():
             new_file = mergeresult.merge_file.with_stem(
                 mergeresult.merge_file.stem + "_full"
             )
-            mergeresult.merge_file.rename(new_file)
-            FileHandler.record_data_file(new_file)
+            mergeresult.merge_file = mergeresult.merge_file.rename(new_file)
             new_log = mergeresult.logfile.with_stem(mergeresult.logfile.stem + "_full")
-            mergeresult.logfile.rename(new_log)
-            FileHandler.record_log_file(new_log.stem, new_log)
+            mergeresult.logfile = mergeresult.logfile.rename(new_log)
             new_json = mergeresult.jsonfile.with_stem(
                 mergeresult.jsonfile.stem + "_full"
             )
-            mergeresult.jsonfile.rename(new_json)
-            FileHandler.record_more_log_file(new_json.stem, new_json)
+            mergeresult.jsonfile = mergeresult.jsonfile.rename(new_json)
             new_html = mergeresult.htmlfile.with_stem(
                 mergeresult.htmlfile.stem + "_full"
             )
-            mergeresult.htmlfile.rename(new_html)
-            FileHandler.record_html_file(new_html.stem, new_html)
+            mergeresult.htmlfile = mergeresult.htmlfile.rename(new_html)
+        record_merge_files(merge_results_dict)
 
         suggested = suggested_nonzero[0]
         if len(merge_results_dict) > 1:
             xia2_logger.info(
-                f"Applying resolution cut of {suggested}A to all merging groups. \nSome groups may have a lower practical resolution limit."
+                f"Applying resolution cut of {suggested}A to all merging groups, {msg_to_print}. \nSome groups may have a lower practical resolution limit."
             )
         else:
             xia2_logger.info(
-                f"Applying resolution cut of {suggested}A, based on CC1/2=0.3"
+                f"Applying resolution cut of {suggested}A, {msg_to_print}"
                 + "\nData to the full resolution can be found in merged_full.mtz"
             )
         future_list = []
+        cut_merge_results_dict = {name: {} for name in name_to_expts_arr.keys()}
         with record_step(
             "dials.merge (resolution cut, parallel)"
         ), concurrent.futures.ProcessPoolExecutor(
@@ -544,17 +571,50 @@ class BaseDataReduction(object):
                 )
         for mergefuture in concurrent.futures.as_completed(future_list):
             suggestedmergeresultgroup: MergeResult = mergefuture.result()
+            cut_merge_results_dict[
+                suggestedmergeresultgroup.name
+            ] = suggestedmergeresultgroup
+        record_merge_files(cut_merge_results_dict)
 
-            FileHandler.record_data_file(suggestedmergeresultgroup.merge_file)
-            FileHandler.record_log_file(
-                suggestedmergeresultgroup.logfile.stem,
-                suggestedmergeresultgroup.logfile,
+        # now to get the correct summaries from the json data
+        short_summaries = {}
+        for name in merge_results_dict.keys():
+            with open(merge_results_dict[name].jsonfile, "r") as f:
+                alldata = json.load(f)
+            wlkey = list(alldata.keys())[0]
+            overall_table_1_stats = alldata[wlkey]["table_1_stats"]
+            with open(cut_merge_results_dict[name].jsonfile, "r") as f:
+                cutdata = json.load(f)
+            cut_table_1_stats = cutdata[wlkey]["table_1_stats"]
+            summary = cutdata[wlkey]["scaling_tables"]["overall_summary_data"]
+            short_summaries[name] = {
+                "n xtals": len(name_to_expts_arr[name][1]),
+                "Multiplicity": summary["Multiplicity"].split(" ")[0],
+                "Completeness (%)": summary["Completeness (%)"].split(" ")[0],
+                "CC half": summary["CC-half"].split(" ")[0],
+                "I/sigma": summary["I/sigma"].split(" ")[0],
+                "R-split": f'{cutdata[wlkey]["merging_stats"]["overall"]["r_split"]:.2f}',
+            }
+            xia2_logger.info(
+                (
+                    f"Merged {len(name_to_expts_arr[name][1])} crystals in {', '.join(name.split('.'))}\n"
+                    if name != "merged"
+                    else ""
+                )
+                + join_merge_summaries(overall_table_1_stats, cut_table_1_stats)
             )
-            FileHandler.record_html_file(
-                suggestedmergeresultgroup.htmlfile.stem,
-                suggestedmergeresultgroup.htmlfile,
+        from dials.util import tabulate
+
+        if len(merge_results_dict) > 1:
+            header = [" "] + list(short_summaries.keys())
+            rows = []
+            group_0 = list(short_summaries.keys())[0]
+            for k in short_summaries[group_0].keys():
+                row_this = [k]
+                for val in short_summaries.keys():
+                    row_this.append(short_summaries[val][k])
+                rows.append(row_this)
+            xia2_logger.info(
+                f"Summary of key statistics for merge groups (to {suggested}A)"
             )
-            FileHandler.record_more_log_file(
-                suggestedmergeresultgroup.jsonfile.stem,
-                suggestedmergeresultgroup.jsonfile,
-            )
+            xia2_logger.info(tabulate(rows, header))

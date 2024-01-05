@@ -55,9 +55,6 @@ batch_size = None
   .type = int
   .help = "An alias for reduction_batch_size"
   .expert_level = 1
-d_min = None
-  .type = float
-  .expert_level = 1
 dose_series_repeat = None
   .type = int(value_min=2)
   .expert_level = 2
@@ -150,11 +147,16 @@ resolution {
     .type = float
     .expert_level = 1
   cc_half = 0.3
-    .type = float
+    .type = float(value_min=0.0, allow_none=True)
     .expert_level = 2
+    .help = "If no d_min is specified, a resolution cutoff will be"
+            "applied based on this cc_half threshold. If set to None,"
+            "the misigma threshold below will be used."
   misigma = 1
     .type = float
     .expert_level = 2
+    .help = "If no d_min or cc_half is specified, a resolution cutoff will be"
+            "applied based on this threshold value of the merged I/sigma."
 }
 """
     % reference_phil_str

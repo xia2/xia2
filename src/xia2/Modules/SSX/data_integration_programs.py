@@ -66,7 +66,7 @@ class SpotfindingParams:
         return cls(
             params.spotfinding.min_spot_size,
             params.spotfinding.max_spot_size,
-            params.d_min,
+            params.resolution.d_min,
             params.multiprocessing.nproc,
             spotfinding_phil,
         )
@@ -141,7 +141,7 @@ class IntegrationParams:
         return cls(
             params.integration.algorithm,
             params.integration.ellipsoid.rlp_mosaicity,
-            params.d_min,
+            params.resolution.d_min,
             params.multiprocessing.nproc,
             integration_phil,
         )

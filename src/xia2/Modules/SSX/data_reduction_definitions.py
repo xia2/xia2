@@ -64,6 +64,8 @@ class ReductionParams:
     reference_ksol: float = 0.35
     reference_bsol: float = 46.0
     partiality_threshold: float = 0.25
+    cc_half_limit: Optional[float] = None
+    misigma_limit: float = 1.0
 
     @classmethod
     def from_phil(cls, params: iotbx.phil.scope_extract):
@@ -90,7 +92,7 @@ class ReductionParams:
             params.symmetry.space_group,
             params.reduction_batch_size,
             params.multiprocessing.nproc,
-            params.d_min,
+            params.resolution.d_min,
             params.scaling.anomalous,
             params.symmetry.lattice_symmetry_max_delta,
             params.clustering.threshold,
@@ -106,4 +108,6 @@ class ReductionParams:
             params.reference_model.k_sol,
             params.reference_model.b_sol,
             params.partiality_threshold,
+            params.resolution.cc_half,
+            params.resolution.misigma,
         )
