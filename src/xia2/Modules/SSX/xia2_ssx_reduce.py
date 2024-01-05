@@ -145,6 +145,17 @@ scaling {
             "over identical options defined in the phil file."
     .expert_level = 3
 }
+resolution {
+  d_min = None
+    .type = float
+    .expert_level = 1
+  cc_half = 0.3
+    .type = float
+    .expert_level = 2
+  misigma = 1
+    .type = float
+    .expert_level = 2
+}
 """
     % reference_phil_str
 )

@@ -429,18 +429,6 @@ class BaseDataReduction(object):
             merge_results_dict[mergeresult.name] = mergeresult
             # don't save the files yet, as we may want to rename them, depending on if we need to rerun
             # with a resolution cutoff
-            """FileHandler.record_data_file(mergeresult.merge_file)
-            FileHandler.record_log_file(
-                mergeresult.logfile.stem, mergeresult.logfile
-            )
-            if mergeresult.jsonfile:
-                FileHandler.record_more_log_file(
-                    mergeresult.jsonfile.stem, mergeresult.jsonfile
-                )
-            if mergeresult.htmlfile:
-                FileHandler.record_html_file(
-                    mergeresult.htmlfile.stem, mergeresult.htmlfile
-                )"""
         for result in summaries.values():  # always print stats in same order
             if result:
                 xia2_logger.info(result)
@@ -451,53 +439,100 @@ class BaseDataReduction(object):
         # if there is more than one merged dataset:
         #     then apply the highest resolution cutoff to all data (cc1/2=0.3 from dials.merge)
         #     if that failed, use highest cutoff where Isigma=1.0
+        if self._reduction_params.d_min:
+            # dmin was applied, so don't try to estimate resolution limit
+            # so just record the files and finish
+            for mergeresult in merge_results_dict.values():
+                FileHandler.record_data_file(mergeresult.merge_file)
+                FileHandler.record_log_file(
+                    mergeresult.logfile.stem, mergeresult.logfile
+                )
+                FileHandler.record_more_log_file(
+                    mergeresult.jsonfile.stem, mergeresult.jsonfile
+                )
+                FileHandler.record_html_file(
+                    mergeresult.htmlfile.stem, mergeresult.htmlfile
+                )
+            return
 
-        if len(resolutions) == 1:
-            suggested = list(resolutions.values())[0]
-            if suggested or (not self._reduction_params.d_min):
-                # first let's rename and save the current result as merged_full
-                for name, mergeresult in merge_results_dict.items():
-                    new_file = mergeresult.merge_file.with_stem(
-                        mergeresult.merge_file.stem + "_full"
-                    )
-                    mergeresult.merge_file.rename(new_file)
-                    FileHandler.record_data_file(new_file)
-                    new_log = mergeresult.logfile.with_stem(
-                        mergeresult.logfile.stem + "_full"
-                    )
-                    mergeresult.logfile.rename(new_log)
-                    FileHandler.record_log_file(new_log.stem, new_log)
-                    new_json = mergeresult.jsonfile.with_stem(
-                        mergeresult.jsonfile.stem + "_full"
-                    )
-                    mergeresult.jsonfile.rename(new_json)
-                    FileHandler.record_more_log_file(new_json.stem, new_json)
-                    new_html = mergeresult.htmlfile.with_stem(
-                        mergeresult.htmlfile.stem + "_full"
-                    )
-                    mergeresult.htmlfile.rename(new_html)
-                    FileHandler.record_html_file(new_html.stem, new_html)
-            else:
-                for mergeresult in merge_results_dict.values():
-                    FileHandler.record_data_file(mergeresult.merge_file)
-                    FileHandler.record_log_file(
-                        mergeresult.logfile.stem, mergeresult.logfile
-                    )
-                    if mergeresult.jsonfile:
-                        FileHandler.record_more_log_file(
-                            mergeresult.jsonfile.stem, mergeresult.jsonfile
-                        )
-                    if mergeresult.htmlfile:
-                        FileHandler.record_html_file(
-                            mergeresult.htmlfile.stem, mergeresult.htmlfile
-                        )
+        suggested_nonzero = sorted(v for v in resolutions.values() if v)
+        if not suggested_nonzero:
+            from dials.util.resolution_analysis import (
+                Resolutionizer,
+                metrics,
+                phil_defaults,
+            )
 
-            if suggested:
-                name = list(resolutions.keys())[0]
-                with record_step("dials.merge (resolution cut)"):
-                    scaled_array, elist = name_to_expts_arr[name]
-                    scaled_array = scaled_array.resolution_filter(d_min=suggested)
-                    suggestedmergeresult: MergeResult = merge(
+            params = phil_defaults.extract()
+            for name, (scaled_array, elist) in name_to_expts_arr.items():
+                suggested = (
+                    Resolutionizer(scaled_array, params.resolution)
+                    .resolution(metric=metrics.MISIGMA, limit=1)
+                    .d_min
+                )
+                if suggested:
+                    resolutions[name] = suggested
+            suggested_nonzero = sorted(round(v, 2) for v in resolutions.values() if v)
+
+        if not suggested_nonzero:
+            xia2_logger.info("Unable to estimate resolution limit")
+            # can't determine a resolution limit, so just use the current merge job as final.
+            for mergeresult in merge_results_dict.values():
+                FileHandler.record_data_file(mergeresult.merge_file)
+                FileHandler.record_log_file(
+                    mergeresult.logfile.stem, mergeresult.logfile
+                )
+                FileHandler.record_more_log_file(
+                    mergeresult.jsonfile.stem, mergeresult.jsonfile
+                )
+                FileHandler.record_html_file(
+                    mergeresult.htmlfile.stem, mergeresult.htmlfile
+                )
+            return
+        # rename the results files with _full appended
+        for name, mergeresult in merge_results_dict.items():
+            new_file = mergeresult.merge_file.with_stem(
+                mergeresult.merge_file.stem + "_full"
+            )
+            mergeresult.merge_file.rename(new_file)
+            FileHandler.record_data_file(new_file)
+            new_log = mergeresult.logfile.with_stem(mergeresult.logfile.stem + "_full")
+            mergeresult.logfile.rename(new_log)
+            FileHandler.record_log_file(new_log.stem, new_log)
+            new_json = mergeresult.jsonfile.with_stem(
+                mergeresult.jsonfile.stem + "_full"
+            )
+            mergeresult.jsonfile.rename(new_json)
+            FileHandler.record_more_log_file(new_json.stem, new_json)
+            new_html = mergeresult.htmlfile.with_stem(
+                mergeresult.htmlfile.stem + "_full"
+            )
+            mergeresult.htmlfile.rename(new_html)
+            FileHandler.record_html_file(new_html.stem, new_html)
+
+        suggested = suggested_nonzero[0]
+        if len(merge_results_dict) > 1:
+            xia2_logger.info(
+                f"Applying resolution cut of {suggested}A to all merging groups. \nSome groups may have a lower practical resolution limit."
+            )
+        else:
+            xia2_logger.info(
+                f"Applying resolution cut of {suggested}A, based on CC1/2=0.3"
+                + "\nData to the full resolution can be found in merged_full.mtz"
+            )
+        future_list = []
+        with record_step(
+            "dials.merge (resolution cut, parallel)"
+        ), concurrent.futures.ProcessPoolExecutor(
+            max_workers=min(self._reduction_params.nproc, len(merge_results_dict))
+        ) as pool:
+
+            for name, (scaled_array, elist) in name_to_expts_arr.items():
+                scaled_array, elist = name_to_expts_arr[name]
+                scaled_array = scaled_array.resolution_filter(d_min=suggested)
+                future_list.append(
+                    pool.submit(
+                        merge,
                         merge_wds[name],
                         scaled_array,
                         elist,
@@ -506,176 +541,20 @@ class BaseDataReduction(object):
                         self._reduction_params.partiality_threshold,
                         name,
                     )
-                xia2_logger.info(
-                    f"Applied suggested resolution cut of {suggested}A in {suggestedmergeresult.merge_file.name}, based on CC1/2=0.3"
-                    + "\nData to the full resolution can be found in merged_full.mtz"
                 )
-                FileHandler.record_data_file(suggestedmergeresult.merge_file)
-                FileHandler.record_log_file(
-                    suggestedmergeresult.logfile.stem,
-                    suggestedmergeresult.logfile,
-                )
-                if suggestedmergeresult.htmlfile:
-                    FileHandler.record_html_file(
-                        suggestedmergeresult.htmlfile.stem,
-                        suggestedmergeresult.htmlfile,
-                    )
-                if suggestedmergeresult.jsonfile:
-                    FileHandler.record_more_log_file(
-                        suggestedmergeresult.jsonfile.stem,
-                        suggestedmergeresult.jsonfile,
-                    )
-            elif not self._reduction_params.d_min:
-                # run dials.estimate resolution with Isigma=1.0 limit
-                scaled_array, elist = name_to_expts_arr[name]
-                from dials.util.resolution_analysis import (
-                    Resolutionizer,
-                    metrics,
-                    phil_defaults,
-                )
+        for mergefuture in concurrent.futures.as_completed(future_list):
+            suggestedmergeresultgroup: MergeResult = mergefuture.result()
 
-                params = phil_defaults.extract()
-                suggested = (
-                    Resolutionizer(scaled_array, params.resolution)
-                    .resolution(metric=metrics.MISIGMA, limit=1)
-                    .d_min
-                )
-                if suggested:
-                    suggested = round(suggested, 2)
-                    with record_step("dials.merge (resolution cut)"):
-                        scaled_array, elist = name_to_expts_arr[name]
-                        scaled_array = scaled_array.resolution_filter(d_min=suggested)
-                        suggestedmergeresult_isigma: MergeResult = merge(
-                            merge_wds[name],
-                            scaled_array,
-                            elist,
-                            suggested,
-                            best_unit_cell,
-                            self._reduction_params.partiality_threshold,
-                            name,
-                        )
-                    xia2_logger.info(
-                        f"Applied suggested resolution cut of {suggested}A in {suggestedmergeresult_isigma.merge_file.name}, based on <I/sigma>=1.0"
-                        + "\nData to the full resolution can be found in merged_full.mtz"
-                    )
-                    FileHandler.record_data_file(suggestedmergeresult_isigma.merge_file)
-                    FileHandler.record_log_file(
-                        suggestedmergeresult_isigma.logfile.stem,
-                        suggestedmergeresult_isigma.logfile,
-                    )
-                    FileHandler.record_html_file(
-                        suggestedmergeresult_isigma.htmlfile.stem,
-                        suggestedmergeresult_isigma.htmlfile,
-                    )
-                    FileHandler.record_more_log_file(
-                        suggestedmergeresult_isigma.jsonfile.stem,
-                        suggestedmergeresult_isigma.jsonfile,
-                    )
-                else:
-                    xia2_logger.info("Unable to estimate resolution limit")
-                    # weren't even able to find I/sigma=1.0, so better copy the _full files back
-                    # import shutil
-                    # shutil.copy()
-        else:
-            suggested_nonzero = sorted(v for v in resolutions.values() if v)
-            if (not suggested_nonzero) and (not self._reduction_params.d_min):
-                from dials.util.resolution_analysis import (
-                    Resolutionizer,
-                    metrics,
-                    phil_defaults,
-                )
-
-                params = phil_defaults.extract()
-                for name, (scaled_array, elist) in name_to_expts_arr.items():
-                    suggested = (
-                        Resolutionizer(scaled_array, params.resolution)
-                        .resolution(metric=metrics.MISIGMA, limit=1)
-                        .d_min
-                    )
-                    if suggested:
-                        resolutions[name] = suggested
-                suggested_nonzero = sorted(
-                    round(v, 2) for v in resolutions.values() if v
-                )
-
-            if suggested_nonzero:
-                # rename the results files with _full appended
-                for name, mergeresult in merge_results_dict.items():
-                    new_file = mergeresult.merge_file.with_stem(
-                        mergeresult.merge_file.stem + "_full"
-                    )
-                    mergeresult.merge_file.rename(new_file)
-                    FileHandler.record_data_file(new_file)
-                    new_log = mergeresult.logfile.with_stem(
-                        mergeresult.logfile.stem + "_full"
-                    )
-                    mergeresult.logfile.rename(new_log)
-                    FileHandler.record_log_file(new_log.stem, new_log)
-                    new_json = mergeresult.jsonfile.with_stem(
-                        mergeresult.jsonfile.stem + "_full"
-                    )
-                    mergeresult.jsonfile.rename(new_json)
-                    FileHandler.record_more_log_file(new_json.stem, new_json)
-                    new_html = mergeresult.htmlfile.with_stem(
-                        mergeresult.htmlfile.stem + "_full"
-                    )
-                    mergeresult.htmlfile.rename(new_html)
-                    FileHandler.record_html_file(new_html.stem, new_html)
-            else:
-                for mergeresult in merge_results_dict.values():
-                    FileHandler.record_data_file(mergeresult.merge_file)
-                    FileHandler.record_log_file(
-                        mergeresult.logfile.stem, mergeresult.logfile
-                    )
-                    FileHandler.record_more_log_file(
-                        mergeresult.jsonfile.stem, mergeresult.jsonfile
-                    )
-                    FileHandler.record_html_file(
-                        mergeresult.htmlfile.stem, mergeresult.htmlfile
-                    )
-
-            if suggested_nonzero:
-                suggested = suggested_nonzero[0]
-                xia2_logger.info(
-                    f"Applying resolution cut of {suggested}A to all merging groups. \nSome groups may have a lower practical resolution limit."
-                )
-                future_list = []
-                with record_step(
-                    "dials.merge (resolution cut, parallel)"
-                ), concurrent.futures.ProcessPoolExecutor(
-                    max_workers=self._reduction_params.nproc
-                ) as pool:
-
-                    for name, (scaled_array, elist) in name_to_expts_arr.items():
-                        scaled_array, elist = name_to_expts_arr[name]
-                        scaled_array = scaled_array.resolution_filter(d_min=suggested)
-                        future_list.append(
-                            pool.submit(
-                                merge,
-                                merge_wds[name],
-                                scaled_array,
-                                elist,
-                                suggested,
-                                best_unit_cell,
-                                self._reduction_params.partiality_threshold,
-                                name,
-                            )
-                        )
-                for mergefuture in concurrent.futures.as_completed(future_list):
-                    suggestedmergeresultgroup: MergeResult = mergefuture.result()
-
-                    FileHandler.record_data_file(suggestedmergeresultgroup.merge_file)
-                    FileHandler.record_log_file(
-                        suggestedmergeresultgroup.logfile.stem,
-                        suggestedmergeresultgroup.logfile,
-                    )
-                    FileHandler.record_html_file(
-                        suggestedmergeresultgroup.htmlfile.stem,
-                        suggestedmergeresultgroup.htmlfile,
-                    )
-                    FileHandler.record_more_log_file(
-                        suggestedmergeresultgroup.jsonfile.stem,
-                        suggestedmergeresultgroup.jsonfile,
-                    )
-            else:
-                xia2_logger.info("Unable to estimate resolution limit")
+            FileHandler.record_data_file(suggestedmergeresultgroup.merge_file)
+            FileHandler.record_log_file(
+                suggestedmergeresultgroup.logfile.stem,
+                suggestedmergeresultgroup.logfile,
+            )
+            FileHandler.record_html_file(
+                suggestedmergeresultgroup.htmlfile.stem,
+                suggestedmergeresultgroup.htmlfile,
+            )
+            FileHandler.record_more_log_file(
+                suggestedmergeresultgroup.jsonfile.stem,
+                suggestedmergeresultgroup.jsonfile,
+            )
