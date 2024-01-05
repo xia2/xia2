@@ -347,14 +347,10 @@ def merge(
         except KeyError:
             table_1_stats = ""
         result.summary = (
-            (
-                f"Merged {len(experiments)} crystals in {', '.join(name.split('.'))}\n"
-                if name != "merged"
-                else ""
-            )
-            + f"Merged mtz file: {filename}\n"
-            + f"{table_1_stats}"
-        )
+            f"Merged {len(experiments)} crystals in {', '.join(name.split('.'))}\n"
+            if name != "merged"
+            else ""
+        ) + f"{table_1_stats}"
         if table_1_stats:
             for row in table_1_stats.split("\n"):
                 if "High resolution limit" in row:
@@ -403,8 +399,8 @@ def _wrap_extend_expts(first_elist, second_elist):
 class MergeResult:
     merge_file: Path
     logfile: Path
-    jsonfile: Optional[Path] = None
-    htmlfile: Optional[Path] = None
+    jsonfile: Path
+    htmlfile: Path
     summary: str = ""
     table_1_stats: str = ""
     name: str = ""

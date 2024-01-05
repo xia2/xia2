@@ -400,6 +400,7 @@ class BaseDataReduction(object):
         future_list = []
         summaries = {name: "" for name in name_to_expts_arr.keys()}
         resolutions = {name: 0.0 for name in name_to_expts_arr.keys()}
+        merge_results_dict = {}
         with record_step(
             "dials.merge (parallel)"
         ), concurrent.futures.ProcessPoolExecutor(
@@ -425,18 +426,21 @@ class BaseDataReduction(object):
                 xia2_logger.info(f"Merged {mergeresult.name}")
             summaries[mergeresult.name] = mergeresult.summary
             resolutions[mergeresult.name] = mergeresult.suggested_resolution
-            FileHandler.record_data_file(mergeresult.merge_file)
+            merge_results_dict[mergeresult.name] = mergeresult
+            # don't save the files yet, as we may want to rename them, depending on if we need to rerun
+            # with a resolution cutoff
+            """FileHandler.record_data_file(mergeresult.merge_file)
             FileHandler.record_log_file(
-                mergeresult.logfile.name.rstrip(".log"), mergeresult.logfile
+                mergeresult.logfile.stem, mergeresult.logfile
             )
             if mergeresult.jsonfile:
                 FileHandler.record_more_log_file(
-                    mergeresult.jsonfile.name.rstrip(".json"), mergeresult.jsonfile
+                    mergeresult.jsonfile.stem, mergeresult.jsonfile
                 )
             if mergeresult.htmlfile:
                 FileHandler.record_html_file(
-                    mergeresult.htmlfile.name.rstrip(".html"), mergeresult.htmlfile
-                )
+                    mergeresult.htmlfile.stem, mergeresult.htmlfile
+                )"""
         for result in summaries.values():  # always print stats in same order
             if result:
                 xia2_logger.info(result)
@@ -450,8 +454,46 @@ class BaseDataReduction(object):
 
         if len(resolutions) == 1:
             suggested = list(resolutions.values())[0]
-            name = list(resolutions.keys())[0]
+            if suggested or (not self._reduction_params.d_min):
+                # first let's rename and save the current result as merged_full
+                for name, mergeresult in merge_results_dict.items():
+                    new_file = mergeresult.merge_file.with_stem(
+                        mergeresult.merge_file.stem + "_full"
+                    )
+                    mergeresult.merge_file.rename(new_file)
+                    FileHandler.record_data_file(new_file)
+                    new_log = mergeresult.logfile.with_stem(
+                        mergeresult.logfile.stem + "_full"
+                    )
+                    mergeresult.logfile.rename(new_log)
+                    FileHandler.record_log_file(new_log.stem, new_log)
+                    new_json = mergeresult.jsonfile.with_stem(
+                        mergeresult.jsonfile.stem + "_full"
+                    )
+                    mergeresult.jsonfile.rename(new_json)
+                    FileHandler.record_more_log_file(new_json.stem, new_json)
+                    new_html = mergeresult.htmlfile.with_stem(
+                        mergeresult.htmlfile.stem + "_full"
+                    )
+                    mergeresult.htmlfile.rename(new_html)
+                    FileHandler.record_html_file(new_html.stem, new_html)
+            else:
+                for mergeresult in merge_results_dict.values():
+                    FileHandler.record_data_file(mergeresult.merge_file)
+                    FileHandler.record_log_file(
+                        mergeresult.logfile.stem, mergeresult.logfile
+                    )
+                    if mergeresult.jsonfile:
+                        FileHandler.record_more_log_file(
+                            mergeresult.jsonfile.stem, mergeresult.jsonfile
+                        )
+                    if mergeresult.htmlfile:
+                        FileHandler.record_html_file(
+                            mergeresult.htmlfile.stem, mergeresult.htmlfile
+                        )
+
             if suggested:
+                name = list(resolutions.keys())[0]
                 with record_step("dials.merge (resolution cut)"):
                     scaled_array, elist = name_to_expts_arr[name]
                     scaled_array = scaled_array.resolution_filter(d_min=suggested)
@@ -462,22 +504,28 @@ class BaseDataReduction(object):
                         suggested,
                         best_unit_cell,
                         self._reduction_params.partiality_threshold,
-                        name + "_cut",
+                        name,
                     )
                 xia2_logger.info(
                     f"Applied suggested resolution cut of {suggested}A in {suggestedmergeresult.merge_file.name}, based on CC1/2=0.3"
-                    + "\nData to the full resolution can be found in merged.mtz"
+                    + "\nData to the full resolution can be found in merged_full.mtz"
                 )
                 FileHandler.record_data_file(suggestedmergeresult.merge_file)
                 FileHandler.record_log_file(
-                    suggestedmergeresult.logfile.name.rstrip(".log"),
+                    suggestedmergeresult.logfile.stem,
                     suggestedmergeresult.logfile,
                 )
-                FileHandler.record_html_file(
-                    suggestedmergeresult.htmlfile.name.rstrip(".html"),
-                    suggestedmergeresult.htmlfile,
-                )
-            else:
+                if suggestedmergeresult.htmlfile:
+                    FileHandler.record_html_file(
+                        suggestedmergeresult.htmlfile.stem,
+                        suggestedmergeresult.htmlfile,
+                    )
+                if suggestedmergeresult.jsonfile:
+                    FileHandler.record_more_log_file(
+                        suggestedmergeresult.jsonfile.stem,
+                        suggestedmergeresult.jsonfile,
+                    )
+            elif not self._reduction_params.d_min:
                 # run dials.estimate resolution with Isigma=1.0 limit
                 scaled_array, elist = name_to_expts_arr[name]
                 from dials.util.resolution_analysis import (
@@ -504,24 +552,33 @@ class BaseDataReduction(object):
                             suggested,
                             best_unit_cell,
                             self._reduction_params.partiality_threshold,
-                            name + "_cut",
+                            name,
                         )
                     xia2_logger.info(
                         f"Applied suggested resolution cut of {suggested}A in {suggestedmergeresult_isigma.merge_file.name}, based on <I/sigma>=1.0"
-                        + "\nData to the full resolution can be found in merged.mtz"
+                        + "\nData to the full resolution can be found in merged_full.mtz"
                     )
                     FileHandler.record_data_file(suggestedmergeresult_isigma.merge_file)
                     FileHandler.record_log_file(
-                        suggestedmergeresult_isigma.logfile.name.rstrip(".log"),
+                        suggestedmergeresult_isigma.logfile.stem,
                         suggestedmergeresult_isigma.logfile,
                     )
                     FileHandler.record_html_file(
-                        suggestedmergeresult_isigma.htmlfile.name.rstrip(".html"),
+                        suggestedmergeresult_isigma.htmlfile.stem,
                         suggestedmergeresult_isigma.htmlfile,
                     )
+                    FileHandler.record_more_log_file(
+                        suggestedmergeresult_isigma.jsonfile.stem,
+                        suggestedmergeresult_isigma.jsonfile,
+                    )
+                else:
+                    xia2_logger.info("Unable to estimate resolution limit")
+                    # weren't even able to find I/sigma=1.0, so better copy the _full files back
+                    # import shutil
+                    # shutil.copy()
         else:
             suggested_nonzero = sorted(v for v in resolutions.values() if v)
-            if not suggested_nonzero:
+            if (not suggested_nonzero) and (not self._reduction_params.d_min):
                 from dials.util.resolution_analysis import (
                     Resolutionizer,
                     metrics,
@@ -540,6 +597,43 @@ class BaseDataReduction(object):
                 suggested_nonzero = sorted(
                     round(v, 2) for v in resolutions.values() if v
                 )
+
+            if suggested_nonzero:
+                # rename the results files with _full appended
+                for name, mergeresult in merge_results_dict.items():
+                    new_file = mergeresult.merge_file.with_stem(
+                        mergeresult.merge_file.stem + "_full"
+                    )
+                    mergeresult.merge_file.rename(new_file)
+                    FileHandler.record_data_file(new_file)
+                    new_log = mergeresult.logfile.with_stem(
+                        mergeresult.logfile.stem + "_full"
+                    )
+                    mergeresult.logfile.rename(new_log)
+                    FileHandler.record_log_file(new_log.stem, new_log)
+                    new_json = mergeresult.jsonfile.with_stem(
+                        mergeresult.jsonfile.stem + "_full"
+                    )
+                    mergeresult.jsonfile.rename(new_json)
+                    FileHandler.record_more_log_file(new_json.stem, new_json)
+                    new_html = mergeresult.htmlfile.with_stem(
+                        mergeresult.htmlfile.stem + "_full"
+                    )
+                    mergeresult.htmlfile.rename(new_html)
+                    FileHandler.record_html_file(new_html.stem, new_html)
+            else:
+                for mergeresult in merge_results_dict.values():
+                    FileHandler.record_data_file(mergeresult.merge_file)
+                    FileHandler.record_log_file(
+                        mergeresult.logfile.stem, mergeresult.logfile
+                    )
+                    FileHandler.record_more_log_file(
+                        mergeresult.jsonfile.stem, mergeresult.jsonfile
+                    )
+                    FileHandler.record_html_file(
+                        mergeresult.htmlfile.stem, mergeresult.htmlfile
+                    )
+
             if suggested_nonzero:
                 suggested = suggested_nonzero[0]
                 xia2_logger.info(
@@ -564,7 +658,7 @@ class BaseDataReduction(object):
                                 suggested,
                                 best_unit_cell,
                                 self._reduction_params.partiality_threshold,
-                                name + "_cut",
+                                name,
                             )
                         )
                 for mergefuture in concurrent.futures.as_completed(future_list):
@@ -572,10 +666,16 @@ class BaseDataReduction(object):
 
                     FileHandler.record_data_file(suggestedmergeresultgroup.merge_file)
                     FileHandler.record_log_file(
-                        suggestedmergeresultgroup.logfile.name.rstrip(".log"),
+                        suggestedmergeresultgroup.logfile.stem,
                         suggestedmergeresultgroup.logfile,
                     )
                     FileHandler.record_html_file(
-                        suggestedmergeresultgroup.htmlfile.name.rstrip(".html"),
+                        suggestedmergeresultgroup.htmlfile.stem,
                         suggestedmergeresultgroup.htmlfile,
                     )
+                    FileHandler.record_more_log_file(
+                        suggestedmergeresultgroup.jsonfile.stem,
+                        suggestedmergeresultgroup.jsonfile,
+                    )
+            else:
+                xia2_logger.info("Unable to estimate resolution limit")

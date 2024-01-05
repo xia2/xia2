@@ -541,14 +541,15 @@ grouping:
     output_names = [f"group_{i}" for i in [1, 2]]
     for n in output_names:
         assert (tmp_path / "DataFiles" / f"{n}.mtz").is_file()
+        assert (tmp_path / "DataFiles" / f"{n}_full.mtz").is_file()
         assert (tmp_path / "LogFiles" / f"dials.merge.{n}.html").is_file()
 
     g1_mtz = mtz.object(
-        file_name=os.fspath(tmp_path / "DataFiles" / f"{output_names[0]}.mtz")
+        file_name=os.fspath(tmp_path / "DataFiles" / f"{output_names[0]}_full.mtz")
     )
     assert abs(g1_mtz.n_reflections() - 6791) < 10
     g2_mtz = mtz.object(
-        file_name=os.fspath(tmp_path / "DataFiles" / f"{output_names[1]}.mtz")
+        file_name=os.fspath(tmp_path / "DataFiles" / f"{output_names[1]}_full.mtz")
     )
     assert abs(g2_mtz.n_reflections() - 10276) < 10
 
@@ -599,15 +600,16 @@ grouping:
     assert not result.stderr.decode()
     output_names = [f"group_{i}" if use_grouping else f"dose_{i}" for i in [1, 2]]
     for n in output_names:
+        assert (tmp_path / "DataFiles" / f"{n}_full.mtz").is_file()
         assert (tmp_path / "DataFiles" / f"{n}.mtz").is_file()
         assert (tmp_path / "LogFiles" / f"dials.merge.{n}.html").is_file()
 
     g1_mtz = mtz.object(
-        file_name=os.fspath(tmp_path / "DataFiles" / f"{output_names[0]}.mtz")
+        file_name=os.fspath(tmp_path / "DataFiles" / f"{output_names[0]}_full.mtz")
     )
     assert abs(g1_mtz.n_reflections() - 1539) < 10
     g2_mtz = mtz.object(
-        file_name=os.fspath(tmp_path / "DataFiles" / f"{output_names[1]}.mtz")
+        file_name=os.fspath(tmp_path / "DataFiles" / f"{output_names[1]}_full.mtz")
     )
     assert abs(g2_mtz.n_reflections() - 604) < 10
     assert not (tmp_path / "DataFiles" / "merged.mtz").is_file()
