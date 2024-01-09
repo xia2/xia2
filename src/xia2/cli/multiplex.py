@@ -249,9 +249,6 @@ def run(args=sys.argv[1:]):
             multiplex.clusters, params
         )
 
-        print("CLUSTERS")
-        print(multiplex.clusters)
-
         if multiplex._params.output_cluster_number != 0:
             list_of_clusters.append(
                 "cluster_%i" % multiplex._params.output_cluster_number
@@ -266,9 +263,6 @@ def run(args=sys.argv[1:]):
         el = data_manager._experiments
         ids = list(el.identifiers())
 
-        print("IDENTIFIER LENGTHS")
-        print(len(identifiers_all))
-
         path_to_id = {}
 
         for item in identifiers_all:
@@ -276,9 +270,6 @@ def run(args=sys.argv[1:]):
             i = ex.imageset
             path = i.paths()[0]
             path_to_id[path] = item
-
-        print("PATH TO ID")
-        print(path_to_id)
 
         for item in list_of_clusters:
             if not os.path.exists(item):
@@ -292,8 +283,6 @@ def run(args=sys.argv[1:]):
                         identifiers.append(path_to_id[frame])
                     # CHECK THIS WITH JAMES
                     free_flags_in_full_set = True
-                    print("IDENTIFIERS")
-                    print(identifiers)
                     try:
                         multiplex.scale_cluster(
                             data_manager, identifiers, free_flags_in_full_set

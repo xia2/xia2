@@ -535,22 +535,13 @@ class MultiCrystalScale:
                     data_manager.select(cluster_identifiers)
                     el = data_manager._experiments
                     ids = list(el.identifiers())
+                    paths = []
 
                     for item in cluster_identifiers:
                         e = el[ids.index(item)]
                         i = e.imageset
-                        # print('TEST')
-                        # print(cluster_identifiers)
-                        # print(item)
-                        # print(e)
-                        # print(i)
-                        # print(list(dict.fromkeys(i.paths())))
-                        # print(i.paths())
-                        # print(i.paths()[0])
-                        # exit()
-                        self.cluster_images[cluster.cluster_id] = list(
-                            dict.fromkeys(i.paths())
-                        )
+                        paths.append(i.paths()[0])
+                    self.cluster_images[cluster.cluster_id] = paths
                 else:
 
                     logger.info("Scaling cluster %i:" % cluster.cluster_id)
