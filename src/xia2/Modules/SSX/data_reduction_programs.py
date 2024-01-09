@@ -281,6 +281,36 @@ def run_uc_cluster(
     return good_crystals_data
 
 
+def merge_to_json_data(
+    scaled_array: miller.array,
+    experiments: ExperimentList,
+    d_min: float = None,
+    best_unit_cell: Optional[uctbx.unit_cell] = None,
+    partiality_threshold: float = 0.25,
+):
+    params = merge_phil_scope.extract()
+    params.output.additional_stats = True
+    input_ = "Input parameters:\n"
+    if d_min:
+        params.d_min = d_min
+        input_ += f"  d_min = {d_min}\n"
+    if best_unit_cell:
+        params.best_unit_cell = best_unit_cell
+        input_ += f"  best_unit_cell = {best_unit_cell.parameters()}\n"
+    params.partiality_threshold = partiality_threshold
+    input_ += f"  partiality_threshold = {partiality_threshold}"
+    params.assess_space_group = False
+    params.combine_partials = False
+
+    _, json_data = merge_scaled_array_to_mtz_with_report_collection(
+        params,
+        experiments,
+        scaled_array,
+        applied_d_min=d_min,
+    )
+    return json_data
+
+
 def merge(
     working_directory: Path,
     scaled_array: miller.array,
@@ -363,24 +393,59 @@ def merge(
     return result
 
 
+from dials.report.analysis import format_statistics
+
+
 def join_merge_summaries(overall_table_1_stats, cut_table_1_stats):
-    cut_table_1_stats = cut_table_1_stats.replace(
-        " Overall    Low     High", "Suggested   Low    High  Overall"
-    )
-    cut_table_1_stats = cut_table_1_stats.split("\n")
-    for i, r in enumerate(overall_table_1_stats.split("\n")[1:]):
-        row = r.split(" ")
-        val = row[-1]
-        n = 0
-        row.reverse()
-        for v in row[1:]:
-            if v:
-                break
-            n += 1
-        if val:
-            cut_table_1_stats[i + 1] += " " * (n + 1) + val
-    cut_table_1_stats = "\n".join(cut_table_1_stats)
-    return cut_table_1_stats
+
+    # here, the overall stats could be a four or three column summary, depending
+    # on if the initial merge job succeeded
+    if any(len(v) == 4 for v in overall_table_1_stats.values()):
+        overall_full_idx = 3
+    else:
+        overall_full_idx = 0
+
+    for k in list(cut_table_1_stats.keys()):
+        if (
+            len(cut_table_1_stats[k]) == 3
+        ):  # we don't want to copy things like Wilson-B for the ovrall.
+            try:
+                overall_stat = overall_table_1_stats[k][overall_full_idx]
+            except IndexError:  # maybe the calculation failed for a particular value and bad data
+                pass
+            else:
+                cut_table_1_stats[k] = list(cut_table_1_stats[k]) + [overall_stat]
+    return format_statistics(cut_table_1_stats)
+
+
+def create_merge_group_summary(merge_results_dict, name_to_expts_arr):
+    # merge_results_dict can be cut merge results
+    from dials.util import tabulate
+
+    short_summaries = {}
+    for name in merge_results_dict.keys():
+        with open(merge_results_dict[name].jsonfile, "r") as f:
+            data = json.load(f)
+        wlkey = list(data.keys())[0]
+        summary = data[wlkey]["scaling_tables"]["overall_summary_data"]
+        short_summaries[name] = {
+            "N-xtals": len(name_to_expts_arr[name][1]),
+            "Multiplicity": summary["Multiplicity"].split(" ")[0],
+            "Completeness (%)": summary["Completeness (%)"].split(" ")[0],
+            "CC-half": summary["CC-half"].split(" ")[0],
+            "I/sigma": summary["I/sigma"].split(" ")[0],
+            "R-split": f'{data[wlkey]["merging_stats"]["overall"]["r_split"]:.2f}',
+        }
+    header = [" "] + list(short_summaries.keys())
+    rows = []
+    group_0 = list(short_summaries.keys())[0]
+
+    for k in short_summaries[group_0].keys():
+        row_this = [k]
+        for val in short_summaries.keys():
+            row_this.append(short_summaries[val][k])
+        rows.append(row_this)
+    return tabulate(rows, header)
 
 
 scaled_cols_to_keep = [
