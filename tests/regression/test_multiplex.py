@@ -227,20 +227,20 @@ def test_proteinase_k_dose(
 @pytest.mark.parametrize(
     "parameters",
     (
-        ["min_completeness=0.6", "cluster_method=cos_angle"],
-        ["min_completeness=0.6", "cluster_method=correlation"],
+        ["min_completeness=0.5", "cluster_method=cos_angle"],
+        ["min_completeness=0.5", "cluster_method=correlation"],
     ),
 )
 def test_proteinase_k_min_completeness(parameters, proteinase_k, run_in_tmp_path):
     expts, refls = proteinase_k
-    command_line_args = parameters + expts + refls
+    command_line_args = parameters + expts[:-1] + refls[:-1]
     run_multiplex(command_line_args)
 
     for f in expected_data_files:
         assert pathlib.Path(f).is_file(), "expected file %s missing" % f
 
     multiplex_expts = load.experiment_list("scaled.expt", check_format=False)
-    assert len(multiplex_expts) == 8
+    assert len(multiplex_expts) == 7
     clusters = list(pathlib.Path().glob("cluster_[0-9]*"))
     assert len(clusters)
     for cluster in clusters:
