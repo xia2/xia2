@@ -319,6 +319,8 @@ def merge(
     best_unit_cell: Optional[uctbx.unit_cell] = None,
     partiality_threshold: float = 0.25,
     name: str = "",
+    cc_half_limit: float = 0.3,
+    misigma_limit: float = 1.0,
 ) -> MergeResult:
     logfile = "dials.merge.log"
     filename = "merged.mtz"
@@ -345,6 +347,8 @@ def merge(
         input_ += f"  partiality_threshold = {partiality_threshold}"
         params.assess_space_group = False
         params.combine_partials = False
+        params.merging.cc_half = cc_half_limit
+        params.merging.isigma = misigma_limit
 
         dials_logger.info(input_)
         mtz_file, json_data = merge_scaled_array_to_mtz_with_report_collection(

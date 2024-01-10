@@ -432,6 +432,7 @@ class BaseDataReduction(object):
                         best_unit_cell,
                         self._reduction_params.partiality_threshold,
                         name,
+                        cc_half_limit=self._reduction_params.cc_half_limit,
                     )
                 )
 
@@ -443,14 +444,14 @@ class BaseDataReduction(object):
             merge_results_dict[mergeresult.name] = mergeresult
             if self._reduction_params.d_min:
                 three_column_summaries[mergeresult.name] = mergeresult.summary
-            elif self._reduction_params.cc_half_limit == 0.3:
+                # elif self._reduction_params.cc_half_limit == 0.3:
                 # dials.merge tries to give a suggestion based on cc1/2=0.3,
                 # so avoid repeating the calculation for this default value
-                if mergeresult.suggested_resolution:
-                    four_column_summaries[mergeresult.name] = mergeresult.summary
-                    resolutions[mergeresult.name] = mergeresult.suggested_resolution
-                else:
-                    three_column_summaries[mergeresult.name] = mergeresult.summary
+            elif mergeresult.suggested_resolution:
+                four_column_summaries[mergeresult.name] = mergeresult.summary
+                resolutions[mergeresult.name] = mergeresult.suggested_resolution
+            else:
+                three_column_summaries[mergeresult.name] = mergeresult.summary
             # don't save the files yet, as we may want to rename them, depending on if we need to rerun
             # with a resolution cutoff
 
@@ -475,7 +476,47 @@ class BaseDataReduction(object):
         suggested_nonzero = sorted(v for v in resolutions.values() if v)
         msg_to_print = "based on cc_half=0.3"
 
-        if not suggested_nonzero:  # i.e. cchalf fit failed or non-default value chosen.
+        # default was to use cc1/2=0.3 for suggested cutoff. If this fails for all merge groups,
+        # try with
+        if self._reduction_params.cc_half_limit and not suggested_nonzero:
+            # try again with the misigma limit
+            four_column_summaries = {name: "" for name in name_to_expts_arr.keys()}
+            resolutions = {name: 0.0 for name in name_to_expts_arr.keys()}
+            merge_results_dict = {name: {} for name in name_to_expts_arr.keys()}
+            # will overwrite, but that's ok.
+            with record_step(
+                "dials.merge (parallel)"
+            ), concurrent.futures.ProcessPoolExecutor(
+                max_workers=self._reduction_params.nproc
+            ) as pool:
+                for name, (scaled_array, elist) in name_to_expts_arr.items():
+                    future_list.append(
+                        pool.submit(
+                            merge,
+                            merge_wds[name],
+                            scaled_array,
+                            elist,
+                            self._reduction_params.d_min,
+                            best_unit_cell,
+                            self._reduction_params.partiality_threshold,
+                            name,
+                            cc_half_limit=None,
+                            misigma_limit=self._reduction_params.misigma_limit,
+                        )
+                    )
+            for mergefuture in concurrent.futures.as_completed(future_list):
+                mergeresult: MergeResult = mergefuture.result()
+                # if len(future_list) > 1:
+                #    xia2_logger.info(f"Merged {mergeresult.name}")
+                # summaries[mergeresult.name] = mergeresult.summary
+                merge_results_dict[mergeresult.name] = mergeresult
+                if mergeresult.suggested_resolution:
+                    four_column_summaries[mergeresult.name] = mergeresult.summary
+                    resolutions[mergeresult.name] = mergeresult.suggested_resolution
+                else:
+                    three_column_summaries[mergeresult.name] = mergeresult.summary
+
+        """if not suggested_nonzero:  # i.e. cchalf fit failed or non-default value chosen.
 
             from dials.util.resolution_analysis import (
                 Resolutionizer,
@@ -529,7 +570,7 @@ class BaseDataReduction(object):
                 )
                 suggested_nonzero = sorted(
                     round(v, 2) for v in resolutions.values() if v
-                )
+                )"""
 
         if not suggested_nonzero:
             xia2_logger.info("Unable to estimate resolution limit")
@@ -549,7 +590,7 @@ class BaseDataReduction(object):
         # However, for reporting trends in the case of multiple merging groups, we want to
         # report the suggested resolution per merge group.
 
-        # Run dials.merge to get the merging statistics summary to the given resolution.
+        """# Run dials.merge to get the merging statistics summary to the given resolution.
         # A full run is required in order to get the Wilson-B, else we could just calculate
         # the merging stats from the array
         merge_futures = {}
@@ -584,7 +625,7 @@ class BaseDataReduction(object):
                     if name != "merged"
                     else ""
                 ) + join_merge_summaries(overall_table_1_stats, t1_stats)
-                four_column_summaries[name] = four_column_summary
+                four_column_summaries[name] = four_column_summary"""
 
         for k in four_column_summaries.keys():
             if not four_column_summaries[
