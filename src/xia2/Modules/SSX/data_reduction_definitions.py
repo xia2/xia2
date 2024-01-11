@@ -64,8 +64,8 @@ class ReductionParams:
     reference_ksol: float = 0.35
     reference_bsol: float = 46.0
     partiality_threshold: float = 0.25
-    cc_half_limit: Optional[float] = None
-    misigma_limit: float = 1.0
+    cc_half_limit: Optional[float] = 0.3
+    misigma_limit: Optional[float] = 1.0
 
     @classmethod
     def from_phil(cls, params: iotbx.phil.scope_extract):
