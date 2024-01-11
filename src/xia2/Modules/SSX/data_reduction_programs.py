@@ -290,8 +290,8 @@ def merge(
     best_unit_cell: Optional[uctbx.unit_cell] = None,
     partiality_threshold: float = 0.25,
     name: str = "",
-    cc_half_limit: float = 0.3,
-    misigma_limit: float = 1.0,
+    cc_half_limit: Optional[float] = 0.3,
+    misigma_limit: Optional[float] = 1.0,
 ) -> MergeResult:
     logfile = "dials.merge.log"
     filename = "merged.mtz"
