@@ -30,6 +30,7 @@ from dials.command_line.cosym import phil_scope as cosym_phil_scope
 from dials.command_line.cosym import register_default_cosym_observers
 from dials.command_line.merge import phil_scope as merge_phil_scope
 from dials.command_line.scale import phil_scope as scaling_phil_scope
+from dials.util import tabulate
 from dials.util.resolution_analysis import resolution_cc_half
 from dxtbx.model import Crystal, ExperimentList
 from dxtbx.serialize import load
@@ -281,36 +282,6 @@ def run_uc_cluster(
     return good_crystals_data
 
 
-def merge_to_json_data(
-    scaled_array: miller.array,
-    experiments: ExperimentList,
-    d_min: float = None,
-    best_unit_cell: Optional[uctbx.unit_cell] = None,
-    partiality_threshold: float = 0.25,
-):
-    params = merge_phil_scope.extract()
-    params.output.additional_stats = True
-    input_ = "Input parameters:\n"
-    if d_min:
-        params.d_min = d_min
-        input_ += f"  d_min = {d_min}\n"
-    if best_unit_cell:
-        params.best_unit_cell = best_unit_cell
-        input_ += f"  best_unit_cell = {best_unit_cell.parameters()}\n"
-    params.partiality_threshold = partiality_threshold
-    input_ += f"  partiality_threshold = {partiality_threshold}"
-    params.assess_space_group = False
-    params.combine_partials = False
-
-    _, json_data = merge_scaled_array_to_mtz_with_report_collection(
-        params,
-        experiments,
-        scaled_array,
-        applied_d_min=d_min,
-    )
-    return json_data
-
-
 def merge(
     working_directory: Path,
     scaled_array: miller.array,
@@ -357,9 +328,6 @@ def merge(
             scaled_array,
             applied_d_min=d_min,
         )
-        # mtz_file, json_data = merge_data_to_mtz_with_report_collection(
-        #    params, experiments, [reflection_table]
-        # )
         dials_logger.info(f"\nWriting reflections to {filename}")
         out = StringIO()
         mtz_file.show_summary(out=out)
@@ -386,59 +354,32 @@ def merge(
             else ""
         ) + f"{table_1_stats}"
         if table_1_stats:
-            for row in table_1_stats.split("\n"):
-                if "High resolution limit" in row:
-                    row = row.lstrip("High resolution limit")
-                    vals = row.split()
-                    if len(vals) == 4:
-                        suggested = float(vals[0])
-                        result.suggested_resolution = suggested
+            t1_stats_dict = json_data[wlkey]["table_1_stats_dict"]
+            row = t1_stats_dict["High resolution limit"]
+            if len(row) == 4:
+                result.suggested_resolution = round(float(row[0]), 2)
 
     return result
 
 
-from dials.report.analysis import format_statistics
-
-
-def join_merge_summaries(overall_table_1_stats, cut_table_1_stats):
-
-    # here, the overall stats could be a four or three column summary, depending
-    # on if the initial merge job succeeded
-    if any(len(v) == 4 for v in overall_table_1_stats.values()):
-        overall_full_idx = 3
-    else:
-        overall_full_idx = 0
-
-    for k in list(cut_table_1_stats.keys()):
-        if (
-            len(cut_table_1_stats[k]) == 3
-        ):  # we don't want to copy things like Wilson-B for the ovrall.
-            try:
-                overall_stat = overall_table_1_stats[k][overall_full_idx]
-            except IndexError:  # maybe the calculation failed for a particular value and bad data
-                pass
-            else:
-                cut_table_1_stats[k] = list(cut_table_1_stats[k]) + [overall_stat]
-    return format_statistics(cut_table_1_stats)
-
-
-def create_merge_group_summary(merge_results_dict, name_to_expts_arr):
+def create_merge_group_summary(
+    merge_results_dict: dict[str, MergeResult], name_to_expts_arr
+):
     # merge_results_dict can be cut merge results
-    from dials.util import tabulate
-
-    short_summaries = {}
-    for name in merge_results_dict.keys():
+    short_summaries: Dict[str, Dict[str, str]] = {}
+    for name in sorted(merge_results_dict.keys()):
         with open(merge_results_dict[name].jsonfile, "r") as f:
             data = json.load(f)
         wlkey = list(data.keys())[0]
-        summary = data[wlkey]["scaling_tables"]["overall_summary_data"]
+        t1_stats_dict = data[wlkey]["table_1_stats_dict"]
+        assert len(t1_stats_dict["Multiplicity"]) == 3  # must be 3-column summary
         short_summaries[name] = {
-            "N-xtals": len(name_to_expts_arr[name][1]),
-            "Multiplicity": summary["Multiplicity"].split(" ")[0],
-            "Completeness (%)": summary["Completeness (%)"].split(" ")[0],
-            "CC-half": summary["CC-half"].split(" ")[0],
-            "I/sigma": summary["I/sigma"].split(" ")[0],
-            "R-split": f'{data[wlkey]["merging_stats"]["overall"]["r_split"]:.2f}',
+            "N-xtals": str(len(name_to_expts_arr[name][1])),
+            "Multiplicity": f'{t1_stats_dict["Multiplicity"][0]:.2f}',
+            "Completeness (%)": f'{t1_stats_dict["Completeness"][0]:.2f}',
+            "CC-half": f'{t1_stats_dict["CC half"][0]:.3f}',
+            "I/sigma": f'{t1_stats_dict["I/sigma"][0]:.2f}',
+            "R-split": f'{t1_stats_dict["Rsplit(I)"][0]:.3f}',
         }
     header = [" "] + list(short_summaries.keys())
     rows = []

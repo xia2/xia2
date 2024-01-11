@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import json
 import logging
 from pathlib import Path
 from typing import List, Tuple
@@ -16,6 +15,7 @@ xia2_logger = logging.getLogger(__name__)
 import concurrent.futures
 
 from dials.array_family import flex
+from dials.util import tabulate
 from dials.util.image_grouping import ParsedYAML
 from dxtbx.serialize import load
 
@@ -30,9 +30,7 @@ from xia2.Modules.SSX.data_reduction_programs import (
     cosym_reindex,
     create_merge_group_summary,
     filter_,
-    join_merge_summaries,
     merge,
-    merge_to_json_data,
     parallel_cosym,
     prepare_scaled_array,
     scale_parallel_batches,
@@ -335,6 +333,7 @@ class BaseDataReduction(object):
         )
         merge_input = {}
         merge_wds = {}
+        n_groups: int = 1
         if self._parsed_grouping:
             if "merge_by" in self._parsed_grouping._groupings:
                 groups_for_merge, metadata_groups = yml_to_merged_filesdict(
@@ -397,7 +396,9 @@ class BaseDataReduction(object):
             merge_input = apply_scaled_array_to_all_files(
                 merge_wds["merged"], scaled_results, self._reduction_params
             )
-        name_to_expts_arr: dict[str, Tuple] = {name: () for name in merge_input.keys()}
+
+        group_names: List[str] = list(merge_input.keys())
+        name_to_expts_arr: dict[str, Tuple] = {name: () for name in group_names}
 
         futures = {}
         with concurrent.futures.ProcessPoolExecutor(
@@ -412,14 +413,15 @@ class BaseDataReduction(object):
             name_to_expts_arr[name] = future.result()
 
         future_list = []
-        three_column_summaries = {name: "" for name in name_to_expts_arr.keys()}
-        four_column_summaries = {name: "" for name in name_to_expts_arr.keys()}
-        resolutions = {name: 0.0 for name in name_to_expts_arr.keys()}
-        merge_results_dict = {name: {} for name in name_to_expts_arr.keys()}
+        three_column_summaries: dict[str, str] = {name: "" for name in group_names}
+        four_column_summaries: dict[str, str] = {name: "" for name in group_names}
+        resolutions: dict[str, float] = {name: 0.0 for name in group_names}
+        merge_results_dict: dict[str, MergeResult] = {}
+
         with record_step(
             "dials.merge (parallel)"
         ), concurrent.futures.ProcessPoolExecutor(
-            max_workers=self._reduction_params.nproc
+            max_workers=min(self._reduction_params.nproc, n_groups)
         ) as pool:
             for name, (scaled_array, elist) in name_to_expts_arr.items():
                 future_list.append(
@@ -433,20 +435,17 @@ class BaseDataReduction(object):
                         self._reduction_params.partiality_threshold,
                         name,
                         cc_half_limit=self._reduction_params.cc_half_limit,
+                        misigma_limit=self._reduction_params.misigma_limit,
                     )
                 )
 
         for mergefuture in concurrent.futures.as_completed(future_list):
             mergeresult: MergeResult = mergefuture.result()
-            if len(future_list) > 1:
+            if n_groups > 1:
                 xia2_logger.info(f"Merged {mergeresult.name}")
-            # summaries[mergeresult.name] = mergeresult.summary
             merge_results_dict[mergeresult.name] = mergeresult
             if self._reduction_params.d_min:
                 three_column_summaries[mergeresult.name] = mergeresult.summary
-                # elif self._reduction_params.cc_half_limit == 0.3:
-                # dials.merge tries to give a suggestion based on cc1/2=0.3,
-                # so avoid repeating the calculation for this default value
             elif mergeresult.suggested_resolution:
                 four_column_summaries[mergeresult.name] = mergeresult.summary
                 resolutions[mergeresult.name] = mergeresult.suggested_resolution
@@ -465,29 +464,34 @@ class BaseDataReduction(object):
             # so just record the files, print a summary and finish
             record_merge_files(merge_results_dict)
             print_summaries(three_column_summaries)
-            if len(merge_results_dict) > 1:
+            if n_groups > 1:
                 xia2_logger.info(
                     "Summary of key statistics for merge groups\n"
                     + create_merge_group_summary(merge_results_dict, name_to_expts_arr)
                 )
             return
 
-        # No d_min was specified, so try to work out a resolution cutoff from cc1/2 or misigma
+        # No d_min was specified, see if a resolution cutoff was determined in dials.merge
         suggested_nonzero = sorted(v for v in resolutions.values() if v)
-        msg_to_print = "based on cc_half=0.3"
+        msg_to_print = (
+            f"based on cc_half={self._reduction_params.cc_half_limit}"
+            if self._reduction_params.cc_half_limit
+            else f"based on misigma={self._reduction_params.misigma_limit}"
+        )
 
-        # default was to use cc1/2=0.3 for suggested cutoff. If this fails for all merge groups,
-        # try with
-        if self._reduction_params.cc_half_limit and not suggested_nonzero:
+        # default was to use cc1/2 to determine suggested cutoff. If this fails for all merge groups,
+        # try with misigma
+        if (
+            self._reduction_params.cc_half_limit
+            and not suggested_nonzero
+            and self._reduction_params.misigma_limit
+        ):
             # try again with the misigma limit
-            four_column_summaries = {name: "" for name in name_to_expts_arr.keys()}
-            resolutions = {name: 0.0 for name in name_to_expts_arr.keys()}
-            merge_results_dict = {name: {} for name in name_to_expts_arr.keys()}
-            # will overwrite, but that's ok.
+            # will overwrite the previous merge jobs, but that's ok.
             with record_step(
                 "dials.merge (parallel)"
             ), concurrent.futures.ProcessPoolExecutor(
-                max_workers=self._reduction_params.nproc
+                max_workers=min(self._reduction_params.nproc, n_groups)
             ) as pool:
                 for name, (scaled_array, elist) in name_to_expts_arr.items():
                     future_list.append(
@@ -505,79 +509,23 @@ class BaseDataReduction(object):
                         )
                     )
             for mergefuture in concurrent.futures.as_completed(future_list):
-                mergeresult: MergeResult = mergefuture.result()
-                # if len(future_list) > 1:
-                #    xia2_logger.info(f"Merged {mergeresult.name}")
-                # summaries[mergeresult.name] = mergeresult.summary
-                merge_results_dict[mergeresult.name] = mergeresult
-                if mergeresult.suggested_resolution:
-                    four_column_summaries[mergeresult.name] = mergeresult.summary
-                    resolutions[mergeresult.name] = mergeresult.suggested_resolution
+                mergeresult_misigma: MergeResult = mergefuture.result()
+                name = mergeresult_misigma.name
+                merge_results_dict[name] = mergeresult_misigma
+                if mergeresult_misigma.suggested_resolution:
+                    four_column_summaries[name] = mergeresult_misigma.summary
+                    resolutions[name] = mergeresult_misigma.suggested_resolution
                 else:
-                    three_column_summaries[mergeresult.name] = mergeresult.summary
-
-        """if not suggested_nonzero:  # i.e. cchalf fit failed or non-default value chosen.
-
-            from dials.util.resolution_analysis import (
-                Resolutionizer,
-                metrics,
-                phil_defaults,
-            )
-
-            params = phil_defaults.extract()
-            if (
-                self._reduction_params.cc_half_limit != 0.3
-                and self._reduction_params.cc_half_limit is not None
-            ):
-                for name, (scaled_array, elist) in name_to_expts_arr.items():
-                    try:
-                        suggested = (
-                            Resolutionizer(scaled_array, params.resolution)
-                            .resolution(
-                                metric=metrics.CC_HALF,
-                                limit=self._reduction_params.cc_half_limit,
-                            )
-                            .d_min
-                        )
-                    except Exception:
-                        pass
-                    else:
-                        if suggested:
-                            resolutions[name] = suggested
-                suggested_nonzero = sorted(
-                    round(v, 2) for v in resolutions.values() if v
-                )
-                msg_to_print = (
-                    f"based on cc_half={self._reduction_params.cc_half_limit}"
-                )
-
-            if (
-                not suggested_nonzero
-            ):  # either all failed, or cc_half=None to trigger misigma
-                for name, (scaled_array, elist) in name_to_expts_arr.items():
-                    suggested = (
-                        Resolutionizer(scaled_array, params.resolution)
-                        .resolution(
-                            metric=metrics.MISIGMA,
-                            limit=self._reduction_params.misigma_limit,
-                        )
-                        .d_min
-                    )
-                    if suggested:
-                        resolutions[name] = suggested
-                msg_to_print = (
-                    f"based on misigma={self._reduction_params.misigma_limit}"
-                )
-                suggested_nonzero = sorted(
-                    round(v, 2) for v in resolutions.values() if v
-                )"""
+                    three_column_summaries[name] = mergeresult_misigma.summary
+            suggested_nonzero = sorted(v for v in resolutions.values() if v)
+            msg_to_print = f"based on misigma={self._reduction_params.misigma_limit}"
 
         if not suggested_nonzero:
             xia2_logger.info("Unable to estimate resolution limit")
             # can't determine a resolution limit, so just use the current merge job as final.
             record_merge_files(merge_results_dict)
             print_summaries(three_column_summaries)
-            if len(merge_results_dict) > 1:
+            if n_groups > 1:
                 summary_table = create_merge_group_summary(
                     merge_results_dict, name_to_expts_arr
                 )
@@ -589,43 +537,6 @@ class BaseDataReduction(object):
         # At this point we have a resolution cutoff to apply to all merge groups.
         # However, for reporting trends in the case of multiple merging groups, we want to
         # report the suggested resolution per merge group.
-
-        """# Run dials.merge to get the merging statistics summary to the given resolution.
-        # A full run is required in order to get the Wilson-B, else we could just calculate
-        # the merging stats from the array
-        merge_futures = {}
-        with concurrent.futures.ProcessPoolExecutor(
-            max_workers=min(self._reduction_params.nproc, len(name_to_expts_arr))
-        ) as pool:
-            for name, (scaled_array, elist) in name_to_expts_arr.items():
-                if resolutions[name] and (not four_column_summaries[name]):
-                    scaled_array, elist = name_to_expts_arr[name]
-                    cut_array = scaled_array.resolution_filter(d_min=resolutions[name])
-                    merge_futures[
-                        pool.submit(
-                            merge_to_json_data,
-                            cut_array,
-                            elist,
-                            resolutions[name],
-                            best_unit_cell,
-                            self._reduction_params.partiality_threshold,
-                        )
-                    ] = name
-            for future in concurrent.futures.as_completed(merge_futures):
-                name = merge_futures[future]
-                json_stats = future.result()
-                with open(merge_results_dict[name].jsonfile, "r") as f:
-                    alldata = json.load(f)
-                wlkey = list(alldata.keys())[0]
-                overall_table_1_stats = alldata[wlkey]["table_1_stats_dict"]
-                t1_stats = json_stats[wlkey]["table_1_stats_dict"]
-                n_xtals = len(name_to_expts_arr[name][1])
-                four_column_summary = (
-                    f"Merged {n_xtals} crystals in {', '.join(name.split('.'))}\n"
-                    if name != "merged"
-                    else ""
-                ) + join_merge_summaries(overall_table_1_stats, t1_stats)
-                four_column_summaries[name] = four_column_summary"""
 
         for k in four_column_summaries.keys():
             if not four_column_summaries[
@@ -655,7 +566,7 @@ class BaseDataReduction(object):
         record_merge_files(merge_results_dict)
 
         suggested = suggested_nonzero[0]
-        if len(merge_results_dict) > 1:
+        if n_groups > 1:
             xia2_logger.info(
                 f"Applying resolution cut of {suggested}A to all merging groups, {msg_to_print}. \nSome groups may have a lower practical resolution limit."
             )
@@ -665,11 +576,11 @@ class BaseDataReduction(object):
                 + "\nData to the full resolution can be found in merged_full.mtz"
             )
         future_list = []
-        cut_merge_results_dict = {name: {} for name in name_to_expts_arr.keys()}
+        cut_merge_results_dict: dict[str, MergeResult] = {}
         with record_step(
             "dials.merge (resolution cut, parallel)"
         ), concurrent.futures.ProcessPoolExecutor(
-            max_workers=min(self._reduction_params.nproc, len(merge_results_dict))
+            max_workers=min(self._reduction_params.nproc, n_groups)
         ) as pool:
 
             for name, (scaled_array, elist) in name_to_expts_arr.items():
@@ -688,19 +599,15 @@ class BaseDataReduction(object):
                     )
                 )
         for mergefuture in concurrent.futures.as_completed(future_list):
-            suggestedmergeresultgroup: MergeResult = mergefuture.result()
-            cut_merge_results_dict[
-                suggestedmergeresultgroup.name
-            ] = suggestedmergeresultgroup
+            mergeresult_suggested: MergeResult = mergefuture.result()
+            cut_merge_results_dict[mergeresult_suggested.name] = mergeresult_suggested
         record_merge_files(cut_merge_results_dict)
 
-        from dials.util import tabulate
-
-        if len(merge_results_dict) > 1:
-            header = list(resolutions.keys())
+        if n_groups > 1:
             rows = [[f"{i:.2f}A" for i in resolutions.values()]]
             xia2_logger.info(
-                "\nSuggested resolutions for merge groups\n" + tabulate(rows, header)
+                f"\nSuggested resolutions for merge groups ({msg_to_print})\n"
+                + tabulate(rows, group_names)
             )
             xia2_logger.info(
                 f"\nSummary of key statistics for merge groups (to {suggested}A)\n"

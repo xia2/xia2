@@ -600,8 +600,12 @@ grouping:
     assert not result.stderr.decode()
     output_names = [f"group_{i}" if use_grouping else f"dose_{i}" for i in [1, 2]]
     for n in output_names:
-        assert (tmp_path / "DataFiles" / f"{n}_full.mtz").is_file()
-        assert (tmp_path / "DataFiles" / f"{n}.mtz").is_file()
+        assert (
+            tmp_path / "DataFiles" / f"{n}_full.mtz"
+        ).is_file()  # merged without resolution cut
+        assert (
+            tmp_path / "DataFiles" / f"{n}.mtz"
+        ).is_file()  # merged with resolution cut
         assert (tmp_path / "LogFiles" / f"dials.merge.{n}.html").is_file()
 
     g1_mtz = mtz.object(
@@ -614,6 +618,8 @@ grouping:
     assert abs(g2_mtz.n_reflections() - 604) < 10
     assert not (tmp_path / "DataFiles" / "merged.mtz").is_file()
 
+    merge_dir = tmp_path / "merge"
+    os.mkdir(merge_dir)
     # now rerun with a res limit on one group. Should be able to just process straight from
     # the group files for fast merging.
     args = ["xia2.ssx_reduce", "d_min=3.0", "steps=merge"]
@@ -632,11 +638,12 @@ grouping:
             (tmp_path / "data_reduction" / "merge" / "dose_1").glob("group*.refl")
         )
 
-    result = subprocess.run(args, cwd=tmp_path, capture_output=True)
+    result = subprocess.run(args, cwd=merge_dir, capture_output=True)
     assert not result.returncode
     assert not result.stderr.decode()
-    assert (tmp_path / "DataFiles" / "merged.mtz").is_file()
-    merged_mtz = mtz.object(file_name=os.fspath(tmp_path / "DataFiles" / "merged.mtz"))
+    assert (merge_dir / "DataFiles" / "merged.mtz").is_file()
+    assert not (merge_dir / "DataFiles" / "merged_full.mtz").is_file()
+    merged_mtz = mtz.object(file_name=os.fspath(merge_dir / "DataFiles" / "merged.mtz"))
     assert abs(merged_mtz.n_reflections() - 416) < 10  # expect 298 from d_min=3.0
 
 
