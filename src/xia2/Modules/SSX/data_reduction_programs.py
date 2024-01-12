@@ -319,7 +319,7 @@ def merge(
         params.assess_space_group = False
         params.combine_partials = False
         params.merging.cc_half = cc_half_limit
-        params.merging.isigma = misigma_limit
+        params.merging.misigma = misigma_limit
 
         dials_logger.info(input_)
         mtz_file, json_data = merge_scaled_array_to_mtz_with_report_collection(
