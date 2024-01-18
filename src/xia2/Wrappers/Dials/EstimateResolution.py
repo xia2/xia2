@@ -37,6 +37,7 @@ def EstimateResolution(DriverType=None):
             self._resolution_rmerge = None
             self._resolution_completeness = None
             self._resolution_cc_half = None
+            self._resolution_cc_half_significance = None
             self._resolution_isigma = None
             self._resolution_misigma = None
             self._html = None
@@ -96,6 +97,9 @@ def EstimateResolution(DriverType=None):
         def get_resolution_misigma(self):
             return self._resolution_misigma
 
+        def get_resolution_cc_half_significance(self):
+            return self._resolution_cc_half_significance
+
         def get_html(self):
             return self._html
 
@@ -146,7 +150,9 @@ def EstimateResolution(DriverType=None):
                     self._resolution_rmerge = float(record.split()[-1])
                 if "Resolution completeness" in record:
                     self._resolution_completeness = float(record.split()[-1])
-                if "Resolution cc_half" in record:
+                if "Resolution cc_half_significance_level" in record:
+                    self._resolution_cc_half_significance = float(record.split()[-1])
+                elif "Resolution cc_half" in record:
                     self._resolution_cc_half = float(record.split()[-1])
                 if "Resolution I/sig" in record:
                     self._resolution_isigma = float(record.split()[-1])
