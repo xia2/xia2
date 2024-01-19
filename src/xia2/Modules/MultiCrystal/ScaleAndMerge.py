@@ -387,10 +387,10 @@ class MultiCrystalScale:
         self._experiments_filename = self._scaled._experiments_filename
         self._reflections_filename = self._scaled._reflections_filename
 
-        self.decide_space_group()
-
         if self._params.reference is not None:
             self.reindex()
+        else:
+            self.decide_space_group()
 
         d_spacings = self._scaled.data_manager._reflections["d"]
         self._params.r_free_flags.d_min = flex.min(d_spacings.select(d_spacings > 0))
@@ -952,6 +952,7 @@ class MultiCrystalScale:
         reindex.set_experiments_filename(self._experiments_filename)
         reindex.set_indexed_filename(self._reflections_filename)
         reindex.set_reference_file(self._params.reference)
+        reindex.set_space_group(self._params.symmetry.space_group)
 
         reindex.run()
 
