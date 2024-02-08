@@ -602,7 +602,10 @@ def test_reduce_with_grouping(dials_data, tmp_path, use_grouping):
     """
     ssx = dials_data("cunir_serial_processed", pathlib=True)
     ssx_data = dials_data("cunir_serial", pathlib=True)
-    args = ["xia2.ssx_reduce", f"directory={ssx}"]
+    cmd = "xia2.ssx_reduce"
+    if os.name == "nt":
+        cmd += ".bat"
+    args = [cmd, f"directory={ssx}"]
     extra_args = []
     model = dials_data("cunir_serial", pathlib=True) / "2BW4.pdb"
     extra_args.append(f"model={str(model)}")
