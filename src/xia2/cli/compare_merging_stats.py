@@ -12,8 +12,8 @@ import iotbx.merging_statistics
 import iotbx.phil
 import libtbx
 from cctbx import uctbx
-from dials.util.mp import available_cores
 from dials.util.options import ArgumentParser
+from dials.util.system import CPU_COUNT
 
 help_message = """
 """
@@ -75,7 +75,7 @@ def run(args=sys.argv[1:]):
         return
 
     if params.nproc is libtbx.Auto:
-        params.nproc = available_cores()
+        params.nproc = CPU_COUNT
 
     results = []
     mtz_files = []
@@ -202,7 +202,6 @@ def plot_merging_stats(
         assert n_cols * n_rows >= len(results), (n_cols, n_rows, len(results))
 
     for k in plots:
-
         plot_data(
             results,
             k,
