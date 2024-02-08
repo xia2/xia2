@@ -146,8 +146,11 @@ def test_rotation_data(dials_data, run_in_tmp_path):
             refl_4,
         ]
     )
+    cmd = "xia2.cluster_analysis"
+    if os.name == "nt":
+        cmd += ".bat"
     args_clustering = [
-        "xia2.cluster_analysis",
+        cmd,
         "min_cluster_size=2",
         expt_scaled,
         refl_scaled,
