@@ -97,11 +97,17 @@ def test_serial_data(dials_data, tmp_path, run_cluster_identification):
     ssx = dials_data("cunir_serial_processed", pathlib=True)
     expt_int = os.fspath(ssx / "integrated.expt")
     refl_int = os.fspath(ssx / "integrated.refl")
-    args_generate_scaled = ["xia2.ssx_reduce", expt_int, refl_int]
+    cmd = "xia2.ssx_reduce"
+    if os.name == "nt":
+        cmd += ".bat"
+    args_generate_scaled = [cmd, expt_int, refl_int]
     expt_scaled = os.fspath(tmp_path / "DataFiles" / "scaled.expt")
     refl_scaled = os.fspath(tmp_path / "DataFiles" / "scaled.refl")
+    cmd = "xia2.cluster_analysis"
+    if os.name == "nt":
+        cmd += ".bat"
     args_test_clustering = [
-        "xia2.cluster_analysis",
+        cmd,
         "min_cluster_size=2",
         expt_scaled,
         refl_scaled,
