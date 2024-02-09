@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import os
+import shutil
 import subprocess
 
 import pytest
@@ -13,9 +14,14 @@ def insulin_with_missing_image(dials_data, tmp_path):
     for j in range(1, 46):
         if j == 23:
             continue
-        tmp_path.joinpath(f"insulin_1_{j:03d}.img").symlink_to(
-            dials_data("insulin", pathlib=True) / f"insulin_1_{j:03d}.img"
-        )
+        try:
+            tmp_path.joinpath(f"insulin_1_{j:03d}.img").symlink_to(
+                dials_data("insulin", pathlib=True) / f"insulin_1_{j:03d}.img"
+            )
+        except OSError:
+            shutil.copy(
+                dials_data("insulin", pathlib=True) / f"insulin_1_{j:03d}.img", tmp_path
+            )
     return tmp_path / "insulin_1_###.img"
 
 
