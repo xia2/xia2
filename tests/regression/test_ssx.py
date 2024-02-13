@@ -493,7 +493,7 @@ def test_ssx_reduce(dials_data, tmp_path, pdb_model, idx_ambiguity):
             capture_output=True,
         )
         assert not result.returncode
-        assert not result.stderr.decode()
+        assert not result.stderr
         expts = tmp_path / "reindexed.expt"
         refls = tmp_path / "reindexed.refl"
         cmd = "xia2.ssx_reduce"
@@ -525,7 +525,7 @@ def test_ssx_reduce(dials_data, tmp_path, pdb_model, idx_ambiguity):
 
     result = subprocess.run(args + extra_args, cwd=tmp_path, capture_output=True)
     assert not result.returncode
-    assert not result.stderr.decode()
+    assert not result.stderr
     check_data_reduction_files(tmp_path, reference=pdb_model, reindex=idx_ambiguity)
 
     # now run again only on previously scaled data
@@ -543,7 +543,7 @@ def test_ssx_reduce(dials_data, tmp_path, pdb_model, idx_ambiguity):
     )
     result = subprocess.run(args, cwd=tmp_path / "reduce", capture_output=True)
     assert not result.returncode
-    assert not result.stderr.decode()
+    assert not result.stderr
     check_data_reduction_files_on_scaled_only(tmp_path / "reduce", reference=pdb_model)
 
 
@@ -576,7 +576,7 @@ grouping:
     args = [cmd, "grouping=example.yaml"] + files
     result = subprocess.run(args, cwd=tmp_path, capture_output=True)
     assert not result.returncode
-    assert not result.stderr.decode()
+    assert not result.stderr
     output_names = [f"group_{i}" for i in [1, 2]]
     for n in output_names:
         assert (tmp_path / "DataFiles" / f"{n}.mtz").is_file()
@@ -638,7 +638,7 @@ grouping:
 
     result = subprocess.run(args + extra_args, cwd=tmp_path, capture_output=True)
     assert not result.returncode
-    assert not result.stderr.decode()
+    assert not result.stderr
     output_names = [f"group_{i}" if use_grouping else f"dose_{i}" for i in [1, 2]]
     for n in output_names:
         assert (tmp_path / "DataFiles" / f"{n}.mtz").is_file()
@@ -677,7 +677,7 @@ grouping:
 
     result = subprocess.run(args, cwd=tmp_path, capture_output=True)
     assert not result.returncode
-    assert not result.stderr.decode()
+    assert not result.stderr
     assert (tmp_path / "DataFiles" / "merged.mtz").is_file()
     merged_mtz = mtz.object(file_name=os.fspath(tmp_path / "DataFiles" / "merged.mtz"))
     assert abs(merged_mtz.n_reflections() - 416) < 10  # expect 298 from d_min=3.0
