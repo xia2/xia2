@@ -337,8 +337,11 @@ def run_import(
         pathlib.Path.mkdir(working_directory)
 
     xia2_logger.info("New images or geometry detected, running import")
+    cmd = "dials.import"
+    if os.name == "nt":
+        cmd += ".bat"
     import_command = [
-        "dials.import",
+        cmd,
         "output.experiments=imported.expt",
         "convert_stills_to_sequences=True",
     ]
@@ -653,9 +656,12 @@ def determine_reference_geometry_from_images(
     xia2_logger.info(
         f"Refined reference geometry saved to {working_directory}/refined.expt"
     )
+    cmd = "dxtbx.plot_detector_models"
+    if os.name == "nt":
+        cmd += ".bat"
     subprocess.run(
         [
-            "dxtbx.plot_detector_models",
+            cmd,
             "imported.expt",
             "refined.expt",
             "pdf_file=detector_models.pdf",
@@ -756,9 +762,12 @@ def cumulative_determine_reference_geometry(
     xia2_logger.info(
         f"Refined reference geometry saved to {working_directory}/refined.expt"
     )
+    cmd = "dxtbx.plot_detector_models"
+    if os.name == "nt":
+        cmd += ".bat"
     subprocess.run(
         [
-            "dxtbx.plot_detector_models",
+            cmd,
             "imported.expt",
             "refined.expt",
             "pdf_file=detector_models.pdf",
