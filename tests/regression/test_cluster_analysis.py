@@ -92,7 +92,8 @@ params_4.__inject__("max_output_clusters", 2)
 params_4.__inject__("min_cluster_size", 2)
 
 
-def test_serial_data(dials_data, tmp_path):
+@pytest.mark.parametrize("run_cluster_identification", [True, False])
+def test_serial_data(dials_data, tmp_path, run_cluster_identification):
     ssx = dials_data("cunir_serial_processed", pathlib=True)
     expt_int = os.fspath(ssx / "integrated.expt")
     refl_int = os.fspath(ssx / "integrated.refl")
@@ -104,6 +105,7 @@ def test_serial_data(dials_data, tmp_path):
         "min_cluster_size=2",
         expt_scaled,
         refl_scaled,
+        f"run_cluster_identification={run_cluster_identification}",
     ]
     result_generate_scaled = subprocess.run(
         args_generate_scaled, cwd=tmp_path, capture_output=True
@@ -111,7 +113,7 @@ def test_serial_data(dials_data, tmp_path):
     assert not result_generate_scaled.returncode and not result_generate_scaled.stderr
     result = subprocess.run(args_test_clustering, cwd=tmp_path, capture_output=True)
     assert not result.returncode and not result.stderr
-    check_output(tmp_path)
+    check_output(tmp_path, run_cluster_identification)
 
 
 def test_rotation_data(dials_data, run_in_tmp_path):
@@ -149,9 +151,9 @@ def test_rotation_data(dials_data, run_in_tmp_path):
     check_output(run_in_tmp_path)
 
 
-def check_output(main_dir):
-    assert (main_dir / "cc_clusters").exists()
-    assert (main_dir / "cos_angle_clusters").exists()
+def check_output(main_dir, run_cluster_identification=True):
+    assert (main_dir / "cc_clusters").exists() is run_cluster_identification
+    assert (main_dir / "cos_angle_clusters").exists() is run_cluster_identification
     assert (main_dir / "intensity_clusters.json").is_file()
     assert (main_dir / "cos_angle_clusters.json").is_file()
     assert (main_dir / "xia2.cluster_analysis.log").is_file()

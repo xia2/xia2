@@ -49,7 +49,13 @@ mask = None
   .expert_level=1
 reference_geometry = None
   .type = path
-  .help = "Path to a reference geomtery (refined.expt) file"
+  .help = "Path to a reference geomtery (refined.expt) file. This will be used as the experimental"
+          "geometry without further refinement"
+  .expert_level=1
+starting_geometry = None
+  .type = path
+  .help = "Path to a geomtery (refined.expt) file. This will be used as the starting experimental"
+          "geometry, and a further round of geometry refinement will be run."
   .expert_level=1
 grouping = None
   .type = str
@@ -241,6 +247,11 @@ def run_xia2_ssx(
         if not reference.is_file():
             raise FileNotFoundError(os.fspath(reference))
         file_input.reference_geometry = reference
+    if params.starting_geometry:
+        starting = pathlib.Path(params.starting_geometry).resolve()
+        if not starting.is_file():
+            raise FileNotFoundError(os.fspath(starting))
+        file_input.starting_geometry = starting
     if params.dials_import.phil:
         import_phil = pathlib.Path(params.dials_import.phil).resolve()
         if not import_phil.is_file():

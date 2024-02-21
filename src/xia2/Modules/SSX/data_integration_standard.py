@@ -54,6 +54,7 @@ class FileInput:
     directories: List[str] = field(default_factory=list)
     mask: Optional[pathlib.Path] = None
     reference_geometry: Optional[pathlib.Path] = None
+    starting_geometry: Optional[pathlib.Path] = None
     import_phil: Optional[pathlib.Path] = None
 
 
@@ -373,12 +374,13 @@ def run_import(
             import_command.append(f"directory={d}")
     if file_input.mask:
         import_command.append(f"mask={os.fspath(file_input.mask)}")
+    if file_input.reference_geometry or file_input.starting_geometry:
+        if file_input.reference_geometry:
+            cmd = f"reference_geometry={os.fspath(file_input.reference_geometry)}"
+        elif file_input.starting_geometry:
+            cmd = f"reference_geometry={os.fspath(file_input.starting_geometry)}"
+        import_command += [cmd, "use_gonio_reference=False", "use_beam_reference=False"]
     if file_input.reference_geometry:
-        import_command += [
-            f"reference_geometry={os.fspath(file_input.reference_geometry)}",
-            "use_gonio_reference=False",
-            "use_beam_reference=False",
-        ]
         xia2_logger.notice(banner("Importing with reference geometry"))  # type: ignore
     else:
         xia2_logger.notice(banner("Importing"))  # type: ignore
@@ -400,6 +402,8 @@ def run_import(
     file_input_dict = asdict(file_input)
     if file_input.reference_geometry:
         file_input_dict["reference_geometry"] = str(file_input.reference_geometry)
+    if file_input.starting_geometry:
+        file_input_dict["starting_geometry"] = str(file_input.starting_geometry)
     if file_input.mask:
         file_input_dict["mask"] = str(file_input.mask)
     if file_input.import_phil:
@@ -651,6 +655,17 @@ def determine_reference_geometry_from_images(
     xia2_logger.info(
         f"Refined reference geometry saved to {working_directory}/refined.expt"
     )
+    subprocess.run(
+        [
+            "dxtbx.plot_detector_models",
+            "imported.expt",
+            "refined.expt",
+            "pdf_file=detector_models.pdf",
+        ],
+        cwd=working_directory,
+        capture_output=False,
+        encoding="utf-8",
+    )
 
 
 def cumulative_determine_reference_geometry(
@@ -742,6 +757,17 @@ def cumulative_determine_reference_geometry(
     run_refinement(working_directory, refinement_params)
     xia2_logger.info(
         f"Refined reference geometry saved to {working_directory}/refined.expt"
+    )
+    subprocess.run(
+        [
+            "dxtbx.plot_detector_models",
+            "imported.expt",
+            "refined.expt",
+            "pdf_file=detector_models.pdf",
+        ],
+        cwd=working_directory,
+        capture_output=False,
+        encoding="utf-8",
     )
 
 
