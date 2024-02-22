@@ -1,3 +1,33 @@
+xia2 3.18.0 (2024-02-22)
+========================
+
+Bugfixes
+--------
+
+- ``xia2.multiplex``: Avoid space group analysis, if given reference file. (`#770 <https://github.com/xia2/xia2/issues/770>`_)
+
+
+Misc
+----
+
+- `#769 <https://github.com/xia2/xia2/issues/769>`_, `#772 <https://github.com/xia2/xia2/issues/772>`_, `#773 <https://github.com/xia2/xia2/issues/773>`_
+
+
+Xia2 3.18 (2024-02-22)
+======================
+
+Bugfixes
+--------
+
+- ``xia2.multiplex``: Avoid space group analysis if given reference file (`#770 <https://github.com/xia2/xia2/issues/770>`_)
+
+
+Misc
+----
+
+- `#769 <https://github.com/xia2/xia2/issues/769>`_, `#772 <https://github.com/xia2/xia2/issues/772>`_, `#773 <https://github.com/xia2/xia2/issues/773>`_
+
+
 xia2 3.17.0 (2023-11-03)
 ========================
 
