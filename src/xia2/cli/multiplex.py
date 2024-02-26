@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import logging
-import os
 import random
 import sys
 
@@ -23,7 +22,6 @@ import xia2.Handlers.Streams
 from xia2.Applications.xia2_main import write_citations
 from xia2.Handlers.Citations import Citations
 from xia2.Modules.MultiCrystal import ScaleAndMerge
-from xia2.Modules.MultiCrystalAnalysis import MultiCrystalAnalysis
 
 logger = logging.getLogger("xia2.multiplex")
 
@@ -87,19 +85,6 @@ wavelength_tolerance = 0.0001
 
 seed = 42
   .type = int(value_min=0)
-
-max_cluster_height_difference = 0.5
-  .type = float
-  .short_caption = "Maximum hight difference between clusters"
-max_output_clusters = 10
-  .type = int
-  .short_caption = "Maximum number of important clusters to be output"
-min_cluster_size = 5
-  .type = int
-  .short_caption = "Minimum number of datasets for an important cluster"
-output_cluster_number = 0
-  .type = int
-  .short_caption = "Option to output a specific cluster when re-running the code"
 
 output {
   log = xia2.multiplex.log
@@ -213,83 +198,17 @@ def run(args=sys.argv[1:]):
                 f"symmetry.space_group has been set to: {params.symmetry.space_group}"
             )
 
-    if params.cluster_analysis:
-        if not params.min_completeness and not params.min_multiplicity:
-            raise sys.exit(
-                "To perform cluster analysis please set either min_completeness or min_multiplicity to output clusters."
-            )
-        elif params.reference is None:
-            raise sys.exit(
-                "For consistent output of clusters please provide a reference."
-            )
+    if params.clustering.output_clusters and not params.reference:
+        logger.info(
+            "WARNING: clustering selected but no reference given. Inconsistent settings may occur."
+        )
+        logger.info(
+            "For consistent settings, please provide a reference .pdb, .mtz or .cif."
+        )
 
     try:
-        multiplex = ScaleAndMerge.MultiCrystalScale(
-            experiments, reflections_all, params
-        )
+        ScaleAndMerge.MultiCrystalScale(experiments, reflections_all, params)
     except ValueError as e:
         sys.exit(str(e))
-
-    # Optional Cluster Analysis
-
-    # Make sure multiplex successful
-
-    if multiplex._params.cluster_analysis:
-        if not os.path.exists("xia2.multiplex.html"):
-            raise sys.exit("Multiplex did not finish - cannot perform cluster analysis")
-
-        # So the clusters have the same r-free flags as the parent (more or less doing what multiplex would do anyway if clusters were output normally):
-        multiplex._params.r_free_flags.reference = os.path.join(
-            os.getcwd(), "scaled.mtz"
-        )
-
-        (
-            file_data,
-            list_of_clusters,
-        ) = MultiCrystalAnalysis.interesting_cluster_identification(
-            multiplex.clusters, params
-        )
-
-        if multiplex._params.output_cluster_number != 0:
-            list_of_clusters.append(
-                "cluster_%i" % multiplex._params.output_cluster_number
-            )
-            logger.info(
-                "Additional cluster to Scale: cluster_%i"
-                % multiplex._params.output_cluster_number
-            )
-
-        data_manager = multiplex._data_manager
-        identifiers_all = [i.identifier for i in data_manager._experiments]
-        el = data_manager._experiments
-        ids = list(el.identifiers())
-
-        path_to_id = {}
-
-        for item in identifiers_all:
-            ex = el[ids.index(item)]
-            i = ex.imageset
-            path = i.paths()[0]
-            path_to_id[path] = item
-
-        for item in list_of_clusters:
-            if not os.path.exists(item):
-                os.mkdir(item)
-            os.chdir(item)
-            logger.info("Scaling: %s" % item)
-            for cluster in multiplex.clusters:
-                if "cluster_" + str(cluster.cluster_id) == item:
-                    identifiers = []
-                    for frame in multiplex.cluster_images[cluster.cluster_id]:
-                        identifiers.append(path_to_id[frame])
-                    # CHECK THIS WITH JAMES
-                    free_flags_in_full_set = True
-                    try:
-                        multiplex.scale_cluster(
-                            data_manager, identifiers, free_flags_in_full_set
-                        )
-                    except ValueError as e:
-                        sys.exit(str(e))
-            os.chdir("..")
 
     write_citations(program="xia2.multiplex")
