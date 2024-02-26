@@ -41,41 +41,37 @@ unit_cell_clustering {
     .help = 'Display the dendrogram with a log scale'
 }
 
-include scope dials.algorithms.symmetry.cosym.phil_scope
-
-min_reflections = 10
-  .type = int(value_min=1)
-  .help = "The minimum number of reflections per experiment."
-partiality_threshold = 0.4
-  .type = float(value_min=0, value_max=1)
-  .help = "Use reflections with a partiality greater than the threshold."
-
-run_cluster_identification = True
-  .type = bool
-  .short_caption = "If True, in addition to running clustering analysis, identify"
-                   "clusters of interest for further analysis."
-
-max_cluster_height_difference = 0.5
-  .type = float
-  .short_caption = "Maximum hight difference between clusters"
-max_output_clusters = 10
-  .type = int
-  .short_caption = "Maximum number of important clusters to be output"
-min_cluster_size = 5
-  .type = int
-  .short_caption = "Minimum number of datasets for an important cluster"
-output_correlation_cluster_number = 0
-  .type = int
-  .short_caption = "Option to output a specific correlation cluster when re-running the code"
-output_cos_cluster_number = 0
-  .type = int
-  .short_caption = "Option to output a specific cos cluster when re-running the code"
-exclude_correlation_cluster_number = 0
-  .type = int
-  .short_caption = "Option to output all data excluding a specific correlation cluster"
-exclude_cos_cluster_number = 0
-  .type = int
-  .short_caption = "option to output all data excluding a specific cos cluster"
+clustering
+  .short_caption = "Clustering"
+{
+  max_output_clusters = 10
+    .type = int(value_min=1)
+    .short_caption = "Maximum number of clusters to be output"
+  min_cluster_size = 5
+    .type = int
+    .short_caption = "Minimum number of datasets for a cluster"
+  analysis = False
+    .type = bool
+    .help = "This will determine whether optional cluster analysis is undertaken."
+            "To assist in decreasing computation time, only clusters that appear"
+            "scientifically interesting to compare will be scaled and merged."
+            "Pairs of clusters that are interesting to compare are currently"
+            "defined as two clusters with no datasets in common that eventually"
+            "join on the output dendrogram."
+    .short_caption = "Cluster Analysis"
+  output_correlation_cluster_number = 0
+    .type = int
+    .short_caption = "Option to output a specific correlation cluster when re-running the code"
+  output_cos_cluster_number = 0
+    .type = int
+    .short_caption = "Option to output a specific cos cluster when re-running the code"
+  exclude_correlation_cluster_number = 0
+    .type = int
+    .short_caption = "Option to output all data excluding a specific correlation cluster"
+  exclude_cos_cluster_number = 0
+    .type = int
+    .short_caption = "option to output all data excluding a specific cos cluster"
+}
 
 output {
   log = xia2.cluster_analysis.log
@@ -166,7 +162,7 @@ def run(args=sys.argv[1:]):
         logger.info("\nCos(angle) clustering summary:")
         logger.info(tabulate(MCA.cos_table, headers="firstrow", tablefmt="rst"))
 
-        if params.run_cluster_identification:
+        if params.clustering.analysis:
             logger.info("Correlation Clusters:")
             (
                 cc_file_data,
@@ -191,7 +187,8 @@ def run(args=sys.argv[1:]):
             for cluster in MCA.correlation_clusters:
                 if (
                     "cluster_" + str(cluster.cluster_id) in cc_list
-                    or cluster.cluster_id == params.output_correlation_cluster_number
+                    or cluster.cluster_id
+                    == params.clustering.output_correlation_cluster_number
                 ):
                     new_folder = "cc_clusters/" + "cluster_" + str(cluster.cluster_id)
                     cluster_identifiers = [
@@ -205,7 +202,10 @@ def run(args=sys.argv[1:]):
                         cluster,
                     )
 
-                if params.exclude_correlation_cluster_number == cluster.cluster_id:
+                if (
+                    params.clustering.exclude_correlation_cluster_number
+                    == cluster.cluster_id
+                ):
                     new_folder = (
                         "cc_clusters/" + "excluded_cluster_" + str(cluster.cluster_id)
                     )
@@ -232,7 +232,7 @@ def run(args=sys.argv[1:]):
             for cluster in MCA.cos_angle_clusters:
                 if (
                     "cluster_" + str(cluster.cluster_id) in cos_list
-                    or cluster.cluster_id == params.output_cos_cluster_number
+                    or cluster.cluster_id == params.clustering.output_cos_cluster_number
                 ):
                     new_folder = (
                         "cos_angle_clusters/" + "cluster_" + str(cluster.cluster_id)
@@ -248,7 +248,7 @@ def run(args=sys.argv[1:]):
                         cluster,
                     )
 
-                if params.exclude_cos_cluster_number == cluster.cluster_id:
+                if params.clustering.exclude_cos_cluster_number == cluster.cluster_id:
                     new_folder = (
                         "cos_angle_clusters/"
                         + "excluded_cluster_"
