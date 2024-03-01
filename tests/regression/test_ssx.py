@@ -259,10 +259,11 @@ def test_slice_cbfs(dials_data, tmp_path, refined_expt):
     check_output(tmp_path, find_spots=True, index=True, integrate=False)
 
     indexed = load.experiment_list(tmp_path / "batch_1" / "indexed.expt")
-    images = [
-        iset.get_image_identifier(0).split("_")[-1].rstrip(".cbf")
-        for iset in indexed.imagesets()
-    ]
+    images = []
+    iset = indexed.imagesets()[0]
+    for i, expt in enumerate(indexed):
+        images.append(iset.get_image_identifier(i).split("_")[-1].rstrip(".cbf"))
+
     assert images == ["17002", "17003", "17004"]
     # Also check the correct images were reported in the indexing report.
     images = []
@@ -750,8 +751,9 @@ def test_on_sacla_data_slice(dials_data, tmp_path):
     )
     assert len(imported) == 2
     assert len(imported.imagesets()) == 1
-    import json
 
-    with open(tmp_path / "batch_1" / "indexed.expt", "r") as f:
-        indexed = json.load(f)
-    assert indexed["imageset"][0]["single_file_indices"] == [2]  # i.e. the third image
+    indexed = load.experiment_list(
+        tmp_path / "batch_1" / "indexed.expt", check_format=False
+    )
+
+    assert indexed[0].scan.get_image_range() == (3, 3)  # i.e. the third image
