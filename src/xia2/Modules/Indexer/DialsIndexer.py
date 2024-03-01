@@ -626,7 +626,7 @@ class DialsIndexer(Indexer):
                 experiments = load.experiment_list(
                     summary["experiments_file"], check_format=False
                 )
-                cryst = experiments.crystals()[0]
+                cryst = [c for c in experiments.crystals() if c][0]
                 cs = crystal.symmetry(
                     unit_cell=cryst.get_unit_cell(), space_group=cryst.get_space_group()
                 )
@@ -691,7 +691,7 @@ class DialsIndexer(Indexer):
             self.set_indexer_experiment_list(experiment_list)
             self.set_indexer_payload("experiments_filename", indexed_experiments)
 
-            cryst = experiment_list.crystals()[0]
+            cryst = [c for c in experiment_list.crystals() if c][0]
             lattice = str(bravais_types.bravais_lattice(group=cryst.get_space_group()))
             self._indxr_lattice = lattice
             self._solutions = {}

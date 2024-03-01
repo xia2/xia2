@@ -209,7 +209,7 @@ class DialsIntegrater(Integrater):
                 "observations.refl"
             )
         experiments = load.experiment_list(self._intgr_experiments_filename)
-        experiment = experiments[0]
+        experiment = [e for e in experiments if e.crystal][0]
 
         # this is the result of the cell refinement
         self._intgr_cell = experiment.crystal.get_unit_cell().parameters()
