@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import os
 import subprocess
 
 import xia2.Test.regression
@@ -13,8 +14,11 @@ expected_data_files = [
 
 
 def test_dials_aimless(regression_test, dials_data, tmp_path, ccp4):
+    cmd = "xia2"
+    if os.name == "nt":
+        cmd += ".bat"
     command_line = [
-        "xia2",
+        cmd,
         "pipeline=dials-aimless",
         "nproc=2",
         "small_molecule=True",
@@ -34,8 +38,11 @@ def test_dials_aimless(regression_test, dials_data, tmp_path, ccp4):
 
 
 def test_dials(regression_test, dials_data, tmp_path, ccp4):
+    cmd = "xia2"
+    if os.name == "nt":
+        cmd += ".bat"
     command_line = [
-        "xia2",
+        cmd,
         "pipeline=dials",
         "nproc=2",
         "small_molecule=True",
@@ -55,8 +62,11 @@ def test_dials(regression_test, dials_data, tmp_path, ccp4):
 
 
 def test_xds(regression_test, dials_data, tmp_path, ccp4, xds):
+    cmd = "xia2"
+    if os.name == "nt":
+        cmd += ".bat"
     command_line = [
-        "xia2",
+        cmd,
         "pipeline=3dii",
         "nproc=2",
         "small_molecule=True",
@@ -77,8 +87,11 @@ def test_xds(regression_test, dials_data, tmp_path, ccp4, xds):
 
 
 def test_xds_ccp4a(regression_test, dials_data, tmp_path, ccp4, xds):
+    cmd = "xia2"
+    if os.name == "nt":
+        cmd += ".bat"
     command_line = [
-        "xia2",
+        cmd,
         "pipeline=3dii",
         "nproc=2",
         "small_molecule=True",

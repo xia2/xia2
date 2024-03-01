@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import os
 import subprocess
 
 import pytest
@@ -47,8 +48,11 @@ END PROJECT AUTOMATIC
 
 @pytest.mark.parametrize("pipeline,scaler", (("dials", "xdsa"), ("3dii", "dials")))
 def test_incompatible_pipeline_scaler(pipeline, scaler, tmp_path, ccp4):
+    cmd = "xia2"
+    if os.name == "nt":
+        cmd += ".bat"
     result = subprocess.run(
-        ["xia2", f"pipeline={pipeline}", "nproc=1", f"scaler={scaler}"],
+        [cmd, f"pipeline={pipeline}", "nproc=1", f"scaler={scaler}"],
         cwd=tmp_path,
         capture_output=True,
     )
@@ -60,8 +64,11 @@ def test_incompatible_pipeline_scaler(pipeline, scaler, tmp_path, ccp4):
 
 
 def test_dials_aimless(regression_test, dials_data, tmp_path, ccp4):
+    cmd = "xia2"
+    if os.name == "nt":
+        cmd += ".bat"
     command_line = [
-        "xia2",
+        cmd,
         "pipeline=dials-aimless",
         "nproc=1",
         "trust_beam_centre=True",
@@ -78,8 +85,11 @@ def test_dials_aimless(regression_test, dials_data, tmp_path, ccp4):
 
 def test_dials_aimless_with_dials_pipeline(regression_test, dials_data, tmp_path, ccp4):
     # This should be functionally equivalent to 'test_dials_aimless' above
+    cmd = "xia2"
+    if os.name == "nt":
+        cmd += ".bat"
     command_line = [
-        "xia2",
+        cmd,
         "pipeline=dials",
         "scaler=ccp4a",
         "nproc=1",
@@ -96,8 +106,11 @@ def test_dials_aimless_with_dials_pipeline(regression_test, dials_data, tmp_path
 
 
 def test_dials(regression_test, dials_data, tmp_path, ccp4):
+    cmd = "xia2"
+    if os.name == "nt":
+        cmd += ".bat"
     command_line = [
-        "xia2",
+        cmd,
         "pipeline=dials",
         "nproc=1",
         "trust_beam_centre=True",
@@ -146,8 +159,11 @@ def test_dials(regression_test, dials_data, tmp_path, ccp4):
 
 
 def test_dials_aimless_split(regression_test, dials_data, tmp_path, ccp4):
+    cmd = "xia2"
+    if os.name == "nt":
+        cmd += ".bat"
     command_line = [
-        "xia2",
+        cmd,
         "pipeline=dials-aimless",
         "nproc=1",
         "njob=2",
@@ -163,8 +179,11 @@ def test_dials_aimless_split(regression_test, dials_data, tmp_path, ccp4):
 
 
 def test_dials_split(regression_test, dials_data, tmp_path, ccp4):
+    cmd = "xia2"
+    if os.name == "nt":
+        cmd += ".bat"
     command_line = [
-        "xia2",
+        cmd,
         "pipeline=dials",
         "nproc=1",
         "njob=2",
@@ -187,8 +206,11 @@ def test_dials_split(regression_test, dials_data, tmp_path, ccp4):
 
 
 def test_xds(regression_test, dials_data, tmp_path, ccp4, xds):
+    cmd = "xia2"
+    if os.name == "nt":
+        cmd += ".bat"
     command_line = [
-        "xia2",
+        cmd,
         "pipeline=3di",
         "nproc=1",
         "trust_beam_centre=True",
@@ -203,8 +225,11 @@ def test_xds(regression_test, dials_data, tmp_path, ccp4, xds):
 
 
 def test_xds_split(regression_test, dials_data, tmp_path, ccp4, xds):
+    cmd = "xia2"
+    if os.name == "nt":
+        cmd += ".bat"
     command_line = [
-        "xia2",
+        cmd,
         "pipeline=3di",
         "nproc=1",
         "njob=2",
@@ -220,8 +245,11 @@ def test_xds_split(regression_test, dials_data, tmp_path, ccp4, xds):
 
 
 def test_xds_ccp4a(regression_test, dials_data, tmp_path, ccp4, xds):
+    cmd = "xia2"
+    if os.name == "nt":
+        cmd += ".bat"
     command_line = [
-        "xia2",
+        cmd,
         "pipeline=3di",
         "nproc=1",
         "scaler=ccp4a",
@@ -236,8 +264,11 @@ def test_xds_ccp4a(regression_test, dials_data, tmp_path, ccp4, xds):
 
 
 def test_xds_ccp4a_split(regression_test, dials_data, tmp_path, ccp4, xds):
+    cmd = "xia2"
+    if os.name == "nt":
+        cmd += ".bat"
     command_line = [
-        "xia2",
+        cmd,
         "pipeline=3di",
         "nproc=1",
         "scaler=ccp4a",
@@ -259,8 +290,11 @@ def test_xds_ccp4a_split(regression_test, dials_data, tmp_path, ccp4, xds):
 def test_space_group_dials(
     pipeline, space_group, regression_test, dials_data, tmp_path, ccp4
 ):
+    cmd = "xia2"
+    if os.name == "nt":
+        cmd += ".bat"
     command_line = [
-        "xia2",
+        cmd,
         "pipeline=%s" % pipeline,
         f"space_group={space_group}",
         "nproc=1",
@@ -286,8 +320,11 @@ def test_space_group_dials(
 def test_space_group_3dii(
     space_group, regression_test, dials_data, tmp_path, ccp4, xds
 ):
+    cmd = "xia2"
+    if os.name == "nt":
+        cmd += ".bat"
     command_line = [
-        "xia2",
+        cmd,
         "pipeline=3dii",
         f"space_group={space_group}",
         "nproc=1",
