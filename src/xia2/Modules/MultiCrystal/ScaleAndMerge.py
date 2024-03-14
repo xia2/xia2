@@ -232,8 +232,8 @@ clustering
     .type = bool
     .help = "Set this to true to enable scaling and merging of individual clusters"
     .short_caption = "Output individual clusters"
-  method = *cos_angle correlation both
-    .type = choice
+  method = *cos_angle correlation
+    .type = choice(multi=True)
     .short_caption = "Metric on which to perform clustering"
   min_completeness = 0
     .type = float(value_min=0, value_max=1)
@@ -250,6 +250,12 @@ clustering
   max_cluster_height = 100
     .type = float
     .short_caption = "Maximum height in dendrogram for clusters"
+  max_cluster_height_cc = 100
+    .type = float
+    .short_caption = "Maximum height in correlation dendrogram for clusters"
+  max_cluster_height_cos = 100
+    .type = float
+    .short_caption = "Maximum height in cos angle dendrogram for clusters"
   analysis = False
     .type = bool
     .help = "This will determine whether optional cluster analysis is undertaken."
@@ -483,21 +489,25 @@ class MultiCrystalScale:
         min_multiplicity = self._params.clustering.min_multiplicity
         max_clusters = self._params.clustering.max_output_clusters
         min_cluster_size = self._params.clustering.min_cluster_size
+        max_cluster_height_cos = self._params.clustering.max_cluster_height_cos
+        max_cluster_height_cc = self._params.clustering.max_cluster_height_cc
         max_cluster_height = self._params.clustering.max_cluster_height
 
-        if self._params.clustering.method == "cos_angle":
+        if self._params.clustering.method[0] == "cos_angle":
             clusters = self._cos_angle_clusters
             ctype = ["cos" for i in clusters]
-        elif self._params.clustering.method == "correlation":
+        elif self._params.clustering.method[0] == "correlation":
             clusters = self._cc_clusters
             ctype = ["cc" for i in clusters]
-        elif self._params.clustering.method == "both":
+        elif self._params.clustering.method == ["cos_angle", "correlation"]:
             clusters = self._cos_angle_clusters + self._cc_clusters
             ctype = ["cos" for i in self._cos_angle_clusters] + [
                 "cc" for i in self._cc_clusters
             ]
         else:
-            raise ValueError("Invalid cluster method: %s" % self._params.cluster_method)
+            raise ValueError(
+                "Invalid cluster method: %s" % self._params.clustering.method
+            )
 
         clusters.reverse()
         ctype.reverse()
@@ -513,19 +523,53 @@ class MultiCrystalScale:
             n_processed_cc = 0
 
             for c, cluster in zip(ctype, clusters):
+
+                logger.info("HELLO THERE")
+                logger.info(c)
+                logger.info(cluster)
+
+                # This simplifies max_cluster_height into cc and cos angle versions
+                # But still gives the user the option of just selecting max_cluster_height
+                # Which makes more sense when they only want one type of clustering
+
+                if (
+                    c == "cc"
+                    and max_cluster_height != 100
+                    and max_cluster_height_cc == 100
+                ):
+                    max_cluster_height_cc = max_cluster_height
+                    # if user has weirdly set both max_cluster_height and max_cluster_height_cc
+                    # will still default to max_cluster_height_cc as intended
+                if (
+                    c == "cos"
+                    and max_cluster_height != 100
+                    and max_cluster_height_cos == 100
+                ):
+                    max_cluster_height_cos = max_cluster_height
+
                 if n_processed_cos == max_clusters and c == "cos":
+                    logger.info("1")
                     continue
                 if n_processed_cc == max_clusters and c == "cc":
+                    logger.info("2")
                     continue
                 if cluster.completeness < min_completeness:
+                    logger.info("3")
                     continue
                 if cluster.multiplicity < min_multiplicity:
+                    logger.info("4")
                     continue
                 if len(cluster.labels) == len(self._data_manager_original.experiments):
+                    logger.info("5")
                     continue
-                if cluster.height > max_cluster_height:
+                if cluster.height > max_cluster_height_cc and c == "cc":
+                    logger.info("6")
+                    continue
+                if cluster.height > max_cluster_height_cos and c == "cos":
+                    logger.info("7")
                     continue
                 if len(cluster.labels) < min_cluster_size:
+                    logger.info("8")
                     continue
 
                 data_manager = copy.deepcopy(self._data_manager_original)
