@@ -232,7 +232,7 @@ def test_proteinase_k_dose(
     (
         [
             "clustering.output_clusters=True",
-            "clustering.min_completeness=0.5",
+            "clustering.min_completeness=0.4",
             "clustering.method=cos_angle",
         ],
         [
