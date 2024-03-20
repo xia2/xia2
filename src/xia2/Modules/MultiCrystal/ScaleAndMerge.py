@@ -544,28 +544,20 @@ class MultiCrystalScale:
                     max_cluster_height_cos = max_cluster_height
 
                 if n_processed_cos == max_clusters and c == "cos":
-                    logger.info("1")
                     continue
                 if n_processed_cc == max_clusters and c == "cc":
-                    logger.info("2")
                     continue
                 if cluster.completeness < min_completeness:
-                    logger.info("3")
                     continue
                 if cluster.multiplicity < min_multiplicity:
-                    logger.info("4")
                     continue
                 if len(cluster.labels) == len(self._data_manager_original.experiments):
-                    logger.info("5")
                     continue
                 if cluster.height > max_cluster_height_cc and c == "cc":
-                    logger.info("6")
                     continue
                 if cluster.height > max_cluster_height_cos and c == "cos":
-                    logger.info("7")
                     continue
                 if len(cluster.labels) < min_cluster_size:
-                    logger.info("8")
                     continue
 
                 data_manager = copy.deepcopy(self._data_manager_original)
