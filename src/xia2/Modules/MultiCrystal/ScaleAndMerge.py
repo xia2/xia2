@@ -11,7 +11,7 @@ from dials.array_family import flex
 from dials.command_line.unit_cell_histogram import plot_uc_histograms
 from dials.util import tabulate
 from dials.util.export_mtz import match_wavelengths
-from dials.util.mp import available_cores
+from dials.util.system import CPU_COUNT
 from dxtbx.serialize import load
 from libtbx import Auto
 from scitbx.math import five_number_summary
@@ -341,7 +341,7 @@ class MultiCrystalScale:
             raise ValueError("Can not specify both laue_group and space_group")
 
         if self._params.nproc is Auto:
-            self._params.nproc = available_cores()
+            self._params.nproc = CPU_COUNT
         PhilIndex.params.xia2.settings.multiprocessing.nproc = self._params.nproc
 
         if self._params.identifiers is not None:
@@ -846,12 +846,14 @@ class MultiCrystalScale:
         def remove_html_tags(table):
             return [
                 [
-                    s.replace("<strong>", "")
-                    .replace("</strong>", "")
-                    .replace("<sub>", "")
-                    .replace("</sub>", "")
-                    if isinstance(s, str)
-                    else s
+                    (
+                        s.replace("<strong>", "")
+                        .replace("</strong>", "")
+                        .replace("<sub>", "")
+                        .replace("</sub>", "")
+                        if isinstance(s, str)
+                        else s
+                    )
                     for s in row
                 ]
                 for row in table
