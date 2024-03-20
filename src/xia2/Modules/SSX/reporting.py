@@ -65,7 +65,11 @@ def indexing_summary_output(summary_data: Dict, summary_plots: Dict) -> str:
 
     rmsdx = [i["y"] for i in summary_plots["rmsds"]["data"][::2]]
     rmsdy = [i["y"] for i in summary_plots["rmsds"]["data"][1::2]]
-    rmsdz = [i["y"] for i in summary_plots["rmsdz"]["data"]]
+    rmsdz = (
+        [i["y"] for i in summary_plots["rmsdz"]["data"]]
+        if summary_plots["rmsdz"]
+        else [[0.0] * len(rmsdy[0])]
+    )
     for name, vals in zip(
         ["RMSD_X", "RMSD_Y", "RMSD_dPsi (deg)"], [rmsdx, rmsdy, rmsdz]
     ):
