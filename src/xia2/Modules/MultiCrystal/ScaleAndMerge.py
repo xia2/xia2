@@ -524,10 +524,6 @@ class MultiCrystalScale:
 
             for c, cluster in zip(ctype, clusters):
 
-                logger.info("HELLO THERE")
-                logger.info(c)
-                logger.info(cluster)
-
                 # This simplifies max_cluster_height into cc and cos angle versions
                 # But still gives the user the option of just selecting max_cluster_height
                 # Which makes more sense when they only want one type of clustering
