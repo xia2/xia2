@@ -269,7 +269,7 @@ clustering
 
 identifiers = None
   .type = strings
-  .short_caption = "Identifiers"
+  .short_caption = "Unique DIALS identifiers of experiments to be merged"
 
 dose = None
   .type = ints(size=2, value_min=0)
