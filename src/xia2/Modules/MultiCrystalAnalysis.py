@@ -41,15 +41,12 @@ class MultiCrystalAnalysis:
         ) = self._data_manager.reflections_as_miller_arrays(combined=True)
         self.params.batch = []
         scope = phil.parse(batch_phil_scope)
-        for i, expt in enumerate(self._data_manager.experiments):
+        for expt in self._data_manager.experiments:
             batch_params = scope.extract().batch[0]
             batch_params.id = self._data_manager.identifiers_to_ids_map[expt.identifier]
 
             if not self._data_manager.all_stills:
-                offset = self._data_manager.batch_offset_list[i]
-                batch_params.range = tuple(
-                    offset + j for j in expt.scan.get_image_range()
-                )
+                batch_params.range = expt.scan.get_batch_range()
                 self.params.batch.append(batch_params)
 
         self.intensities.set_observation_type_xray_intensity()
@@ -215,7 +212,7 @@ relatively isomorphous.
 
             # Because analysing each possible pair of clusters, to cut down computation time do initial filtering here
 
-            if len(cluster.labels) >= params.min_cluster_size:
+            if len(cluster.labels) >= params.clustering.min_cluster_size:
                 cluster_numbers.append("cluster_" + str(cluster.cluster_id))
                 heights.append(cluster.height)
                 labels.append(cluster.labels)
@@ -231,7 +228,6 @@ relatively isomorphous.
         cluster_data = pd.DataFrame(c_data)
 
         clusters_to_compare_unfiltered = []
-        clusters_to_compare_height_compared = []
         clusters_for_analysis = []
 
         if len(cluster_data["Cluster Number"]) > 0:
@@ -275,23 +271,10 @@ relatively isomorphous.
                             if sorted(item) == datasets_to_look_for:
                                 clusters_to_compare_unfiltered.append(pair)
 
-            # Compare against maximum allowed height difference
-
-            for pair in clusters_to_compare_unfiltered:
-                height_1 = cluster_data.loc[
-                    cluster_data["Cluster Number"] == pair[0], "Height"
-                ].iloc[0]
-                height_2 = cluster_data.loc[
-                    cluster_data["Cluster Number"] == pair[1], "Height"
-                ].iloc[0]
-                difference = abs(height_1 - height_2)
-                if difference < params.max_cluster_height_difference:
-                    clusters_to_compare_height_compared.append(pair)
-
             # Finally filter by maximum number allowed to output
 
-            final_clusters_to_compare = clusters_to_compare_height_compared[
-                -params.max_output_clusters :
+            final_clusters_to_compare = clusters_to_compare_unfiltered[
+                -params.clustering.max_output_clusters :
             ]
 
             if len(final_clusters_to_compare) > 0:
@@ -309,7 +292,7 @@ relatively isomorphous.
         else:
             logger.info(
                 "Min cluster size of "
-                + str(params.min_cluster_size)
+                + str(params.clustering.min_cluster_size)
                 + " excludes all clusters. Please re-run using a smaller minimum size."
             )
             clusters_for_analysis = []
@@ -325,10 +308,8 @@ relatively isomorphous.
 
         file_data.extend(
             [
-                "Selected with heights required to be closer than:"
-                + str(params.max_cluster_height_difference),
-                "And a maximum number of cluster pairs set at:"
-                + str(params.max_output_clusters),
+                "Selected with a maximum number of cluster pairs set at:"
+                + str(params.clustering.max_output_clusters),
                 "Total Number of Clusters for Analysis:"
                 + str(len(clusters_for_analysis)),
                 "Discrete list of clusters saved: ",

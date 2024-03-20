@@ -161,12 +161,6 @@ def run(args=sys.argv[1:]):
     reflections = flatten_reflections(params.input.reflections)
     if len(experiments) < 2:
         sys.exit("xia2.multiplex requires a minimum of two experiments")
-    for expt in experiments:
-        if (not expt.scan) or (expt.scan.get_oscillation()[1] == 0.0):
-            sys.exit(
-                "xia2.multiplex can only be used to process rotation data. To process still-shot images, use xia2.ssx_reduce"
-            )
-
     reflections = parse_multiple_datasets(reflections)
     experiments, reflections = assign_unique_identifiers(experiments, reflections)
 
@@ -203,6 +197,30 @@ def run(args=sys.argv[1:]):
             logger.info(
                 f"symmetry.space_group has been set to: {params.symmetry.space_group}"
             )
+
+    if params.clustering.output_clusters and not params.reference:
+        logger.info(
+            "WARNING: clustering selected but no reference given. "
+            "Inconsistent settings may occur."
+        )
+        logger.info(
+            "For consistent settings, please provide a reference .pdb, .mtz or .cif."
+        )
+    if (
+        len(params.clustering.method) == 2
+        and params.clustering.max_cluster_height != 100
+        and params.clustering.max_cluster_height_cc == 100
+        and params.clustering.max_cluster_height_cos == 100
+    ):
+        # This means user has changed max_cluster_height from default
+        # BUT wants both cos and cc clustering
+        # AND didn't change the max_cluster_height for these two specifically
+        raise sys.exit(
+            "\nBoth correlation and cos angle clustering have been chosen "
+            "but only one maximum cluster height has been specified.\n"
+            "Please set clustering.max_cluster_height_cc and/or "
+            "clustering.max_cluster_height_cos and re-run xia2.multiplex to differentiate."
+        )
 
     try:
         ScaleAndMerge.MultiCrystalScale(experiments, reflections_all, params)
