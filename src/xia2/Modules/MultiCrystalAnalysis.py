@@ -7,7 +7,9 @@ from itertools import combinations
 
 import pandas as pd
 
+from dials.algorithms.clustering.plots import scipy_dendrogram_to_plotly_json
 from dials.algorithms.clustering.unit_cell import cluster_unit_cells
+from dials.algorithms.correlation.plots import to_plotly_json
 from dials.algorithms.scaling.scale_and_filter import make_scaling_filtering_plots
 from dials.algorithms.symmetry.cosym import SymmetryAnalysis
 from dials.algorithms.symmetry.cosym.plots import plot_coords, plot_rij_histogram
@@ -117,12 +119,12 @@ class MultiCrystalAnalysis:
             self._intensities_separate[0], labels=labels, prefix=None
         )
 
-        self._cc_cluster_json = mca.to_plotly_json(
+        self._cc_cluster_json = to_plotly_json(
             mca.cc_matrix, mca.cc_linkage_matrix, labels=labels
         )
         self._cc_cluster_table = mca.as_table(mca.cc_clusters)
 
-        self._cos_angle_cluster_json = mca.to_plotly_json(
+        self._cos_angle_cluster_json = to_plotly_json(
             mca.cos_angle_matrix,
             mca.cos_angle_linkage_matrix,
             labels=labels,
@@ -169,7 +171,6 @@ class MultiCrystalAnalysis:
             threshold=self.params.unit_cell_clustering.threshold,
             log=self.params.unit_cell_clustering.log,
         )
-        from dials.algorithms.clustering.plots import scipy_dendrogram_to_plotly_json
 
         d["uc_clustering"] = scipy_dendrogram_to_plotly_json(
             clustering.dendrogram,

@@ -1,14 +1,13 @@
 from __future__ import annotations
 
-import copy
 import json
 import logging
-from collections import OrderedDict
 
 import numpy as np
 from scipy.cluster import hierarchy
 
 import iotbx.phil
+from dials.algorithms.correlation.plots import linkage_matrix_to_dict, to_plotly_json
 from dials.util import tabulate
 from scitbx.array_family import flex
 
@@ -96,6 +95,7 @@ class multi_crystal_analysis:
             self._labels_all.extend(flex.size_t(unmerged.size(), i))
 
         self.run_cosym()
+
         (
             correlation_matrix,
             linkage_matrix,
@@ -103,12 +103,12 @@ class multi_crystal_analysis:
 
         cos_angle_matrix, ca_linkage_matrix = self.compute_cos_angle_matrix()
 
-        d = self.to_plotly_json(correlation_matrix, linkage_matrix, labels=labels)
+        d = to_plotly_json(correlation_matrix, linkage_matrix, labels=labels)
 
         with open("%sintensity_clusters.json" % self._prefix, "w") as f:
             json.dump(d, f, indent=2)
 
-        d = self.to_plotly_json(
+        d = to_plotly_json(
             cos_angle_matrix, ca_linkage_matrix, labels=labels, matrix_type="cos_angle"
         )
 
@@ -118,12 +118,12 @@ class multi_crystal_analysis:
         self.cos_angle_linkage_matrix = ca_linkage_matrix
         self.cos_angle_matrix = cos_angle_matrix
         self.cos_angle_clusters = self.cluster_info(
-            self.linkage_matrix_to_dict(self.cos_angle_linkage_matrix)
+            linkage_matrix_to_dict(self.cos_angle_linkage_matrix)
         )
         self.cc_linkage_matrix = linkage_matrix
         self.cc_matrix = correlation_matrix
         self.cc_clusters = self.cluster_info(
-            self.linkage_matrix_to_dict(self.cc_linkage_matrix)
+            linkage_matrix_to_dict(self.cc_linkage_matrix)
         )
 
         logger.info("\nIntensity correlation clustering summary:")
@@ -197,35 +197,6 @@ class multi_crystal_analysis:
         rows.insert(0, headers)
         return rows
 
-    @staticmethod
-    def linkage_matrix_to_dict(linkage_matrix):
-        tree = hierarchy.to_tree(linkage_matrix, rd=False)
-
-        d = {}
-
-        # http://w3facility.org/question/scipy-dendrogram-to-json-for-d3-js-tree-visualisation/
-        # https://gist.github.com/mdml/7537455
-
-        def add_node(node):
-            if node.is_leaf():
-                return
-            cluster_id = node.get_id() - len(linkage_matrix) - 1
-            row = linkage_matrix[cluster_id]
-            d[cluster_id + 1] = {
-                "datasets": [i + 1 for i in sorted(node.pre_order())],
-                "height": row[2],
-            }
-
-            # Recursively add the current node's children
-            if node.left:
-                add_node(node.left)
-            if node.right:
-                add_node(node.right)
-
-        add_node(tree)
-
-        return OrderedDict(sorted(d.items()))
-
     def run_cosym(self):
         from dials.algorithms.symmetry.cosym import phil_scope
 
@@ -269,212 +240,3 @@ class multi_crystal_analysis:
         dist_mat = ssd.pdist(self.cosym.coords, metric="cosine")
         cos_angle = 1 - ssd.squareform(dist_mat)
         return cos_angle, hierarchy.linkage(dist_mat, method="average")
-
-    @staticmethod
-    def to_plotly_json(
-        correlation_matrix, linkage_matrix, labels=None, matrix_type="correlation"
-    ):
-        assert matrix_type in ("correlation", "cos_angle")
-
-        ddict = hierarchy.dendrogram(
-            linkage_matrix,
-            color_threshold=0.05,
-            labels=labels,
-            show_leaf_counts=False,
-            no_plot=True,
-        )
-
-        y2_dict = scipy_dendrogram_to_plotly_json(ddict)  # above heatmap
-        x2_dict = copy.deepcopy(y2_dict)  # left of heatmap, rotated
-        for d in y2_dict["data"]:
-            d["yaxis"] = "y2"
-            d["xaxis"] = "x2"
-
-        for d in x2_dict["data"]:
-            x = d["x"]
-            y = d["y"]
-            d["x"] = y
-            d["y"] = x
-            d["yaxis"] = "y3"
-            d["xaxis"] = "x3"
-
-        D = correlation_matrix
-        index = ddict["leaves"]
-        D = D[index, :]
-        D = D[:, index]
-        ccdict = {
-            "data": [
-                {
-                    "name": "%s_matrix" % matrix_type,
-                    "x": list(range(D.shape[0])),
-                    "y": list(range(D.shape[1])),
-                    "z": D.tolist(),
-                    "type": "heatmap",
-                    "colorbar": {
-                        "title": (
-                            "Correlation coefficient"
-                            if matrix_type == "correlation"
-                            else "cos(angle)"
-                        ),
-                        "titleside": "right",
-                        "xpad": 0,
-                    },
-                    "colorscale": "YIOrRd",
-                    "xaxis": "x",
-                    "yaxis": "y",
-                }
-            ],
-            "layout": {
-                "autosize": False,
-                "bargap": 0,
-                "height": 1000,
-                "hovermode": "closest",
-                "margin": {"r": 20, "t": 50, "autoexpand": True, "l": 20},
-                "showlegend": False,
-                "title": "Dendrogram Heatmap",
-                "width": 1000,
-                "xaxis": {
-                    "domain": [0.2, 0.9],
-                    "mirror": "allticks",
-                    "showgrid": False,
-                    "showline": False,
-                    "showticklabels": True,
-                    "tickmode": "array",
-                    "ticks": "",
-                    "ticktext": y2_dict["layout"]["xaxis"]["ticktext"],
-                    "tickvals": list(
-                        range(len(y2_dict["layout"]["xaxis"]["ticktext"]))
-                    ),
-                    "tickangle": 300,
-                    "title": "",
-                    "type": "linear",
-                    "zeroline": False,
-                },
-                "yaxis": {
-                    "domain": [0, 0.78],
-                    "anchor": "x",
-                    "mirror": "allticks",
-                    "showgrid": False,
-                    "showline": False,
-                    "showticklabels": True,
-                    "tickmode": "array",
-                    "ticks": "",
-                    "ticktext": y2_dict["layout"]["xaxis"]["ticktext"],
-                    "tickvals": list(
-                        range(len(y2_dict["layout"]["xaxis"]["ticktext"]))
-                    ),
-                    "title": "",
-                    "type": "linear",
-                    "zeroline": False,
-                },
-                "xaxis2": {
-                    "domain": [0.2, 0.9],
-                    "anchor": "y2",
-                    "showgrid": False,
-                    "showline": False,
-                    "showticklabels": False,
-                    "zeroline": False,
-                },
-                "yaxis2": {
-                    "domain": [0.8, 1],
-                    "anchor": "x2",
-                    "showgrid": False,
-                    "showline": False,
-                    "zeroline": False,
-                },
-                "xaxis3": {
-                    "domain": [0.0, 0.1],
-                    "anchor": "y3",
-                    "range": [max(max(d["x"]) for d in x2_dict["data"]), 0],
-                    "showgrid": False,
-                    "showline": False,
-                    "tickangle": 300,
-                    "zeroline": False,
-                },
-                "yaxis3": {
-                    "domain": [0, 0.78],
-                    "anchor": "x3",
-                    "showgrid": False,
-                    "showline": False,
-                    "showticklabels": False,
-                    "zeroline": False,
-                },
-            },
-        }
-        d = ccdict
-        d["data"].extend(y2_dict["data"])
-        d["data"].extend(x2_dict["data"])
-
-        d["clusters"] = multi_crystal_analysis.linkage_matrix_to_dict(linkage_matrix)
-
-        return d
-
-
-def scipy_dendrogram_to_plotly_json(ddict):
-    colors = {
-        "b": "rgb(31, 119, 180)",
-        "g": "rgb(44, 160, 44)",
-        "o": "rgb(255, 127, 14)",
-        "r": "rgb(214, 39, 40)",
-    }
-
-    dcoord = ddict["dcoord"]
-    icoord = ddict["icoord"]
-    color_list = ddict["color_list"]
-    ivl = ddict["ivl"]
-
-    data = []
-    xticktext = []
-    xtickvals = []
-
-    for k, y in enumerate(dcoord):
-        x = icoord[k]
-
-        if y[0] == 0:
-            xtickvals.append(x[0])
-        if y[3] == 0:
-            xtickvals.append(x[3])
-
-        data.append(
-            {
-                "x": x,
-                "y": y,
-                "marker": {"color": colors.get(color_list[k])},
-                "mode": "lines",
-            }
-        )
-
-    xtickvals = sorted(xtickvals)
-    xticktext = ivl
-    d = {
-        "data": data,
-        "layout": {
-            "barmode": "group",
-            "legend": {"x": 100, "y": 0.5, "bordercolor": "transparent"},
-            "margin": {"r": 10},
-            "showlegend": False,
-            "title": "dendrogram",
-            "xaxis": {
-                "showline": False,
-                "showgrid": False,
-                "showticklabels": True,
-                "tickangle": 300,
-                "title": "Individual datasets",
-                "titlefont": {"color": "none"},
-                "type": "linear",
-                "ticktext": xticktext,
-                "tickvals": xtickvals,
-                "tickorientation": "vertical",
-            },
-            "yaxis": {
-                "showline": False,
-                "showgrid": False,
-                "showticklabels": True,
-                "tickangle": 0,
-                "title": "Ward distance",
-                "type": "linear",
-            },
-            "hovermode": "closest",
-        },
-    }
-    return d

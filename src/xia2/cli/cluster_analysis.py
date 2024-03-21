@@ -278,6 +278,7 @@ def run(args=sys.argv[1:]):
             cc_cluster_json=MCA._cc_cluster_json,
             cos_angle_cluster_table=MCA._cos_angle_cluster_table,
             cos_angle_cluster_json=MCA._cos_angle_cluster_json,
+            cosym_graphs={},
             image_range_tables=[table_list],
             xia2_version=Version,
         )
