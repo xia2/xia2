@@ -224,48 +224,7 @@ two_theta_refine
     .short_caption = "Combine crystal models"
 }
 
-
-clustering
-  .short_caption = "Clustering"
-{
-  output_clusters = False
-    .type = bool
-    .help = "Set this to true to enable scaling and merging of individual clusters"
-    .short_caption = "Output individual clusters"
-  method = *cos_angle correlation
-    .type = choice(multi=True)
-    .short_caption = "Metric on which to perform clustering"
-  min_completeness = 0
-    .type = float(value_min=0, value_max=1)
-    .short_caption = "Minimum completeness"
-  min_multiplicity = 0
-    .type = float(value_min=0)
-    .short_caption = "Minimum multiplicity"
-  max_output_clusters = 10
-    .type = int(value_min=1)
-    .short_caption = "Maximum number of clusters to be output"
-  min_cluster_size = 2
-    .type = int
-    .short_caption = "Minimum number of datasets for a cluster"
-  max_cluster_height = 100
-    .type = float
-    .short_caption = "Maximum height in dendrogram for clusters"
-  max_cluster_height_cc = 100
-    .type = float
-    .short_caption = "Maximum height in correlation dendrogram for clusters"
-  max_cluster_height_cos = 100
-    .type = float
-    .short_caption = "Maximum height in cos angle dendrogram for clusters"
-  analysis = False
-    .type = bool
-    .help = "This will determine whether optional cluster analysis is undertaken."
-            "To assist in decreasing computation time, only clusters that appear"
-            "scientifically interesting to compare will be scaled and merged."
-            "Pairs of clusters that are interesting to compare are currently"
-            "defined as two clusters with no datasets in common that eventually"
-            "join on the output dendrogram."
-    .short_caption = "Cluster Analysis"
-}
+include scope xia2.cli.cluster_analysis.cluster_phil_scope
 
 identifiers = None
   .type = strings
@@ -493,13 +452,22 @@ class MultiCrystalScale:
         max_cluster_height_cc = self._params.clustering.max_cluster_height_cc
         max_cluster_height = self._params.clustering.max_cluster_height
 
-        if self._params.clustering.method[0] == "cos_angle":
+        if (
+            "cos_angle" in params.clustering.method
+            and "correlation" not in params.clustering.method
+        ):
             clusters = self._cos_angle_clusters
             ctype = ["cos" for i in clusters]
-        elif self._params.clustering.method[0] == "correlation":
+        elif (
+            "correlation" in params.clustering.method
+            and "cos_angle" not in params.clustering.method
+        ):
             clusters = self._cc_clusters
             ctype = ["cc" for i in clusters]
-        elif self._params.clustering.method == ["cos_angle", "correlation"]:
+        elif (
+            "cos_angle" in params.clustering.method
+            and "correlation" in params.clustering.method
+        ):
             clusters = self._cos_angle_clusters + self._cc_clusters
             ctype = ["cos" for i in self._cos_angle_clusters] + [
                 "cc" for i in self._cc_clusters
@@ -551,7 +519,10 @@ class MultiCrystalScale:
                     continue
                 if cluster.multiplicity < min_multiplicity:
                     continue
-                if len(cluster.labels) == len(self._data_manager_original.experiments):
+                if (
+                    len(cluster.labels) == len(self._data_manager_original.experiments)
+                    and not params.clustering.find_distinct_clusters
+                ):
                     continue
                 if cluster.height > max_cluster_height_cc and c == "cc":
                     continue
@@ -565,7 +536,7 @@ class MultiCrystalScale:
                     data_manager.ids_to_identifiers_map[l] for l in cluster.labels
                 ]
 
-                if self._params.clustering.analysis:
+                if self._params.clustering.find_distinct_clusters:
                     if c == "cos":
                         self.cos_clusters.append(cluster)
                         self.cos_cluster_ids[cluster.cluster_id] = cluster_identifiers
@@ -602,7 +573,7 @@ class MultiCrystalScale:
                     )
                     os.chdir(cwd)
 
-        if self._params.clustering.analysis:
+        if self._params.clustering.find_distinct_clusters:
 
             for k, clusters in enumerate([self.cos_clusters, self.cc_clusters]):
                 if k == 0:
