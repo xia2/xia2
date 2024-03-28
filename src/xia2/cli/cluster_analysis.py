@@ -26,8 +26,52 @@ from xia2.XIA2Version import Version
 
 logger = logging.getLogger("xia2.cluster_analysis")
 
+cluster_phil_scope = """\
+clustering
+  .short_caption = "Clustering"
+{
+  output_clusters = False
+    .type = bool
+    .help = "Set this to true to enable scaling and merging of individual clusters"
+    .short_caption = "Output individual clusters"
+  method = *cos_angle correlation
+    .type = choice(multi=True)
+    .short_caption = "Metric on which to perform clustering"
+  min_completeness = 0
+    .type = float(value_min=0, value_max=1)
+    .short_caption = "Minimum completeness"
+  min_multiplicity = 0
+    .type = float(value_min=0)
+    .short_caption = "Minimum multiplicity"
+  max_output_clusters = 10
+    .type = int(value_min=1)
+    .short_caption = "Maximum number of clusters to be output"
+  min_cluster_size = 5
+    .type = int
+    .short_caption = "Minimum number of datasets for a cluster"
+  max_cluster_height = 100
+    .type = float
+    .short_caption = "Maximum height in dendrogram for clusters"
+  max_cluster_height_cc = 100
+    .type = float
+    .short_caption = "Maximum height in correlation dendrogram for clusters"
+  max_cluster_height_cos = 100
+    .type = float
+    .short_caption = "Maximum height in cos angle dendrogram for clusters"
+  find_distinct_clusters = False
+    .type = bool
+    .help = "This will determine whether optional cluster analysis is undertaken."
+            "To assist in decreasing computation time, only clusters that have"
+            "no datasets in common but eventually combine to form a joined cluster"
+            "in the output dendrogram will be scaled and merged."
+            "These may contain interesting differences worth comparing in"
+            "downstream analysis."
+    .short_caption = "Find distinct clusters"
+}
+"""
+
 mca_phil = iotbx.phil.parse(
-    """
+    """\
 seed = 42
   .type = int(value_min=0)
   .help = "Seed value for random number generators used"
@@ -40,25 +84,7 @@ unit_cell_clustering {
     .type = bool
     .help = 'Display the dendrogram with a log scale'
 }
-
-clustering
-  .short_caption = "Clustering"
-{
-  max_output_clusters = 10
-    .type = int(value_min=1)
-    .short_caption = "Maximum number of clusters to be output"
-  min_cluster_size = 5
-    .type = int
-    .short_caption = "Minimum number of datasets for a cluster"
-  analysis = False
-    .type = bool
-    .help = "This will determine whether optional cluster analysis is undertaken."
-            "To assist in decreasing computation time, only clusters that appear"
-            "scientifically interesting to compare will be scaled and merged."
-            "Pairs of clusters that are interesting to compare are currently"
-            "defined as two clusters with no datasets in common that eventually"
-            "join on the output dendrogram."
-    .short_caption = "Cluster Analysis"
+clustering {
   output_correlation_cluster_number = 0
     .type = int
     .short_caption = "Option to output a specific correlation cluster when re-running the code"
@@ -72,7 +98,6 @@ clustering
     .type = int
     .short_caption = "option to output all data excluding a specific cos cluster"
 }
-
 output {
   log = xia2.cluster_analysis.log
     .type = str
@@ -80,9 +105,9 @@ output {
     .type = str
 }
 %s
+%s
 """
-    % batch_phil_scope,
-    process_includes=True,
+    % (batch_phil_scope, cluster_phil_scope)
 )
 
 
@@ -155,66 +180,164 @@ def run(args=sys.argv[1:]):
         sys.exit(str(e))
 
     else:
-        MCA.calculate_matrices()
-        MCA.convert_to_html_json()
-        logger.info("\nIntensity correlation clustering summary:")
-        logger.info(tabulate(MCA.cc_table, headers="firstrow", tablefmt="rst"))
-        logger.info("\nCos(angle) clustering summary:")
-        logger.info(tabulate(MCA.cos_table, headers="firstrow", tablefmt="rst"))
 
-        if params.clustering.analysis:
-            logger.info("Correlation Clusters:")
-            (
-                cc_file_data,
-                cc_list,
-            ) = MultiCrystalAnalysis.interesting_cluster_identification(
-                MCA.correlation_clusters, params
+        MCA.cluster_analysis()
+
+        min_completeness = params.clustering.min_completeness
+        min_multiplicity = params.clustering.min_multiplicity
+        max_clusters = params.clustering.max_output_clusters
+        min_cluster_size = params.clustering.min_cluster_size
+        max_cluster_height_cos = params.clustering.max_cluster_height_cos
+        max_cluster_height_cc = params.clustering.max_cluster_height_cc
+        max_cluster_height = params.clustering.max_cluster_height
+
+        if (
+            "cos_angle" in params.clustering.method
+            and "correlation" not in params.clustering.method
+        ):
+            clusters = MCA._cluster_analysis.cos_angle_clusters
+            ctype = ["cos" for i in clusters]
+        elif (
+            "correlation" in params.clustering.method
+            and "cos_angle" not in params.clustering.method
+        ):
+            clusters = MCA._cluster_analysis.cc_clusters
+            ctype = ["cc" for i in clusters]
+        elif (
+            "cos_angle" in params.clustering.method
+            and "correlation" in params.clustering.method
+        ):
+            clusters = (
+                MCA._cluster_analysis.cos_angle_clusters
+                + MCA._cluster_analysis.cc_clusters
             )
-            logger.info("===================================================")
-            logger.info("Cos Angle Clusters:")
-            (
-                cos_file_data,
-                cos_list,
-            ) = MultiCrystalAnalysis.interesting_cluster_identification(
-                MCA.cos_angle_clusters, params
-            )
+            ctype = ["cos" for i in MCA._cluster_analysis.cos_angle_clusters] + [
+                "cc" for i in MCA._cluster_analysis.cc_clusters
+            ]
 
-            if not os.path.exists("cc_clusters"):
-                os.mkdir("cc_clusters")
-            if not os.path.exists("cos_angle_clusters"):
-                os.mkdir("cos_angle_clusters")
+        clusters.reverse()
+        ctype.reverse()
+        cos_clusters = []
+        cc_clusters = []
+        cos_cluster_ids = {}
+        cc_cluster_ids = {}
 
-            for cluster in MCA.correlation_clusters:
+        if params.clustering.output_clusters:
+            data_manager_original = MCA._data_manager
+            n_processed_cos = 0
+            n_processed_cc = 0
+
+            for c, cluster in zip(ctype, clusters):
+
+                # This simplifies max_cluster_height into cc and cos angle versions
+                # But still gives the user the option of just selecting max_cluster_height
+                # Which makes more sense when they only want one type of clustering
+
                 if (
-                    "cluster_" + str(cluster.cluster_id) in cc_list
-                    or cluster.cluster_id
-                    == params.clustering.output_correlation_cluster_number
+                    c == "cc"
+                    and max_cluster_height != 100
+                    and max_cluster_height_cc == 100
                 ):
-                    new_folder = "cc_clusters/" + "cluster_" + str(cluster.cluster_id)
-                    cluster_identifiers = [
-                        MCA.ids_to_identifiers_map[l] for l in cluster.labels
-                    ]
-                    output_cluster(
-                        new_folder,
-                        experiments,
-                        reflections,
-                        cluster_identifiers,
-                        cluster,
-                    )
+                    max_cluster_height_cc = max_cluster_height
+                    # if user has weirdly set both max_cluster_height and max_cluster_height_cc
+                    # will still default to max_cluster_height_cc as intended
+                if (
+                    c == "cos"
+                    and max_cluster_height != 100
+                    and max_cluster_height_cos == 100
+                ):
+                    max_cluster_height_cos = max_cluster_height
+
+                if n_processed_cos == max_clusters and c == "cos":
+                    continue
+                if n_processed_cc == max_clusters and c == "cc":
+                    continue
+                if cluster.completeness < min_completeness:
+                    continue
+                if cluster.multiplicity < min_multiplicity:
+                    continue
+                if (
+                    len(cluster.labels) == len(data_manager_original.experiments)
+                    and not params.clustering.find_distinct_clusters
+                ):
+                    continue
+                if cluster.height > max_cluster_height_cc and c == "cc":
+                    continue
+                if cluster.height > max_cluster_height_cos and c == "cos":
+                    continue
+                if len(cluster.labels) < min_cluster_size:
+                    continue
+
+                data_manager = copy.deepcopy(data_manager_original)
+                cluster_identifiers = [
+                    data_manager.ids_to_identifiers_map[l] for l in cluster.labels
+                ]
+
+                if params.clustering.find_distinct_clusters:
+                    if c == "cos":
+                        cos_clusters.append(cluster)
+                        cos_cluster_ids[cluster.cluster_id] = cluster_identifiers
+                    elif c == "cc":
+                        cc_clusters.append(cluster)
+                        cc_cluster_ids[cluster.cluster_id] = cluster_identifiers
+
+                else:
+                    if c == "cos":
+                        n_processed_cos += 1
+                        cluster_dir = "cos_cluster_%i" % cluster.cluster_id
+                        if (
+                            params.clustering.output_cos_cluster_number == 0
+                            or params.clustering.output_cos_cluster_number
+                            == cluster.cluster_id
+                        ):
+                            logger.info(
+                                "Outputting cos cluster %i:" % cluster.cluster_id
+                            )
+                            logger.info(cluster)
+                            output_cluster(
+                                cluster_dir,
+                                cluster,
+                                data_manager_original,
+                                cluster_identifiers,
+                            )
+                    elif c == "cc":
+                        n_processed_cc += 1
+                        cluster_dir = "cc_cluster_%i" % cluster.cluster_id
+                        if (
+                            params.clustering.output_correlation_cluster_number == 0
+                            or params.clustering.output_correlation_cluster_number
+                            == cluster.cluster_id
+                        ):
+                            logger.info(
+                                "Outputting cc cluster %i:" % cluster.cluster_id
+                            )
+                            logger.info(cluster)
+                            output_cluster(
+                                cluster_dir,
+                                cluster,
+                                data_manager_original,
+                                cluster_identifiers,
+                            )
+
+                # Excluded Clusters
 
                 if (
                     params.clustering.exclude_correlation_cluster_number
                     == cluster.cluster_id
+                    and c == "cc"
                 ):
-                    new_folder = (
-                        "cc_clusters/" + "excluded_cluster_" + str(cluster.cluster_id)
+                    logger.info(
+                        "Outputting data excluding cc cluster %i:" % cluster.cluster_id
                     )
-                    overall_cluster = MCA.correlation_clusters[-1]
+                    new_folder = "excluded_cluster_" + str(cluster.cluster_id)
+                    overall_cluster = MCA._cluster_analysis.cc_clusters[0]
                     identifiers_overall_cluster = [
-                        MCA.ids_to_identifiers_map[l] for l in overall_cluster.labels
+                        data_manager_original.ids_to_identifiers_map[l]
+                        for l in overall_cluster.labels
                     ]
                     identifiers_to_exclude = [
-                        MCA.ids_to_identifiers_map[l] for l in cluster.labels
+                        data_manager_original.ids_to_identifiers_map[l]
+                        for l in cluster.labels
                     ]
                     identifiers_to_output = [
                         i
@@ -223,43 +346,28 @@ def run(args=sys.argv[1:]):
                     ]
                     output_cluster(
                         new_folder,
-                        experiments,
-                        reflections,
-                        identifiers_to_output,
                         cluster,
+                        data_manager_original,
+                        identifiers_to_output,
                     )
-
-            for cluster in MCA.cos_angle_clusters:
+            for c, cluster in zip(ctype, clusters):
                 if (
-                    "cluster_" + str(cluster.cluster_id) in cos_list
-                    or cluster.cluster_id == params.clustering.output_cos_cluster_number
+                    params.clustering.exclude_cos_cluster_number == cluster.cluster_id
+                    and c == "cos"
                 ):
-                    new_folder = (
-                        "cos_angle_clusters/" + "cluster_" + str(cluster.cluster_id)
+                    logger.info(
+                        "Outputting data excluding cos angle cluster %i:"
+                        % cluster.cluster_id
                     )
-                    cluster_identifiers = [
-                        MCA.ids_to_identifiers_map[l] for l in cluster.labels
-                    ]
-                    output_cluster(
-                        new_folder,
-                        experiments,
-                        reflections,
-                        cluster_identifiers,
-                        cluster,
-                    )
-
-                if params.clustering.exclude_cos_cluster_number == cluster.cluster_id:
-                    new_folder = (
-                        "cos_angle_clusters/"
-                        + "excluded_cluster_"
-                        + str(cluster.cluster_id)
-                    )
-                    overall_cluster = MCA.cos_angle_clusters[-1]
+                    new_folder = "excluded_cluster_" + str(cluster.cluster_id)
+                    overall_cluster = MCA._cluster_analysis.cos_angle_clusters[0]
                     identifiers_overall_cluster = [
-                        MCA.ids_to_identifiers_map[l] for l in overall_cluster.labels
+                        data_manager_original.ids_to_identifiers_map[l]
+                        for l in overall_cluster.labels
                     ]
                     identifiers_to_exclude = [
-                        MCA.ids_to_identifiers_map[l] for l in cluster.labels
+                        data_manager_original.ids_to_identifiers_map[l]
+                        for l in cluster.labels
                     ]
                     identifiers_to_output = [
                         i
@@ -268,12 +376,53 @@ def run(args=sys.argv[1:]):
                     ]
                     output_cluster(
                         new_folder,
-                        experiments,
-                        reflections,
-                        identifiers_to_output,
                         cluster,
+                        data_manager_original,
+                        identifiers_to_output,
                     )
+
+        if params.clustering.find_distinct_clusters:
+
+            for k, clusters in enumerate([cos_clusters, cc_clusters]):
+                if k == 0:
+                    cty = "cos"
+                elif k == 1:
+                    cty = "cc"
+                logger.info("----------------------")
+                logger.info(f"{cty} cluster analysis")
+                logger.info("----------------------")
+
+                (
+                    file_data,
+                    list_of_clusters,
+                ) = MCA.interesting_cluster_identification(clusters, params)
+
+                if len(list_of_clusters) > 0:
+                    for item in list_of_clusters:
+                        if k == 0:
+                            cluster_dir = "cos_" + item
+                        elif k == 1:
+                            cluster_dir = "cc_" + item
+                        if not os.path.exists(cluster_dir):
+                            os.mkdir(cluster_dir)
+                        os.chdir(cluster_dir)
+                        logger.info("Outputting: %s" % cluster_dir)
+
+                        for cluster in clusters:
+                            if "cluster_" + str(cluster.cluster_id) == item:
+                                if k == 0:
+                                    ids = cos_cluster_ids[cluster.cluster_id]
+                                elif k == 1:
+                                    ids = cc_cluster_ids[cluster.cluster_id]
+
+                                output_cluster(
+                                    cluster_dir, cluster, data_manager_original, ids
+                                )
+                        os.chdir("..")
+
+        if params.clustering.find_distinct_clusters:
             logger.info(f"Clusters recommended for comparison in {params.output.log}")
+        if params.clustering.output_clusters:
             logger.info("----------------")
             logger.info("Output given as DIALS .expt/.refl files:")
             logger.info("To merge rotation data: use dials.merge")
@@ -302,22 +451,14 @@ def run(args=sys.argv[1:]):
         with open("xia2.cluster_analysis.html", "wb") as f:
             f.write(html.encode("utf-8", "xmlcharrefreplace"))
 
-        MCA.output_json()
 
-
-def output_cluster(new_folder, experiments, reflections, ids, cluster):
-    expts = copy.deepcopy(experiments)
-    expts.select_on_experiment_identifiers(ids)
-
-    refl = []
-    for idx, i in enumerate(reflections):
-        if idx in cluster.labels:
-            refl.append(i)
-
-    joint_refl = flex.reflection_table.concat(refl)
+def output_cluster(new_folder, cluster, original_data_manager, cluster_identifiers):
+    data_manager = copy.deepcopy(original_data_manager)
 
     if not os.path.exists(new_folder):
         os.mkdir(new_folder)
-
-    expts.as_file(new_folder + "/cluster_" + str(cluster.cluster_id) + ".expt")
-    joint_refl.as_file(new_folder + "/cluster_" + str(cluster.cluster_id) + ".refl")
+    os.chdir(new_folder)
+    data_manager.select(cluster_identifiers)
+    data_manager.export_experiments("cluster_" + str(cluster.cluster_id) + ".expt")
+    data_manager.export_reflections("cluster_" + str(cluster.cluster_id) + ".refl")
+    os.chdir("..")
