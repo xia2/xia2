@@ -53,7 +53,7 @@ An alternative use case is where one is interested in distinct clusters of datas
 (this is the kind of clustering structure demonstrated in the image above). While this can be handled using the options above for small or simple cases, for large datasets the dendrogram structure
 becomes very complex, with many dendrogram subtructures and branches. As such, the options above do not guarantee selection and evaluation of distinct clusters in a timely manner.
 
-To generate output containing distinct clusters `instead` of the output above, one can use the option ``clustering.analysis=True``.
+To generate output containing distinct clusters `instead` of the output above, one can use the option ``clustering.find_distinct_clusters=True``.
 In this case, individual clusters must still meet the four criteria above, then an analysis is performed to determine distinct clusters that do not share any individual datasets.
 These clusters are then individually scaled and merged.
 
