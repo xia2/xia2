@@ -189,6 +189,7 @@ def test_proteinase_k_dose(
             "symmetry.space_group=%s" % space_group,
             "clustering.output_clusters=True",
             "clustering.max_output_clusters=2",
+            "clustering.min_cluster_size=2",
         ]
         + expts
         + refls

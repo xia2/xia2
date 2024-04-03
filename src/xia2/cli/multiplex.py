@@ -8,7 +8,10 @@ import iotbx.cif
 import iotbx.phil
 import numpy as np
 from dials.array_family import flex
-from dials.util.exclude_images import exclude_image_ranges_for_scaling
+from dials.util.exclude_images import (
+    exclude_image_ranges_for_scaling,
+    get_valid_image_ranges,
+)
 from dials.util.multi_dataset_handling import (
     assign_unique_identifiers,
     parse_multiple_datasets,
@@ -166,6 +169,13 @@ def run(args=sys.argv[1:]):
     reflections, experiments = exclude_image_ranges_for_scaling(
         reflections, experiments, params.exclude_images
     )
+
+    image_ranges = get_valid_image_ranges(experiments)
+    for i in image_ranges:
+        if i is None:
+            raise sys.exit(
+                "Still images detected. Multiplex is only designed for merging multi-crystal rotation datasets. Please re-run with rotation data only."
+            )
 
     reflections_all = flex.reflection_table()
     assert len(reflections) == 1 or len(reflections) == len(experiments)
