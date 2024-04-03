@@ -93,10 +93,12 @@ def test_serial_data(dials_data, tmp_path, clustering_analysis):
     refl_scaled = os.fspath(tmp_path / "DataFiles" / "scaled.refl")
     args_test_clustering = [
         "xia2.cluster_analysis",
-        "min_cluster_size=2",
+        "clustering.min_cluster_size=2",
         expt_scaled,
         refl_scaled,
-        f"clustering.analysis={clustering_analysis}",
+        f"clustering.find_distinct_clusters={clustering_analysis}",
+        "clustering.method=cos_angle+correlation",
+        f"clustering.output_clusters={clustering_analysis}",
     ]
     result_generate_scaled = subprocess.run(
         args_generate_scaled, cwd=tmp_path, capture_output=True
@@ -133,8 +135,10 @@ def test_rotation_data(dials_data, run_in_tmp_path):
     )
     args_clustering = [
         "xia2.cluster_analysis",
-        "clustering.analysis=True",
+        "clustering.find_distinct_clusters=True",
         "clustering.min_cluster_size=2",
+        "clustering.method=cos_angle+correlation",
+        "clustering.output_clusters=True",
         expt_scaled,
         refl_scaled,
     ]
@@ -144,8 +148,8 @@ def test_rotation_data(dials_data, run_in_tmp_path):
 
 
 def check_output(main_dir, clustering_analysis=True):
-    assert (main_dir / "cc_clusters").exists() is clustering_analysis
-    assert (main_dir / "cos_angle_clusters").exists() is clustering_analysis
+    assert (main_dir / "cc_cluster_2").exists() is clustering_analysis
+    assert (main_dir / "cos_cluster_2").exists() is clustering_analysis
     assert (main_dir / "intensity_clusters.json").is_file()
     assert (main_dir / "cos_angle_clusters.json").is_file()
     assert (main_dir / "xia2.cluster_analysis.log").is_file()
