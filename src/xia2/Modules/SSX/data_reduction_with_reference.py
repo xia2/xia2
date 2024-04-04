@@ -40,7 +40,7 @@ class DataReductionWithReference(BaseDataReduction):
         if not Path.is_dir(self._scale_wd):
             Path.mkdir(self._scale_wd)
 
-        scaled_results = []
+        scaled_results = [FilePair(Path(), Path())] * len(self._batches_to_scale)
 
         batch_template = functools.partial(
             "scaled_batch{index:0{maxindexlength:d}d}".format,
@@ -56,25 +56,25 @@ class DataReductionWithReference(BaseDataReduction):
         ), concurrent.futures.ProcessPoolExecutor(
             max_workers=self._reduction_params.nproc
         ) as pool:
-            scale_futures: Dict[Any, str] = {
+            scale_futures: Dict[Any, int] = {
                 pool.submit(
                     scale_against_reference,
                     self._scale_wd,
                     batch,
                     self._reduction_params,
                     name,
-                ): name
-                for name, batch in jobs.items()  # .items()
+                ): idx
+                for idx, (name, batch) in enumerate(jobs.items())  # .items()
             }
             for future in concurrent.futures.as_completed(scale_futures):
                 try:
                     result = future.result()
-                    name = scale_futures[future]
+                    idx = scale_futures[future]
                 except Exception as e:
                     xia2_logger.warning(f"Unsuccessful scaling of group. Error:\n{e}")
                 else:
-                    xia2_logger.info(f"Completed scaling of {name}")
-                    scaled_results.append(FilePair(result.exptfile, result.reflfile))
+                    xia2_logger.info(f"Completed scaling of batch {idx+1}")
+                    scaled_results[idx] = FilePair(result.exptfile, result.reflfile)
                     FileHandler.record_data_file(result.exptfile)
                     FileHandler.record_data_file(result.reflfile)
                     FileHandler.record_log_file(
