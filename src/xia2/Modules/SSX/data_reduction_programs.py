@@ -615,9 +615,9 @@ def scale_parallel_batches(
                 xia2_logger.warning(f"Unsuccessful scaling of group. Error:\n{e}")
             else:
                 xia2_logger.info(f"Completed scaling of data reduction batch {idx+1}")
-                outbatch = ProcessingBatch()
-                outbatch.add_filepair(FilePair(result.exptfile, result.reflfile))
-                scaled_results[idx] = outbatch
+                scaled_results[idx].add_filepair(
+                    FilePair(result.exptfile, result.reflfile)
+                )
                 FileHandler.record_log_file(
                     result.logfile.name.rstrip(".log"), result.logfile
                 )
@@ -916,11 +916,9 @@ def parallel_cosym(
                         f"Unsuccessful scaling and symmetry analysis of the new data. Error:\n{e}"
                     )
                 else:
-                    processed_batch = ProcessingBatch()
-                    processed_batch.add_filepair(
+                    reindexed_results[idx].add_filepair(
                         FilePair(result.exptfile, result.reflfile)
                     )
-                    reindexed_results[idx] = processed_batch
                     FileHandler.record_log_file(
                         result.logfile.name.rstrip(".log"), result.logfile
                     )

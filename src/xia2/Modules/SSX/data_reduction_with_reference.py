@@ -64,7 +64,7 @@ class DataReductionWithReference(BaseDataReduction):
                     self._reduction_params,
                     name,
                 ): idx
-                for idx, (name, batch) in enumerate(jobs.items())  # .items()
+                for idx, (name, batch) in enumerate(jobs.items())
             }
             for future in concurrent.futures.as_completed(scale_futures):
                 try:
