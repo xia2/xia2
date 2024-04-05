@@ -1,0 +1,1 @@
+Fix issue with PR 784. Ensure consistent order of batches throughout processing in ssx_reduce
