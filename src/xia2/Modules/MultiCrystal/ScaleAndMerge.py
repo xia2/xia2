@@ -127,6 +127,11 @@ symmetry
     .short_caption = "Resolve indexing ambiguity"
   cosym {
     include scope dials.algorithms.symmetry.cosym.phil_scope
+    relative_length_tolerance = 0.05
+      .type = float(value_min=0)
+
+    absolute_angle_tolerance = 2
+      .type = float(value_min=0)
   }
   laue_group = None
     .type = space_group
@@ -1003,6 +1008,12 @@ class MultiCrystalScale:
             cosym.set_space_group(self._params.symmetry.space_group.group())
         if self._params.symmetry.laue_group is not None:
             cosym.set_space_group(self._params.symmetry.laue_group.group())
+        cosym.set_relative_length_tolerance(
+            self._params.symmetry.cosym.relative_length_tolerance
+        )
+        cosym.set_absolute_angle_tolerance(
+            self._params.symmetry.cosym.absolute_angle_tolerance
+        )
         cosym.set_best_monoclinic_beta(self._params.symmetry.cosym.best_monoclinic_beta)
         cosym.set_lattice_symmetry_max_delta(
             self._params.symmetry.cosym.lattice_symmetry_max_delta
