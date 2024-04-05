@@ -586,7 +586,7 @@ def scale_parallel_batches(
     working_directory, batches: List[ProcessingBatch], reduction_params
 ) -> Tuple[List[ProcessingBatch], List[float]]:
     # scale multiple batches in parallel
-    scaled_results = []
+    scaled_results = [ProcessingBatch()] * len(batches)
     d_mins = []
     batch_template = functools.partial(
         "batch{index:0{maxindexlength:d}d}".format,
@@ -597,29 +597,27 @@ def scale_parallel_batches(
     with record_step("dials.scale (parallel)"), concurrent.futures.ProcessPoolExecutor(
         max_workers=min(reduction_params.nproc, len(batches))
     ) as pool:
-        scale_futures: Dict[Any, str] = {
+        scale_futures: Dict[Any, int] = {
             pool.submit(
                 scale_on_batches,
                 working_directory,
                 [batch],
                 reduction_params,
                 name,
-            ): name
-            for name, batch in jobs.items()
+            ): i
+            for i, (name, batch) in enumerate(jobs.items())
         }
         for future in concurrent.futures.as_completed(scale_futures):
             try:
                 result = future.result()
-                name = scale_futures[future]
+                idx = scale_futures[future]
             except Exception as e:
                 xia2_logger.warning(f"Unsuccessful scaling of group. Error:\n{e}")
             else:
-                xia2_logger.info(
-                    f"Completed scaling of data reduction batch {name.lstrip('batch')}"
+                xia2_logger.info(f"Completed scaling of data reduction batch {idx+1}")
+                scaled_results[idx].add_filepair(
+                    FilePair(result.exptfile, result.reflfile)
                 )
-                outbatch = ProcessingBatch()
-                outbatch.add_filepair(FilePair(result.exptfile, result.reflfile))
-                scaled_results.append(outbatch)
                 FileHandler.record_log_file(
                     result.logfile.name.rstrip(".log"), result.logfile
                 )
@@ -890,7 +888,7 @@ def parallel_cosym(
     if not Path.is_dir(working_directory):
         Path.mkdir(working_directory)
 
-    reindexed_results = []
+    reindexed_results = [ProcessingBatch()] * len(data_to_reindex)
 
     with open(os.devnull, "w") as devnull:
         sys.stdout = devnull  # block printing from cosym
@@ -899,17 +897,18 @@ def parallel_cosym(
             "dials.cosym (parallel)"
         ), concurrent.futures.ProcessPoolExecutor(max_workers=nproc) as pool:
 
-            cosym_futures: List[Any] = [
+            cosym_futures: dict[Any, int] = {
                 pool.submit(
                     individual_cosym,
                     working_directory,
                     batch,
                     index,
                     reduction_params,
-                )
+                ): index
                 for index, batch in enumerate(data_to_reindex)
-            ]
+            }
             for future in concurrent.futures.as_completed(cosym_futures):
+                idx = cosym_futures[future]
                 try:
                     result = future.result()
                 except Exception as e:
@@ -917,11 +916,9 @@ def parallel_cosym(
                         f"Unsuccessful scaling and symmetry analysis of the new data. Error:\n{e}"
                     )
                 else:
-                    processed_batch = ProcessingBatch()
-                    processed_batch.add_filepair(
+                    reindexed_results[idx].add_filepair(
                         FilePair(result.exptfile, result.reflfile)
                     )
-                    reindexed_results.append(processed_batch)
                     FileHandler.record_log_file(
                         result.logfile.name.rstrip(".log"), result.logfile
                     )
