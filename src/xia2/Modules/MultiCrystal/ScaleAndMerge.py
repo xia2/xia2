@@ -127,7 +127,10 @@ symmetry
     .short_caption = "Resolve indexing ambiguity"
   cosym {
     include scope dials.algorithms.symmetry.cosym.phil_scope
-    include scope dials.command_line.cosym.phil_scope
+    relative_length_tolerance = 0.05
+      .type = float(value_min=0)
+    absolute_angle_tolerance = 2
+      .type = float(value_min=0)
   }
   laue_group = None
     .type = space_group
