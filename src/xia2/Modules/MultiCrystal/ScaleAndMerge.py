@@ -129,8 +129,10 @@ symmetry
     include scope dials.algorithms.symmetry.cosym.phil_scope
     relative_length_tolerance = 0.05
       .type = float(value_min=0)
+      .help = "Datasets are only accepted if unit cell lengths fall within this relative tolerance of the median cell lengths."
     absolute_angle_tolerance = 2
       .type = float(value_min=0)
+      .help = "Datasets are only accepted if unit cell angles fall within this absolute tolerance of the median cell angles."
   }
   laue_group = None
     .type = space_group
