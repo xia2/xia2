@@ -475,7 +475,7 @@ def test_ssx_reduce(dials_data, tmp_path, pdb_model, idx_ambiguity):
             f"{expts}",
         ]  # note - pass as files rather than directory to test that input option
     else:
-        args = ["xia2.ssx_reduce", f"directory={ssx}"]
+        args = ["xia2.ssx_reduce", f"directory={ssx}", "batch_size=2"]
     extra_args = []
     if pdb_model:
         model = dials_data("cunir_serial", pathlib=True) / "2BW4.pdb"

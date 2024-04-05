@@ -586,7 +586,7 @@ def scale_parallel_batches(
     working_directory, batches: List[ProcessingBatch], reduction_params
 ) -> Tuple[List[ProcessingBatch], List[float]]:
     # scale multiple batches in parallel
-    scaled_results = [ProcessingBatch()] * len(batches)
+    scaled_results = [ProcessingBatch() for _ in range(len(batches))]
     d_mins = []
     batch_template = functools.partial(
         "batch{index:0{maxindexlength:d}d}".format,
@@ -888,7 +888,7 @@ def parallel_cosym(
     if not Path.is_dir(working_directory):
         Path.mkdir(working_directory)
 
-    reindexed_results = [ProcessingBatch()] * len(data_to_reindex)
+    reindexed_results = [ProcessingBatch() for _ in range(len(data_to_reindex))]
 
     with open(os.devnull, "w") as devnull:
         sys.stdout = devnull  # block printing from cosym
