@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import concurrent.futures
 import copy
+import functools
 import json
 import logging
 import math
@@ -37,6 +38,7 @@ from iotbx.phil import parse
 
 from xia2.Driver.timing import record_step
 from xia2.Handlers.Files import FileHandler
+from xia2.Modules.SSX.batch_cosym import BatchCosym
 from xia2.Modules.SSX.data_reduction_definitions import FilePair, ReductionParams
 from xia2.Modules.SSX.reporting import condensed_unit_cell_info
 from xia2.Modules.SSX.util import log_to_file, run_in_directory
@@ -483,7 +485,7 @@ def _extract_scaling_params_for_scale_against_reference(reduction_params, name):
         cut_data.partiality_cutoff={reduction_params.partiality_threshold}
         output.experiments={name}.expt
         output.reflections={name}.refl
-        output.html=None
+        output.html=dials.scale.{name}.html
         scaling_options.reference={str(reduction_params.reference)}
         scaling_options.reference_model.k_sol={reduction_params.reference_ksol}
         scaling_options.reference_model.b_sol={reduction_params.reference_bsol}
@@ -579,9 +581,6 @@ def scale_against_reference(
         None,
         None,
     )
-
-
-import functools
 
 
 def scale_parallel_batches(
@@ -708,15 +707,17 @@ def _extract_cosym_params(reduction_params, index):
         output.reflections=processed_{index}.refl
         output.experiments=processed_{index}.expt
     """
-    if reduction_params.reference:
-        xia2_phil += f"\nreference={reduction_params.reference}"
-        xia2_phil += f"\nreference_model.k_sol={reduction_params.reference_ksol}"
-        xia2_phil += f"\nreference_model.b_sol={reduction_params.reference_bsol}"
+    # if reduction_params.reference:
+    #    xia2_phil += f"\nreference={reduction_params.reference}"
+    #    xia2_phil += f"\nreference_model.k_sol={reduction_params.reference_ksol}"
+    #    xia2_phil += f"\nreference_model.b_sol={reduction_params.reference_bsol}"
     extra_defaults = f"""
         min_i_mean_over_sigma_mean=0.5
         unit_cell_clustering.threshold=None
         lattice_symmetry_max_delta={reduction_params.lattice_symmetry_max_delta}
         partiality_threshold={reduction_params.partiality_threshold}
+        cc_weights=sigma
+        weights=standard_error
     """
     if reduction_params.d_min:
         # note - allow user phil to override the overall xia2 d_min - might
@@ -827,6 +828,55 @@ def individual_cosym(
     )
 
 
+def scale_reindex_single(
+    working_directory: Path,
+    batch_for_reindex: ProcessingBatch,
+    reduction_params: ReductionParams,
+) -> List[ProcessingBatch]:
+    assert (
+        reduction_params.reference
+    )  # this should only be called if we have a reference
+    scaleresult = scale_on_batches(
+        working_directory,
+        [batch_for_reindex],
+        reduction_params,
+        "batch1",
+    )
+    logfile = "dials.reindex.log"
+    with run_in_directory(working_directory), log_to_file(logfile), record_step(
+        "dials.reindex"
+    ):
+        expts = load.experiment_list(scaleresult.exptfile, check_format=False)
+        refls = flex.reflection_table.from_file(scaleresult.reflfile)
+        space_group = reduction_params.space_group.group()
+        wavelength = np.mean([expt.beam.get_wavelength() for expt in expts])
+        from dials.util.reference import intensities_from_reference_file
+        from dials.util.reindex import change_of_basis_op_against_reference
+
+        reference_miller_set = intensities_from_reference_file(
+            os.fspath(reduction_params.reference), wavelength=wavelength
+        )
+        change_of_basis_op = change_of_basis_op_against_reference(
+            expts, [refls], reference_miller_set
+        )
+        for expt in expts:
+            expt.crystal = expt.crystal.change_basis(change_of_basis_op)
+            expt.crystal.set_space_group(space_group)
+
+        exptfileout = "processed_0.expt"
+        reflfileout = "processed_0.refl"
+        expts.as_file(exptfileout)
+
+        refls["miller_index"] = change_of_basis_op.apply(refls["miller_index"])
+        refls.as_file(reflfileout)
+    xia2_logger.info("Reindexed against reference file")
+    outbatch = ProcessingBatch()
+    outbatch.add_filepair(
+        FilePair(working_directory / exptfileout, working_directory / reflfileout)
+    )
+    return [outbatch]
+
+
 def cosym_reindex(
     working_directory: Path,
     batches_for_reindex: List[ProcessingBatch],
@@ -836,8 +886,6 @@ def cosym_reindex(
     reference=None,
 ) -> List[ProcessingBatch]:
     from dials.command_line.cosym import phil_scope as cosym_scope
-
-    from xia2.Modules.SSX.batch_cosym import BatchCosym
 
     expts = []
     refls = []
@@ -852,6 +900,8 @@ def cosym_reindex(
     params.lattice_symmetry_max_delta = max_delta
     params.partiality_threshold = partiality_threshold
     params.min_i_mean_over_sigma_mean = 0.5
+    params.cc_weights = "sigma"
+    params.weights = "standard_error"
     if reference:
         params.reference = os.fspath(reference)
     if d_min:
