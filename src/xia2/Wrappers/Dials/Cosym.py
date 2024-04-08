@@ -37,6 +37,8 @@ def DialsCosym(DriverType=None, decay_correction=None):
             self._html = None
             self._best_monoclinic_beta = False
             self._lattice_symmetry_max_delta = None
+            self._relative_length_tolerance = None
+            self._absolute_angle_tolerance = None
 
         # getter and setter methods
 
@@ -66,6 +68,12 @@ def DialsCosym(DriverType=None, decay_correction=None):
 
         def set_lattice_symmetry_max_delta(self, lattice_symmetry_max_delta):
             self._lattice_symmetry_max_delta = lattice_symmetry_max_delta
+
+        def set_relative_length_tolerance(self, relative_length_tolerance):
+            self._relative_length_tolerance = relative_length_tolerance
+
+        def set_absolute_angle_tolerance(self, absolute_angle_tolerance):
+            self._absolute_angle_tolerance = absolute_angle_tolerance
 
         def get_json(self):
             return self._json
@@ -100,6 +108,15 @@ def DialsCosym(DriverType=None, decay_correction=None):
             if self._space_group is not None:
                 self.add_command_line(
                     "space_group=%s" % self._space_group.type().lookup_symbol()
+                )
+            if self._relative_length_tolerance is not None:
+                self.add_command_line(
+                    "relative_length_tolerance=%s" % self._relative_length_tolerance
+                )
+
+            if self._absolute_angle_tolerance is not None:
+                self.add_command_line(
+                    "absolute_angle_tolerance=%s" % self._absolute_angle_tolerance
                 )
 
             if not self._json:
