@@ -273,9 +273,18 @@ relatively isomorphous.
 
             # Finally filter by maximum number allowed to output
 
-            final_clusters_to_compare = clusters_to_compare_unfiltered[
-                -params.clustering.max_output_clusters :
-            ]
+            logger.info(clusters_to_compare_unfiltered)
+
+            # Check if clusters ordered largest -> smallest or vice versa
+
+            if c_data["Length"][0] > c_data["Length"][-1]:
+                final_clusters_to_compare = clusters_to_compare_unfiltered[
+                    : params.clustering.max_output_clusters
+                ]
+            else:
+                final_clusters_to_compare = clusters_to_compare_unfiltered[
+                    -params.clustering.max_output_clusters :
+                ]
 
             if len(final_clusters_to_compare) > 0:
                 for pair in final_clusters_to_compare:
