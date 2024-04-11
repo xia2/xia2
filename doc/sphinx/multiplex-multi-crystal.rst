@@ -57,6 +57,17 @@ To generate output containing distinct clusters `instead` of the output above, o
 In this case, individual clusters must still meet the four criteria above, then an analysis is performed to determine distinct clusters that do not share any individual datasets.
 These clusters are then individually scaled and merged.
 
+------------------------------------------
+Allowed tolerance for unit cell parameters
+------------------------------------------
+The tolerance for accepted unit cell parameters in xia2.multiplex is set to be reasonably strict. The default value for ``symmetry.cosym.relative_length_tolerance`` is 0.05, which means that any datasets with unit
+cell lengths outside of this relative tolerance range will be rejected. For unit cell angles, the default value for ``symmetry.cosym.absolute_angle_tolerance`` is 2, meaning all unit cell angles that fall outside
+of this absolute tolerance range will also be rejected. These ranges are evaluated based on the best median unit cell established through dials.cosym (run within xia2.multiplex). 
+
+These tolerance values have been found effective where the goal of the multi-crystal data collection is a single, high quality dataset. In the case where multiple distinct crystal structures may be present, these
+tolerance values can be increased to permit more data through into the clustering analysis. For instance, one recommended option to look for other distinct states without permitting data through that are too different
+is to set ``symmetry.cosym.relative_length_tolerance=0.1``.
+
 ---------------------
 Scaling and filtering
 ---------------------
