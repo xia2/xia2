@@ -848,6 +848,7 @@ class MultiCrystalScale:
                 for l in largest_cluster.lattice_ids
             ]
             self._data_manager.select(cluster_identifiers)
+            self._data_manager._set_batches()
         else:
             logger.info("Using all data sets for subsequent analysis")
 
