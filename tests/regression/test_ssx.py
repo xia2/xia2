@@ -251,7 +251,7 @@ def test_slice_cbfs(dials_data, tmp_path, refined_expt):
         "max_lattices=1",
     ]
     args.append(
-        "template=" + os.fspath(ssx / "merlin0047_1700#.cbf:2:4")
+        "template=" + os.fspath(ssx / "merlin0047_17###.cbf:2:4")
     )  # i.e. 17002,17003,17004
 
     result = subprocess.run(args, cwd=tmp_path, capture_output=True)
