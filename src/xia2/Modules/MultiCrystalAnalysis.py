@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import copy
 import json
 import logging
 from collections import OrderedDict
@@ -8,9 +9,9 @@ from itertools import combinations
 import pandas as pd
 
 from dials.algorithms.clustering.unit_cell import cluster_unit_cells
+from dials.algorithms.correlation.analysis import CorrelationMatrix
 from dials.algorithms.scaling.scale_and_filter import make_scaling_filtering_plots
 from dials.algorithms.symmetry.cosym import SymmetryAnalysis
-from dials.algorithms.symmetry.cosym.plots import plot_coords, plot_rij_histogram
 from dials.util.filter_reflections import filtered_arrays_from_experiments_reflections
 from dials.util.multi_dataset_handling import parse_multiple_datasets
 from libtbx import phil
@@ -107,41 +108,29 @@ class MultiCrystalAnalysis:
         return clustering
 
     def cluster_analysis(self):
-        from xia2.Modules.MultiCrystal import multi_crystal_analysis
+        reflections = []
 
-        labels = [
-            self._data_manager.identifiers_to_ids_map[i]
-            for i in self._data_manager.experiments.identifiers()
-        ]
-        mca = multi_crystal_analysis(
-            self._intensities_separate[0], labels=labels, prefix=None
-        )
+        for i in self._data_manager.ids_to_identifiers_map:
+            dup = copy.deepcopy(self._data_manager)
+            dup.select(self._data_manager.ids_to_identifiers_map[i])
+            reflections.append(dup.reflections)
 
-        self._cc_cluster_json = mca.to_plotly_json(
-            mca.cc_matrix, mca.cc_linkage_matrix, labels=labels
+        matrices = CorrelationMatrix(
+            self._data_manager.experiments,
+            reflections,
+            self.params,
+            self._data_manager.ids_to_identifiers_map,
         )
-        self._cc_cluster_table = mca.as_table(mca.cc_clusters)
+        matrices.calculate_matrices()
+        matrices.convert_to_html_json()
 
-        self._cos_angle_cluster_json = mca.to_plotly_json(
-            mca.cos_angle_matrix,
-            mca.cos_angle_linkage_matrix,
-            labels=labels,
-            matrix_type="cos_angle",
-        )
-        self._cos_angle_cluster_table = mca.as_table(mca.cos_angle_clusters)
-
-        self._cosym_graphs = OrderedDict()
-        self._cosym_graphs.update(
-            plot_rij_histogram(
-                mca.cosym.target.rij_matrix, key="cosym_rij_histogram_sg"
-            )
-        )
-        self._cosym_graphs.update(
-            plot_coords(mca.cosym.coords, key="cosym_coordinates_sg")
-        )
-
-        self._cluster_analysis = mca
-        return self._cluster_analysis
+        self.cc_clusters = matrices.correlation_clusters
+        self.cos_clusters = matrices.cos_angle_clusters
+        self._cc_cluster_json = matrices.cc_json
+        self._cos_angle_cluster_json = matrices.cos_json
+        self._cc_cluster_table = matrices.cc_table
+        self._cos_angle_cluster_table = matrices.cos_table
+        self._cosym_graphs = matrices.rij_graphs
 
     def unit_cell_analysis(self):
         from dials.command_line.unit_cell_histogram import uc_params_from_experiments

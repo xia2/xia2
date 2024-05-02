@@ -212,7 +212,23 @@ filtering
 }
 
 multi_crystal_analysis {
-  include scope xia2.Modules.MultiCrystal.master_phil_scope
+  unit_cell = None
+    .type = unit_cell
+    .short_caption = "Unit cell"
+  n_bins = 20
+    .type = int(value_min=1)
+    .short_caption = "Number of bins"
+  d_min = None
+    .type = float(value_min=0)
+    .short_caption = "High resolution cutoff"
+  batch
+    .multiple = True
+  {
+    id = None
+      .type = str
+    range = None
+      .type = ints(size=2, value_min=0)
+  }
 }
 
 unit_cell
@@ -283,6 +299,8 @@ unit_cell_clustering {
     .type = bool
     .help = 'Display the dendrogram with a log scale'
 }
+
+include scope dials.algorithms.correlation.analysis.phil_scope
 
 output {
   log = xia2.multi_crystal_analysis.log
@@ -1024,9 +1042,12 @@ class MultiCrystalScale:
         )
 
     def cluster_analysis(self):
-        mca = self._mca.cluster_analysis()
-        self._cos_angle_clusters = mca.cos_angle_clusters
-        self._cc_clusters = mca.cc_clusters
+        # mca = self._mca.cluster_analysis()
+        self._mca.cluster_analysis()
+        self._cos_angle_clusters = self._mca.cos_clusters
+        self._cc_clusters = self._mca.cc_clusters
+        # self._cos_angle_clusters = mca.cos_clusters
+        # self._cc_clusters = mca.cc_clusters
 
 
 class Scale:
