@@ -12,6 +12,7 @@ from dials.algorithms.clustering.unit_cell import cluster_unit_cells
 from dials.algorithms.correlation.analysis import CorrelationMatrix
 from dials.algorithms.scaling.scale_and_filter import make_scaling_filtering_plots
 from dials.algorithms.symmetry.cosym import SymmetryAnalysis
+from dials.util import tabulate
 from dials.util.filter_reflections import filtered_arrays_from_experiments_reflections
 from dials.util.multi_dataset_handling import parse_multiple_datasets
 from libtbx import phil
@@ -124,6 +125,11 @@ class MultiCrystalAnalysis:
         matrices.calculate_matrices()
         matrices.convert_to_html_json()
 
+        logger.info("\nIntensity correlation clustering summary:")
+        logger.info(tabulate(matrices.cc_table, headers="firstrow", tablefmt="rst"))
+        logger.info("\nCos(angle) clustering summary:")
+        logger.info(tabulate(matrices.cos_table, headers="firstrow", tablefmt="rst"))
+
         self.cc_clusters = matrices.correlation_clusters
         self.cos_clusters = matrices.cos_angle_clusters
         self._cc_cluster_json = matrices.cc_json
@@ -131,6 +137,9 @@ class MultiCrystalAnalysis:
         self._cc_cluster_table = matrices.cc_table
         self._cos_angle_cluster_table = matrices.cos_table
         self._cosym_graphs = matrices.rij_graphs
+
+        # Need this here or else cos-angle dendrogram does not replicate original multiplex output
+        self._cluster_analysis = True
 
     def unit_cell_analysis(self):
         from dials.command_line.unit_cell_histogram import uc_params_from_experiments
