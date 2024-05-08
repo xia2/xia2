@@ -407,7 +407,7 @@ def _extract_scaling_params(reduction_params):
     extra_defaults = """
         model=KB
         scaling_options.full_matrix=False
-        weighting.error_model.error_model=None
+        weighting.error_model.reset_error_model=True
         scaling_options.outlier_rejection=simple
         reflection_selection.intensity_choice=sum
         reflection_selection.method=intensity_ranges
@@ -467,7 +467,7 @@ def _extract_scaling_params_for_scale_against_reference(reduction_params, name):
     extra_defaults = """
         model=KB
         scaling_options.full_matrix=False
-        weighting.error_model.error_model=None
+        weighting.error_model.reset_error_model=True
         scaling_options.outlier_rejection=simple
         reflection_selection.intensity_choice=sum
         reflection_selection.method=intensity_ranges
