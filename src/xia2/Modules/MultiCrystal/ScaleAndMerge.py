@@ -11,12 +11,13 @@ from dials.array_family import flex
 from dials.command_line.unit_cell_histogram import plot_uc_histograms
 from dials.util import tabulate
 from dials.util.export_mtz import match_wavelengths
-from dials.util.system import CPU_COUNT
+
+# from dials.util.system import CPU_COUNT
 from dxtbx.serialize import load
 from libtbx import Auto
 from scitbx.math import five_number_summary
 
-from xia2.Handlers.Phil import PhilIndex
+# from xia2.Handlers.Phil import PhilIndex
 from xia2.lib.bits import auto_logfiler
 from xia2.Modules import Report
 from xia2.Modules.MultiCrystal.data_manager import DataManager
@@ -324,9 +325,11 @@ class MultiCrystalScale:
         if all([params.symmetry.laue_group, params.symmetry.space_group]):
             raise ValueError("Can not specify both laue_group and space_group")
 
-        if self._params.nproc is Auto:
-            self._params.nproc = CPU_COUNT
-            PhilIndex.params.xia2.settings.multiprocessing.nproc = self._params.nproc
+        self._params.symmetry.cosym.weights = "standard_error"
+
+        # if self._params.nproc is Auto:
+        # self._params.nproc = CPU_COUNT
+        # PhilIndex.params.xia2.settings.multiprocessing.nproc = self._params.nproc
 
         if self._params.identifiers is not None:
             self._data_manager.select(self._params.identifiers)
@@ -1050,6 +1053,8 @@ class MultiCrystalScale:
         self._data_manager.reflections = flex.reflection_table.from_file(
             self._reflections_filename
         )
+        self._data_manager._set_batches()
+
         self._data_manager._set_batches()
 
         if not any(
