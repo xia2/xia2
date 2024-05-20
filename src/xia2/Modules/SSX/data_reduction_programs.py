@@ -409,6 +409,7 @@ def _extract_scaling_params(reduction_params):
         scaling_options.full_matrix=False
         weighting.error_model.reset_error_model=True
         scaling_options.outlier_rejection=simple
+        scaling_options.outlier_zmax=4.0
         reflection_selection.intensity_choice=sum
         reflection_selection.method=intensity_ranges
         reflection_selection.Isigma_range=2.0,0.0
@@ -469,6 +470,7 @@ def _extract_scaling_params_for_scale_against_reference(reduction_params, name):
         scaling_options.full_matrix=False
         weighting.error_model.reset_error_model=True
         scaling_options.outlier_rejection=simple
+        scaling_options.outlier_zmax=4.0
         reflection_selection.intensity_choice=sum
         reflection_selection.method=intensity_ranges
         reflection_selection.Isigma_range=2.0,0.0
