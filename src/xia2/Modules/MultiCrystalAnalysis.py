@@ -110,17 +110,30 @@ class MultiCrystalAnalysis:
 
     def cluster_analysis(self):
         reflections = []
+        identifiers = []
+        filtered_ids_to_identifiers_map = copy.deepcopy(
+            self._data_manager.ids_to_identifiers_map
+        )
 
-        for i in self._data_manager.ids_to_identifiers_map:
+        for i in self._data_manager.experiments:
             dup = copy.deepcopy(self._data_manager)
-            dup.select(self._data_manager.ids_to_identifiers_map[i])
+            dup.select(i.identifier)
             reflections.append(dup.reflections)
+            identifiers.append(i.identifier)
+
+        to_delete = []
+        for i in filtered_ids_to_identifiers_map:
+            if filtered_ids_to_identifiers_map[i] not in identifiers:
+                to_delete.append(i)
+
+        for i in to_delete:
+            filtered_ids_to_identifiers_map.pop(i)
 
         matrices = CorrelationMatrix(
             self._data_manager.experiments,
             reflections,
             self.params,
-            self._data_manager.ids_to_identifiers_map,
+            filtered_ids_to_identifiers_map,
         )
         matrices.calculate_matrices()
         matrices.convert_to_html_json()
