@@ -472,12 +472,14 @@ class Indexer:
                         xsweeps = reduce(compress, xsweeps)
                         xsweeps = [
                             (
-                                "SWEEP%d" % x[0]
-                                if x[0] == x[1]
-                                else "SWEEPS %d to %d" % (x[0], x[1])
+                                (
+                                    "SWEEP%d" % x[0]
+                                    if x[0] == x[1]
+                                    else "SWEEPS %d to %d" % (x[0], x[1])
+                                )
+                                if isinstance(x, tuple)
+                                else x
                             )
-                            if isinstance(x, tuple)
-                            else x
                             for x in xsweeps
                         ]
                     if len(xsweeps) > 1:

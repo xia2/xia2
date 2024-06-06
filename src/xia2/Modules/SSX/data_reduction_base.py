@@ -333,9 +333,9 @@ class BaseDataReduction(object):
                 if self._reduction_params.dose_series_repeat:
                     # Not essential, but nicer to be named dose rather than generic 'group'
                     for name in list(groups_for_merge.keys()):
-                        groups_for_merge[
-                            name.replace("group", "dose")
-                        ] = groups_for_merge.pop(name)
+                        groups_for_merge[name.replace("group", "dose")] = (
+                            groups_for_merge.pop(name)
+                        )
 
                 # move the data into subdirs
                 for g, flist in groups_for_merge.items():
@@ -390,9 +390,9 @@ class BaseDataReduction(object):
             max_workers=self._reduction_params.nproc
         ) as pool:
             for name, filelist in merge_input.items():
-                futures[
-                    pool.submit(prepare_scaled_array, filelist, best_unit_cell)
-                ] = name
+                futures[pool.submit(prepare_scaled_array, filelist, best_unit_cell)] = (
+                    name
+                )
         for future in concurrent.futures.as_completed(futures):
             name = futures[future]
             name_to_expts_arr[name] = future.result()

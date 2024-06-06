@@ -657,16 +657,16 @@ class CommonScaler(Scaler):
 
         else:
 
-            self._scalr_scaled_reflection_files[
-                "mtz_merged"
-            ] = self._scalr_scaled_refl_files[list(self._scalr_scaled_refl_files)[0]]
+            self._scalr_scaled_reflection_files["mtz_merged"] = (
+                self._scalr_scaled_refl_files[list(self._scalr_scaled_refl_files)[0]]
+            )
 
     def _scale_finish_chunk_5_finish_small_molecule(self):
         # keep 'mtz' and remove 'mtz_merged' from the dictionary for
         # consistency with non-small-molecule workflow
-        self._scalr_scaled_reflection_files[
-            "mtz"
-        ] = self._scalr_scaled_reflection_files["mtz_merged"]
+        self._scalr_scaled_reflection_files["mtz"] = (
+            self._scalr_scaled_reflection_files["mtz_merged"]
+        )
         del self._scalr_scaled_reflection_files["mtz_merged"]
 
         FileHandler.record_data_file(self._scalr_scaled_reflection_files["mtz"])
@@ -1365,11 +1365,13 @@ class CommonScaler(Scaler):
                 if self._spacegroup_reindex_operator is not None:
                     reindex_ops = [
                         (
-                            cb_op(str(self._spacegroup_reindex_operator))
-                            * cb_op(str(op))
-                        ).as_hkl()
-                        if op is not None
-                        else self._spacegroup_reindex_operator
+                            (
+                                cb_op(str(self._spacegroup_reindex_operator))
+                                * cb_op(str(op))
+                            ).as_hkl()
+                            if op is not None
+                            else self._spacegroup_reindex_operator
+                        )
                         for op in reindex_ops
                     ]
                 tt_grouprefiner.set_reindex_operators(reindex_ops)
@@ -1414,11 +1416,13 @@ class CommonScaler(Scaler):
                 if self._spacegroup_reindex_operator is not None:
                     reindex_ops = [
                         (
-                            cb_op(str(self._spacegroup_reindex_operator))
-                            * cb_op(str(op))
-                        ).as_hkl()
-                        if op is not None
-                        else self._spacegroup_reindex_operator
+                            (
+                                cb_op(str(self._spacegroup_reindex_operator))
+                                * cb_op(str(op))
+                            ).as_hkl()
+                            if op is not None
+                            else self._spacegroup_reindex_operator
+                        )
                         for op in tt_refine_reindex_ops
                     ]
                 else:

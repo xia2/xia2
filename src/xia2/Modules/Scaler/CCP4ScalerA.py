@@ -1072,9 +1072,9 @@ class CCP4ScalerA(Scaler):
                     selected_band=(highest_suggested_resolution, None),
                     wave=key,
                 )
-                self._scalr_statistics[
-                    (self._scalr_pname, self._scalr_xname, key)
-                ] = stats
+                self._scalr_statistics[(self._scalr_pname, self._scalr_xname, key)] = (
+                    stats
+                )
 
         sc = self._updated_aimless()
         sc.set_hklin(self._prepared_reflections)

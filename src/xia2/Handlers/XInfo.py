@@ -410,9 +410,9 @@ class XInfo:
             # now look for one-record things
 
             if "SCALED_MERGED_REFLECTION_FILE" in record:
-                self._crystals[crystal][
-                    "scaled_merged_reflection_file"
-                ] = record.replace("SCALED_MERGED_REFLECTION_FILE", "").strip()
+                self._crystals[crystal]["scaled_merged_reflection_file"] = (
+                    record.replace("SCALED_MERGED_REFLECTION_FILE", "").strip()
+                )
 
             if "REFERENCE_REFLECTION_FILE" in record:
                 self._crystals[crystal]["reference_reflection_file"] = record.replace(

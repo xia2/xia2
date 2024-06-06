@@ -923,9 +923,9 @@ pipeline=dials (supported for pipeline=dials-aimless).
                     selected_band=(highest_suggested_resolution, None),
                     wave=key,
                 )
-                self._scalr_statistics[
-                    (self._scalr_pname, self._scalr_xname, key)
-                ] = stats
+                self._scalr_statistics[(self._scalr_pname, self._scalr_xname, key)] = (
+                    stats
+                )
 
         # add CIF data
         expts = load.experiment_list(self._scaled_experiments)
@@ -1119,9 +1119,9 @@ Scaling & analysis of unmerged intensities, absorption correction using spherica
 
             # Write average unit cell to .cif
             cif_out = CIF.get_block("xia2")
-            cif_out[  # pylint: disable=E1137
-                "_computing_cell_refinement"
-            ] = "AIMLESS averaged unit cell"
+            cif_out["_computing_cell_refinement"] = (  # pylint: disable=E1137
+                "AIMLESS averaged unit cell"
+            )
             for cell, cifname in zip(
                 self._scalr_cell,
                 [
@@ -1228,7 +1228,7 @@ class DialsScalerHelper:
         assigner = DialsAssignIdentifiers()
         assigner.set_working_directory(self.get_working_directory())
         auto_logfiler(assigner)
-        for (exp, refl) in zip(experiments, reflections):
+        for exp, refl in zip(experiments, reflections):
             assigner.add_experiments(exp)
             assigner.add_reflections(refl)
         assigner.assign_identifiers()
@@ -1367,7 +1367,7 @@ Passing multple datasets to indexer_jiffy but not set multisweep=True"""
             symmetry_analyser.get_log_file(),
         )
 
-        for (exp, refl) in zip(experiments, reflections):
+        for exp, refl in zip(experiments, reflections):
             symmetry_analyser.add_experiments(exp)
             symmetry_analyser.add_reflections(refl)
         symmetry_analyser.decide_pointgroup()

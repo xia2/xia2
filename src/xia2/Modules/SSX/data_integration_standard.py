@@ -772,7 +772,6 @@ def cumulative_determine_reference_geometry(
 
 
 class ProcessBatch(object):
-
     """A processing class as required for multi_node_parallel_map"""
 
     def __init__(

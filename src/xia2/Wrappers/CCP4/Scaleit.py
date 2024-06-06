@@ -190,9 +190,9 @@ def Scaleit(DriverType=None):
                             current_derivative = int(lst[1])
 
                         if "The equivalent isotropic" in line:
-                            self._statistics["b_factor"][current_derivative][
-                                "b"
-                            ] = float(lst[-1])
+                            self._statistics["b_factor"][current_derivative]["b"] = (
+                                float(lst[-1])
+                            )
 
                         j += 1
                         line = output[j]

@@ -141,7 +141,7 @@ def Indexer(preselection=None):
     else:
         indexerlist.append((XDSIndexerII, "xdsii", "XDS II Indexer"))
 
-    for (idxfactory, idxname, idxdisplayname) in indexerlist:
+    for idxfactory, idxname, idxdisplayname in indexerlist:
         if not indexer and (not preselection or preselection == idxname):
             try:
                 indexer = idxfactory()

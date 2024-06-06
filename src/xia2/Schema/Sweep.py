@@ -42,7 +42,6 @@ class Sweep:
     """A class to represent a single sweep of frames."""
 
     def __init__(self, template, directory, imageset=None, id_image=None, beam=None):
-
         """Initialise the sweep by inspecting the images. id_image
         defines the first image in this sweep, and hence the identity of
         the sweep of more than one are found which match."""

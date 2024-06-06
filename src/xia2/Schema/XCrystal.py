@@ -285,9 +285,9 @@ class XCrystal:
                 assert not isinstance(s, str)
         if return_obj._scaler is not None:
             for intgr in return_obj._get_integraters():
-                return_obj._scaler._scalr_integraters[
-                    intgr.get_integrater_epoch()
-                ] = intgr
+                return_obj._scaler._scalr_integraters[intgr.get_integrater_epoch()] = (
+                    intgr
+                )
                 if (
                     hasattr(return_obj._scaler, "_sweep_handler")
                     and return_obj._scaler._sweep_handler is not None
@@ -396,9 +396,9 @@ class XCrystal:
                     self._name,
                     wavelength,
                 )
-                CIF.get_block(full_wave_name)[
-                    "_diffrn_radiation_wavelength"
-                ] = self._wavelengths[wavelength].get_wavelength()
+                CIF.get_block(full_wave_name)["_diffrn_radiation_wavelength"] = (
+                    self._wavelengths[wavelength].get_wavelength()
+                )
             CIF.set_wavelengths(
                 {
                     name: wave.get_wavelength()
