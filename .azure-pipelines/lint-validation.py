@@ -8,7 +8,8 @@ failures = 0
 try:
     flake8 = subprocess.run(
         [
-            "flake8",
+            "ruff",
+            "check",
             "--exit-zero",
         ],
         capture_output=True,
