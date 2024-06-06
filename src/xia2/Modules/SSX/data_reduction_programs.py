@@ -707,10 +707,6 @@ def _extract_cosym_params(reduction_params, index):
         output.reflections=processed_{index}.refl
         output.experiments=processed_{index}.expt
     """
-    # if reduction_params.reference:
-    #    xia2_phil += f"\nreference={reduction_params.reference}"
-    #    xia2_phil += f"\nreference_model.k_sol={reduction_params.reference_ksol}"
-    #    xia2_phil += f"\nreference_model.b_sol={reduction_params.reference_bsol}"
     extra_defaults = f"""
         min_i_mean_over_sigma_mean=0.5
         unit_cell_clustering.threshold=None
