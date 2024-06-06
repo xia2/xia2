@@ -29,8 +29,8 @@ section-order = [
 
 [tool.ruff.lint.isort.sections]
 "cctbx" = [
-    "boost",
     "boost_adaptbx",
+    "boost",
     "cbflib_adaptbx",
     "cctbx",
     "chiltbx",
@@ -39,6 +39,7 @@ section-order = [
     "cootbx",
     "crys3d",
     "cudatbx",
+    "dxtbx",
     "fable",
     "fast_linalg",
     "fftw3tbx",
