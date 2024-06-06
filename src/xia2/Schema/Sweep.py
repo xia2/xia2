@@ -123,7 +123,6 @@ class Sweep:
         images = find_matching_images(self._template, self._directory)
 
         if len(images) > len(self._images):
-
             self._images = images
 
             from xia2.Schema import load_imagesets

@@ -346,7 +346,6 @@ def Pointless(DriverType=None):
                 xml_file = "%s.xml" % xml_file
 
             if not self._hklref:
-
                 dom = xml.dom.minidom.parse(xml_file)
 
                 try:
@@ -377,7 +376,6 @@ def Pointless(DriverType=None):
                 )
 
             else:
-
                 # if we have provided a HKLREF input then the xml output
                 # is changed...
 
@@ -429,7 +427,6 @@ def Pointless(DriverType=None):
                 self._totalprob = 1.0
 
                 if best:
-
                     index = best.getElementsByTagName("Index")[0]
 
                     self._reindex_matrix = list(
@@ -446,7 +443,6 @@ def Pointless(DriverType=None):
                         .data.strip()
                     )
                 else:
-
                     # no alternative indexing is possible so just
                     # assume the default...
 
@@ -455,7 +451,6 @@ def Pointless(DriverType=None):
                     self._reindex_operator = "h,k,l"
 
             if not self._input_laue_group and not self._hklref:
-
                 scorelist = dom.getElementsByTagName("LaueGroupScoreList")[0]
                 scores = scorelist.getElementsByTagName("LaueGroupScore")
 
@@ -488,7 +483,6 @@ def Pointless(DriverType=None):
             guess at the spacegroup."""
 
             if not self._xdsin:
-
                 self.check_hklin()
                 self.set_task(
                     "Computing the correct spacegroup for %s" % self.get_hklin()
@@ -616,13 +610,13 @@ def Pointless(DriverType=None):
 
                         self._cell_info["datasets"].append(dataset_id)
                         self._cell_info["dataset_info"][dataset_id] = {}
-                        self._cell_info["dataset_info"][dataset_id][
-                            "wavelength"
-                        ] = wavelength
+                        self._cell_info["dataset_info"][dataset_id]["wavelength"] = (
+                            wavelength
+                        )
                         self._cell_info["dataset_info"][dataset_id]["cell"] = cell
-                        self._cell_info["dataset_info"][dataset_id][
-                            "id"
-                        ] = dataset_number
+                        self._cell_info["dataset_info"][dataset_id]["id"] = (
+                            dataset_number
+                        )
                         block += 1
 
             for dataset in self._cell_info["datasets"]:

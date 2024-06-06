@@ -7,7 +7,6 @@ from xia2.Driver.DriverFactory import DriverFactory
 
 
 def BestStrategy(DriverType=None):
-
     DriverInstance = DriverFactory.Driver(DriverType)
 
     class BestStrategyWrapper(DriverInstance.__class__):
@@ -115,7 +114,6 @@ def BestStrategy(DriverType=None):
             return self._phi_width
 
         def strategy(self):
-
             assert self._detector is not None
             assert self._t_ref is not None
 

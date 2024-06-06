@@ -140,7 +140,6 @@ class CCP4InterRadiationDamageDetector:
 
 
 if __name__ == "__main__":
-
     c = CCP4InterRadiationDamageDetector()
 
     hklin = os.path.join(

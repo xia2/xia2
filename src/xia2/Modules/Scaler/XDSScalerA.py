@@ -550,9 +550,9 @@ class XDSScalerA(Scaler):
             intgr.set_integrater_spacegroup_number(
                 spacegroup_name_to_number(pointgroup)
             )
-            self._sweep_information[epoch][
-                "corrected_intensities"
-            ] = intgr.get_integrater_corrected_intensities()
+            self._sweep_information[epoch]["corrected_intensities"] = (
+                intgr.get_integrater_corrected_intensities()
+            )
 
             hklin = self._sweep_information[epoch]["corrected_intensities"]
 
@@ -571,7 +571,6 @@ class XDSScalerA(Scaler):
             self._reference = hklout
 
         if self._reference:
-
             from xia2.Driver.DriverFactory import DriverFactory
 
             def run_one_sweep(args):
@@ -791,9 +790,9 @@ class XDSScalerA(Scaler):
             intgr.set_integrater_spacegroup_number(
                 spacegroup_name_to_number(pointgroup)
             )
-            self._sweep_information[epoch][
-                "corrected_intensities"
-            ] = intgr.get_integrater_corrected_intensities()
+            self._sweep_information[epoch]["corrected_intensities"] = (
+                intgr.get_integrater_corrected_intensities()
+            )
 
             hklin = self._sweep_information[epoch]["corrected_intensities"]
             dname = self._sweep_information[epoch]["dname"]

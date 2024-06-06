@@ -401,7 +401,6 @@ def run_refinement(
     with run_in_directory(working_directory), log_to_file(
         logfile
     ) as dials_logger, record_step("dials.refine"):
-
         indexed_refl = flex.reflection_table.from_file("indexed.refl")
         indexed_expts = load.experiment_list("indexed.expt", check_format=False)
 
@@ -624,7 +623,6 @@ def ssx_integrate(
 
 
 def best_cell_from_cluster(cluster: Cluster) -> Tuple:
-
     input_symmetry = crystal.symmetry(
         unit_cell=uctbx.unit_cell(cluster.median_cell[0:6]), space_group_symbol="P 1"
     )

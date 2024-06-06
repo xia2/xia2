@@ -35,7 +35,6 @@ xia2_logger = logging.getLogger(__name__)
 
 
 def run(args=sys.argv[1:]):
-
     parser = ArgumentParser(
         usage="xia2.ssx_reduce directory=/path/to/integrated/directory/",
         read_experiments=False,

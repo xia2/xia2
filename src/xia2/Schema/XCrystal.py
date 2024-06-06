@@ -415,9 +415,9 @@ class XCrystal:
             mmCIF.get_block(full_wave_name)[
                 "_diffrn_radiation_wavelength.wavelength"
             ] = self._wavelengths[wavelength].get_wavelength()
-            mmCIF.get_block(full_wave_name)[
-                "_diffrn_radiation_wavelength.id"
-            ] = wavelength
+            mmCIF.get_block(full_wave_name)["_diffrn_radiation_wavelength.id"] = (
+                wavelength
+            )
         mmCIF.set_wavelengths(
             {name: wave.get_wavelength() for name, wave in self._wavelengths.items()}
         )
@@ -756,7 +756,6 @@ class XCrystal:
 
     def _get_scaler(self):
         if self._scaler is None:
-
             # in here check if
             #
             # (1) self._scaled_merged_reflections is set and

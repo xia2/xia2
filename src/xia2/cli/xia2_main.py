@@ -71,9 +71,8 @@ def xia2_main(stop_after=None):
     xinfo = CommandLine.get_xinfo()
     logger.info("Project directory: %s", xinfo.path)
 
-    if (
-        params.xia2.settings.developmental.continue_from_previous_job
-        and os.path.exists("xia2.json")
+    if params.xia2.settings.developmental.continue_from_previous_job and os.path.exists(
+        "xia2.json"
     ):
         logger.debug("==== Starting from existing xia2.json ====")
         xinfo_new = xinfo

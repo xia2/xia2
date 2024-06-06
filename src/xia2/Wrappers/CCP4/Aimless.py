@@ -237,7 +237,6 @@ def Aimless(DriverType=None, absorption_correction=None, decay_correction=None):
             run = 0
 
             for record in self.get_all_output():
-
                 if "Run number" and "consists of batches" in record:
                     run = int(record.split()[2])
                     runs_to_batches[run] = []
@@ -270,7 +269,6 @@ def Aimless(DriverType=None, absorption_correction=None, decay_correction=None):
             run = 0
 
             for record in self.get_all_output():
-
                 if "Run number" and "consists of batches" in record:
                     run = int(record.split()[2])
                     runs_to_batches[run] = []
@@ -548,7 +546,6 @@ def Aimless(DriverType=None, absorption_correction=None, decay_correction=None):
                 self.input(scale_command)
 
             else:
-
                 scale_command = "scales batch"
 
                 if self._bfactor:
@@ -620,7 +617,6 @@ def Aimless(DriverType=None, absorption_correction=None, decay_correction=None):
                 # wavelength name has a _ in it then we are here stuffed!
 
                 if "Writing merged data for dataset" in record:
-
                     if len(record.split()) == 9:
                         hklout = output[i + 1].strip()
                     else:
@@ -775,7 +771,6 @@ def Aimless(DriverType=None, absorption_correction=None, decay_correction=None):
                 # wavelength name has a _ in it then we are here stuffed!
 
                 if "Writing merged data for dataset" in record:
-
                     if len(record.split()) == 9:
                         hklout = output[i + 1].strip()
                     else:

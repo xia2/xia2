@@ -570,7 +570,6 @@ def cumulative_assess_crystal_parameters(
 def _report_on_assess_crystals(
     experiments: ExperimentList, large_clusters: List[Cluster]
 ) -> None:
-
     if experiments:
         if large_clusters:
             xia2_logger.info(condensed_metric_unit_cell_info(large_clusters))
@@ -802,7 +801,6 @@ class ProcessBatch(object):
 
 
 class ProgressReport(object):
-
     # class to store progress for reporting.
     # Either add and report after each step, or add all at the end (so can
     # distribute batch processing and not have mixed up reporting)
@@ -928,7 +926,6 @@ def process_batches(
     setup_data: dict,
     options: AlgorithmParams,
 ):
-
     progress = ProgressReport(setup_data)
 
     def process_output(summary_data, add_all_to_progress=True):

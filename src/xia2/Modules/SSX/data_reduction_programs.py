@@ -81,7 +81,6 @@ def filter_(
     integrated_data: list[FilePair],
     reduction_params: ReductionParams,
 ) -> Tuple[CrystalsDict, uctbx.unit_cell, sgtbx.space_group_info]:
-
     crystals_data = load_crystal_data_from_new_expts(integrated_data)
     if not any(v.crystals for v in crystals_data.values()):
         raise ValueError(
@@ -113,7 +112,6 @@ def assess_for_indexing_ambiguities(
     unit_cell: uctbx.unit_cell,
     max_delta: float = 0.5,
 ) -> bool:
-
     # first test for 'true' indexing ambiguities - where the space group symmetry
     # is lower than the lattice symmetry
     cs = crystal.symmetry(unit_cell=unit_cell, space_group=sgtbx.space_group())
@@ -894,7 +892,6 @@ def parallel_cosym(
         with record_step(
             "dials.cosym (parallel)"
         ), concurrent.futures.ProcessPoolExecutor(max_workers=nproc) as pool:
-
             cosym_futures: dict[Any, int] = {
                 pool.submit(
                     individual_cosym,
@@ -1000,7 +997,6 @@ def split_filtered_data(
     good_crystals_data: CrystalsDict,
     min_batch_size: int,
 ) -> List[ProcessingBatch]:
-
     n_cryst = sum(len(v.identifiers) for v in good_crystals_data.values())
     n_batches = max(math.floor(n_cryst / min_batch_size), 1)
     batches = [ProcessingBatch() for _ in range(n_batches)]
@@ -1025,7 +1021,6 @@ def split_filtered_data(
         current_identifier_lists.append(good_identifiers)
 
         while n_leftover >= n_required:
-
             last_fp = current_fps.pop()
             ids = current_identifier_lists.pop()
             if n_required == n_leftover:

@@ -206,13 +206,11 @@ relatively isomorphous.
 
     @staticmethod
     def interesting_cluster_identification(clusters, params):
-
         cluster_numbers = []
         heights = []
         labels = []
         number_of_datasets = []
         for cluster in clusters:
-
             # Because analysing each possible pair of clusters, to cut down computation time do initial filtering here
 
             if len(cluster.labels) >= params.min_cluster_size:
@@ -235,7 +233,6 @@ relatively isomorphous.
         clusters_for_analysis = []
 
         if len(cluster_data["Cluster Number"]) > 0:
-
             # Find all combinations of pairs
 
             cluster_pairs = list(combinations(cluster_data["Cluster Number"], 2))

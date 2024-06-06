@@ -408,7 +408,6 @@ class _CommandLine:
         datasets = unroll_datasets(PhilIndex.params.xia2.settings.input.image)
 
         for dataset in datasets:
-
             start_end = None
 
             # here we only care about ':' which are later than C:\

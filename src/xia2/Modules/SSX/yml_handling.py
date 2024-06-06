@@ -147,7 +147,6 @@ def apply_scaled_array_to_all_files(
     scaled_files: List[FilePair],
     reduction_params: ReductionParams,
 ) -> dict[str, List[FilePair]]:
-
     groupindex = 0
     name = "merged"  # note this name becomes the filename of the output mtz
     groupdata = GroupsForExpt(0)
@@ -183,7 +182,6 @@ def yml_to_merged_filesdict(
     reduction_params: ReductionParams,
     grouping: str = "merge_by",
 ):
-
     handler = get_grouping_handler(parsed, grouping, reduction_params.nproc)
 
     filesdict = handler.split_files_to_groups(

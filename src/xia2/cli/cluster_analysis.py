@@ -149,7 +149,6 @@ def run(args=sys.argv[1:]):
     except ValueError as e:
         sys.exit(str(e))
     else:
-
         MCA.cluster_analysis()
 
         if params.run_cluster_identification:

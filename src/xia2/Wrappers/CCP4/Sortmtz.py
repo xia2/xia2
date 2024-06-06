@@ -35,7 +35,6 @@ def Sortmtz(DriverType=None):
             lwbat_warning = ""
 
             for l in self.get_all_output():
-
                 if "From ccp4_lwbat: warning:" in l:
                     lwbat_warning = l.split("warning:")[1].strip()
 

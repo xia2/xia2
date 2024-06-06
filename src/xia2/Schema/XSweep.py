@@ -230,7 +230,6 @@ class XSweep:
             beam_ = self._imageset.get_beam()
             scan = self._imageset.get_scan()
             if wavelength is not None:
-
                 # If the wavelength value is 0.0 then first set it to the header
                 # value - note that this assumes that the header value is correct
                 # (a reasonable assumption)
@@ -689,7 +688,6 @@ class XSweep:
         """Get my integrater, and if it is not set, create one."""
 
         if self._integrater is None:
-
             # set the working directory for this, based on the hierarchy
             # defined herein...
 

@@ -167,7 +167,6 @@ def common_prefix(strings):
     finished = False
 
     while not finished:
-
         finished = True
         for s in strings:
             if not common == s[: len(common)]:

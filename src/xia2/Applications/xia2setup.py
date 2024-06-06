@@ -85,7 +85,6 @@ def is_sequence_name(file):
 
 def is_image_name(filename):
     if os.path.isfile(filename):
-
         if os.path.split(filename)[-1] in XDSFiles:
             return False
 
@@ -143,7 +142,6 @@ def is_xds_file(f):
 
 
 def get_template(f):
-
     global target_template
 
     if not is_image_name(f):
@@ -612,9 +610,9 @@ def _get_sweeps(templates):
                 imageset = sweep.get_imageset()
                 if template not in imageset_cache:
                     imageset_cache[template] = collections.OrderedDict()
-                imageset_cache[template][
-                    imageset.get_scan().get_image_range()[0]
-                ] = imageset
+                imageset_cache[template][imageset.get_scan().get_image_range()[0]] = (
+                    imageset
+                )
     return known_sweeps
 
 

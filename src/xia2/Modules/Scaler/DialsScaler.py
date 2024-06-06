@@ -767,9 +767,9 @@ pipeline=dials (supported for pipeline=dials-aimless).
                     scaled_unmerged_mtz_path.rstrip(".mtz") + "_%s.mtz" % dname,
                 )
                 exporter.set_mtz_filename(mtz_filename)
-                self._scalr_scaled_reflection_files["mtz_unmerged"][
-                    dname
-                ] = mtz_filename
+                self._scalr_scaled_reflection_files["mtz_unmerged"][dname] = (
+                    mtz_filename
+                )
 
                 logger.debug("Exporting %s", mtz_filename)
                 exporter.run()
@@ -988,7 +988,6 @@ Scaling & analysis of unmerged intensities, absorption correction using spherica
             _add_to_block(blockname, mmcif_path)
 
     def _update_scaled_unit_cell_from_scaled_data(self):
-
         params = PhilIndex.params
         fast_mode = params.dials.fast_mode
         if (
@@ -996,7 +995,6 @@ Scaling & analysis of unmerged intensities, absorption correction using spherica
             and not fast_mode
             and params.xia2.settings.scale.two_theta_refine
         ):
-
             logger.notice(banner("Unit cell refinement"))
 
             # Collect a list of all sweeps, grouped by project, crystal, wavelength
@@ -1288,9 +1286,7 @@ class DialsScalerHelper:
         """A jiffy to centralise the interactions between dials.symmetry
         and the Indexer, multisweep edition."""
         # First check format of input against expected input
-        assert len(experiments) == len(
-            reflections
-        ), """
+        assert len(experiments) == len(reflections), """
 Unequal number of experiments/reflections passed to dials_symmetry_indexer_jiffy"""
         if len(experiments) > 1:
             assert multisweep, """

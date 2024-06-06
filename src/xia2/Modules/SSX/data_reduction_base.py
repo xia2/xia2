@@ -106,7 +106,6 @@ def inspect_files(
 
 
 class BaseDataReduction(object):
-
     _no_input_error_msg = (
         "No input data, (experiments+reflections files or integrated directories)\n"
         + "have been found in the input. Please provide at least some integrated/scaled data or\n"
@@ -122,7 +121,6 @@ class BaseDataReduction(object):
         data: List[FilePair],
         reduction_params,
     ):
-
         self._main_directory: Path = main_directory
         self._reduction_params: ReductionParams = reduction_params
 
@@ -212,7 +210,6 @@ class BaseDataReduction(object):
         return cls(main_directory, new_data, reduction_params)
 
     def run(self) -> None:
-
         if not self._integrated_data:
             xia2_logger.notice(banner("Merging"))  # type: ignore
             self._merge()
@@ -246,7 +243,6 @@ class BaseDataReduction(object):
         self._merge()
 
     def _split_data_for_reindex(self, good_crystals_data):
-
         self._filtered_batches_to_process = split_integrated_data(
             good_crystals_data,
             self._integrated_data,

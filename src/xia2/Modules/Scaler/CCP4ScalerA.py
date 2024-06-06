@@ -204,7 +204,6 @@ class CCP4ScalerA(Scaler):
 
         # START OF if more than one epoch
         if len(self._sweep_handler.get_epochs()) > 1:
-
             # if we have multi-sweep-indexing going on then logic says all should
             # share common lattice & UB definition => this is not used here?
 
@@ -338,7 +337,6 @@ class CCP4ScalerA(Scaler):
                 lattices = []
 
                 for epoch in self._sweep_handler.get_epochs():
-
                     si = self._sweep_handler.get_sweep_information(epoch)
                     intgr = si.get_integrater()
                     hklin = si.get_reflections()
@@ -377,7 +375,6 @@ class CCP4ScalerA(Scaler):
 
             # START OF if multiple-lattices
             if len(lattices) > 1:
-
                 # why not using pointless indexer jiffy??!
 
                 correct_lattice = sort_lattices(lattices)[0]
@@ -386,7 +383,6 @@ class CCP4ScalerA(Scaler):
 
                 # transfer this information back to the indexers
                 for epoch in self._sweep_handler.get_epochs():
-
                     si = self._sweep_handler.get_sweep_information(epoch)
                     refiner = si.get_integrater().get_integrater_refiner()
                     sname = si.get_sweep_name()
@@ -554,7 +550,6 @@ class CCP4ScalerA(Scaler):
                     pt = False
 
                 else:
-
                     pointless_hklin = self._prepare_pointless_hklin(
                         hklin, si.get_integrater().get_phi_width()
                     )
@@ -566,7 +561,6 @@ class CCP4ScalerA(Scaler):
                     logger.debug("X1698: %s: %s", pointgroup, reindex_op)
 
                     if ntr:
-
                         integrater.integrater_reset_reindex_operator()
                         need_to_return = True
 
@@ -653,7 +647,6 @@ class CCP4ScalerA(Scaler):
             self.brehm_diederichs_reindexing()
         # If not Brehm-deidrichs, set reference as first sweep
         elif len(self._sweep_handler.get_epochs()) > 1 and not self._reference:
-
             first = self._sweep_handler.get_epochs()[0]
             si = self._sweep_handler.get_sweep_information(first)
             self._reference = si.get_reflections()
@@ -661,7 +654,6 @@ class CCP4ScalerA(Scaler):
         # Now reindex to be consistent with first dataset - run pointless on each
         # dataset with reference
         if self._reference:
-
             md = self._factory.Mtzdump()
             md.set_hklin(self._reference)
             md.dump()
@@ -678,7 +670,6 @@ class CCP4ScalerA(Scaler):
             # ---------- REINDEX TO CORRECT (REFERENCE) SETTING ----------
 
             for epoch in self._sweep_handler.get_epochs():
-
                 # if we are working with unified UB matrix then this should not
                 # be a problem here (note, *if*; *should*)
 
@@ -837,11 +828,9 @@ class CCP4ScalerA(Scaler):
 
         failover = PhilIndex.params.xia2.settings.failover
         if failover:
-
             try:
                 sc.scale()
             except RuntimeError as e:
-
                 es = str(e)
 
                 if (
@@ -849,7 +838,6 @@ class CCP4ScalerA(Scaler):
                     or "negative scales run" in es
                     or "no observations" in es
                 ):
-
                     # first ID the sweep from the batch no
 
                     batch = int(es.split()[-1])
@@ -881,7 +869,6 @@ class CCP4ScalerA(Scaler):
                     return
 
                 else:
-
                     raise e
 
         else:
@@ -934,7 +921,6 @@ class CCP4ScalerA(Scaler):
         sc.set_new_scales_file("%s_final.scales" % self._scalr_xname)
 
         for epoch in epochs:
-
             si = self._sweep_handler.get_sweep_information(epoch)
             pname, xname, dname = si.get_project_info()
             sname = si.get_sweep_name()
@@ -1083,7 +1069,6 @@ class CCP4ScalerA(Scaler):
         self._wavelengths_in_order = []
 
         for epoch in epochs:
-
             si = self._sweep_handler.get_sweep_information(epoch)
             pname, xname, dname = si.get_project_info()
             sname = si.get_sweep_name()
@@ -1141,14 +1126,10 @@ class CCP4ScalerA(Scaler):
         mmblock["_exptl.method"] = "X-RAY DIFFRACTION"
         block["_exptl_absorpt_correction_T_min"] = mmblock[
             "_exptl.absorpt_correction_T_min"
-        ] = (
-            absmin / absmax
-        )  # = scaled
+        ] = absmin / absmax  # = scaled
         block["_exptl_absorpt_correction_T_max"] = mmblock[
             "_exptl.absorpt_correction_T_max"
-        ] = (
-            absmax / absmax
-        )  # = 1
+        ] = absmax / absmax  # = 1
         block["_exptl_absorpt_correction_type"] = mmblock[
             "_exptl.absorpt_correction_type"
         ] = "empirical"

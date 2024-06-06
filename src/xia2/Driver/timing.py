@@ -107,11 +107,11 @@ def visualise_db(timing_db):
         if ordered_by_end[0][1] == n and (
             not ordered_by_start or ordered_by_start[0][0] >= ordered_by_end[0][0]
         ):
-            tree_view.append("\u25EF")
+            tree_view.append("\u25ef")
             ordered_by_end.pop(0)
             end_time = t["time_end"]
         else:
-            tree_view.append("\u252C")
+            tree_view.append("\u252c")
             running_tasks.append(n)
         output.append(
             "{timestamp:{time_width}.1f}s  {t[index_readable]:>{index_width}} {tree_view:<5} {t[short_command]} ({t[runtime_readable]})".format(
@@ -178,7 +178,7 @@ def visualise_db(timing_db):
                 output.append(
                     "{timestamp:{time_width}.1f}s  {t[index_readable]:>{index_width}} {nothing:<5} {t[command]}".format(
                         timestamp=timestamp - relative_start_time,
-                        nothing="\U0001F914",
+                        nothing="\U0001f914",
                         time_width=time_width,
                         index_width=index_width,
                         t=tbreak,

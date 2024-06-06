@@ -32,7 +32,6 @@ def npp(hklin):
     cen = flex.double()
 
     for hkl, i, v, m in zip(unique, iobs, variobs, mult):
-
         # only consider if meaningful number of observations
         if m < 3:
             continue

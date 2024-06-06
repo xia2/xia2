@@ -222,7 +222,6 @@ def XDSCorrect(DriverType=None, params=None):
                         )
                     )
                 ).readlines():
-
                     resol = tuple(map(float, record.split()[:2]))
 
                     xds_inp.write("EXCLUDE_RESOLUTION_RANGE= %.2f %.2f\n" % resol)

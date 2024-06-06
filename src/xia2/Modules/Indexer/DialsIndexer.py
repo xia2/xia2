@@ -216,7 +216,6 @@ class DialsIndexer(Indexer):
                 )
 
             else:
-
                 # add some half-way anyway
                 first = (len(images) // 2) - (block_size // 2) + images[0] - 1
                 if first > wedges[0][1]:
@@ -234,7 +233,6 @@ class DialsIndexer(Indexer):
         return wedges
 
     def _index_prepare(self):
-
         Citations.cite("dials")
 
         # all_images = self.get_matching_images()
@@ -245,7 +243,6 @@ class DialsIndexer(Indexer):
         experiments_filenames = []
 
         for imageset, xsweep in zip(self._indxr_imagesets, self._indxr_sweeps):
-
             logger.notice(banner("Spotfinding %s" % xsweep.get_name()))
 
             first, last = imageset.get_scan().get_image_range()
@@ -592,7 +589,6 @@ class DialsIndexer(Indexer):
                 indexed_experiments = refiner.get_refined_experiments_filename()
 
         if self._indxr_input_lattice is None:
-
             # FIXME in here should respect the input unit cell and lattice if provided
 
             # FIXME from this (i) populate the helper table,

@@ -45,7 +45,6 @@ class DataManager:
         self._set_batches()
 
     def _set_batches(self):
-
         if not self.all_stills:
             self.batch_offset_list = calculate_batch_offsets(self._experiments)
         else:
@@ -120,7 +119,6 @@ class DataManager:
         )
 
     def reflections_as_miller_arrays(self, combined=False):
-
         reflection_tables = []
         for id_ in set(self._reflections["id"]).difference({-1}):
             reflection_tables.append(

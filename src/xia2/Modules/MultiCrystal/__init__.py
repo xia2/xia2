@@ -68,7 +68,6 @@ class ClusterInfo:
 
 class multi_crystal_analysis:
     def __init__(self, unmerged_intensities, labels=None, prefix=None):
-
         self.unmerged_intensities = unmerged_intensities
         self._intensities_all = None
         self._labels_all = flex.size_t()

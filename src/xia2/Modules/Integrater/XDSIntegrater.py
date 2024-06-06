@@ -272,7 +272,6 @@ class XDSIntegrater(Integrater):
         # analysis of the spot list or something...?
 
         if not self.get_integrater_low_resolution():
-
             dmax = self._intgr_refiner.get_indexer_low_resolution(
                 self.get_integrater_epoch()
             )
@@ -584,7 +583,6 @@ class XDSIntegrater(Integrater):
             logger.debug("Setting cell to: %.2f %.2f %.2f %.2f %.2f %.2f" % tuple(cell))
 
         if self.get_integrater_reindex_matrix():
-
             # bug! if the lattice is not primitive the values in this
             # reindex matrix need to be multiplied by a constant which
             # depends on the Bravais lattice centering.
@@ -756,7 +754,6 @@ class XDSIntegrater(Integrater):
                 correct_deviations[0] / pixel > threshold
                 and correct_deviations[1] / phi > threshold
             ):
-
                 logger.info("Eliminating this indexing solution as postrefinement")
                 logger.info("deviations rather high relative to triclinic")
                 raise BadLatticeError("high relative deviations in postrefinement")
@@ -804,7 +801,6 @@ class XDSIntegrater(Integrater):
                 with open(
                     os.path.join(self.get_working_directory(), "REMOVE.HKL"), "w"
                 ) as remove_hkl:
-
                     # write in the old reflections
                     for remove in current_remove:
                         z = remove[3]
@@ -863,7 +859,6 @@ class XDSIntegrater(Integrater):
             self.get_integrater_reindex_operator()
             or self.get_integrater_spacegroup_number()
         ):
-
             logger.debug("Reindexing things to MTZ")
 
             reindex = Reindex()

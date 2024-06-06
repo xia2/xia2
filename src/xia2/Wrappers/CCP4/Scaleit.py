@@ -120,7 +120,6 @@ def Scaleit(DriverType=None):
                 groups = len(self._columns) // 2
 
             for j in range(groups):
-
                 if self._anomalous:
                     labin += " FPH%d=%s" % (j + 1, self._columns[4 * j])
                     labin += " SIGFPH%d=%s" % (j + 1, self._columns[4 * j + 1])

@@ -87,7 +87,6 @@ def run(args=sys.argv[1:]):
         crystal_symmetry = None
 
     if len(params.input.experiments):
-
         experiments = flatten_experiments(params.input.experiments)
         reflections = flatten_reflections(params.input.reflections)
 

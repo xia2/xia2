@@ -36,7 +36,6 @@ logger = logging.getLogger("xia2.Wrappers.XDS.XDSIdxref")
 
 
 def XDSIdxref(DriverType=None, params=None):
-
     DriverInstance = DriverFactory.Driver(DriverType)
 
     class XDSIdxrefWrapper(DriverInstance.__class__, FrameProcessor):
@@ -421,7 +420,6 @@ def XDSIdxref(DriverType=None, params=None):
                 mosaic = data["mosaic"]
 
                 if self._symm and self._cell and self._indxr_user_input_lattice:
-
                     if (
                         self._compare_cell(self._cell, cell)
                         and lattice_to_spacegroup_number(lattice) == self._symm
@@ -462,11 +460,12 @@ def XDSIdxref(DriverType=None, params=None):
             # one, if self._symm is set...
 
             if self._symm:
-                assert (
-                    self._indexing_solutions
-                ), "No remaining indexing solutions (%s, %s)" % (
-                    s2l(self._symm),
-                    self._symm,
+                assert self._indexing_solutions, (
+                    "No remaining indexing solutions (%s, %s)"
+                    % (
+                        s2l(self._symm),
+                        self._symm,
+                    )
                 )
             else:
                 assert self._indexing_solutions, "No remaining indexing solutions"
@@ -493,7 +492,6 @@ def XDSIdxref(DriverType=None, params=None):
             # reindex, resetting the input cell and symmetry.
 
             if self._cell:
-
                 # select the solution which matches the input unit cell
                 # actually after the changes above this should now be the
                 # only solution in the table..
@@ -516,7 +514,6 @@ def XDSIdxref(DriverType=None, params=None):
                         self._indxr_mosaic = mosaic
 
             else:
-
                 # select the top solution as the input cell and reset the
                 # "indexing done" flag
 
