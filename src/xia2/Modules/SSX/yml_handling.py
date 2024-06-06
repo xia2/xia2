@@ -14,7 +14,6 @@ from dials.util.image_grouping import (
     SplittingIterable,
     get_grouping_handler,
 )
-
 from dxtbx import flumpy
 from dxtbx.model import ExperimentList
 from dxtbx.sequence_filenames import group_files_by_imageset

@@ -12,7 +12,6 @@ from dials.algorithms.symmetry.cosym import SymmetryAnalysis
 from dials.algorithms.symmetry.cosym.plots import plot_coords, plot_rij_histogram
 from dials.util.filter_reflections import filtered_arrays_from_experiments_reflections
 from dials.util.multi_dataset_handling import parse_multiple_datasets
-
 from libtbx import phil
 
 from xia2.Modules.Analysis import batch_phil_scope

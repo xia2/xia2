@@ -4,10 +4,9 @@ import logging
 import os
 import pathlib
 
+import iotbx.phil
 from dials.util.image_grouping import ParsedYAML
 from dials.util.system import CPU_COUNT
-
-import iotbx.phil
 from libtbx import Auto
 
 from xia2.Modules.SSX.data_integration_programs import (

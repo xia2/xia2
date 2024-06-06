@@ -4,6 +4,7 @@ import json
 import os
 import pathlib
 
+import iotbx.mtz
 import pytest
 import pytest_mock
 from dials.array_family import flex
@@ -12,8 +13,6 @@ from dials.util.multi_dataset_handling import (
     assign_unique_identifiers,
     parse_multiple_datasets,
 )
-
-import iotbx.mtz
 from dxtbx.model import ExperimentList
 from dxtbx.serialize import load
 

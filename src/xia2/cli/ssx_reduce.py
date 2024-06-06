@@ -21,9 +21,8 @@ import sys
 import traceback
 from pathlib import Path
 
-from dials.util.options import ArgumentParser
-
 import iotbx.phil
+from dials.util.options import ArgumentParser
 
 import xia2.Handlers.Streams
 from xia2.Handlers.Files import cleanup

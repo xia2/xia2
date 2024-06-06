@@ -3,10 +3,9 @@ from __future__ import annotations
 import json
 import sys
 
-from dials.util import Sorry
-
 import iotbx.phil
 from cctbx.miller.display import render_2d, scene
+from dials.util import Sorry
 from iotbx.gui_tools.reflections import get_array_description
 from iotbx.reflection_file_reader import any_reflection_file
 from scitbx.array_family import flex

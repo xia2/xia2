@@ -15,6 +15,7 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
 import numpy as np
+from cctbx import crystal, miller, sgtbx, uctbx
 from dials.algorithms.merging.merge import (
     merge_scaled_array_to_mtz_with_report_collection,
 )
@@ -28,8 +29,6 @@ from dials.command_line.cosym import phil_scope as cosym_phil_scope
 from dials.command_line.merge import phil_scope as merge_phil_scope
 from dials.command_line.scale import phil_scope as scaling_phil_scope
 from dials.util.resolution_analysis import resolution_cc_half
-
-from cctbx import crystal, miller, sgtbx, uctbx
 from dxtbx.model import Crystal, ExperimentList
 from dxtbx.serialize import load
 from iotbx.phil import parse

@@ -10,14 +10,13 @@ import subprocess
 from dataclasses import asdict, dataclass, field
 from typing import List, Optional, Tuple
 
+import libtbx.easy_mp
 import numpy as np
 from dials.algorithms.clustering.unit_cell import Cluster
 from dials.algorithms.indexing import DialsIndexError
 from dials.algorithms.indexing.ssx.analysis import generate_html_report
 from dials.array_family import flex
 from dials.util.image_grouping import ParsedYAML
-
-import libtbx.easy_mp
 from dxtbx import flumpy
 from dxtbx.model import ExperimentList
 from dxtbx.serialize import load

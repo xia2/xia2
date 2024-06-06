@@ -5,7 +5,6 @@ import sys
 from unittest import mock
 
 import pytest
-
 from dxtbx.model import ExperimentList
 from iotbx.reflection_file_reader import any_reflection_file
 

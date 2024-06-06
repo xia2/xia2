@@ -9,20 +9,19 @@ import math
 import os
 
 import dials.util.version
+import iotbx.cif
+import libtbx
 import numpy as np
+from cctbx.sgtbx import lattice_symmetry_group
 from dials.algorithms.scaling.plots import plot_absorption_plots
 from dials.array_family import flex
 from dials.util.batch_handling import calculate_batch_offsets
 from dials.util.export_mtz import match_wavelengths
-from orderedset import OrderedSet
-
-import iotbx.cif
-import libtbx
-from cctbx.sgtbx import lattice_symmetry_group
 from dxtbx.serialize import load
 from iotbx import mtz
 from iotbx.scalepack import no_merge_original_index
 from iotbx.scalepack.merge import write as merge_scalepack_write
+from orderedset import OrderedSet
 
 from xia2.Handlers.CIF import CIF, mmCIF
 from xia2.Handlers.Citations import Citations

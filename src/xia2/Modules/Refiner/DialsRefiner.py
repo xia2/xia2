@@ -6,7 +6,6 @@ from dials.algorithms.refinement.restraints.restraints_parameterisation import (
     uc_phil_scope as restraints_scope,
 )
 from dials.array_family import flex
-
 from dxtbx.model import ExperimentList
 
 from xia2.Handlers.Files import FileHandler

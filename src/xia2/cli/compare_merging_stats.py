@@ -6,14 +6,13 @@ import math
 import os
 import sys
 
-from cycler import cycler
-from dials.util.options import ArgumentParser
-from dials.util.system import CPU_COUNT
-
 import iotbx.merging_statistics
 import iotbx.phil
 import libtbx
 from cctbx import uctbx
+from cycler import cycler
+from dials.util.options import ArgumentParser
+from dials.util.system import CPU_COUNT
 
 help_message = """
 """

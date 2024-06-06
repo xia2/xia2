@@ -8,7 +8,6 @@ import traceback
 
 from dials.util import Sorry
 from dials.util.version import dials_version
-
 from libtbx import group_args
 
 import xia2.Driver.timing
@@ -225,7 +224,6 @@ def xia2_main(stop_after=None):
                     sweeps = wavelength.get_sweeps()
                     for sweep in sweeps:
                         from dials.command_line.show import show_experiments
-
                         from dxtbx.model.experiment_list import ExperimentListFactory
 
                         logger.debug(sweep.get_name())

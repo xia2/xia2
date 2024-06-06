@@ -12,7 +12,6 @@ import sys
 import traceback
 
 import h5py
-
 from libtbx import easy_mp
 
 from xia2.Applications.xia2setup_helpers import get_sweep

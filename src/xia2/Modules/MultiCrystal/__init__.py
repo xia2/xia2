@@ -5,11 +5,10 @@ import json
 import logging
 from collections import OrderedDict
 
+import iotbx.phil
 import numpy as np
 from dials.util import tabulate
 from scipy.cluster import hierarchy
-
-import iotbx.phil
 from scitbx.array_family import flex
 
 logger = logging.getLogger(__name__)

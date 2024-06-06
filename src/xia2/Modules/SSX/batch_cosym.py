@@ -5,6 +5,7 @@ import logging
 import random
 
 import numpy as np
+from cctbx import sgtbx
 from dials.algorithms.scaling.scaling_library import determine_best_unit_cell
 from dials.algorithms.symmetry.cosym import CosymAnalysis, extract_reference_intensities
 from dials.array_family import flex
@@ -15,8 +16,6 @@ from dials.command_line.symmetry import (
 )
 from dials.util.filter_reflections import filtered_arrays_from_experiments_reflections
 from dials.util.observer import Subject
-
-from cctbx import sgtbx
 from dxtbx.model import ExperimentList
 
 logger = logging.getLogger("dials")

@@ -8,7 +8,6 @@ import os
 
 from dials.command_line.dials_import import ManualGeometryUpdater
 from dials.util.options import geometry_phil_scope
-
 from dxtbx.imageset import ImageSequence
 from dxtbx.model.experiment_list import (
     BeamComparison,

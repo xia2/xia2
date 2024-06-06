@@ -12,10 +12,9 @@ import logging
 import math
 import os
 
+import dxtbx
 from dials.array_family import flex
 from dials.util.ascii_art import spot_counts_per_image_plot
-
-import dxtbx
 from dxtbx.model import Experiment, ExperimentList
 from dxtbx.serialize.xds import to_crystal, to_xds
 
