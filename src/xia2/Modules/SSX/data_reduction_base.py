@@ -286,6 +286,8 @@ class BaseDataReduction(object):
                 self._reduction_params.lattice_symmetry_max_delta,
                 self._reduction_params.partiality_threshold,
                 reference=self._reduction_params.reference,
+                reference_ksol=self._reduction_params.reference_ksol,
+                reference_bsol=self._reduction_params.reference_bsol,
             )
             if not user_dmin:
                 self._reduction_params.d_min = None

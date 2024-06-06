@@ -850,7 +850,10 @@ def scale_reindex_single(
         from dials.util.reindex import change_of_basis_op_against_reference
 
         reference_miller_set = intensities_from_reference_file(
-            os.fspath(reduction_params.reference), wavelength=wavelength
+            os.fspath(reduction_params.reference),
+            wavelength=wavelength,
+            k_sol=reduction_params.reference_ksol,
+            b_sol=reduction_params.reference_bsol,
         )
         change_of_basis_op = change_of_basis_op_against_reference(
             expts, [refls], reference_miller_set
@@ -880,6 +883,8 @@ def cosym_reindex(
     max_delta: float = 0.5,
     partiality_threshold: float = 0.2,
     reference=None,
+    reference_ksol=0.35,
+    reference_bsol=46.0,
 ) -> List[ProcessingBatch]:
     from dials.command_line.cosym import phil_scope as cosym_scope
 
@@ -900,6 +905,8 @@ def cosym_reindex(
     params.weights = "standard_error"
     if reference:
         params.reference = os.fspath(reference)
+        params.reference_model.k_sol = reference_ksol
+        params.reference_model.b_sol = reference_bsol
     if d_min:
         params.d_min = d_min
 

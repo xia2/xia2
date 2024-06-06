@@ -150,6 +150,8 @@ class BatchCosym(Subject):
             reference_miller_set = intensities_from_reference_file(
                 os.fspath(self.params.reference),
                 wavelength=self.input_experiments[0][0].beam.get_wavelength(),
+                k_sol=self.params.reference_model.k_sol,
+                b_sol=self.params.reference_model.b_sol,
             )
             self.change_of_basis_op = determine_reindex_operator_against_reference(
                 test_miller_set, reference_miller_set
