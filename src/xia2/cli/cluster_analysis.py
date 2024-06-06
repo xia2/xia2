@@ -7,9 +7,6 @@ import random
 import sys
 
 import numpy as np
-from jinja2 import ChoiceLoader, Environment, PackageLoader
-
-import iotbx.phil
 from dials.array_family import flex
 from dials.util.multi_dataset_handling import (
     assign_unique_identifiers,
@@ -17,6 +14,9 @@ from dials.util.multi_dataset_handling import (
 )
 from dials.util.options import ArgumentParser, flatten_experiments, flatten_reflections
 from dials.util.version import dials_version
+from jinja2 import ChoiceLoader, Environment, PackageLoader
+
+import iotbx.phil
 
 import xia2.Handlers.Streams
 from xia2.Modules.Analysis import batch_phil_scope

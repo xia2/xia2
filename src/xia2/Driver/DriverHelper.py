@@ -280,7 +280,7 @@ def executable_exists(executable):
         return executable_exists_cache[executable]
 
     if os.name == "nt":
-        if not executable.split(".")[-1] in ["exe", "bat"]:
+        if executable.split(".")[-1] not in ["exe", "bat"]:
             executable_files = ["%s.bat" % executable, "%s.exe" % executable]
         else:
             executable_files = [executable]

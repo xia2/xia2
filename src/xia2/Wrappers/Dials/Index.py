@@ -4,8 +4,9 @@ import logging
 import math
 import os
 
-import libtbx.utils
 from dials.array_family import flex
+
+import libtbx.utils
 from dxtbx.serialize import load
 
 from xia2.Driver.DriverFactory import DriverFactory

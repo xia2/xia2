@@ -25,8 +25,9 @@ import pathlib
 import sys
 import traceback
 
-import iotbx.phil
 from dials.util.options import ArgumentParser
+
+import iotbx.phil
 
 import xia2.Driver.timing
 import xia2.Handlers.Streams

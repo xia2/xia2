@@ -5,13 +5,14 @@ import logging
 import os
 from collections import OrderedDict
 
-import iotbx.phil
-from cctbx import sgtbx, uctbx
 from dials.array_family import flex
 from dials.command_line.unit_cell_histogram import plot_uc_histograms
 from dials.util import tabulate
 from dials.util.export_mtz import match_wavelengths
 from dials.util.system import CPU_COUNT
+
+import iotbx.phil
+from cctbx import sgtbx, uctbx
 from dxtbx.serialize import load
 from libtbx import Auto
 from scitbx.math import five_number_summary

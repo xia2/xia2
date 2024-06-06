@@ -10,11 +10,12 @@ import os
 import string
 import time
 
+from dials.array_family import flex
+from dials.util.ascii_art import spot_counts_per_image_plot
+
 import libtbx
 from cctbx import crystal, sgtbx
 from cctbx.sgtbx import bravais_types
-from dials.array_family import flex
-from dials.util.ascii_art import spot_counts_per_image_plot
 from dxtbx.serialize import load
 
 from xia2.Experts.SymmetryExpert import lattice_to_spacegroup_number

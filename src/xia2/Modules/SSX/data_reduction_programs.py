@@ -1,10 +1,8 @@
 from __future__ import annotations
 
-
-import functools
-
 import concurrent.futures
 import copy
+import functools
 import json
 import logging
 import math
@@ -17,8 +15,6 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
 import numpy as np
-
-from cctbx import crystal, miller, sgtbx, uctbx
 from dials.algorithms.merging.merge import (
     merge_scaled_array_to_mtz_with_report_collection,
 )
@@ -27,12 +23,13 @@ from dials.algorithms.scaling.algorithm import ScalingAlgorithm
 from dials.array_family import flex
 from dials.command_line.cluster_unit_cell import do_cluster_analysis
 from dials.command_line.cluster_unit_cell import phil_scope as cluster_phil_scope
-from dials.command_line.cosym import cosym
+from dials.command_line.cosym import cosym, register_default_cosym_observers
 from dials.command_line.cosym import phil_scope as cosym_phil_scope
-from dials.command_line.cosym import register_default_cosym_observers
 from dials.command_line.merge import phil_scope as merge_phil_scope
 from dials.command_line.scale import phil_scope as scaling_phil_scope
 from dials.util.resolution_analysis import resolution_cc_half
+
+from cctbx import crystal, miller, sgtbx, uctbx
 from dxtbx.model import Crystal, ExperimentList
 from dxtbx.serialize import load
 from iotbx.phil import parse

@@ -11,7 +11,6 @@ import platform
 import sys
 
 import h5py
-
 from dials.util import Sorry
 
 from xia2.cli import extra_help_lines

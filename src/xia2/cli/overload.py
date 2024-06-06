@@ -5,8 +5,9 @@ import sys
 import timeit
 from collections import Counter
 
-import iotbx.phil
 from dials.util.options import ArgumentParser, flatten_experiments
+
+import iotbx.phil
 from libtbx import easy_mp
 from scitbx.array_family import flex
 

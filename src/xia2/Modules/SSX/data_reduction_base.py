@@ -1,23 +1,20 @@
 from __future__ import annotations
 
+import concurrent.futures
 import logging
 from pathlib import Path
 from typing import List, Tuple
 
 import numpy as np
-
-from cctbx import sgtbx, uctbx
-
-from xia2.Handlers.Streams import banner
-
-import concurrent.futures
-
 from dials.array_family import flex
 from dials.util.image_grouping import ParsedYAML
+
+from cctbx import sgtbx, uctbx
 from dxtbx.serialize import load
 
 from xia2.Driver.timing import record_step
 from xia2.Handlers.Files import FileHandler
+from xia2.Handlers.Streams import banner
 from xia2.Modules.SSX.data_reduction_definitions import FilePair, ReductionParams
 from xia2.Modules.SSX.data_reduction_programs import (
     CrystalsDict,
@@ -37,7 +34,6 @@ from xia2.Modules.SSX.yml_handling import (
     dose_series_repeat_to_groupings,
     yml_to_merged_filesdict,
 )
-
 
 xia2_logger = logging.getLogger(__name__)
 

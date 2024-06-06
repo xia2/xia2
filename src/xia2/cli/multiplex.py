@@ -5,9 +5,6 @@ import random
 import sys
 
 import numpy as np
-
-import iotbx.cif
-import iotbx.phil
 from dials.array_family import flex
 from dials.util.exclude_images import exclude_image_ranges_for_scaling
 from dials.util.multi_dataset_handling import (
@@ -17,6 +14,9 @@ from dials.util.multi_dataset_handling import (
 from dials.util.options import ArgumentParser, flatten_experiments, flatten_reflections
 from dials.util.reference import intensities_from_reference_file
 from dials.util.version import dials_version
+
+import iotbx.cif
+import iotbx.phil
 
 import xia2.Handlers.Streams
 from xia2.Applications.xia2_main import write_citations

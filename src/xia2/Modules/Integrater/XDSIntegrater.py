@@ -15,8 +15,9 @@ import os
 import shutil
 import time
 
-import scitbx.matrix
 from dials.array_family import flex
+
+import scitbx.matrix
 from iotbx.xds import xparm
 
 from xia2.Experts.SymmetryExpert import (
@@ -496,6 +497,7 @@ class XDSIntegrater(Integrater):
 
         if PhilIndex.params.xia2.settings.input.format.dynamic_shadowing:
             from dials.algorithms.shadowing.filter import filter_shadowed_reflections
+
             from dxtbx.serialize import load
 
             experiments_json = xparm_xds_to_experiments_json(

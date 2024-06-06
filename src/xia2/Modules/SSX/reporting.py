@@ -4,7 +4,6 @@ import math
 from typing import Dict, List
 
 import numpy as np
-
 from dials.algorithms.clustering.unit_cell import Cluster
 from dials.algorithms.scaling.scaling_library import (
     DialsMergingStatisticsError,

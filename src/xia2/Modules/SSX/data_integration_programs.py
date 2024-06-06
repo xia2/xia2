@@ -10,8 +10,6 @@ from io import StringIO
 from pathlib import Path
 from typing import List, Optional, Tuple
 
-import iotbx.phil
-from cctbx import crystal, sgtbx, uctbx
 from dials.algorithms.clustering.unit_cell import Cluster
 from dials.algorithms.indexing.ssx.analysis import (
     generate_html_report,
@@ -36,6 +34,9 @@ from dials.command_line.ssx_index import phil_scope as indexing_phil
 from dials.command_line.ssx_integrate import run_integration
 from dials.command_line.ssx_integrate import working_phil as integration_phil
 from dials.util.ascii_art import spot_counts_per_image_plot
+
+import iotbx.phil
+from cctbx import crystal, sgtbx, uctbx
 from dxtbx.model import ExperimentList
 from dxtbx.serialize import load
 

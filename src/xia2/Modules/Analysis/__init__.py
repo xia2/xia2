@@ -3,6 +3,7 @@ from __future__ import annotations
 from collections import OrderedDict
 
 from dials.pychef import dose_phil_str
+
 from libtbx import phil
 
 batch_phil_scope = """\

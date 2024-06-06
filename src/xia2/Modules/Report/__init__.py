@@ -8,8 +8,6 @@ import os
 from collections import OrderedDict
 
 import dials.pychef
-import libtbx.phil
-from cctbx.array_family import flex
 from dials.algorithms.merging.reporting import make_dano_plots
 from dials.pychef import dose_phil_str
 from dials.report.analysis import batch_dependent_properties
@@ -21,6 +19,9 @@ from dials.report.plots import (
     scale_rmerge_vs_batch_plot,
 )
 from dials.util.batch_handling import batch_manager
+
+import libtbx.phil
+from cctbx.array_family import flex
 from iotbx import merging_statistics
 from iotbx.reflection_file_reader import any_reflection_file
 from mmtbx.scaling import printed_output

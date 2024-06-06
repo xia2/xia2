@@ -192,7 +192,7 @@ def ensure_no_batches_numbered_zero(template, images, offset):
     hashes = template.count("#")
 
     while min(images) == 0:
-        if not prefix[-1] in string.digits:
+        if prefix[-1] not in string.digits:
             raise RuntimeError("image 0 found matching %s" % template)
 
         add = int(prefix[-1]) * int(math.pow(10, hashes))

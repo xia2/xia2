@@ -2,19 +2,11 @@ from __future__ import annotations
 
 import logging
 import shutil
+from multiprocessing import Pool
 from pathlib import Path
 from typing import List, Optional, Tuple
 
 from dials.array_family import flex
-from dxtbx import flumpy
-from dxtbx.model import ExperimentList
-from dxtbx.sequence_filenames import group_files_by_imageset
-from dxtbx.serialize import load
-
-from xia2.Modules.SSX.data_reduction_programs import FilePair, ReductionParams
-
-from multiprocessing import Pool
-
 from dials.util.filter_reflections import filter_reflection_table
 from dials.util.image_grouping import (
     GroupsForExpt,
@@ -23,7 +15,16 @@ from dials.util.image_grouping import (
     get_grouping_handler,
 )
 
-from xia2.Modules.SSX.data_reduction_programs import trim_table_for_merge
+from dxtbx import flumpy
+from dxtbx.model import ExperimentList
+from dxtbx.sequence_filenames import group_files_by_imageset
+from dxtbx.serialize import load
+
+from xia2.Modules.SSX.data_reduction_programs import (
+    FilePair,
+    ReductionParams,
+    trim_table_for_merge,
+)
 
 xia2_logger = logging.getLogger(__name__)
 

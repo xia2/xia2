@@ -5,10 +5,10 @@ import os
 import sys
 from collections import OrderedDict
 
+from dials.util.options import ArgumentParser
 from jinja2 import ChoiceLoader, Environment, PackageLoader
 
 import iotbx.phil
-from dials.util.options import ArgumentParser
 
 import xia2.Handlers.Streams
 from xia2.Modules.Report import Report

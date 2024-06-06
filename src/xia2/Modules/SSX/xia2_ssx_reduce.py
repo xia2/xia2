@@ -3,9 +3,10 @@ from __future__ import annotations
 import logging
 from pathlib import Path
 
-import iotbx.phil
 from dials.util.reference import reference_phil_str
 from dials.util.system import CPU_COUNT
+
+import iotbx.phil
 from libtbx import Auto
 
 from xia2.Modules.SSX.data_reduction_definitions import ReductionParams

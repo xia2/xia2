@@ -5,9 +5,6 @@ import os
 import sys
 
 import matplotlib
-
-import libtbx.phil
-from cctbx import crystal
 from dials.util import tabulate
 from dials.util.filter_reflections import filtered_arrays_from_experiments_reflections
 from dials.util.multi_dataset_handling import (
@@ -16,6 +13,9 @@ from dials.util.multi_dataset_handling import (
 )
 from dials.util.options import ArgumentParser, flatten_experiments, flatten_reflections
 from dials.util.version import dials_version
+
+import libtbx.phil
+from cctbx import crystal
 from iotbx.reflection_file_reader import any_reflection_file
 
 import xia2.Handlers.Streams

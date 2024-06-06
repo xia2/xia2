@@ -256,7 +256,7 @@ def XScaleR(
                 if '"alien"' in line:
                     h, k, l = tuple(map(int, line.split()[:3]))
                     z = float(line.split()[4])
-                    if not (h, k, l, z) in self._remove:
+                    if (h, k, l, z) not in self._remove:
                         self._remove.append((h, k, l, z))
 
                 if "FACTOR TO PLACE ALL DATA SETS TO " in line:

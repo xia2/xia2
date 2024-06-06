@@ -8,8 +8,8 @@ import subprocess
 from typing import List
 
 import pytest
-
 from dials.algorithms.scaling.scaling_library import determine_best_unit_cell
+
 from dxtbx.serialize import load
 from iotbx import mtz
 

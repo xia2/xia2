@@ -45,7 +45,7 @@ class ISPyBXmlHandler:
         }
 
     def add_xcrystal(self, xcrystal):
-        if not xcrystal.get_name() in self._crystals:
+        if xcrystal.get_name() not in self._crystals:
             self._crystals[xcrystal.get_name()] = xcrystal
 
         # should ideally drill down and get the refined cell constants for

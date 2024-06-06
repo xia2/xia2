@@ -21,14 +21,13 @@ import sys
 import traceback
 from pathlib import Path
 
-import iotbx.phil
 from dials.util.options import ArgumentParser
 
-from xia2.Modules.SSX.xia2_ssx_reduce import full_phil_str, run_xia2_ssx_reduce
-
+import iotbx.phil
 
 import xia2.Handlers.Streams
 from xia2.Handlers.Files import cleanup
+from xia2.Modules.SSX.xia2_ssx_reduce import full_phil_str, run_xia2_ssx_reduce
 
 phil_scope = iotbx.phil.parse(full_phil_str)
 

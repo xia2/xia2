@@ -10,6 +10,7 @@ import sys
 from pathlib import Path
 
 import dials.precommitbx.nagger
+
 import libtbx
 import libtbx.pkg_utils
 

@@ -11,6 +11,7 @@ from collections import OrderedDict
 from math import isclose
 
 from dials.algorithms.merging.reporting import make_dano_plots
+
 from iotbx import mtz
 from libtbx import phil
 

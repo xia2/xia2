@@ -18,6 +18,7 @@ import sys
 
 from dials.util import Sorry
 from dials.util.system import CPU_COUNT
+
 from dxtbx.serialize import load
 
 from xia2.Experts.FindImages import image2template_directory

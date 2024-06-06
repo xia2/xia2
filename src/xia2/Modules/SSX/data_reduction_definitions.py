@@ -4,9 +4,10 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import List, Optional
 
+from dials.array_family import flex
+
 import iotbx.phil
 from cctbx import sgtbx, uctbx
-from dials.array_family import flex
 from dxtbx.serialize import load
 
 

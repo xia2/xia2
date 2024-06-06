@@ -6,10 +6,10 @@ import logging
 from collections import OrderedDict
 
 import numpy as np
+from dials.util import tabulate
 from scipy.cluster import hierarchy
 
 import iotbx.phil
-from dials.util import tabulate
 from scitbx.array_family import flex
 
 logger = logging.getLogger(__name__)

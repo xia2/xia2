@@ -8,17 +8,17 @@ import logging
 import math
 import os
 
-import numpy as np
-from orderedset import OrderedSet
-
 import dials.util.version
-import iotbx.cif
-import libtbx
-from cctbx.sgtbx import lattice_symmetry_group
+import numpy as np
 from dials.algorithms.scaling.plots import plot_absorption_plots
 from dials.array_family import flex
 from dials.util.batch_handling import calculate_batch_offsets
 from dials.util.export_mtz import match_wavelengths
+from orderedset import OrderedSet
+
+import iotbx.cif
+import libtbx
+from cctbx.sgtbx import lattice_symmetry_group
 from dxtbx.serialize import load
 from iotbx import mtz
 from iotbx.scalepack import no_merge_original_index

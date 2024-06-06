@@ -4,7 +4,6 @@ import copy
 import logging
 import math
 
-from cctbx import miller
 from dials.array_family import flex
 from dials.command_line import export, merge
 from dials.command_line.slice_sequence import slice_experiments, slice_reflections
@@ -13,6 +12,8 @@ from dials.util.batch_handling import (
     assign_batches_to_reflections,
     calculate_batch_offsets,
 )
+
+from cctbx import miller
 from dxtbx.model import ExperimentList
 
 logger = logging.getLogger(__name__)

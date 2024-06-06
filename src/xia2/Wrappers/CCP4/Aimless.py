@@ -759,7 +759,7 @@ def Aimless(DriverType=None, absorption_correction=None, decay_correction=None):
             datasets = []
             for run in self._runs:
                 # cope with case where two runs make one dataset...
-                if not run[4] in datasets:
+                if run[4] not in datasets:
                     if run[5]:
                         pass
                     else:
