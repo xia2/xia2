@@ -1,5 +1,7 @@
-# -*- coding: utf-8 -*-
 from __future__ import annotations
+
+
+import functools
 
 import concurrent.futures
 import copy
@@ -579,9 +581,6 @@ def scale_against_reference(
         None,
         None,
     )
-
-
-import functools
 
 
 def scale_parallel_batches(

@@ -13,7 +13,6 @@ from dxtbx.serialize import load
 
 from xia2.Modules.SSX.data_reduction_programs import FilePair, ReductionParams
 
-xia2_logger = logging.getLogger(__name__)
 from multiprocessing import Pool
 
 from dials.util.filter_reflections import filter_reflection_table
@@ -25,6 +24,8 @@ from dials.util.image_grouping import (
 )
 
 from xia2.Modules.SSX.data_reduction_programs import trim_table_for_merge
+
+xia2_logger = logging.getLogger(__name__)
 
 
 def dose_series_repeat_to_groupings(

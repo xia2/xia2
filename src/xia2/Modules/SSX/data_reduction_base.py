@@ -10,8 +10,6 @@ from cctbx import sgtbx, uctbx
 
 from xia2.Handlers.Streams import banner
 
-xia2_logger = logging.getLogger(__name__)
-
 import concurrent.futures
 
 from dials.array_family import flex
@@ -39,6 +37,9 @@ from xia2.Modules.SSX.yml_handling import (
     dose_series_repeat_to_groupings,
     yml_to_merged_filesdict,
 )
+
+
+xia2_logger = logging.getLogger(__name__)
 
 
 def inspect_directories(

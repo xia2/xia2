@@ -8,9 +8,10 @@ import os
 from xia2.Driver.DriverFactory import DriverFactory
 from xia2.Handlers.Phil import PhilIndex
 
-logger = logging.getLogger("xia2.Wrappers.Dials.Integrate")
 
 from typing import Optional
+
+logger = logging.getLogger("xia2.Wrappers.Dials.Integrate")
 
 
 class DIALSIntegrateError(RuntimeError):
