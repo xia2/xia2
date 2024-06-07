@@ -73,7 +73,7 @@ jobs:
       git fetch --depth 1 --no-recurse-submodules origin $(Build.SourceBranch)
       git checkout FETCH_HEAD
       wait
-      python .azure-pipelines/ruff-validation.py
+      python .azure-pipelines/lint-validation.py
     displayName: Ruff validation
 
 - template: azure-pipelines-linux.yml
