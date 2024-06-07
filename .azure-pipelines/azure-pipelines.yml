@@ -56,13 +56,13 @@ jobs:
   steps:
   - checkout: none
 
-      # Use Python >=3.9 for flake8
+      # Use Python >=3.9 for linting
   - task: UsePythonVersion@0
     displayName: Set up python
     inputs:
       versionSpec: 3.9
 
-      # Run flake8 validation on a shallow clone
+      # Run Ruff validation on a shallow clone
   - bash: |
       pip install ruff &
       mkdir repository
