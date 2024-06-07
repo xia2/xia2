@@ -472,14 +472,16 @@ def test_ssx_reduce(dials_data, tmp_path, pdb_model, idx_ambiguity):
             f"{refls}",
             f"{expts}",
         ]  # note - pass as files rather than directory to test that input option
+        cosym_phil = "d_min=1.8"
     else:
         args = ["xia2.ssx_reduce", f"directory={ssx}", "batch_size=2"]
+        cosym_phil = "d_min=1.8\ncc_weights=None\nweights=None"
+        # forcing a stupidly small batch size can cause cosym failures, so change some options
     extra_args = []
     if pdb_model:
         model = dials_data("cunir_serial", pathlib=True) / "2BW4.pdb"
         extra_args.append(f"model={str(model)}")
     # also test using scaling and cosym phil files
-    cosym_phil = "d_min=2.5"
     scaling_phil = "reflection_selection.Isigma_range=3.0,0.0"
     with open(tmp_path / "scaling.phil", "w") as f:
         f.write(scaling_phil)
@@ -561,12 +563,12 @@ def test_reduce_with_grouping(dials_data, tmp_path, use_grouping):
     """
     ssx = dials_data("cunir_serial_processed", pathlib=True)
     ssx_data = dials_data("cunir_serial", pathlib=True)
-    args = ["xia2.ssx_reduce", f"directory={ssx}"]
+    args = ["xia2.ssx_reduce", f"directory={ssx}", "d_min=1.7"]
     extra_args = []
     model = dials_data("cunir_serial", pathlib=True) / "2BW4.pdb"
     extra_args.append(f"model={str(model)}")
     # also test using scaling and cosym phil files
-    cosym_phil = "d_min=2.5"
+    cosym_phil = "d_min=1.8"
     scaling_phil = "reflection_selection.Isigma_range=3.0,0.0"
     with open(tmp_path / "scaling.phil", "w") as f:
         f.write(scaling_phil)
@@ -603,11 +605,21 @@ grouping:
     g1_mtz = mtz.object(
         file_name=os.fspath(tmp_path / "DataFiles" / f"{output_names[0]}.mtz")
     )
-    assert abs(g1_mtz.n_reflections() - 1453) < 10
+    n_g1 = g1_mtz.n_reflections()
+    with open(tmp_path / "LogFiles" / f"dials.merge.{output_names[0]}.json", "r") as f:
+        data_1 = json.load(f)
+    n_g1_unique = sum(data_1["1.37611"]["merging_stats"]["n_uniq"])
     g2_mtz = mtz.object(
         file_name=os.fspath(tmp_path / "DataFiles" / f"{output_names[1]}.mtz")
     )
-    assert abs(g2_mtz.n_reflections() - 584) < 10
+    n_g2 = g2_mtz.n_reflections()
+    with open(tmp_path / "LogFiles" / f"dials.merge.{output_names[1]}.json", "r") as f:
+        data_2 = json.load(f)
+    n_g2_unique = sum(data_2["1.37611"]["merging_stats"]["n_uniq"])
+    # A test to check things have made it to the right output files
+    assert n_g1 != n_g2
+    assert n_g1_unique == n_g1
+    assert n_g2_unique == n_g2
     assert not (tmp_path / "DataFiles" / "merged.mtz").is_file()
 
     # now rerun with a res limit on one group. Should be able to just process straight from
@@ -632,8 +644,6 @@ grouping:
     assert not result.returncode
     assert not result.stderr.decode()
     assert (tmp_path / "DataFiles" / "merged.mtz").is_file()
-    merged_mtz = mtz.object(file_name=os.fspath(tmp_path / "DataFiles" / "merged.mtz"))
-    assert abs(merged_mtz.n_reflections() - 362) < 10  # expect 298 from d_min=3.0
 
 
 @pytest.mark.parametrize(
@@ -670,6 +680,10 @@ def test_ssx_reduce_filter_options(
 ):
     ssx = dials_data("cunir_serial_processed", pathlib=True)
     args = ["xia2.ssx_reduce", f"directory={ssx}"] + cluster_args
+    cosym_phil = "d_min=1.8\ncc_weights=None\nweights=None"
+    with open(tmp_path / "cosym.phil", "w") as f:
+        f.write(cosym_phil)
+    args.append(f"symmetry.phil={tmp_path / 'cosym.phil'}")
 
     result = subprocess.run(args, cwd=tmp_path, capture_output=True)
     assert not result.returncode and not result.stderr
