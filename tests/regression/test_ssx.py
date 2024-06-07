@@ -565,7 +565,7 @@ def test_reduce_with_grouping(dials_data, tmp_path, use_grouping):
     """
     ssx = dials_data("cunir_serial_processed", pathlib=True)
     ssx_data = dials_data("cunir_serial", pathlib=True)
-    args = ["xia2.ssx_reduce", f"directory={ssx}"]
+    args = ["xia2.ssx_reduce", f"directory={ssx}", "d_min=1.7"]
     extra_args = []
     model = dials_data("cunir_serial", pathlib=True) / "2BW4.pdb"
     extra_args.append(f"model={str(model)}")
@@ -607,11 +607,11 @@ grouping:
     g1_mtz = mtz.object(
         file_name=os.fspath(tmp_path / "DataFiles" / f"{output_names[0]}.mtz")
     )
-    assert abs(g1_mtz.n_reflections() - 1464) < 10
+    assert abs(g1_mtz.n_reflections() - 1433) < 10
     g2_mtz = mtz.object(
         file_name=os.fspath(tmp_path / "DataFiles" / f"{output_names[1]}.mtz")
     )
-    assert abs(g2_mtz.n_reflections() - 566) < 10
+    assert abs(g2_mtz.n_reflections() - 550) < 10
     assert not (tmp_path / "DataFiles" / "merged.mtz").is_file()
 
     # now rerun with a res limit on one group. Should be able to just process straight from
@@ -637,7 +637,7 @@ grouping:
     assert not result.stderr.decode()
     assert (tmp_path / "DataFiles" / "merged.mtz").is_file()
     merged_mtz = mtz.object(file_name=os.fspath(tmp_path / "DataFiles" / "merged.mtz"))
-    assert abs(merged_mtz.n_reflections() - 372) < 10  # expect 298 from d_min=3.0
+    assert abs(merged_mtz.n_reflections() - 368) < 10
 
 
 @pytest.mark.parametrize(
