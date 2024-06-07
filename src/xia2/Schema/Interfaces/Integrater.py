@@ -57,7 +57,6 @@ class Integrater(FrameProcessor):
     way to the indexer interface."""
 
     def __init__(self):
-
         super().__init__()
 
         # admin junk
@@ -312,7 +311,6 @@ class Integrater(FrameProcessor):
         return self._intgr_prepare_done
 
     def get_integrater_done(self):
-
         if not self.get_integrater_prepare_done():
             logger.debug("Resetting integrater done as prepare not done")
             self.set_integrater_done(False)
@@ -320,7 +318,6 @@ class Integrater(FrameProcessor):
         return self._intgr_done
 
     def get_integrater_finish_done(self):
-
         if not self.get_integrater_done():
             logger.debug("Resetting integrater finish done as integrate not done")
             self.set_integrater_finish_done(False)
@@ -511,7 +508,6 @@ class Integrater(FrameProcessor):
         while not self.get_integrater_finish_done():
             while not self.get_integrater_done():
                 while not self.get_integrater_prepare_done():
-
                     logger.debug("Preparing to do some integration...")
                     self.set_integrater_prepare_done(True)
 
@@ -549,7 +545,6 @@ class Integrater(FrameProcessor):
                     else:
                         logger.notice(banner("Integrating %s" % self._intgr_sweep_name))
                 try:
-
                     # 1698
                     self._intgr_hklout_raw = self._integrate()
 

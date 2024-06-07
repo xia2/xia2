@@ -10,9 +10,8 @@ import subprocess
 from dataclasses import asdict, dataclass, field
 from typing import List, Optional, Tuple
 
-import numpy as np
-
 import libtbx.easy_mp
+import numpy as np
 from dials.algorithms.clustering.unit_cell import Cluster
 from dials.algorithms.indexing import DialsIndexError
 from dials.algorithms.indexing.ssx.analysis import generate_html_report
@@ -570,7 +569,6 @@ def cumulative_assess_crystal_parameters(
 def _report_on_assess_crystals(
     experiments: ExperimentList, large_clusters: List[Cluster]
 ) -> None:
-
     if experiments:
         if large_clusters:
             xia2_logger.info(condensed_metric_unit_cell_info(large_clusters))
@@ -772,7 +770,6 @@ def cumulative_determine_reference_geometry(
 
 
 class ProcessBatch(object):
-
     """A processing class as required for multi_node_parallel_map"""
 
     def __init__(
@@ -803,7 +800,6 @@ class ProcessBatch(object):
 
 
 class ProgressReport(object):
-
     # class to store progress for reporting.
     # Either add and report after each step, or add all at the end (so can
     # distribute batch processing and not have mixed up reporting)
@@ -929,7 +925,6 @@ def process_batches(
     setup_data: dict,
     options: AlgorithmParams,
 ):
-
     progress = ProgressReport(setup_data)
 
     def process_output(summary_data, add_all_to_progress=True):

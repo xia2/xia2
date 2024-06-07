@@ -359,7 +359,6 @@ class DefaultDriver:
         return self._finished
 
     def write_log_file(self, filename):
-
         if self._log_file:
             # close the existing log file
             self._log_file.close()

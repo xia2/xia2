@@ -311,7 +311,6 @@ symmetry.cosym.best_monoclinic_beta = False
 
 class MultiCrystalScale:
     def __init__(self, experiments, reflections, params):
-
         self._data_manager = DataManager(experiments, reflections)
 
         self._params = params
@@ -853,7 +852,6 @@ class MultiCrystalScale:
             logger.info("Using all data sets for subsequent analysis")
 
     def unit_cell_histogram(self, plot_name=None):
-
         uc_params = [flex.double() for i in range(6)]
         for expt in self._data_manager.experiments:
             uc = expt.crystal.get_unit_cell()
@@ -947,7 +945,6 @@ class MultiCrystalScale:
         )
 
     def decide_space_group(self):
-
         if self._params.symmetry.space_group is not None:
             # reindex to correct bravais setting
             cb_op = sgtbx.change_of_basis_op()

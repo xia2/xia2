@@ -101,7 +101,6 @@ def table1_tex(crystal_params, merging_stats):
     ]
 
     for mw, p, m, fmt in magic_words_and_places_and_multipliers:
-
         magic_str = [mw]
 
         for ms in merging_stats:

@@ -51,7 +51,6 @@ class InteractiveDriver(DefaultDriver):
         return False
 
     def _input(self, record):
-
         if not self.check():
             raise RuntimeError("child process has termimated")
 

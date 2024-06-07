@@ -230,7 +230,6 @@ class XSweep:
             beam_ = self._imageset.get_beam()
             scan = self._imageset.get_scan()
             if wavelength is not None:
-
                 # If the wavelength value is 0.0 then first set it to the header
                 # value - note that this assumes that the header value is correct
                 # (a reasonable assumption)
@@ -399,9 +398,9 @@ class XSweep:
         if return_obj._integrater is not None and return_obj._refiner is not None:
             return_obj._integrater._intgr_refiner = return_obj._refiner
         if return_obj._indexer is not None and return_obj._refiner is not None:
-            return_obj._refiner._refinr_indexers[
-                return_obj.get_epoch(1)
-            ] = return_obj._indexer
+            return_obj._refiner._refinr_indexers[return_obj.get_epoch(1)] = (
+                return_obj._indexer
+            )
         return return_obj
 
     def get_image_name(self, number):
@@ -689,7 +688,6 @@ class XSweep:
         """Get my integrater, and if it is not set, create one."""
 
         if self._integrater is None:
-
             # set the working directory for this, based on the hierarchy
             # defined herein...
 

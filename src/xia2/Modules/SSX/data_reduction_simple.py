@@ -12,7 +12,6 @@ xia2_logger = logging.getLogger(__name__)
 
 class SimpleDataReduction(BaseDataReduction):
     def _scale(self) -> None:
-
         if not Path.is_dir(self._scale_wd):
             Path.mkdir(self._scale_wd)
 

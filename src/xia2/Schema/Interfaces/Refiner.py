@@ -220,7 +220,6 @@ class Refiner:
         while not self.get_refiner_finish_done():
             while not self.get_refiner_done():
                 while not self.get_refiner_prepare_done():
-
                     self._refinr_prepare_done = True
                     self._refine_prepare()
 

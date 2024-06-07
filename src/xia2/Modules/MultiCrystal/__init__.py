@@ -5,11 +5,10 @@ import json
 import logging
 from collections import OrderedDict
 
-import numpy as np
-from scipy.cluster import hierarchy
-
 import iotbx.phil
+import numpy as np
 from dials.util import tabulate
+from scipy.cluster import hierarchy
 from scitbx.array_family import flex
 
 logger = logging.getLogger(__name__)
@@ -68,7 +67,6 @@ class ClusterInfo:
 
 class multi_crystal_analysis:
     def __init__(self, unmerged_intensities, labels=None, prefix=None):
-
         self.unmerged_intensities = unmerged_intensities
         self._intensities_all = None
         self._labels_all = flex.size_t()

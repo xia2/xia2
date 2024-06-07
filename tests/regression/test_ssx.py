@@ -8,14 +8,12 @@ import subprocess
 from typing import List
 
 import pytest
-
 from dials.algorithms.scaling.scaling_library import determine_best_unit_cell
 from dxtbx.serialize import load
 from iotbx import mtz
 
 
 def check_output(main_dir, find_spots=False, index=False, integrate=False):
-
     assert find_spots is (main_dir / "batch_1" / "strong.refl").is_file()
     assert index is (main_dir / "batch_1" / "indexed.expt").is_file()
     assert index is (main_dir / "batch_1" / "indexed.refl").is_file()
@@ -686,7 +684,6 @@ def test_ssx_reduce_filter_options(
 
 
 def test_on_sacla_data(dials_data, tmp_path):
-
     sacla_path = dials_data("image_examples", pathlib=True)
     image = sacla_path / "SACLA-MPCCD-run266702-0-subset.h5"
     # NB need to set gain, as using reference from detector overwrites gain to 1

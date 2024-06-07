@@ -20,7 +20,6 @@ logger = logging.getLogger("xia2.Wrappers.XDS.XDSDefpix")
 
 
 def XDSDefpix(DriverType=None):
-
     DriverInstance = DriverFactory.Driver(DriverType)
 
     class XDSDefpixWrapper(DriverInstance.__class__, FrameProcessor):

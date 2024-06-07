@@ -19,14 +19,12 @@ def XScaleR(
     correct_absorption=True,
     correct_modulation=True,
 ):
-
     DriverInstance = DriverFactory.Driver(DriverType)
 
     class XScaleWrapper(DriverInstance.__class__):
         """A wrapper for wrapping XSCALE."""
 
         def __init__(self):
-
             # set up the object ancestors...
             DriverInstance.__class__.__init__(self)
 
@@ -169,7 +167,6 @@ def XScaleR(
 
             # now information about the wavelengths
             for wave in self._transposed_input_keys:
-
                 self._output_reflection_files[wave] = os.path.join(
                     self.get_working_directory(), "%s.HKL" % wave
                 )
@@ -186,7 +183,6 @@ def XScaleR(
                     xscale_inp.write("\n")
 
                 for j, hkl in enumerate(self._transposed_input[wave]["hkl"]):
-
                     # FIXME note to self, this should now be a local
                     # file which has been placed in here by XDSScaler -
                     # should check that the files exists though...
@@ -256,7 +252,7 @@ def XScaleR(
                 if '"alien"' in line:
                     h, k, l = tuple(map(int, line.split()[:3]))
                     z = float(line.split()[4])
-                    if not (h, k, l, z) in self._remove:
+                    if (h, k, l, z) not in self._remove:
                         self._remove.append((h, k, l, z))
 
                 if "FACTOR TO PLACE ALL DATA SETS TO " in line:

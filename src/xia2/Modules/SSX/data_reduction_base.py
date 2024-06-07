@@ -1,25 +1,19 @@
 from __future__ import annotations
 
+import concurrent.futures
 import logging
 from pathlib import Path
 from typing import List, Tuple
 
 import numpy as np
-
 from cctbx import sgtbx, uctbx
-
-from xia2.Handlers.Streams import banner
-
-xia2_logger = logging.getLogger(__name__)
-
-import concurrent.futures
-
 from dials.array_family import flex
 from dials.util.image_grouping import ParsedYAML
 from dxtbx.serialize import load
 
 from xia2.Driver.timing import record_step
 from xia2.Handlers.Files import FileHandler
+from xia2.Handlers.Streams import banner
 from xia2.Modules.SSX.data_reduction_definitions import FilePair, ReductionParams
 from xia2.Modules.SSX.data_reduction_programs import (
     CrystalsDict,
@@ -39,6 +33,8 @@ from xia2.Modules.SSX.yml_handling import (
     dose_series_repeat_to_groupings,
     yml_to_merged_filesdict,
 )
+
+xia2_logger = logging.getLogger(__name__)
 
 
 def inspect_directories(
@@ -109,7 +105,6 @@ def inspect_files(
 
 
 class BaseDataReduction(object):
-
     _no_input_error_msg = (
         "No input data, (experiments+reflections files or integrated directories)\n"
         + "have been found in the input. Please provide at least some integrated/scaled data or\n"
@@ -125,7 +120,6 @@ class BaseDataReduction(object):
         data: List[FilePair],
         reduction_params,
     ):
-
         self._main_directory: Path = main_directory
         self._reduction_params: ReductionParams = reduction_params
 
@@ -215,7 +209,6 @@ class BaseDataReduction(object):
         return cls(main_directory, new_data, reduction_params)
 
     def run(self) -> None:
-
         if not self._integrated_data:
             xia2_logger.notice(banner("Merging"))  # type: ignore
             self._merge()
@@ -249,7 +242,6 @@ class BaseDataReduction(object):
         self._merge()
 
     def _split_data_for_reindex(self, good_crystals_data):
-
         self._filtered_batches_to_process = split_integrated_data(
             good_crystals_data,
             self._integrated_data,
@@ -333,9 +325,9 @@ class BaseDataReduction(object):
                 if self._reduction_params.dose_series_repeat:
                     # Not essential, but nicer to be named dose rather than generic 'group'
                     for name in list(groups_for_merge.keys()):
-                        groups_for_merge[
-                            name.replace("group", "dose")
-                        ] = groups_for_merge.pop(name)
+                        groups_for_merge[name.replace("group", "dose")] = (
+                            groups_for_merge.pop(name)
+                        )
 
                 # move the data into subdirs
                 for g, flist in groups_for_merge.items():
@@ -390,9 +382,9 @@ class BaseDataReduction(object):
             max_workers=self._reduction_params.nproc
         ) as pool:
             for name, filelist in merge_input.items():
-                futures[
-                    pool.submit(prepare_scaled_array, filelist, best_unit_cell)
-                ] = name
+                futures[pool.submit(prepare_scaled_array, filelist, best_unit_cell)] = (
+                    name
+                )
         for future in concurrent.futures.as_completed(futures):
             name = futures[future]
             name_to_expts_arr[name] = future.result()

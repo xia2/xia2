@@ -5,7 +5,6 @@ import logging
 import random
 
 import numpy as np
-
 from cctbx import sgtbx
 from dials.algorithms.scaling.scaling_library import determine_best_unit_cell
 from dials.algorithms.symmetry.cosym import CosymAnalysis, extract_reference_intensities
