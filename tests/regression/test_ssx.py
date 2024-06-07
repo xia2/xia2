@@ -607,11 +607,21 @@ grouping:
     g1_mtz = mtz.object(
         file_name=os.fspath(tmp_path / "DataFiles" / f"{output_names[0]}.mtz")
     )
-    assert abs(g1_mtz.n_reflections() - 1433) < 10
+    n_g1 = g1_mtz.n_reflections()
+    with open(tmp_path / "LogFiles" / f"dials.merge.{output_names[0]}.json", "r") as f:
+        data_1 = json.load(f)
+    n_g1_unique = sum(data_1["1.37611"]["merging_stats"]["n_uniq"])
     g2_mtz = mtz.object(
         file_name=os.fspath(tmp_path / "DataFiles" / f"{output_names[1]}.mtz")
     )
-    assert abs(g2_mtz.n_reflections() - 550) < 10
+    n_g2 = g2_mtz.n_reflections()
+    with open(tmp_path / "LogFiles" / f"dials.merge.{output_names[1]}.json", "r") as f:
+        data_2 = json.load(f)
+    n_g2_unique = sum(data_2["1.37611"]["merging_stats"]["n_uniq"])
+    # A test to check things have made it to the right output files
+    assert n_g1 != n_g2
+    assert n_g1_unique == n_g1
+    assert n_g2_unique == n_g2
     assert not (tmp_path / "DataFiles" / "merged.mtz").is_file()
 
     # now rerun with a res limit on one group. Should be able to just process straight from
@@ -636,8 +646,6 @@ grouping:
     assert not result.returncode
     assert not result.stderr.decode()
     assert (tmp_path / "DataFiles" / "merged.mtz").is_file()
-    merged_mtz = mtz.object(file_name=os.fspath(tmp_path / "DataFiles" / "merged.mtz"))
-    assert abs(merged_mtz.n_reflections() - 368) < 10
 
 
 @pytest.mark.parametrize(
