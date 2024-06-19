@@ -180,7 +180,6 @@ class DialsIntegrater(Integrater):
         logger.debug("Distance: %.2f" % self.get_distance())
 
         if not self.get_integrater_low_resolution():
-
             dmax = self._intgr_refiner.get_indexer_low_resolution(
                 self.get_integrater_epoch()
             )
@@ -446,7 +445,6 @@ class DialsIntegrater(Integrater):
             return hklout
 
         elif self._output_format == "pickle":
-
             if (
                 self._intgr_reindex_operator is None
                 and self._intgr_spacegroup_number
@@ -578,7 +576,6 @@ class DialsIntegrater(Integrater):
                 )
 
             else:
-
                 # add some half-way anyway
                 first = (len(images) // 2) - (block_size // 2) + images[0] - 1
                 if first > wedges[0][1]:

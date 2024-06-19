@@ -329,7 +329,6 @@ symmetry.cosym.best_monoclinic_beta = False
 
 class MultiCrystalScale:
     def __init__(self, experiments, reflections, params):
-
         self._data_manager = DataManager(experiments, reflections)
 
         self._params = params
@@ -633,6 +632,8 @@ class MultiCrystalScale:
                 convert_merged_mtz_to_sca("filtered.mtz")
                 convert_unmerged_mtz_to_sca("filtered_unmerged.mtz")
 
+            data_manager._set_batches()
+
             self._record_individual_report(data_manager, scaled.report(), "Filtered")
             data_manager.export_experiments("filtered.expt")
             data_manager.export_reflections("filtered.refl", d_min=scaled.d_min)
@@ -864,11 +865,11 @@ class MultiCrystalScale:
                 for l in largest_cluster.lattice_ids
             ]
             self._data_manager.select(cluster_identifiers)
+            self._data_manager._set_batches()
         else:
             logger.info("Using all data sets for subsequent analysis")
 
     def unit_cell_histogram(self, plot_name=None):
-
         uc_params = [flex.double() for i in range(6)]
         for expt in self._data_manager.experiments:
             uc = expt.crystal.get_unit_cell()
@@ -926,6 +927,7 @@ class MultiCrystalScale:
         self._data_manager.reflections = flex.reflection_table.from_file(
             self._reflections_filename
         )
+        self._data_manager._set_batches()
 
         if not any(
             [self._params.symmetry.space_group, self._params.symmetry.laue_group]
@@ -961,7 +963,6 @@ class MultiCrystalScale:
         )
 
     def decide_space_group(self):
-
         if self._params.symmetry.space_group is not None:
             # reindex to correct bravais setting
             cb_op = sgtbx.change_of_basis_op()

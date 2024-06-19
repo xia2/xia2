@@ -1,7 +1,7 @@
 repos:
 # Syntax validation and some basic sanity checks
 - repo: https://github.com/pre-commit/pre-commit-hooks
-  rev: v4.1.0
+  rev: v4.6.0
   hooks:
   - id: check-merge-conflict
   - id: check-ast
@@ -13,40 +13,18 @@ repos:
   - id: no-commit-to-branch
     name: Don't commit to 'main'
 
-# Automatically sort imports
-- repo: https://github.com/PyCQA/isort
-  rev: 5.12.0
+- repo: https://github.com/charliermarsh/ruff-pre-commit
+  rev: v0.4.8
   hooks:
-  - id: isort
-    args: [
-           '-a', 'from __future__ import annotations',        # 3.7-3.11
-           '--rm', 'from __future__ import absolute_import',  # -3.0
-           '--rm', 'from __future__ import division',         # -3.0
-           '--rm', 'from __future__ import generator_stop',   # -3.7
-           '--rm', 'from __future__ import generators',       # -2.3
-           '--rm', 'from __future__ import nested_scopes',    # -2.2
-           '--rm', 'from __future__ import print_function',   # -3.0
-           '--rm', 'from __future__ import unicode_literals', # -3.0
-           '--rm', 'from __future__ import with_statement',   # -2.6
-          ]
-
-# Automatic source code formatting
-- repo: https://github.com/psf/black
-  rev: 22.3.0
-  hooks:
-  - id: black
-    args: [--safe, --quiet]
-
-# Linting
-- repo: https://github.com/PyCQA/flake8
-  rev: 4.0.1
-  hooks:
-  - id: flake8
-    additional_dependencies: [flake8-comprehensions==3.8.0]
+    - id: ruff
+      args: [--fix, --exit-non-zero-on-fix, --show-fixes]
+    - id: ruff-format
+      files: \.pyi?$|SConscript$|^libtbx_config$
+      types: [file]
 
 # Type checking
 - repo: https://github.com/pre-commit/mirrors-mypy
-  rev: v0.941
+  rev: v1.10.0
   hooks:
   - id: mypy
     files: src/.*\.py$
@@ -54,7 +32,7 @@ repos:
 
 # YAML formatter
 - repo: https://github.com/jumanjihouse/pre-commit-hook-yamlfmt
-  rev: 0.2.1  # or specific tag
+  rev: 0.2.3
   hooks:
   - id: yamlfmt
     args: [--mapping, '2', --sequence, '2', --offset, '0', --width, '150', --implicit_start]

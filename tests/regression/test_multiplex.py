@@ -4,10 +4,9 @@ import json
 import os
 import pathlib
 
+import iotbx.mtz
 import pytest
 import pytest_mock
-
-import iotbx.mtz
 from dials.array_family import flex
 from dials.command_line.slice_sequence import slice_experiments, slice_reflections
 from dials.util.multi_dataset_handling import (

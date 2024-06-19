@@ -2,9 +2,8 @@ from __future__ import annotations
 
 import subprocess
 
-import pytest
-
 import iotbx.mtz
+import pytest
 from dxtbx.serialize import load
 
 import xia2.Test.regression

@@ -17,6 +17,7 @@ https://dials.github.io/ssx_processing_guide.html for more details on SSX proces
 in DIALS, and https://xia2.github.io/serial_crystallography.html for more details
 on this pipeline.
 """
+
 from __future__ import annotations
 
 import logging

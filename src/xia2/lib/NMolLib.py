@@ -84,7 +84,6 @@ def sequence_mass(sequence):
 
 def compute_nmol_from_volume(volume, mass, resolution):
     with open(nmolparams) as fh:
-
         while True:
             line = fh.readline()
             if not line[0] == "#":

@@ -24,7 +24,6 @@ class XDSRefiner(Refiner):
 
     def _refine_prepare(self):
         for epoch, idxr in self._refinr_indexers.items():
-
             experiments = idxr.get_indexer_experiment_list()
             assert len(experiments) == 1  # currently only handle one lattice/sweep
             experiment = experiments[0]

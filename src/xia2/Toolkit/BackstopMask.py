@@ -14,7 +14,6 @@ from which a backstop mask for the input images is calculated. N.B. positions
 position. The positions may be read from ADXV and will be applied to both XDS
 and Mosflm."""
 
-
 from __future__ import annotations
 
 import binascii
@@ -59,7 +58,6 @@ def mmcc(ds, xs, ys):
 
 
 def compute_fit(distances, coordinates):
-
     xs = [c[0] for c in coordinates]
     ys = [c[1] for c in coordinates]
 
@@ -125,7 +123,6 @@ def line_intersect_rectangle(o, d, nx, ny):
 
 
 def invert_2x2(a, b, c, d):
-
     e = a * d - b * c
 
     return d / e, -b / e, -c / e, a / e
@@ -305,7 +302,6 @@ class rectangle:
     """A class to represent a rectange."""
 
     def __init__(self, p1, p2, p3, p4):
-
         self._points = p1, p2, p3, p4
 
         self._l12 = equation_of_line(p1, p2)

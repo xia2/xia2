@@ -4,7 +4,6 @@ import os
 import subprocess
 
 import pytest
-
 from libtbx.phil import scope_extract
 
 from xia2.cli.multiplex import run as run_multiplex

@@ -22,7 +22,6 @@ xia2_logger = logging.getLogger(__name__)
 
 
 class DataReductionWithReference(BaseDataReduction):
-
     ### This implementation uses the reference model when reindexing and scaling,
     ### allowing parallel processing in batches.
 

@@ -1,8 +1,8 @@
-# -*- coding: utf-8 -*-
 from __future__ import annotations
 
 import concurrent.futures
 import copy
+import functools
 import json
 import logging
 import math
@@ -15,7 +15,6 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
 import numpy as np
-
 from cctbx import crystal, miller, sgtbx, uctbx
 from dials.algorithms.merging.merge import (
     merge_scaled_array_to_mtz_with_report_collection,
@@ -25,9 +24,8 @@ from dials.algorithms.scaling.algorithm import ScalingAlgorithm
 from dials.array_family import flex
 from dials.command_line.cluster_unit_cell import do_cluster_analysis
 from dials.command_line.cluster_unit_cell import phil_scope as cluster_phil_scope
-from dials.command_line.cosym import cosym
+from dials.command_line.cosym import cosym, register_default_cosym_observers
 from dials.command_line.cosym import phil_scope as cosym_phil_scope
-from dials.command_line.cosym import register_default_cosym_observers
 from dials.command_line.merge import phil_scope as merge_phil_scope
 from dials.command_line.scale import phil_scope as scaling_phil_scope
 from dials.util.resolution_analysis import resolution_cc_half
@@ -37,6 +35,7 @@ from iotbx.phil import parse
 
 from xia2.Driver.timing import record_step
 from xia2.Handlers.Files import FileHandler
+from xia2.Modules.SSX.batch_cosym import BatchCosym
 from xia2.Modules.SSX.data_reduction_definitions import FilePair, ReductionParams
 from xia2.Modules.SSX.reporting import condensed_unit_cell_info
 from xia2.Modules.SSX.util import log_to_file, run_in_directory
@@ -82,7 +81,6 @@ def filter_(
     integrated_data: list[FilePair],
     reduction_params: ReductionParams,
 ) -> Tuple[CrystalsDict, uctbx.unit_cell, sgtbx.space_group_info]:
-
     crystals_data = load_crystal_data_from_new_expts(integrated_data)
     if not any(v.crystals for v in crystals_data.values()):
         raise ValueError(
@@ -114,7 +112,6 @@ def assess_for_indexing_ambiguities(
     unit_cell: uctbx.unit_cell,
     max_delta: float = 0.5,
 ) -> bool:
-
     # first test for 'true' indexing ambiguities - where the space group symmetry
     # is lower than the lattice symmetry
     cs = crystal.symmetry(unit_cell=unit_cell, space_group=sgtbx.space_group())
@@ -407,8 +404,9 @@ def _extract_scaling_params(reduction_params):
     extra_defaults = """
         model=KB
         scaling_options.full_matrix=False
-        weighting.error_model.error_model=None
+        weighting.error_model.reset_error_model=True
         scaling_options.outlier_rejection=simple
+        scaling_options.outlier_zmax=4.0
         reflection_selection.intensity_choice=sum
         reflection_selection.method=intensity_ranges
         reflection_selection.Isigma_range=2.0,0.0
@@ -467,8 +465,9 @@ def _extract_scaling_params_for_scale_against_reference(reduction_params, name):
     extra_defaults = """
         model=KB
         scaling_options.full_matrix=False
-        weighting.error_model.error_model=None
+        weighting.error_model.reset_error_model=True
         scaling_options.outlier_rejection=simple
+        scaling_options.outlier_zmax=4.0
         reflection_selection.intensity_choice=sum
         reflection_selection.method=intensity_ranges
         reflection_selection.Isigma_range=2.0,0.0
@@ -481,7 +480,7 @@ def _extract_scaling_params_for_scale_against_reference(reduction_params, name):
         cut_data.partiality_cutoff={reduction_params.partiality_threshold}
         output.experiments={name}.expt
         output.reflections={name}.refl
-        output.html=None
+        output.html=dials.scale.{name}.html
         scaling_options.reference={str(reduction_params.reference)}
         scaling_options.reference_model.k_sol={reduction_params.reference_ksol}
         scaling_options.reference_model.b_sol={reduction_params.reference_bsol}
@@ -577,9 +576,6 @@ def scale_against_reference(
         None,
         None,
     )
-
-
-import functools
 
 
 def scale_parallel_batches(
@@ -706,15 +702,13 @@ def _extract_cosym_params(reduction_params, index):
         output.reflections=processed_{index}.refl
         output.experiments=processed_{index}.expt
     """
-    if reduction_params.reference:
-        xia2_phil += f"\nreference={reduction_params.reference}"
-        xia2_phil += f"\nreference_model.k_sol={reduction_params.reference_ksol}"
-        xia2_phil += f"\nreference_model.b_sol={reduction_params.reference_bsol}"
     extra_defaults = f"""
         min_i_mean_over_sigma_mean=0.5
         unit_cell_clustering.threshold=None
         lattice_symmetry_max_delta={reduction_params.lattice_symmetry_max_delta}
         partiality_threshold={reduction_params.partiality_threshold}
+        cc_weights=sigma
+        weights=standard_error
     """
     if reduction_params.d_min:
         # note - allow user phil to override the overall xia2 d_min - might
@@ -825,6 +819,58 @@ def individual_cosym(
     )
 
 
+def scale_reindex_single(
+    working_directory: Path,
+    batch_for_reindex: ProcessingBatch,
+    reduction_params: ReductionParams,
+) -> List[ProcessingBatch]:
+    assert (
+        reduction_params.reference
+    )  # this should only be called if we have a reference
+    scaleresult = scale_on_batches(
+        working_directory,
+        [batch_for_reindex],
+        reduction_params,
+        "batch1",
+    )
+    logfile = "dials.reindex.log"
+    with run_in_directory(working_directory), log_to_file(logfile), record_step(
+        "dials.reindex"
+    ):
+        expts = load.experiment_list(scaleresult.exptfile, check_format=False)
+        refls = flex.reflection_table.from_file(scaleresult.reflfile)
+        space_group = reduction_params.space_group.group()
+        wavelength = np.mean([expt.beam.get_wavelength() for expt in expts])
+        from dials.util.reference import intensities_from_reference_file
+        from dials.util.reindex import change_of_basis_op_against_reference
+
+        reference_miller_set = intensities_from_reference_file(
+            os.fspath(reduction_params.reference),
+            wavelength=wavelength,
+            k_sol=reduction_params.reference_ksol,
+            b_sol=reduction_params.reference_bsol,
+        )
+        change_of_basis_op = change_of_basis_op_against_reference(
+            expts, [refls], reference_miller_set
+        )
+        for expt in expts:
+            expt.crystal = expt.crystal.change_basis(change_of_basis_op)
+            expt.crystal.set_space_group(space_group)
+
+        exptfileout = "processed_0.expt"
+        reflfileout = "processed_0.refl"
+        expts.as_file(exptfileout)
+
+        refls["miller_index"] = change_of_basis_op.apply(refls["miller_index"])
+        refls.as_file(reflfileout)
+    xia2_logger.info("Reindexed against reference file")
+    outbatch = ProcessingBatch()
+    outbatch.add_filepair(
+        FilePair(working_directory / exptfileout, working_directory / reflfileout)
+    )
+    return [outbatch]
+
+
 def cosym_reindex(
     working_directory: Path,
     batches_for_reindex: List[ProcessingBatch],
@@ -832,10 +878,10 @@ def cosym_reindex(
     max_delta: float = 0.5,
     partiality_threshold: float = 0.2,
     reference=None,
+    reference_ksol=0.35,
+    reference_bsol=46.0,
 ) -> List[ProcessingBatch]:
     from dials.command_line.cosym import phil_scope as cosym_scope
-
-    from xia2.Modules.SSX.batch_cosym import BatchCosym
 
     expts = []
     refls = []
@@ -850,8 +896,12 @@ def cosym_reindex(
     params.lattice_symmetry_max_delta = max_delta
     params.partiality_threshold = partiality_threshold
     params.min_i_mean_over_sigma_mean = 0.5
+    params.cc_weights = "sigma"
+    params.weights = "standard_error"
     if reference:
         params.reference = os.fspath(reference)
+        params.reference_model.k_sol = reference_ksol
+        params.reference_model.b_sol = reference_bsol
     if d_min:
         params.d_min = d_min
 
@@ -896,7 +946,6 @@ def parallel_cosym(
         with record_step(
             "dials.cosym (parallel)"
         ), concurrent.futures.ProcessPoolExecutor(max_workers=nproc) as pool:
-
             cosym_futures: dict[Any, int] = {
                 pool.submit(
                     individual_cosym,
@@ -1002,7 +1051,6 @@ def split_filtered_data(
     good_crystals_data: CrystalsDict,
     min_batch_size: int,
 ) -> List[ProcessingBatch]:
-
     n_cryst = sum(len(v.identifiers) for v in good_crystals_data.values())
     n_batches = max(math.floor(n_cryst / min_batch_size), 1)
     batches = [ProcessingBatch() for _ in range(n_batches)]
@@ -1027,7 +1075,6 @@ def split_filtered_data(
         current_identifier_lists.append(good_identifiers)
 
         while n_leftover >= n_required:
-
             last_fp = current_fps.pop()
             ids = current_identifier_lists.pop()
             if n_required == n_leftover:

@@ -110,7 +110,6 @@ class XInfo:
         for i in range(len(crystal_records)):
             record = crystal_records[i]
             if "BEGIN CRYSTAL " in record:
-
                 # we should only ever have one of these records in
                 # a call to this method
 
@@ -223,7 +222,6 @@ class XInfo:
 
                 # populate this with interesting things
                 while "END WAVELENGTH" not in record:
-
                     # deal with a nested WAVELENGTH_STATISTICS block
 
                     if "BEGIN WAVELENGTH_STATISTICS" in record:
@@ -245,7 +243,6 @@ class XInfo:
                     key = record.split()[0].lower()
 
                     if key == "resolution":
-
                         lst = record.split()
 
                         if len(lst) < 2 or len(lst) > 3:
@@ -336,9 +333,9 @@ class XInfo:
                                 "wavelength %s unknown for crystal %s"
                                 % (wavelength, crystal)
                             )
-                        self._crystals[crystal]["sweeps"][sweep][
-                            "wavelength"
-                        ] = wavelength
+                        self._crystals[crystal]["sweeps"][sweep]["wavelength"] = (
+                            wavelength
+                        )
 
                     elif "SAMPLE" == record.split()[0]:
                         sample = record.replace("SAMPLE ", "").strip()
@@ -373,9 +370,9 @@ class XInfo:
                                     'START_END requires two parameters (start and end), not "%s"'
                                     % record
                                 )
-                            self._crystals[crystal]["sweeps"][sweep][
-                                "start_end"
-                            ] = start_end
+                            self._crystals[crystal]["sweeps"][sweep]["start_end"] = (
+                                start_end
+                            )
 
                     elif "EXCLUDE" == record.split()[0]:
                         if record.split()[1].upper() == "ICE":
@@ -410,9 +407,9 @@ class XInfo:
             # now look for one-record things
 
             if "SCALED_MERGED_REFLECTION_FILE" in record:
-                self._crystals[crystal][
-                    "scaled_merged_reflection_file"
-                ] = record.replace("SCALED_MERGED_REFLECTION_FILE", "").strip()
+                self._crystals[crystal]["scaled_merged_reflection_file"] = (
+                    record.replace("SCALED_MERGED_REFLECTION_FILE", "").strip()
+                )
 
             if "REFERENCE_REFLECTION_FILE" in record:
                 self._crystals[crystal]["reference_reflection_file"] = record.replace(
@@ -420,7 +417,6 @@ class XInfo:
                 ).strip()
 
             if "FREER_FILE" in record:
-
                 # free file also needs to be used for indexing reference to
                 # make any sense at all...
 

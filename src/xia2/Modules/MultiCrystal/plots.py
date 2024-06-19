@@ -12,7 +12,6 @@ def flex_double_as_string(flex_array, n_digits=None):
 
 
 def plot_uc_histograms(uc_params):
-
     a, b, c = (flex_double_as_string(p, n_digits=4) for p in uc_params[:3])
     d = OrderedDict()
 

@@ -4,7 +4,6 @@ import math
 from typing import Dict, List
 
 import numpy as np
-
 from dials.algorithms.clustering.unit_cell import Cluster
 from dials.algorithms.scaling.scaling_library import (
     DialsMergingStatisticsError,
@@ -17,7 +16,7 @@ from dials.util.resolution_analysis import resolution_cc_half
 
 def condensed_unit_cell_info(clusters: List[Cluster]) -> str:
     out_str = "Unit cell clustering for largest clusters (median & stdev)"
-    al, be, ga = "med_" + "\u03B1", "med_" + "\u03B2", "med_" + "\u03B3"
+    al, be, ga = "med_" + "\u03b1", "med_" + "\u03b2", "med_" + "\u03b3"
     out_str += f"\n{'n_xtals'} {'s.g.':>7} {'med_a':>7} {'med_b':>7} {'med_c':>7} {al:>6} {be:>6} {ga:>6}"
 
     for cluster in clusters:
@@ -37,7 +36,7 @@ def condensed_metric_unit_cell_info(clusters: List[Cluster]) -> str:
     from xia2.Modules.SSX.data_integration_programs import best_cell_from_cluster
 
     out_str = "Highest possible symmetries and metric unit cells for clusters"
-    al, be, ga = "med_" + "\u03B1", "med_" + "\u03B2", "med_" + "\u03B3"
+    al, be, ga = "med_" + "\u03b1", "med_" + "\u03b2", "med_" + "\u03b3"
     out_str += f"\n{'n_xtals'} {'sym.':>10} {'med_a':>7} {'med_b':>7} {'med_c':>7} {al:>6} {be:>6} {ga:>6}"
     for c in clusters:
         sg, uc = best_cell_from_cluster(c)
@@ -117,7 +116,6 @@ def statistics_output_and_resolution_from_scaler(scaler):
 def statistics_output_from_scaled_files(
     experiments, reflection_table, best_unit_cell, d_min=None
 ):
-
     scaled_array = scaled_data_as_miller_array(
         [reflection_table], experiments, best_unit_cell
     )
@@ -167,9 +165,9 @@ def _fit_stats(stats, anom_stats, scaled_array, n_bins=20, use_internal_variance
         if d_min_fit and d_min_fit - max_current_res > 0.005:
             fit_msg = (
                 "Approximate resolution limit suggested from CC"
-                + "\u00BD"
+                + "\u00bd"
                 + " fit (limit CC"
-                + "\u00BD"
+                + "\u00bd"
                 + f"=0.3): {d_min_fit:.2f}"
                 + "\n"
             )
@@ -187,7 +185,7 @@ def _fit_stats(stats, anom_stats, scaled_array, n_bins=20, use_internal_variance
                     cut_anom_stats = None
     if not d_min_fit:
         fit_msg = (
-            "Unable to estimate resolution limit from CC" + "\u00BD" + " fit" + "\n"
+            "Unable to estimate resolution limit from CC" + "\u00bd" + " fit" + "\n"
         )
     t1_stats = format_statistics(
         table_1_stats(stats, anom_stats, cut_stats, cut_anom_stats)

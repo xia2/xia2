@@ -319,7 +319,7 @@ def run_xia2_ssx(
         refinement_params,
         integration_params,
     )
-    if not integrated_batch_directories or not ("reduce" in params.workflow.steps):
+    if not integrated_batch_directories or "reduce" not in params.workflow.steps:
         return
 
     # Now do the data reduction

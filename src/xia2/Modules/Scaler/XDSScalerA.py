@@ -452,9 +452,9 @@ class XDSScalerA(Scaler):
                 intgr.set_integrater_spacegroup_number(
                     spacegroup_name_to_number(pointgroup)
                 )
-                sweep_information[
-                    "corrected_intensities"
-                ] = intgr.get_integrater_corrected_intensities()
+                sweep_information["corrected_intensities"] = (
+                    intgr.get_integrater_corrected_intensities()
+                )
 
                 # convert the XDS_ASCII for this sweep to mtz - on the next
                 # get this should be in the correct setting...
@@ -550,9 +550,9 @@ class XDSScalerA(Scaler):
             intgr.set_integrater_spacegroup_number(
                 spacegroup_name_to_number(pointgroup)
             )
-            self._sweep_information[epoch][
-                "corrected_intensities"
-            ] = intgr.get_integrater_corrected_intensities()
+            self._sweep_information[epoch]["corrected_intensities"] = (
+                intgr.get_integrater_corrected_intensities()
+            )
 
             hklin = self._sweep_information[epoch]["corrected_intensities"]
 
@@ -571,7 +571,6 @@ class XDSScalerA(Scaler):
             self._reference = hklout
 
         if self._reference:
-
             from xia2.Driver.DriverFactory import DriverFactory
 
             def run_one_sweep(args):
@@ -617,9 +616,9 @@ class XDSScalerA(Scaler):
                 intgr.set_integrater_spacegroup_number(
                     spacegroup_name_to_number(pointgroup)
                 )
-                sweep_information[
-                    "corrected_intensities"
-                ] = intgr.get_integrater_corrected_intensities()
+                sweep_information["corrected_intensities"] = (
+                    intgr.get_integrater_corrected_intensities()
+                )
 
                 # convert the XDS_ASCII for this sweep to mtz - on the next
                 # get this should be in the correct setting...
@@ -668,9 +667,9 @@ class XDSScalerA(Scaler):
                     spacegroup_name_to_number(pointgroup)
                 )
                 intgr.set_integrater_reindex_operator(reindex_op)
-                sweep_information[
-                    "corrected_intensities"
-                ] = intgr.get_integrater_corrected_intensities()
+                sweep_information["corrected_intensities"] = (
+                    intgr.get_integrater_corrected_intensities()
+                )
 
                 # and copy the reflection file to the local directory
 
@@ -791,9 +790,9 @@ class XDSScalerA(Scaler):
             intgr.set_integrater_spacegroup_number(
                 spacegroup_name_to_number(pointgroup)
             )
-            self._sweep_information[epoch][
-                "corrected_intensities"
-            ] = intgr.get_integrater_corrected_intensities()
+            self._sweep_information[epoch]["corrected_intensities"] = (
+                intgr.get_integrater_corrected_intensities()
+            )
 
             hklin = self._sweep_information[epoch]["corrected_intensities"]
             dname = self._sweep_information[epoch]["dname"]
@@ -1273,9 +1272,9 @@ class XDSScalerA(Scaler):
                 stats = self._compute_scaler_statistics(
                     self._scalr_scaled_reflection_files["mtz_unmerged"][key], wave=key
                 )
-                self._scalr_statistics[
-                    (self._scalr_pname, self._scalr_xname, key)
-                ] = stats
+                self._scalr_statistics[(self._scalr_pname, self._scalr_xname, key)] = (
+                    stats
+                )
 
         # convert reflection files to .sca format - use mtz2various for this
 
