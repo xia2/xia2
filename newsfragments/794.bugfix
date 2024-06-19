@@ -1,1 +1,1 @@
-``xia2.ssx_reduce``: Improve indexing ambiguity resolution with a reference by direct call to dials.reindex methods
+``xia2.ssx_reduce``: Improve indexing ambiguity resolution with a reference by direct call to ``dials.reindex`` methods.
