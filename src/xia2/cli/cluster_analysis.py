@@ -22,7 +22,6 @@ from dials.util.version import dials_version
 
 import xia2.Handlers.Streams
 from xia2.Modules.Analysis import batch_phil_scope
-from xia2.Modules.MultiCrystal.data_manager import DataManager
 from xia2.Modules.MultiCrystalAnalysis import MultiCrystalAnalysis
 from xia2.XIA2Version import Version
 
@@ -152,14 +151,6 @@ def run(args=sys.argv[1:]):
         )
     experiments, reflections = assign_unique_identifiers(experiments, reflections)
 
-    reflections_all = flex.reflection_table()
-    assert len(reflections) == 1 or len(reflections) == len(experiments)
-    for i, (expt, refl) in enumerate(zip(experiments, reflections)):
-        reflections_all.extend(refl)
-    reflections_all.assert_experiment_identifiers_are_consistent(experiments)
-
-    data_manager = DataManager(experiments, reflections_all)
-
     try:
         MCA = CorrelationMatrix(experiments, reflections, params)
 
@@ -206,7 +197,11 @@ def run(args=sys.argv[1:]):
                         MCA.ids_to_identifiers_map[l] for l in cluster.labels
                     ]
                     output_cluster(
-                        new_folder, cluster, data_manager, cluster_identifiers
+                        new_folder,
+                        experiments,
+                        reflections,
+                        cluster_identifiers,
+                        cluster,
                     )
 
                 if params.exclude_correlation_cluster_number == cluster.cluster_id:
@@ -226,7 +221,11 @@ def run(args=sys.argv[1:]):
                         if i not in identifiers_to_exclude
                     ]
                     output_cluster(
-                        new_folder, cluster, data_manager, identifiers_to_output
+                        new_folder,
+                        experiments,
+                        reflections,
+                        identifiers_to_output,
+                        cluster,
                     )
 
             for cluster in MCA.cos_angle_clusters:
@@ -241,7 +240,11 @@ def run(args=sys.argv[1:]):
                         MCA.ids_to_identifiers_map[l] for l in cluster.labels
                     ]
                     output_cluster(
-                        new_folder, cluster, data_manager, cluster_identifiers
+                        new_folder,
+                        experiments,
+                        reflections,
+                        cluster_identifiers,
+                        cluster,
                     )
 
                 if params.exclude_cos_cluster_number == cluster.cluster_id:
@@ -263,7 +266,11 @@ def run(args=sys.argv[1:]):
                         if i not in identifiers_to_exclude
                     ]
                     output_cluster(
-                        new_folder, cluster, data_manager, identifiers_to_output
+                        new_folder,
+                        experiments,
+                        reflections,
+                        identifiers_to_output,
+                        cluster,
                     )
             logger.info(f"Clusters recommended for comparison in {params.output.log}")
             logger.info("----------------")
@@ -295,14 +302,20 @@ def run(args=sys.argv[1:]):
             f.write(html.encode("utf-8", "xmlcharrefreplace"))
 
 
-def output_cluster(new_folder, cluster, original_data_manager, cluster_identifiers):
-    data_manager = copy.deepcopy(original_data_manager)
+def output_cluster(new_folder, experiments, reflections, ids, cluster):
+
+    expts = copy.deepcopy(experiments)
+    expts.select_on_experiment_identifiers(ids)
+
+    refl = []
+    for idx, i in enumerate(reflections):
+        if idx in cluster.labels:
+            refl.append(i)
+
+    joint_refl = flex.reflection_table.concat(refl)
+
     if not os.path.exists(new_folder):
         os.mkdir(new_folder)
-    data_manager.select(cluster_identifiers)
-    data_manager.export_experiments(
-        new_folder + "/cluster_" + str(cluster.cluster_id) + ".expt"
-    )
-    data_manager.export_reflections(
-        new_folder + "/cluster_" + str(cluster.cluster_id) + ".refl"
-    )
+
+    expts.as_file(new_folder + "/cluster_" + str(cluster.cluster_id) + ".expt")
+    joint_refl.as_file(new_folder + "/cluster_" + str(cluster.cluster_id) + ".refl")

@@ -1044,12 +1044,9 @@ class MultiCrystalScale:
         )
 
     def cluster_analysis(self):
-        # mca = self._mca.cluster_analysis()
         self._mca.cluster_analysis()
         self._cos_angle_clusters = self._mca.cos_clusters
         self._cc_clusters = self._mca.cc_clusters
-        # self._cos_angle_clusters = mca.cos_clusters
-        # self._cc_clusters = mca.cc_clusters
 
 
 class Scale:

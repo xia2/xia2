@@ -116,9 +116,11 @@ class MultiCrystalAnalysis:
         )
 
         for i in self._data_manager.experiments:
-            dup = copy.deepcopy(self._data_manager)
-            dup.select(i.identifier)
-            reflections.append(dup.reflections)
+            selected = self._data_manager.reflections.select_on_experiment_identifiers(
+                [i.identifier]
+            )
+            selected.reset_ids()
+            reflections.append(selected)
             identifiers.append(i.identifier)
 
         to_delete = []
