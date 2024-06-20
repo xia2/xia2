@@ -81,6 +81,8 @@ exclude_cos_cluster_number = 0
 output {
   log = xia2.cluster_analysis.log
     .type = str
+  json = xia2.cluster_analysis.json
+    .type = str
 }
 %s
 """
@@ -300,6 +302,8 @@ def run(args=sys.argv[1:]):
 
         with open("xia2.cluster_analysis.html", "wb") as f:
             f.write(html.encode("utf-8", "xmlcharrefreplace"))
+
+        MCA.output_json()
 
 
 def output_cluster(new_folder, experiments, reflections, ids, cluster):

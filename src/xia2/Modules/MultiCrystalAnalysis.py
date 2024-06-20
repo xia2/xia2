@@ -138,6 +138,7 @@ class MultiCrystalAnalysis:
         )
         matrices.calculate_matrices()
         matrices.convert_to_html_json()
+        matrices.output_json()
 
         logger.info("\nIntensity correlation clustering summary:")
         logger.info(tabulate(matrices.cc_table, headers="firstrow", tablefmt="rst"))

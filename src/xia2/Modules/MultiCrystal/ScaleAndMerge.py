@@ -305,6 +305,8 @@ include scope dials.algorithms.correlation.analysis.phil_scope
 output {
   log = xia2.multi_crystal_analysis.log
     .type = str
+  json = xia2.multiplex_clusters.json
+    .type = str
 }
 """,
     process_includes=True,
