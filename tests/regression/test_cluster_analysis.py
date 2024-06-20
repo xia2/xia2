@@ -4,10 +4,11 @@ import os
 import subprocess
 
 import pytest
+
+from dials.algorithms.correlation.cluster import ClusterInfo
 from libtbx.phil import scope_extract
 
 from xia2.cli.multiplex import run as run_multiplex
-from xia2.Modules.MultiCrystal import ClusterInfo
 from xia2.Modules.MultiCrystalAnalysis import MultiCrystalAnalysis
 
 # Setup Test Clusters
@@ -105,6 +106,7 @@ def test_serial_data(dials_data, tmp_path, run_cluster_identification):
         expt_scaled,
         refl_scaled,
         f"run_cluster_identification={run_cluster_identification}",
+        "output.json=xia2.cluster_analysis.json",
     ]
     result_generate_scaled = subprocess.run(
         args_generate_scaled, cwd=tmp_path, capture_output=True
@@ -144,6 +146,7 @@ def test_rotation_data(dials_data, run_in_tmp_path):
         "min_cluster_size=2",
         expt_scaled,
         refl_scaled,
+        "output.json=xia2.cluster_analysis.json",
     ]
     result = subprocess.run(args_clustering, capture_output=True)
     assert not result.returncode and not result.stderr
@@ -153,8 +156,7 @@ def test_rotation_data(dials_data, run_in_tmp_path):
 def check_output(main_dir, run_cluster_identification=True):
     assert (main_dir / "cc_clusters").exists() is run_cluster_identification
     assert (main_dir / "cos_angle_clusters").exists() is run_cluster_identification
-    assert (main_dir / "intensity_clusters.json").is_file()
-    assert (main_dir / "cos_angle_clusters.json").is_file()
+    assert (main_dir / "xia2.cluster_analysis.json").is_file()
     assert (main_dir / "xia2.cluster_analysis.log").is_file()
     assert (main_dir / "xia2.cluster_analysis.html").is_file()
 
