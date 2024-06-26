@@ -4,7 +4,6 @@ import os
 import subprocess
 
 import pytest
-
 from dials.algorithms.correlation.cluster import ClusterInfo
 from libtbx.phil import scope_extract
 
