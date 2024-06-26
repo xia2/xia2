@@ -6,10 +6,8 @@ import os
 import random
 import sys
 
-import numpy as np
-from jinja2 import ChoiceLoader, Environment, PackageLoader
-
 import iotbx.phil
+import numpy as np
 from dials.algorithms.correlation.analysis import CorrelationMatrix
 from dials.array_family import flex
 from dials.util import tabulate
@@ -19,6 +17,7 @@ from dials.util.multi_dataset_handling import (
 )
 from dials.util.options import ArgumentParser, reflections_and_experiments_from_files
 from dials.util.version import dials_version
+from jinja2 import ChoiceLoader, Environment, PackageLoader
 
 import xia2.Handlers.Streams
 from xia2.Modules.Analysis import batch_phil_scope
@@ -307,7 +306,6 @@ def run(args=sys.argv[1:]):
 
 
 def output_cluster(new_folder, experiments, reflections, ids, cluster):
-
     expts = copy.deepcopy(experiments)
     expts.select_on_experiment_identifiers(ids)
 
