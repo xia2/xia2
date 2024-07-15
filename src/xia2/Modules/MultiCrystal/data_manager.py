@@ -258,4 +258,4 @@ class DataManager:
         mtz_obj = merge.merge_data_to_mtz(
             params, self._experiments, [self._reflections]
         )
-        mtz_obj.write(filename)
+        mtz_obj.write_to_file(filename)
