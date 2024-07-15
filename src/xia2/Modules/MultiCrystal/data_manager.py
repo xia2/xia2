@@ -222,7 +222,7 @@ class DataManager:
         filename = f"{prefix}_WAVE{fmt % (index+1)}.mtz"
         if data["expt"]:
             mtz_obj = merge.merge_data_to_mtz(params, data["expt"], [data["refl"]])
-            mtz_obj.write(filename)
+            mtz_obj.write_to_file(filename)
             return filename
         return None
 
