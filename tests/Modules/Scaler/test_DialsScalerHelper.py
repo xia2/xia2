@@ -3,7 +3,6 @@ from __future__ import annotations
 import random
 
 import pytest
-
 from cctbx import sgtbx
 from dials.algorithms.symmetry.cosym._generate_test_data import generate_intensities
 from dials.array_family import flex
@@ -272,7 +271,6 @@ def test_assign_and_return_datasets(helper_directory):
 
 
 class simple_refiner:
-
     LATTICE_POSSIBLE = "LATTICE_POSSIBLE"
     LATTICE_IMPOSSIBLE = "LATTICE_IMPOSSIBLE"
     LATTICE_CORRECT = "LATTICE_CORRECT"
@@ -351,7 +349,6 @@ test_data = [
 def test_decide_correct_lattice_using_refiner(
     ccp4, refiner_lattices, possible_lattices, expected_output
 ):
-
     refiner = simple_refiner(refiner_lattices)
 
     result = decide_correct_lattice_using_refiner(possible_lattices, refiner)

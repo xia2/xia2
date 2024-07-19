@@ -158,7 +158,6 @@ xia2_logger = logging.getLogger(__name__)
 def run_xia2_ssx_reduce(
     root_working_directory: Path, params: iotbx.phil.scope_extract
 ) -> None:
-
     if params.multiprocessing.nproc is Auto:
         params.multiprocessing.nproc = CPU_COUNT
 

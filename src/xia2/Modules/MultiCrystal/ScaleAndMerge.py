@@ -212,7 +212,23 @@ filtering
 }
 
 multi_crystal_analysis {
-  include scope xia2.Modules.MultiCrystal.master_phil_scope
+  unit_cell = None
+    .type = unit_cell
+    .short_caption = "Unit cell"
+  n_bins = 20
+    .type = int(value_min=1)
+    .short_caption = "Number of bins"
+  d_min = None
+    .type = float(value_min=0)
+    .short_caption = "High resolution cutoff"
+  batch
+    .multiple = True
+  {
+    id = None
+      .type = str
+    range = None
+      .type = ints(size=2, value_min=0)
+  }
 }
 
 unit_cell
@@ -284,8 +300,12 @@ unit_cell_clustering {
     .help = 'Display the dendrogram with a log scale'
 }
 
+include scope dials.algorithms.correlation.analysis.phil_scope
+
 output {
   log = xia2.multi_crystal_analysis.log
+    .type = str
+  json = xia2.multiplex_clusters.json
     .type = str
 }
 """,
@@ -311,7 +331,6 @@ symmetry.cosym.best_monoclinic_beta = False
 
 class MultiCrystalScale:
     def __init__(self, experiments, reflections, params):
-
         self._data_manager = DataManager(experiments, reflections)
 
         self._params = params
@@ -853,7 +872,6 @@ class MultiCrystalScale:
             logger.info("Using all data sets for subsequent analysis")
 
     def unit_cell_histogram(self, plot_name=None):
-
         uc_params = [flex.double() for i in range(6)]
         for expt in self._data_manager.experiments:
             uc = expt.crystal.get_unit_cell()
@@ -947,7 +965,6 @@ class MultiCrystalScale:
         )
 
     def decide_space_group(self):
-
         if self._params.symmetry.space_group is not None:
             # reindex to correct bravais setting
             cb_op = sgtbx.change_of_basis_op()
@@ -1002,6 +1019,8 @@ class MultiCrystalScale:
         params = mca_phil.extract()
         params.prefix = "xia2.multiplex"
         params.title = "xia2.multiplex report"
+        if self._params.symmetry.cosym.cc_weights:
+            params.cc_weights = self._params.symmetry.cosym.cc_weights
         data_manager = copy.deepcopy(self._data_manager)
         refl = data_manager.reflections
         data_manager.reflections = refl.select(refl["d"] >= self._scaled.d_min)
@@ -1028,9 +1047,9 @@ class MultiCrystalScale:
         )
 
     def cluster_analysis(self):
-        mca = self._mca.cluster_analysis()
-        self._cos_angle_clusters = mca.cos_angle_clusters
-        self._cc_clusters = mca.cc_clusters
+        self._mca.cluster_analysis()
+        self._cos_angle_clusters = self._mca.cos_clusters
+        self._cc_clusters = self._mca.cc_clusters
 
 
 class Scale:

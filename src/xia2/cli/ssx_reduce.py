@@ -24,18 +24,16 @@ from pathlib import Path
 import iotbx.phil
 from dials.util.options import ArgumentParser
 
+import xia2.Handlers.Streams
+from xia2.Handlers.Files import cleanup
 from xia2.Modules.SSX.xia2_ssx_reduce import full_phil_str, run_xia2_ssx_reduce
 
 phil_scope = iotbx.phil.parse(full_phil_str)
 
 xia2_logger = logging.getLogger(__name__)
 
-import xia2.Handlers.Streams
-from xia2.Handlers.Files import cleanup
-
 
 def run(args=sys.argv[1:]):
-
     parser = ArgumentParser(
         usage="xia2.ssx_reduce directory=/path/to/integrated/directory/",
         read_experiments=False,

@@ -76,7 +76,6 @@ class Report:
         report_dir=None,
         experiments=None,
     ):
-
         self.params = params
         self.n_bins = PhilIndex.params.xia2.settings.merging_statistics.n_bins
         # Remove this if statement block, and the corresponding PHIL parameter
@@ -285,7 +284,6 @@ class Report:
         return d
 
     def pychef_plots(self, n_bins=8):
-
         intensities = self.intensities
         batches = self.batches
         dose = self.dose

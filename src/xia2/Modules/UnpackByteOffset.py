@@ -42,7 +42,6 @@ def unpack_values(data, length):
     ptr = 0
 
     while len(values) < length:
-
         delta = struct.unpack("b", data[ptr])[0]
         ptr += 1
 

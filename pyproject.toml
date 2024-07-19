@@ -1,13 +1,20 @@
-[tool.black]
-include='\.pyi?$|/libtbx_config$'
-
-[tool.isort]
-sections="FUTURE,STDLIB,THIRDPARTY,CCTBX,FIRSTPARTY,LOCALFOLDER"
-known_cctbx="boost,boost_adaptbx,cbflib_adaptbx,cctbx,chiltbx,clipper_adaptbx,cma_es,cootbx,crys3d,cudatbx,dials,dxtbx,fable,fast_linalg,fftw3tbx,gltbx,iota,iotbx,libtbx,mmtbx,omptbx,prime,rstbx,scitbx,simtbx,smtbx,spotfinder,tbxx,ucif,wxtbx,xfel"
-profile="black"
-
 [tool.towncrier]
-package="xia2"
-package_dir=".."
-filename="CHANGELOG.rst"
+package = "xia2"
+package_dir = ".."
+filename = "CHANGELOG.rst"
 issue_format = "`#{issue} <https://github.com/xia2/xia2/issues/{issue}>`_"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "C4", "I"]
+unfixable = ["F841"]
+# E501 line too long (handled by formatter)
+# E741 Ambiguous variable name (We have lots of meaningful I, L, l)
+ignore = ["E501", "E741"]
+
+[tool.ruff.lint.per-file-ignores]
+"installer/**.py" = ["I"]
+"**/__init__.py" = ["F401"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["xia2"]
+required-imports = ["from __future__ import annotations"]

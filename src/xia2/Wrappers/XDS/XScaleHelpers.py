@@ -19,7 +19,6 @@ def get_correlation_coefficients_and_group(xscale_lp):
 
     for j, record in enumerate(records):
         if "NUMBER OF UNIQUE REFLECTIONS" in record:
-
             k = j + 5
 
             while len(records[k].split()) == 5:
@@ -33,7 +32,6 @@ def get_correlation_coefficients_and_group(xscale_lp):
     if not file_names:
         for j, record in enumerate(records):
             if "SET# INTENSITY  ACCEPTED REJECTED" in record:
-
                 k = j + 1
 
                 while len(records[k].split()) == 5:
@@ -45,9 +43,7 @@ def get_correlation_coefficients_and_group(xscale_lp):
                 break
 
     for j, record in enumerate(records):
-
         if "CORRELATIONS BETWEEN INPUT DATA SETS" in record:
-
             k = j + 5
 
             while len(records[k].split()) == 6:

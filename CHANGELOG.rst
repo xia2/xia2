@@ -1,3 +1,25 @@
+xia2 3.20.0 (2024-06-19)
+========================
+
+Features
+--------
+
+- ``xia2.ssx_reduce``: Optimise and apply an error model correction in scaling. (`#792 <https://github.com/xia2/xia2/issues/792>`_)
+
+
+Bugfixes
+--------
+
+- ``xia2.multiplex``: Reset batches after filtering steps to prevent inconsistencies and duplications. (`#789 <https://github.com/xia2/xia2/issues/789>`_)
+- ``xia2.ssx_reduce``: Improve indexing ambiguity resolution with a reference by direct call to ``dials.reindex`` methods. (`#794 <https://github.com/xia2/xia2/issues/794>`_)
+
+
+Misc
+----
+
+- `#790 <https://github.com/xia2/xia2/issues/790>`_, `#795 <https://github.com/xia2/xia2/issues/795>`_
+
+
 xia2 3.19.0 (2024-04-17)
 ========================
 

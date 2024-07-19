@@ -2,20 +2,11 @@ from __future__ import annotations
 
 import logging
 import shutil
+from multiprocessing import Pool
 from pathlib import Path
 from typing import List, Optional, Tuple
 
 from dials.array_family import flex
-from dxtbx import flumpy
-from dxtbx.model import ExperimentList
-from dxtbx.sequence_filenames import group_files_by_imageset
-from dxtbx.serialize import load
-
-from xia2.Modules.SSX.data_reduction_programs import FilePair, ReductionParams
-
-xia2_logger = logging.getLogger(__name__)
-from multiprocessing import Pool
-
 from dials.util.filter_reflections import filter_reflection_table
 from dials.util.image_grouping import (
     GroupsForExpt,
@@ -23,8 +14,18 @@ from dials.util.image_grouping import (
     SplittingIterable,
     get_grouping_handler,
 )
+from dxtbx import flumpy
+from dxtbx.model import ExperimentList
+from dxtbx.sequence_filenames import group_files_by_imageset
+from dxtbx.serialize import load
 
-from xia2.Modules.SSX.data_reduction_programs import trim_table_for_merge
+from xia2.Modules.SSX.data_reduction_programs import (
+    FilePair,
+    ReductionParams,
+    trim_table_for_merge,
+)
+
+xia2_logger = logging.getLogger(__name__)
 
 
 def dose_series_repeat_to_groupings(
@@ -145,7 +146,6 @@ def apply_scaled_array_to_all_files(
     scaled_files: List[FilePair],
     reduction_params: ReductionParams,
 ) -> dict[str, List[FilePair]]:
-
     groupindex = 0
     name = "merged"  # note this name becomes the filename of the output mtz
     groupdata = GroupsForExpt(0)
@@ -181,7 +181,6 @@ def yml_to_merged_filesdict(
     reduction_params: ReductionParams,
     grouping: str = "merge_by",
 ):
-
     handler = get_grouping_handler(parsed, grouping, reduction_params.nproc)
 
     filesdict = handler.split_files_to_groups(
