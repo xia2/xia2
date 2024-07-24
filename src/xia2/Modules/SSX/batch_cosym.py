@@ -164,12 +164,12 @@ class BatchCosym(Subject):
                         expt.crystal = expt.crystal.change_basis(
                             self.change_of_basis_op
                         )
-                    for expt in expts:
                         expt.crystal.set_unit_cell(
                             expt.crystal.get_space_group().average_unit_cell(
                                 expt.crystal.get_unit_cell()
                             )
                         )
+                        expt.crystal.set_space_group(self.params.space_group.group())
                     refls["miller_index"] = self.change_of_basis_op.apply(
                         refls["miller_index"]
                     )
