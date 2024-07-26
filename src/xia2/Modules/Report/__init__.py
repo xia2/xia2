@@ -255,24 +255,22 @@ class Report:
                 if n_bins > 5:
                     continue
                 else:
-                    return {}, {}, {}
+                    raise
 
         intensities_anom = self.intensities.as_anomalous_array()
         intensities_anom = intensities_anom.map_to_asu().customized_copy(
             info=self.intensities.info()
         )
-        try:
-            self.merging_stats_anom = merging_statistics.dataset_statistics(
-                intensities_anom,
-                n_bins=n_bins,
-                anomalous=True,
-                cc_one_half_significance_level=self.params.cc_half_significance_level,
-                eliminate_sys_absent=self.params.eliminate_sys_absent,
-                use_internal_variance=self.params.use_internal_variance,
-                assert_is_not_unique_set_under_symmetry=False,
-            )
-        except merging_statistics.StatisticsError:
-            self.merging_stats_anom = None
+
+        self.merging_stats_anom = merging_statistics.dataset_statistics(
+            intensities_anom,
+            n_bins=n_bins,
+            anomalous=True,
+            cc_one_half_significance_level=self.params.cc_half_significance_level,
+            eliminate_sys_absent=self.params.eliminate_sys_absent,
+            use_internal_variance=self.params.use_internal_variance,
+            assert_is_not_unique_set_under_symmetry=False,
+        )
 
         is_centric = self.intensities.space_group().is_centric()
         plotter = ResolutionPlotsAndStats(
