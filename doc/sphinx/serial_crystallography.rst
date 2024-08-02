@@ -157,7 +157,7 @@ Exporting unmerged data
 
 Merged data (in MTZ format) is the standard output of ``xia2.ssx``, however unmerged scaled data files
 (in mmCIF format) can be generated using the tools from DIALS (note that this requires a
-DIALS version later than v3.19).
+DIALS version later than v3.20).
 
 If data were reduced with a reference, there may be more than one set of scaled reflection and experiment files.
 In this case, these must first be combined with ``dials.combine_experiments``, before using ``dials.export`` to
