@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import os
+import shutil
 import subprocess
 
 import pytest
@@ -13,19 +14,27 @@ def insulin_with_missing_image(dials_data, tmp_path):
     for j in range(1, 46):
         if j == 23:
             continue
-        tmp_path.joinpath(f"insulin_1_{j:03d}.img").symlink_to(
-            dials_data("insulin", pathlib=True) / f"insulin_1_{j:03d}.img"
-        )
+        try:
+            tmp_path.joinpath(f"insulin_1_{j:03d}.img").symlink_to(
+                dials_data("insulin", pathlib=True) / f"insulin_1_{j:03d}.img"
+            )
+        except OSError:
+            shutil.copy(
+                dials_data("insulin", pathlib=True) / f"insulin_1_{j:03d}.img", tmp_path
+            )
     return tmp_path / "insulin_1_###.img"
 
 
 def test_write_xinfo_insulin_with_missing_image(insulin_with_missing_image, tmp_path):
+    cmd = "xia2.setup"
+    if os.name == "nt":
+        cmd += ".bat"
     result = subprocess.run(
         [
-            "xia2.setup",
+            cmd,
             f"image={insulin_with_missing_image.parent.joinpath('insulin_1_001.img')}",
         ],
-        env={"CCP4": tmp_path, **os.environ},
+        env={"CCP4": str(tmp_path), **os.environ},
         cwd=tmp_path,
     )
     assert not result.returncode
@@ -39,13 +48,16 @@ def test_write_xinfo_insulin_with_missing_image(insulin_with_missing_image, tmp_
 
 
 def test_write_xinfo_template_missing_images(insulin_with_missing_image, tmp_path):
+    cmd = "xia2.setup"
+    if os.name == "nt":
+        cmd += ".bat"
     result = subprocess.run(
         [
-            "xia2.setup",
+            cmd,
             f"image={insulin_with_missing_image.parent.joinpath('insulin_1_001.img:1:22')}",
             "read_all_image_headers=False",
         ],
-        env={"CCP4": tmp_path, **os.environ},
+        env={"CCP4": str(tmp_path), **os.environ},
         cwd=tmp_path,
     )
     assert not result.returncode
@@ -58,14 +70,17 @@ def test_write_xinfo_template_missing_images(insulin_with_missing_image, tmp_pat
 
 
 def test_write_xinfo_split_sweep(dials_data, tmp_path):
+    cmd = "xia2.setup"
+    if os.name == "nt":
+        cmd += ".bat"
     result = subprocess.run(
         [
-            "xia2.setup",
+            cmd,
             f"image={dials_data('insulin', pathlib=True) / 'insulin_1_001.img:1:22'}",
             f"image={dials_data('insulin', pathlib=True) / 'insulin_1_001.img:23:45'}",
             "read_all_image_headers=False",
         ],
-        env={"CCP4": tmp_path, **os.environ},
+        env={"CCP4": str(tmp_path), **os.environ},
         cwd=tmp_path,
     )
     assert not result.returncode
@@ -80,13 +95,16 @@ def test_write_xinfo_split_sweep(dials_data, tmp_path):
 
 def test_write_xinfo_unroll(dials_data, tmp_path):
     # This test partially exercises the fix to https://github.com/xia2/xia2/issues/498 with a different syntax
+    cmd = "xia2.setup"
+    if os.name == "nt":
+        cmd += ".bat"
     result = subprocess.run(
         [
-            "xia2.setup",
+            cmd,
             f"image={dials_data('insulin', pathlib=True) / 'insulin_1_001.img:1:45:15'}",
             "read_all_image_headers=False",
         ],
-        env={"CCP4": tmp_path, **os.environ},
+        env={"CCP4": str(tmp_path), **os.environ},
         cwd=tmp_path,
     )
     assert not result.returncode

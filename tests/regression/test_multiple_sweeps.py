@@ -10,6 +10,7 @@ Test the behaviour of the `multiple_sweep_indexing`, `multiple_sweep_refinement`
 
 from __future__ import annotations
 
+import os
 import subprocess
 
 import pytest
@@ -38,9 +39,12 @@ def test_multiple_sweeps(multi_sweep_type, ccp4, dials_data, tmp_path):
     data_dir = dials_data("l_cysteine_dials_output", pathlib=True)
     images = [data_dir / f"l-cyst_{sweep:02d}_00001.cbf:1:15" for sweep in (1, 2)]
 
+    cmd = "xia2"
+    if os.name == "nt":
+        cmd += ".bat"
     command = [
         # Obviously, we're going to run xia2.
-        "xia2",
+        cmd,
         # Set one of the multiple-sweep flags.
         f"{multi_sweep_type}=True",
         # Reduce the required number of reflections per degree for profile modelling
