@@ -10,7 +10,6 @@ import os
 import random
 import sys
 from dataclasses import dataclass, field
-from io import StringIO
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
@@ -28,6 +27,7 @@ from dials.command_line.cosym import cosym, register_default_cosym_observers
 from dials.command_line.cosym import phil_scope as cosym_phil_scope
 from dials.command_line.merge import phil_scope as merge_phil_scope
 from dials.command_line.scale import phil_scope as scaling_phil_scope
+from dials.util.export_mtz import log_summary
 from dials.util.resolution_analysis import resolution_cc_half
 from dxtbx.model import Crystal, ExperimentList
 from dxtbx.serialize import load
@@ -324,10 +324,8 @@ def merge(
         #    params, experiments, [reflection_table]
         # )
         dials_logger.info(f"\nWriting reflections to {filename}")
-        out = StringIO()
-        mtz_file.show_summary(out=out)
-        dials_logger.info(out.getvalue())
-        mtz_file.write(filename)
+        log_summary(mtz_file)
+        mtz_file.write_to_file(filename)
         with open(json_file, "w") as f:
             json.dump(json_data, f, indent=2)
         merge_html_report(json_data, html_file)
