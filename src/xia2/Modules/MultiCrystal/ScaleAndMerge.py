@@ -519,7 +519,6 @@ class MultiCrystalScale:
             n_processed_cc = 0
 
             for c, cluster in zip(ctype, clusters):
-
                 # This simplifies max_cluster_height into cc and cos angle versions
                 # But still gives the user the option of just selecting max_cluster_height
                 # Which makes more sense when they only want one type of clustering
@@ -602,7 +601,6 @@ class MultiCrystalScale:
                     os.chdir(cwd)
 
         if self._params.clustering.find_distinct_clusters:
-
             for k, clusters in enumerate([self.cos_clusters, self.cc_clusters]):
                 if k == 0:
                     cty = "cos"
