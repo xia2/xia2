@@ -23,6 +23,7 @@ Typically, a reference geometry and mask should also be provided, as described b
 | :ref:`DataReduction`
 | :ref:`GeometryRefinement`
 | :ref:`MergingInGroups`
+| :ref:`ExportingUnmerged`
 
 
 .. _DataIntegration:
@@ -147,3 +148,33 @@ as dose series experiments. This is described in more detail in the links below.
 
 .. toctree::
   Dose-series experiments and merging in groups <xia2-ssx-dose-series>
+
+.. _ExportingUnmerged:
+
+-----------------------
+Exporting unmerged data
+-----------------------
+
+Merged data (in MTZ format) is the standard output of ``xia2.ssx``, however unmerged scaled data files
+(in mmCIF format) can be generated using the tools from DIALS (note that this requires a
+DIALS version later than v3.20).
+
+If data were reduced with a reference, there may be more than one set of scaled reflection and experiment files.
+In this case, these must first be combined with ``dials.combine_experiments``, before using ``dials.export`` to
+export to mmcif format::
+
+    dials.combine_experiments data_reduction/scale/scaled*.{expt,refl}
+    dials.export combined.* format=mmcif
+
+If data were not reduced with a reference, then one can just use ``dials.export``::
+
+    dials.export data_reduction/scale/scaled.{expt,refl} format=mmcif
+
+mmCIF is a standardised format that is able to describe unmerged diffraction data, and the output scaled.cif file conforms to the v5
+standard https://mmcif.wwpdb.org/dictionaries/mmcif_pdbx_v50.dic/Index/. Note that during export to mmcif, the overall scale of the data
+can change to avoid large negative intensity values, which may be present (with comparably large sigmas) for data scaled against a reference.
+The unmerged mmcif data file can be understood with the gemmi program. For example, it can be converted to unmerged MTZ with gemmi and sorted with CCP4's sortmtz for
+further analysis::
+
+    gemmi cif2mtz scaled.cif scaled.mtz
+    echo H K L M/ISYM |sortmtz HKLIN scaled HKLOUT sorted

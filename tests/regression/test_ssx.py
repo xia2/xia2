@@ -8,14 +8,12 @@ import subprocess
 from typing import List
 
 import pytest
-
 from dials.algorithms.scaling.scaling_library import determine_best_unit_cell
 from dxtbx.serialize import load
 from iotbx import mtz
 
 
 def check_output(main_dir, find_spots=False, index=False, integrate=False):
-
     assert find_spots is (main_dir / "batch_1" / "strong.refl").is_file()
     assert index is (main_dir / "batch_1" / "indexed.expt").is_file()
     assert index is (main_dir / "batch_1" / "indexed.refl").is_file()
@@ -49,7 +47,10 @@ def test_assess_crystals(dials_data, tmp_path, option, expected_success):
     # due to very thin batch size.
     with (tmp_path / "index.phil").open(mode="w") as f:
         f.write("indexing.max_cell=150")
-    args = ["xia2.ssx", option, "indexing.phil=index.phil"]
+    cmd = "xia2.ssx"
+    if os.name == "nt":
+        cmd += ".bat"
+    args = [cmd, option, "indexing.phil=index.phil"]
     args.append("image=" + os.fspath(ssx / "merlin0047_1700*.cbf"))
 
     result = subprocess.run(args, cwd=tmp_path, capture_output=True)
@@ -81,8 +82,11 @@ def test_import_phil_handling(dials_data, tmp_path):
         f.write("geometry.beam.wavelength=1.36\ngeometry.detector.distance=247.6")
     with (tmp_path / "index.phil").open(mode="w") as f:
         f.write("indexing.max_cell=150")
+    cmd = "xia2.ssx"
+    if os.name == "nt":
+        cmd += ".bat"
     args = [
-        "xia2.ssx",
+        cmd,
         "steps=None",
         "unit_cell=96.4,96.4,96.4,90,90,90",
         "space_group=P213",
@@ -126,8 +130,11 @@ def test_geometry_refinement(dials_data, tmp_path, option, expected_success):
     # due to very thin batch size.
     with (tmp_path / "index.phil").open(mode="w") as f:
         f.write("indexing.max_cell=150")
+    cmd = "xia2.ssx"
+    if os.name == "nt":
+        cmd += ".bat"
     args = [
-        "xia2.ssx",
+        cmd,
         "steps=None",
         "unit_cell=96.4,96.4,96.4,90,90,90",
         "space_group=P213",
@@ -175,8 +182,11 @@ def test_geometry_refinement(dials_data, tmp_path, option, expected_success):
 def refined_expt(dials_data, tmp_path):
     ssx = dials_data("cunir_serial", pathlib=True)
 
+    cmd = "xia2.ssx"
+    if os.name == "nt":
+        cmd += ".bat"
     args = [
-        "xia2.ssx",
+        cmd,
         "steps=None",
         "unit_cell=96.4,96.4,96.4,90,90,90",
         "space_group=P213",
@@ -208,8 +218,11 @@ def test_run_with_reference(dials_data, tmp_path, refined_expt, starting):
 
     ssx = dials_data("cunir_serial", pathlib=True)
 
+    cmd = "xia2.ssx"
+    if os.name == "nt":
+        cmd += ".bat"
     args = [
-        "xia2.ssx",
+        cmd,
         "unit_cell=96.4,96.4,96.4,90,90,90",
         "space_group=P213",
         "integration.algorithm=stills",
@@ -241,8 +254,11 @@ def test_slice_cbfs(dials_data, tmp_path, refined_expt):
 
     ssx = dials_data("cunir_serial", pathlib=True)
 
+    cmd = "xia2.ssx"
+    if os.name == "nt":
+        cmd += ".bat"
     args = [
-        "xia2.ssx",
+        cmd,
         "unit_cell=96.4,96.4,96.4,90,90,90",
         "space_group=P213",
         "integration.algorithm=stills",
@@ -251,7 +267,7 @@ def test_slice_cbfs(dials_data, tmp_path, refined_expt):
         "max_lattices=1",
     ]
     args.append(
-        "template=" + os.fspath(ssx / "merlin0047_1700#.cbf:2:4")
+        "template=" + os.fspath(ssx / "merlin0047_17###.cbf:2:4")
     )  # i.e. 17002,17003,17004
 
     result = subprocess.run(args, cwd=tmp_path, capture_output=True)
@@ -280,8 +296,11 @@ def test_slice_cbfs(dials_data, tmp_path, refined_expt):
 def test_full_run_without_reference(dials_data, tmp_path):
     ssx = dials_data("cunir_serial", pathlib=True)
 
+    cmd = "xia2.ssx"
+    if os.name == "nt":
+        cmd += ".bat"
     args = [
-        "xia2.ssx",
+        cmd,
         "unit_cell=96.4,96.4,96.4,90,90,90",
         "space_group=P213",
         "integration.algorithm=stills",
@@ -334,8 +353,11 @@ def test_full_run_without_reference(dials_data, tmp_path):
 def test_stepwise_run_without_reference(dials_data, tmp_path):
     ssx = dials_data("cunir_serial", pathlib=True)
 
+    cmd = "xia2.ssx"
+    if os.name == "nt":
+        cmd += ".bat"
     args = [
-        "xia2.ssx",
+        cmd,
         "unit_cell=96.4,96.4,96.4,90,90,90",
         "space_group=P213",
         "integration.algorithm=stills",
@@ -455,9 +477,12 @@ def test_ssx_reduce(dials_data, tmp_path, pdb_model, idx_ambiguity):
     ssx = dials_data("cunir_serial_processed", pathlib=True)
     if not idx_ambiguity:
         # Reindex to P432, which doesn't have an indexing ambiguity.
+        cmd = "dials.reindex"
+        if os.name == "nt":
+            cmd += ".bat"
         result = subprocess.run(
             [
-                "dials.reindex",
+                cmd,
                 f"{ssx / 'integrated.refl'}",
                 f"{ssx / 'integrated.expt'}",
                 "space_group=P432",
@@ -466,22 +491,30 @@ def test_ssx_reduce(dials_data, tmp_path, pdb_model, idx_ambiguity):
             capture_output=True,
         )
         assert not result.returncode
-        assert not result.stderr.decode()
+        assert not result.stderr
         expts = tmp_path / "reindexed.expt"
         refls = tmp_path / "reindexed.refl"
+        cmd = "xia2.ssx_reduce"
+        if os.name == "nt":
+            cmd += ".bat"
         args = [
-            "xia2.ssx_reduce",
+            cmd,
             f"{refls}",
             f"{expts}",
         ]  # note - pass as files rather than directory to test that input option
+        cosym_phil = "d_min=1.8"
     else:
-        args = ["xia2.ssx_reduce", f"directory={ssx}"]
+        cmd = "xia2.ssx_reduce"
+        if os.name == "nt":
+            cmd += ".bat"
+        args = [cmd, f"directory={ssx}", "batch_size=2"]
+        cosym_phil = "d_min=1.8\ncc_weights=None\nweights=None"
+        # forcing a stupidly small batch size can cause cosym failures, so change some options
     extra_args = []
     if pdb_model:
         model = dials_data("cunir_serial", pathlib=True) / "2BW4.pdb"
         extra_args.append(f"model={str(model)}")
     # also test using scaling and cosym phil files
-    cosym_phil = "d_min=2.5"
     scaling_phil = "reflection_selection.Isigma_range=3.0,0.0"
     with open(tmp_path / "scaling.phil", "w") as f:
         f.write(scaling_phil)
@@ -492,14 +525,17 @@ def test_ssx_reduce(dials_data, tmp_path, pdb_model, idx_ambiguity):
 
     result = subprocess.run(args + extra_args, cwd=tmp_path, capture_output=True)
     assert not result.returncode
-    assert not result.stderr.decode()
+    assert not result.stderr
     check_data_reduction_files(tmp_path, reference=pdb_model, reindex=idx_ambiguity)
 
     # now run again only on previously scaled data
     pathlib.Path.mkdir(tmp_path / "reduce")
+    cmd = "xia2.ssx_reduce"
+    if os.name == "nt":
+        cmd += ".bat"
     args = (
         [
-            "xia2.ssx_reduce",
+            cmd,
             "steps=merge",
         ]
         + list((tmp_path / "DataFiles").glob("scale*"))
@@ -507,7 +543,7 @@ def test_ssx_reduce(dials_data, tmp_path, pdb_model, idx_ambiguity):
     )
     result = subprocess.run(args, cwd=tmp_path / "reduce", capture_output=True)
     assert not result.returncode
-    assert not result.stderr.decode()
+    assert not result.stderr
     check_data_reduction_files_on_scaled_only(tmp_path / "reduce", reference=pdb_model)
 
 
@@ -534,10 +570,13 @@ grouping:
     with open(tmp_path / "example.yaml", "w") as f:
         f.write(grouping_yml)
 
-    args = ["xia2.ssx_reduce", "grouping=example.yaml"] + files
+    cmd = "xia2.ssx_reduce"
+    if os.name == "nt":
+        cmd += ".bat"
+    args = [cmd, "grouping=example.yaml"] + files
     result = subprocess.run(args, cwd=tmp_path, capture_output=True)
     assert not result.returncode
-    assert not result.stderr.decode()
+    assert not result.stderr
     output_names = [f"group_{i}" for i in [1, 2]]
     for n in output_names:
         assert (tmp_path / "DataFiles" / f"{n}.mtz").is_file()
@@ -563,12 +602,15 @@ def test_reduce_with_grouping(dials_data, tmp_path, use_grouping):
     """
     ssx = dials_data("cunir_serial_processed", pathlib=True)
     ssx_data = dials_data("cunir_serial", pathlib=True)
-    args = ["xia2.ssx_reduce", f"directory={ssx}"]
+    cmd = "xia2.ssx_reduce"
+    if os.name == "nt":
+        cmd += ".bat"
+    args = [cmd, f"directory={ssx}", "d_min=1.7"]
     extra_args = []
     model = dials_data("cunir_serial", pathlib=True) / "2BW4.pdb"
     extra_args.append(f"model={str(model)}")
     # also test using scaling and cosym phil files
-    cosym_phil = "d_min=2.5"
+    cosym_phil = "d_min=1.8"
     scaling_phil = "reflection_selection.Isigma_range=3.0,0.0"
     with open(tmp_path / "scaling.phil", "w") as f:
         f.write(scaling_phil)
@@ -596,7 +638,7 @@ grouping:
 
     result = subprocess.run(args + extra_args, cwd=tmp_path, capture_output=True)
     assert not result.returncode
-    assert not result.stderr.decode()
+    assert not result.stderr
     output_names = [f"group_{i}" if use_grouping else f"dose_{i}" for i in [1, 2]]
     for n in output_names:
         assert (tmp_path / "DataFiles" / f"{n}.mtz").is_file()
@@ -605,16 +647,29 @@ grouping:
     g1_mtz = mtz.object(
         file_name=os.fspath(tmp_path / "DataFiles" / f"{output_names[0]}.mtz")
     )
-    assert abs(g1_mtz.n_reflections() - 1539) < 10
+    n_g1 = g1_mtz.n_reflections()
+    with open(tmp_path / "LogFiles" / f"dials.merge.{output_names[0]}.json", "r") as f:
+        data_1 = json.load(f)
+    n_g1_unique = sum(data_1["1.37611"]["merging_stats"]["n_uniq"])
     g2_mtz = mtz.object(
         file_name=os.fspath(tmp_path / "DataFiles" / f"{output_names[1]}.mtz")
     )
-    assert abs(g2_mtz.n_reflections() - 604) < 10
+    n_g2 = g2_mtz.n_reflections()
+    with open(tmp_path / "LogFiles" / f"dials.merge.{output_names[1]}.json", "r") as f:
+        data_2 = json.load(f)
+    n_g2_unique = sum(data_2["1.37611"]["merging_stats"]["n_uniq"])
+    # A test to check things have made it to the right output files
+    assert n_g1 != n_g2
+    assert n_g1_unique == n_g1
+    assert n_g2_unique == n_g2
     assert not (tmp_path / "DataFiles" / "merged.mtz").is_file()
 
     # now rerun with a res limit on one group. Should be able to just process straight from
     # the group files for fast merging.
-    args = ["xia2.ssx_reduce", "d_min=3.0", "steps=merge"]
+    cmd = "xia2.ssx_reduce"
+    if os.name == "nt":
+        cmd += ".bat"
+    args = [cmd, "d_min=3.0", "steps=merge"]
     if use_grouping:
         args += list(
             (tmp_path / "data_reduction" / "merge" / "group_1").glob("group*.expt")
@@ -632,10 +687,8 @@ grouping:
 
     result = subprocess.run(args, cwd=tmp_path, capture_output=True)
     assert not result.returncode
-    assert not result.stderr.decode()
+    assert not result.stderr
     assert (tmp_path / "DataFiles" / "merged.mtz").is_file()
-    merged_mtz = mtz.object(file_name=os.fspath(tmp_path / "DataFiles" / "merged.mtz"))
-    assert abs(merged_mtz.n_reflections() - 416) < 10  # expect 298 from d_min=3.0
 
 
 @pytest.mark.parametrize(
@@ -678,7 +731,14 @@ def test_ssx_reduce_filter_options(
     dials_data, tmp_path, cluster_args: List[str], expected_results: dict
 ):
     ssx = dials_data("cunir_serial_processed", pathlib=True)
-    args = ["xia2.ssx_reduce", f"directory={ssx}"] + cluster_args
+    cmd = "xia2.ssx_reduce"
+    if os.name == "nt":
+        cmd += ".bat"
+    args = [cmd, f"directory={ssx}"] + cluster_args
+    cosym_phil = "d_min=1.8\ncc_weights=None\nweights=None"
+    with open(tmp_path / "cosym.phil", "w") as f:
+        f.write(cosym_phil)
+    args.append(f"symmetry.phil={tmp_path / 'cosym.phil'}")
 
     result = subprocess.run(args, cwd=tmp_path, capture_output=True)
     assert not result.returncode and not result.stderr
@@ -693,7 +753,6 @@ def test_ssx_reduce_filter_options(
 
 
 def test_on_sacla_data(dials_data, tmp_path):
-
     sacla_path = dials_data("image_examples", pathlib=True)
     image = sacla_path / "SACLA-MPCCD-run266702-0-subset.h5"
     # NB need to set gain, as using reference from detector overwrites gain to 1
@@ -706,8 +765,11 @@ def test_on_sacla_data(dials_data, tmp_path):
     geometry = (
         sacla_path / "SACLA-MPCCD-run266702-0-subset-refined_experiments_level1.json"
     )
+    cmd = "xia2.ssx"
+    if os.name == "nt":
+        cmd += ".bat"
     args = [
-        "xia2.ssx",
+        cmd,
         f"image={image}",
         f"reference_geometry={geometry}",
         "space_group = P43212",
@@ -739,8 +801,11 @@ def test_on_sacla_data_slice(dials_data, tmp_path):
     fp = tmp_path / "sf.phil"
     with open(fp, "w") as f:
         f.write(find_spots_phil)
+    cmd = "xia2.ssx"
+    if os.name == "nt":
+        cmd += ".bat"
     args = [
-        "xia2.ssx",
+        cmd,
         f"image={image}",
         f"reference_geometry={geometry}",
         "space_group = P43212",

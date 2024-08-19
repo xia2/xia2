@@ -41,7 +41,6 @@ def ImportXDS(DriverType=None):
             return self._experiments_json
 
         def run(self):
-
             self.clear_command_line()
 
             if self._spot_xds is not None:

@@ -37,7 +37,6 @@ def index_select_image_wedges_user(sweep_id, phi_width, images):
     logger.info("Existing images for indexing %s: %s", sweep_id, images_list)
 
     while True:
-
         record = input(">")
 
         if not record.strip():
@@ -57,7 +56,6 @@ def index_select_image_wedges_user(sweep_id, phi_width, images):
 
 
 if __name__ == "__main__":
-
     images = list(range(1, 91))
 
     assert index_select_images_lone(0.5, images) == [1, 45, 90]

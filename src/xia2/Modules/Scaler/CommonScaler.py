@@ -161,7 +161,6 @@ class CommonScaler(Scaler):
         hklout = hklin.replace("sorted.mtz", "temp.mtz")
 
         if not self.get_scaler_reference_reflection_file():
-
             if PhilIndex.params.xia2.settings.symmetry.program == "dials":
                 p = self._factory.dials_symmetry()
             else:
@@ -268,7 +267,6 @@ class CommonScaler(Scaler):
         self._prepared_reflections = s.get_hklout()
 
     def _sort_together_data_xds(self):
-
         if len(self._sweep_information) == 1:
             return self._sort_together_data_xds_one_sweep()
 
@@ -278,7 +276,6 @@ class CommonScaler(Scaler):
             hklin = self._sweep_information[epoch]["scaled_reflections"]
 
             if self._sweep_information[epoch]["batches"] == [0, 0]:
-
                 logger.info("Getting batches from %s", hklin)
                 batches = MtzUtils.batches_from_mtz(hklin)
                 self._sweep_information[epoch]["batches"] = [min(batches), max(batches)]
@@ -427,7 +424,6 @@ class CommonScaler(Scaler):
         self._scalr_cell = tuple(ri.get_cell())
 
     def _sort_together_data_xds_one_sweep(self):
-
         assert len(self._sweep_information) == 1
 
         epoch = list(self._sweep_information)[0]
@@ -529,7 +525,6 @@ class CommonScaler(Scaler):
         self._prepared_reflections = hklout
 
     def _scale_finish(self):
-
         if not self._scalr_scaled_refl_files:
             raise RuntimeError("no reflection files stored")
 
@@ -656,17 +651,16 @@ class CommonScaler(Scaler):
             self._scalr_scaled_reflection_files["mtz_merged"] = hklout
 
         else:
-
-            self._scalr_scaled_reflection_files[
-                "mtz_merged"
-            ] = self._scalr_scaled_refl_files[list(self._scalr_scaled_refl_files)[0]]
+            self._scalr_scaled_reflection_files["mtz_merged"] = (
+                self._scalr_scaled_refl_files[list(self._scalr_scaled_refl_files)[0]]
+            )
 
     def _scale_finish_chunk_5_finish_small_molecule(self):
         # keep 'mtz' and remove 'mtz_merged' from the dictionary for
         # consistency with non-small-molecule workflow
-        self._scalr_scaled_reflection_files[
-            "mtz"
-        ] = self._scalr_scaled_reflection_files["mtz_merged"]
+        self._scalr_scaled_reflection_files["mtz"] = (
+            self._scalr_scaled_reflection_files["mtz_merged"]
+        )
         del self._scalr_scaled_reflection_files["mtz_merged"]
 
         FileHandler.record_data_file(self._scalr_scaled_reflection_files["mtz"])
@@ -792,7 +786,6 @@ class CommonScaler(Scaler):
             c.copyfree()
 
         else:
-
             if scale_params.free_total:
                 ntot = scale_params.free_total
 
@@ -1215,7 +1208,6 @@ class CommonScaler(Scaler):
 
         while result is None:
             try:
-
                 result = self._iotbx_merging_statistics(
                     scaled_unmerged_mtz, anomalous=False, n_bins=n_bins
                 )
@@ -1365,11 +1357,13 @@ class CommonScaler(Scaler):
                 if self._spacegroup_reindex_operator is not None:
                     reindex_ops = [
                         (
-                            cb_op(str(self._spacegroup_reindex_operator))
-                            * cb_op(str(op))
-                        ).as_hkl()
-                        if op is not None
-                        else self._spacegroup_reindex_operator
+                            (
+                                cb_op(str(self._spacegroup_reindex_operator))
+                                * cb_op(str(op))
+                            ).as_hkl()
+                            if op is not None
+                            else self._spacegroup_reindex_operator
+                        )
                         for op in reindex_ops
                     ]
                 tt_grouprefiner.set_reindex_operators(reindex_ops)
@@ -1414,11 +1408,13 @@ class CommonScaler(Scaler):
                 if self._spacegroup_reindex_operator is not None:
                     reindex_ops = [
                         (
-                            cb_op(str(self._spacegroup_reindex_operator))
-                            * cb_op(str(op))
-                        ).as_hkl()
-                        if op is not None
-                        else self._spacegroup_reindex_operator
+                            (
+                                cb_op(str(self._spacegroup_reindex_operator))
+                                * cb_op(str(op))
+                            ).as_hkl()
+                            if op is not None
+                            else self._spacegroup_reindex_operator
+                        )
                         for op in tt_refine_reindex_ops
                     ]
                 else:

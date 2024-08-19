@@ -31,7 +31,7 @@ def image_path_obtainer(summary_file):
             image_counts.append(int(last) - int(first) + 1)
 
     def number_to_name(number):
-        for (fp, ic, fi) in zip(file_patterns, image_counts, first_image_numbers):
+        for fp, ic, fi in zip(file_patterns, image_counts, first_image_numbers):
             if number > ic:
                 number -= ic
                 continue

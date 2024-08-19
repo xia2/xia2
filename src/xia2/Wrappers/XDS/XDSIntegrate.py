@@ -38,7 +38,6 @@ logger = logging.getLogger("xia2.Wrappers.XDS.XDSIntegrate")
 
 
 def XDSIntegrate(DriverType=None, params=None):
-
     DriverInstance = DriverFactory.Driver(DriverType)
 
     class XDSIntegrateWrapper(DriverInstance.__class__, FrameProcessor):

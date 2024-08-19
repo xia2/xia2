@@ -3,7 +3,7 @@ from __future__ import annotations
 import pickle
 import sys
 
-from dials.array_family import flex  # noqa; lgtm; required for pickle loading
+from dials.array_family import flex  # noqa: F401
 
 
 def main(filename):

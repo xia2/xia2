@@ -1,8 +1,8 @@
-# -*- coding: utf-8 -*-
 from __future__ import annotations
 
 import concurrent.futures
 import copy
+import functools
 import json
 import logging
 import math
@@ -10,12 +10,10 @@ import os
 import random
 import sys
 from dataclasses import dataclass, field
-from io import StringIO
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
 import numpy as np
-
 from cctbx import crystal, miller, sgtbx, uctbx
 from dials.algorithms.merging.merge import (
     merge_scaled_array_to_mtz_with_report_collection,
@@ -25,11 +23,11 @@ from dials.algorithms.scaling.algorithm import ScalingAlgorithm
 from dials.array_family import flex
 from dials.command_line.cluster_unit_cell import do_cluster_analysis
 from dials.command_line.cluster_unit_cell import phil_scope as cluster_phil_scope
-from dials.command_line.cosym import cosym
+from dials.command_line.cosym import cosym, register_default_cosym_observers
 from dials.command_line.cosym import phil_scope as cosym_phil_scope
-from dials.command_line.cosym import register_default_cosym_observers
 from dials.command_line.merge import phil_scope as merge_phil_scope
 from dials.command_line.scale import phil_scope as scaling_phil_scope
+from dials.util.export_mtz import log_summary
 from dials.util.resolution_analysis import resolution_cc_half
 from dxtbx.model import Crystal, ExperimentList
 from dxtbx.serialize import load
@@ -37,6 +35,7 @@ from iotbx.phil import parse
 
 from xia2.Driver.timing import record_step
 from xia2.Handlers.Files import FileHandler
+from xia2.Modules.SSX.batch_cosym import BatchCosym
 from xia2.Modules.SSX.data_reduction_definitions import FilePair, ReductionParams
 from xia2.Modules.SSX.reporting import condensed_unit_cell_info
 from xia2.Modules.SSX.util import log_to_file, run_in_directory
@@ -115,7 +114,6 @@ def filter_(
     integrated_data: list[FilePair],
     reduction_params: ReductionParams,
 ) -> Tuple[CrystalsDict, uctbx.unit_cell, sgtbx.space_group_info]:
-
     crystals_data = load_crystal_data_from_new_expts(
         integrated_data,
         calculate_meanIsigma=bool(reduction_params.mean_i_over_sigma_threshold),
@@ -151,7 +149,6 @@ def assess_for_indexing_ambiguities(
     unit_cell: uctbx.unit_cell,
     max_delta: float = 0.5,
 ) -> bool:
-
     # first test for 'true' indexing ambiguities - where the space group symmetry
     # is lower than the lattice symmetry
     cs = crystal.symmetry(unit_cell=unit_cell, space_group=sgtbx.space_group())
@@ -398,10 +395,8 @@ def merge(
         #    params, experiments, [reflection_table]
         # )
         dials_logger.info(f"\nWriting reflections to {filename}")
-        out = StringIO()
-        mtz_file.show_summary(out=out)
-        dials_logger.info(out.getvalue())
-        mtz_file.write(filename)
+        log_summary(mtz_file)
+        mtz_file.write_to_file(filename)
         with open(json_file, "w") as f:
             json.dump(json_data, f, indent=2)
         merge_html_report(json_data, html_file)
@@ -478,8 +473,9 @@ def _extract_scaling_params(reduction_params):
     extra_defaults = """
         model=KB
         scaling_options.full_matrix=False
-        weighting.error_model.error_model=None
+        weighting.error_model.reset_error_model=True
         scaling_options.outlier_rejection=simple
+        scaling_options.outlier_zmax=4.0
         reflection_selection.intensity_choice=sum
         reflection_selection.method=intensity_ranges
         reflection_selection.Isigma_range=2.0,0.0
@@ -538,8 +534,9 @@ def _extract_scaling_params_for_scale_against_reference(reduction_params, name):
     extra_defaults = """
         model=KB
         scaling_options.full_matrix=False
-        weighting.error_model.error_model=None
+        weighting.error_model.reset_error_model=True
         scaling_options.outlier_rejection=simple
+        scaling_options.outlier_zmax=4.0
         reflection_selection.intensity_choice=sum
         reflection_selection.method=intensity_ranges
         reflection_selection.Isigma_range=2.0,0.0
@@ -552,7 +549,7 @@ def _extract_scaling_params_for_scale_against_reference(reduction_params, name):
         cut_data.partiality_cutoff={reduction_params.partiality_threshold}
         output.experiments={name}.expt
         output.reflections={name}.refl
-        output.html=None
+        output.html=dials.scale.{name}.html
         scaling_options.reference={str(reduction_params.reference)}
         scaling_options.reference_model.k_sol={reduction_params.reference_ksol}
         scaling_options.reference_model.b_sol={reduction_params.reference_bsol}
@@ -650,14 +647,11 @@ def scale_against_reference(
     )
 
 
-import functools
-
-
 def scale_parallel_batches(
     working_directory, batches: List[ProcessingBatch], reduction_params
 ) -> Tuple[List[ProcessingBatch], List[float]]:
     # scale multiple batches in parallel
-    scaled_results = []
+    scaled_results = [ProcessingBatch() for _ in range(len(batches))]
     d_mins = []
     batch_template = functools.partial(
         "batch{index:0{maxindexlength:d}d}".format,
@@ -668,29 +662,27 @@ def scale_parallel_batches(
     with record_step("dials.scale (parallel)"), concurrent.futures.ProcessPoolExecutor(
         max_workers=min(reduction_params.nproc, len(batches))
     ) as pool:
-        scale_futures: Dict[Any, str] = {
+        scale_futures: Dict[Any, int] = {
             pool.submit(
                 scale_on_batches,
                 working_directory,
                 [batch],
                 reduction_params,
                 name,
-            ): name
-            for name, batch in jobs.items()
+            ): i
+            for i, (name, batch) in enumerate(jobs.items())
         }
         for future in concurrent.futures.as_completed(scale_futures):
             try:
                 result = future.result()
-                name = scale_futures[future]
+                idx = scale_futures[future]
             except Exception as e:
                 xia2_logger.warning(f"Unsuccessful scaling of group. Error:\n{e}")
             else:
-                xia2_logger.info(
-                    f"Completed scaling of data reduction batch {name.lstrip('batch')}"
+                xia2_logger.info(f"Completed scaling of data reduction batch {idx+1}")
+                scaled_results[idx].add_filepair(
+                    FilePair(result.exptfile, result.reflfile)
                 )
-                outbatch = ProcessingBatch()
-                outbatch.add_filepair(FilePair(result.exptfile, result.reflfile))
-                scaled_results.append(outbatch)
                 FileHandler.record_log_file(
                     result.logfile.name.rstrip(".log"), result.logfile
                 )
@@ -779,15 +771,13 @@ def _extract_cosym_params(reduction_params, index):
         output.reflections=processed_{index}.refl
         output.experiments=processed_{index}.expt
     """
-    if reduction_params.reference:
-        xia2_phil += f"\nreference={reduction_params.reference}"
-        xia2_phil += f"\nreference_model.k_sol={reduction_params.reference_ksol}"
-        xia2_phil += f"\nreference_model.b_sol={reduction_params.reference_bsol}"
     extra_defaults = f"""
         min_i_mean_over_sigma_mean=0.5
         unit_cell_clustering.threshold=None
         lattice_symmetry_max_delta={reduction_params.lattice_symmetry_max_delta}
         partiality_threshold={reduction_params.partiality_threshold}
+        cc_weights=sigma
+        weights=standard_error
     """
     if reduction_params.d_min:
         # note - allow user phil to override the overall xia2 d_min - might
@@ -898,6 +888,58 @@ def individual_cosym(
     )
 
 
+def scale_reindex_single(
+    working_directory: Path,
+    batch_for_reindex: ProcessingBatch,
+    reduction_params: ReductionParams,
+) -> List[ProcessingBatch]:
+    assert (
+        reduction_params.reference
+    )  # this should only be called if we have a reference
+    scaleresult = scale_on_batches(
+        working_directory,
+        [batch_for_reindex],
+        reduction_params,
+        "batch1",
+    )
+    logfile = "dials.reindex.log"
+    with run_in_directory(working_directory), log_to_file(logfile), record_step(
+        "dials.reindex"
+    ):
+        expts = load.experiment_list(scaleresult.exptfile, check_format=False)
+        refls = flex.reflection_table.from_file(scaleresult.reflfile)
+        space_group = reduction_params.space_group.group()
+        wavelength = np.mean([expt.beam.get_wavelength() for expt in expts])
+        from dials.util.reference import intensities_from_reference_file
+        from dials.util.reindex import change_of_basis_op_against_reference
+
+        reference_miller_set = intensities_from_reference_file(
+            os.fspath(reduction_params.reference),
+            wavelength=wavelength,
+            k_sol=reduction_params.reference_ksol,
+            b_sol=reduction_params.reference_bsol,
+        )
+        change_of_basis_op = change_of_basis_op_against_reference(
+            expts, [refls], reference_miller_set
+        )
+        for expt in expts:
+            expt.crystal = expt.crystal.change_basis(change_of_basis_op)
+            expt.crystal.set_space_group(space_group)
+
+        exptfileout = "processed_0.expt"
+        reflfileout = "processed_0.refl"
+        expts.as_file(exptfileout)
+
+        refls["miller_index"] = change_of_basis_op.apply(refls["miller_index"])
+        refls.as_file(reflfileout)
+    xia2_logger.info("Reindexed against reference file")
+    outbatch = ProcessingBatch()
+    outbatch.add_filepair(
+        FilePair(working_directory / exptfileout, working_directory / reflfileout)
+    )
+    return [outbatch]
+
+
 def cosym_reindex(
     working_directory: Path,
     batches_for_reindex: List[ProcessingBatch],
@@ -905,10 +947,10 @@ def cosym_reindex(
     max_delta: float = 0.5,
     partiality_threshold: float = 0.2,
     reference=None,
+    reference_ksol=0.35,
+    reference_bsol=46.0,
 ) -> List[ProcessingBatch]:
     from dials.command_line.cosym import phil_scope as cosym_scope
-
-    from xia2.Modules.SSX.batch_cosym import BatchCosym
 
     expts = []
     refls = []
@@ -923,8 +965,12 @@ def cosym_reindex(
     params.lattice_symmetry_max_delta = max_delta
     params.partiality_threshold = partiality_threshold
     params.min_i_mean_over_sigma_mean = 0.5
+    params.cc_weights = "sigma"
+    params.weights = "standard_error"
     if reference:
         params.reference = os.fspath(reference)
+        params.reference_model.k_sol = reference_ksol
+        params.reference_model.b_sol = reference_bsol
     if d_min:
         params.d_min = d_min
 
@@ -961,7 +1007,7 @@ def parallel_cosym(
     if not Path.is_dir(working_directory):
         Path.mkdir(working_directory)
 
-    reindexed_results = []
+    reindexed_results = [ProcessingBatch() for _ in range(len(data_to_reindex))]
 
     with open(os.devnull, "w") as devnull:
         sys.stdout = devnull  # block printing from cosym
@@ -969,18 +1015,18 @@ def parallel_cosym(
         with record_step(
             "dials.cosym (parallel)"
         ), concurrent.futures.ProcessPoolExecutor(max_workers=nproc) as pool:
-
-            cosym_futures: List[Any] = [
+            cosym_futures: dict[Any, int] = {
                 pool.submit(
                     individual_cosym,
                     working_directory,
                     batch,
                     index,
                     reduction_params,
-                )
+                ): index
                 for index, batch in enumerate(data_to_reindex)
-            ]
+            }
             for future in concurrent.futures.as_completed(cosym_futures):
+                idx = cosym_futures[future]
                 try:
                     result = future.result()
                 except Exception as e:
@@ -988,11 +1034,9 @@ def parallel_cosym(
                         f"Unsuccessful scaling and symmetry analysis of the new data. Error:\n{e}"
                     )
                 else:
-                    processed_batch = ProcessingBatch()
-                    processed_batch.add_filepair(
+                    reindexed_results[idx].add_filepair(
                         FilePair(result.exptfile, result.reflfile)
                     )
-                    reindexed_results.append(processed_batch)
                     FileHandler.record_log_file(
                         result.logfile.name.rstrip(".log"), result.logfile
                     )
@@ -1080,7 +1124,6 @@ def split_filtered_data(
     good_crystals_data: CrystalsDict,
     min_batch_size: int,
 ) -> List[ProcessingBatch]:
-
     n_cryst = sum(len(v.identifiers) for v in good_crystals_data.values())
     n_batches = max(math.floor(n_cryst / min_batch_size), 1)
     batches = [ProcessingBatch() for _ in range(n_batches)]
@@ -1105,7 +1148,6 @@ def split_filtered_data(
         current_identifier_lists.append(good_identifiers)
 
         while n_leftover >= n_required:
-
             last_fp = current_fps.pop()
             ids = current_identifier_lists.pop()
             if n_required == n_leftover:

@@ -4,9 +4,8 @@ import logging
 import os
 import sys
 
-import matplotlib
-
 import libtbx.phil
+import matplotlib
 from cctbx import crystal
 from dials.util import tabulate
 from dials.util.filter_reflections import filtered_arrays_from_experiments_reflections
@@ -87,7 +86,6 @@ def run(args=sys.argv[1:]):
         crystal_symmetry = None
 
     if len(params.input.experiments):
-
         experiments = flatten_experiments(params.input.experiments)
         reflections = flatten_reflections(params.input.reflections)
 

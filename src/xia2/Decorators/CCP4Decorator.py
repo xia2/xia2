@@ -212,7 +212,6 @@ def CCP4DecoratorFactory(DriverInstance):
             for i in range(len(output)):
                 line = output[i]
                 if "$TABLE" in line:
-
                     n_dollar = line.count("$$")
 
                     current = line.split(":")[1].replace(">", "").strip()

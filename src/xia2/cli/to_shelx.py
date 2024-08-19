@@ -49,17 +49,13 @@ def generate_cif(prefix="xia2", unit_cell_data=None, wavelength=None, structure=
     block["_audit_creation_method"] = xia2.XIA2Version.Version
     block["_audit_creation_date"] = datetime.date.today().isoformat()
 
-    block[
-        "_publ_section_references"
-    ] = """
+    block["_publ_section_references"] = """
 Winter, G. (2010) Journal of Applied Crystallography 43
 """
 
     def format_value_with_esd(value, esd, decimal_places):
         return (
-            "%%.%df(%%d)"
-            % decimal_places
-            % (value, round(esd * (10**decimal_places)))
+            "%%.%df(%%d)" % decimal_places % (value, round(esd * (10**decimal_places)))
         )
 
     if unit_cell_data:

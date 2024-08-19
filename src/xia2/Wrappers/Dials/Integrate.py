@@ -4,13 +4,12 @@ import json
 import logging
 import math
 import os
+from typing import Optional
 
 from xia2.Driver.DriverFactory import DriverFactory
 from xia2.Handlers.Phil import PhilIndex
 
 logger = logging.getLogger("xia2.Wrappers.Dials.Integrate")
-
-from typing import Optional
 
 
 class DIALSIntegrateError(RuntimeError):

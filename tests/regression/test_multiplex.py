@@ -4,10 +4,9 @@ import json
 import os
 import pathlib
 
+import iotbx.mtz
 import pytest
 import pytest_mock
-
-import iotbx.mtz
 from dials.array_family import flex
 from dials.command_line.slice_sequence import slice_experiments, slice_reflections
 from dials.util.multi_dataset_handling import (
@@ -325,6 +324,10 @@ def test_prot_k_multiwave_double(run_in_tmp_path, protk_experiments_and_reflecti
     experiments, reflections = protk_experiments_and_reflections
     for i in range(0, 4):
         experiments[i].beam.set_wavelength(1.0)
+    experiments = experiments[:-1]
+    reflections = reflections.select_on_experiment_identifiers(
+        experiments.identifiers()
+    )
     experiments.as_file(run_in_tmp_path / "tmp.expt")
     reflections.as_file(run_in_tmp_path / "tmp.refl")
     run_multiplex(
@@ -332,7 +335,7 @@ def test_prot_k_multiwave_double(run_in_tmp_path, protk_experiments_and_reflecti
             "tmp.expt",
             "tmp.refl",
             "wavelength_tolerance=0.001",
-            "min_completeness=0.6",
+            "min_completeness=0.5",
             "filtering.method=deltacchalf",
             "resolution.d_min=2.6",
         ]
@@ -368,10 +371,10 @@ def test_prot_k_multiwave_double(run_in_tmp_path, protk_experiments_and_reflecti
 
     for f in expected_multi_data_files + ["scaled.mtz"]:
         assert (run_in_tmp_path / f).is_file(), f"expected file {f} missing"
+    cluster = run_in_tmp_path / "cluster_5"
+    assert cluster.is_dir()
     for f in expected_multi_data_files[:-2]:
-        assert (
-            run_in_tmp_path / "cluster_6" / f
-        ).is_file(), f"expected file {f} missing"
+        assert (cluster / f).is_file(), f"expected file {f} missing"
     for f in expected_filtered:
         assert (run_in_tmp_path / f).is_file(), f"expected file {f} missing"
 

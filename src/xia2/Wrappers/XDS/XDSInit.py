@@ -19,7 +19,6 @@ from xia2.Wrappers.XDS.XDS import (
 
 
 def XDSInit(DriverType=None, params=None):
-
     DriverInstance = DriverFactory.Driver(DriverType)
 
     class XDSInitWrapper(DriverInstance.__class__, FrameProcessor):

@@ -222,7 +222,6 @@ def XDSCorrect(DriverType=None, params=None):
                         )
                     )
                 ).readlines():
-
                     resol = tuple(map(float, record.split()[:2]))
 
                     xds_inp.write("EXCLUDE_RESOLUTION_RANGE= %.2f %.2f\n" % resol)
@@ -369,7 +368,7 @@ def XDSCorrect(DriverType=None, params=None):
                 if '"alien"' in line:
                     h, k, l = tuple(map(int, line.split()[:3]))
                     z = float(line.split()[4])
-                    if not (h, k, l, z) in self._remove:
+                    if (h, k, l, z) not in self._remove:
                         self._remove.append((h, k, l, z))
 
             return
