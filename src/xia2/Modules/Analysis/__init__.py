@@ -63,7 +63,6 @@ include_radiation_damage = True
 
 class separate_unmerged:
     def __init__(self, unmerged_intensities, batches_all, id_to_batches=None):
-
         intensities = OrderedDict()
         batches = OrderedDict()
 

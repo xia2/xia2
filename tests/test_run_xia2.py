@@ -3,9 +3,13 @@
 
 from __future__ import annotations
 
+import os
 import subprocess
 
 
 def test_start_xia2():
-    result = subprocess.run(["xia2"])
+    cmd = "xia2"
+    if os.name == "nt":
+        cmd += ".bat"
+    result = subprocess.run([cmd])
     assert result.returncode == 0

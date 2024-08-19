@@ -11,7 +11,6 @@ import platform
 import sys
 
 import h5py
-
 from dials.util import Sorry
 
 from xia2.cli import extra_help_lines
@@ -86,7 +85,6 @@ def check_hdf5_master_files(master_files):
             bad.append(filename)
 
     if bad:
-
         dirs = {os.path.split(b)[0] for b in bad}
         masters = itertools.chain.from_iterable(
             glob.glob(os.path.join(d, "*_master.h5")) for d in dirs
@@ -117,7 +115,6 @@ def get_command_line():
         argv = CommandLine.get_argv()
 
         if not CommandLine.get_directory():
-
             directories = []
 
             for arg in argv:

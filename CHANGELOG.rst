@@ -1,3 +1,42 @@
+xia2 3.20.0 (2024-06-19)
+========================
+
+Features
+--------
+
+- ``xia2.ssx_reduce``: Optimise and apply an error model correction in scaling. (`#792 <https://github.com/xia2/xia2/issues/792>`_)
+
+
+Bugfixes
+--------
+
+- ``xia2.multiplex``: Reset batches after filtering steps to prevent inconsistencies and duplications. (`#789 <https://github.com/xia2/xia2/issues/789>`_)
+- ``xia2.ssx_reduce``: Improve indexing ambiguity resolution with a reference by direct call to ``dials.reindex`` methods. (`#794 <https://github.com/xia2/xia2/issues/794>`_)
+
+
+Misc
+----
+
+- `#790 <https://github.com/xia2/xia2/issues/790>`_, `#795 <https://github.com/xia2/xia2/issues/795>`_
+
+
+xia2 3.19.0 (2024-04-17)
+========================
+
+Bugfixes
+--------
+
+- ``xia2.multiplex``: Avoid space group analysis if given reference file. (`#770 <https://github.com/xia2/xia2/issues/770>`_)
+- ``xia2.ssx``: Allow use of ``stills.indexer=sequences`` in ssx_index routine. (`#779 <https://github.com/xia2/xia2/issues/779>`_)
+- ``xia2.multiplex``: Allow use of ``relative_length_tolerance=`` and ``absolute_angle_tolerance=`` (used by cosym) in multiplex. (`#786 <https://github.com/xia2/xia2/issues/786>`_)
+
+
+Misc
+----
+
+- `#769 <https://github.com/xia2/xia2/issues/769>`_, `#772 <https://github.com/xia2/xia2/issues/772>`_, `#773 <https://github.com/xia2/xia2/issues/773>`_, `#776 <https://github.com/xia2/xia2/issues/776>`_, `#780 <https://github.com/xia2/xia2/issues/780>`_, `#785 <https://github.com/xia2/xia2/issues/785>`_
+
+
 xia2 3.17.0 (2023-11-03)
 ========================
 

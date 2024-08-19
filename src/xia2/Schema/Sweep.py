@@ -42,7 +42,6 @@ class Sweep:
     """A class to represent a single sweep of frames."""
 
     def __init__(self, template, directory, imageset=None, id_image=None, beam=None):
-
         """Initialise the sweep by inspecting the images. id_image
         defines the first image in this sweep, and hence the identity of
         the sweep of more than one are found which match."""
@@ -124,7 +123,6 @@ class Sweep:
         images = find_matching_images(self._template, self._directory)
 
         if len(images) > len(self._images):
-
             self._images = images
 
             from xia2.Schema import load_imagesets

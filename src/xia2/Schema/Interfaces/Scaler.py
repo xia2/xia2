@@ -361,7 +361,6 @@ class Scaler:
         while not self.get_scaler_finish_done():
             while not self.get_scaler_done():
                 while not self.get_scaler_prepare_done():
-
                     logger.notice(banner("Preparing %s" % xname))
 
                     self._scalr_prepare_done = True

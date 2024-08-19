@@ -107,7 +107,6 @@ def _parse_preferences(filename, preferences):
 
     with open(filename) as fh:
         for line in fh.readlines():
-
             # all lower case
             line = line.lower()
 
@@ -126,5 +125,4 @@ def _parse_preferences(filename, preferences):
 
 
 if __name__ == "__main__":
-
     print(_search_for_preferences())

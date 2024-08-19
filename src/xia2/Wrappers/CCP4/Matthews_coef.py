@@ -53,7 +53,6 @@ def Matthews_coef(DriverType=None):
             return
 
         def compute_solvent(self):
-
             self.start()
 
             self.input("cell %f %f %f %f %f %f" % tuple(self._cell))

@@ -143,7 +143,6 @@ class Indexer:
     LATTICE_CORRECT = "LATTICE_CORRECT"
 
     def __init__(self):
-
         self._indxr_working_directory = os.getcwd()
 
         # (optional) input parameters
@@ -368,7 +367,6 @@ class Indexer:
         return self._indxr_prepare_done
 
     def get_indexer_done(self):
-
         if not self.get_indexer_prepare_done():
             logger.debug("Resetting indexer done as prepare not done")
             self.set_indexer_done(False)
@@ -376,7 +374,6 @@ class Indexer:
         return self._indxr_done
 
     def get_indexer_finish_done(self):
-
         if not self.get_indexer_done():
             f = inspect.currentframe().f_back
             m = f.f_code.co_filename
@@ -420,7 +417,6 @@ class Indexer:
         self._indxr_helper.insert(lattice, cell)
 
     def index(self):
-
         if not self.get_indexer_finish_done():
             f = inspect.currentframe().f_back.f_back
             m = f.f_code.co_filename
@@ -433,7 +429,6 @@ class Indexer:
         while not self.get_indexer_finish_done():
             while not self.get_indexer_done():
                 while not self.get_indexer_prepare_done():
-
                     # --------------
                     # call prepare()
                     # --------------
@@ -473,12 +468,14 @@ class Indexer:
                         xsweeps = reduce(compress, xsweeps)
                         xsweeps = [
                             (
-                                "SWEEP%d" % x[0]
-                                if x[0] == x[1]
-                                else "SWEEPS %d to %d" % (x[0], x[1])
+                                (
+                                    "SWEEP%d" % x[0]
+                                    if x[0] == x[1]
+                                    else "SWEEPS %d to %d" % (x[0], x[1])
+                                )
+                                if isinstance(x, tuple)
+                                else x
                             )
-                            if isinstance(x, tuple)
-                            else x
                             for x in xsweeps
                         ]
                     if len(xsweeps) > 1:
@@ -684,7 +681,6 @@ class Indexer:
         # do anything
 
         if asserted_lattice == all_lattices[0][0]:
-
             if (
                 PhilIndex.params.xia2.settings.integrate_p1
                 and asserted_lattice != self.get_indexer_lattice()

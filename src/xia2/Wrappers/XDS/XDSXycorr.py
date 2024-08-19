@@ -18,7 +18,6 @@ from xia2.Wrappers.XDS.XDS import (
 
 
 def XDSXycorr(DriverType=None):
-
     DriverInstance = DriverFactory.Driver(DriverType)
 
     class XDSXycorrWrapper(DriverInstance.__class__, FrameProcessor):

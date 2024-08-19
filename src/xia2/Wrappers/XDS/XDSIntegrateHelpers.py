@@ -43,7 +43,6 @@ def parse_integrate_lp(filename):
     block_images = []
 
     for i, content in enumerate(file_contents):
-
         # check for the header contents - this is basically a duplicate
         # of the input data....
 
@@ -69,7 +68,6 @@ def parse_integrate_lp(filename):
                 rejected = int(line[46:52])
 
                 if status == 0:
-
                     # trap e.g. missing images - need to be able to
                     # record this somewhere...
 

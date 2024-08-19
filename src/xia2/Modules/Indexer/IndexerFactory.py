@@ -111,7 +111,6 @@ def IndexerForXSweep(xsweep, json_file=None):
         )
 
         if len(indexer._indxr_imagesets) == 1:
-
             for xsweep_other in xsweep.sample.get_sweeps()[1:]:
                 xsweep_other._get_indexer()
 
@@ -141,7 +140,7 @@ def Indexer(preselection=None):
     else:
         indexerlist.append((XDSIndexerII, "xdsii", "XDS II Indexer"))
 
-    for (idxfactory, idxname, idxdisplayname) in indexerlist:
+    for idxfactory, idxname, idxdisplayname in indexerlist:
         if not indexer and (not preselection or preselection == idxname):
             try:
                 indexer = idxfactory()

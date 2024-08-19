@@ -43,7 +43,6 @@ def Cad(DriverType=None):
             self._hklin_files.append(hklin)
 
         def set_freein(self, freein):
-
             # I guess I should check in here that this file actually
             # exists... - also that it has a sensible FreeR column...
 

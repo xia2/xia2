@@ -4,10 +4,9 @@ import logging
 import random
 import sys
 
-import numpy as np
-
 import iotbx.cif
 import iotbx.phil
+import numpy as np
 from dials.array_family import flex
 from dials.util.exclude_images import exclude_image_ranges_for_scaling
 from dials.util.multi_dataset_handling import (

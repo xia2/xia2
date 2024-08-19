@@ -120,7 +120,6 @@ def Scaleit(DriverType=None):
                 groups = len(self._columns) // 2
 
             for j in range(groups):
-
                 if self._anomalous:
                     labin += " FPH%d=%s" % (j + 1, self._columns[4 * j])
                     labin += " SIGFPH%d=%s" % (j + 1, self._columns[4 * j + 1])
@@ -190,9 +189,9 @@ def Scaleit(DriverType=None):
                             current_derivative = int(lst[1])
 
                         if "The equivalent isotropic" in line:
-                            self._statistics["b_factor"][current_derivative][
-                                "b"
-                            ] = float(lst[-1])
+                            self._statistics["b_factor"][current_derivative]["b"] = (
+                                float(lst[-1])
+                            )
 
                         j += 1
                         line = output[j]

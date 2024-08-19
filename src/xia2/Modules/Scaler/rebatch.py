@@ -69,7 +69,7 @@ def rebatch(
 
     if exclude_range:
         exclude_sel = flex.bool(batch_column_values.size(), False)
-        for (start, end) in exclude_range:
+        for start, end in exclude_range:
             exclude_sel.set_selected(
                 (batch_column_values >= start) & (batch_column_values <= end), True
             )
@@ -77,7 +77,7 @@ def rebatch(
 
     elif include_range:
         exclude_sel = flex.bool(batch_column_values.size(), True)
-        for (start, end) in include_range:
+        for start, end in include_range:
             exclude_sel.set_selected(
                 (batch_column_values >= start) & (batch_column_values <= end), False
             )

@@ -20,7 +20,6 @@ class XDSIndexerInteractive(XDSIndexer):
     # helper functions
 
     def _index_select_images_interactive(self):
-
         phi_width = self.get_phi_width()
 
         # use five degrees for the background calculation

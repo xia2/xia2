@@ -1,16 +1,17 @@
 from __future__ import annotations
 
+import copy
 import json
 import logging
 from collections import OrderedDict
 from itertools import combinations
 
 import pandas as pd
-
 from dials.algorithms.clustering.unit_cell import cluster_unit_cells
+from dials.algorithms.correlation.analysis import CorrelationMatrix
 from dials.algorithms.scaling.scale_and_filter import make_scaling_filtering_plots
 from dials.algorithms.symmetry.cosym import SymmetryAnalysis
-from dials.algorithms.symmetry.cosym.plots import plot_coords, plot_rij_histogram
+from dials.util import tabulate
 from dials.util.filter_reflections import filtered_arrays_from_experiments_reflections
 from dials.util.multi_dataset_handling import parse_multiple_datasets
 from libtbx import phil
@@ -107,41 +108,53 @@ class MultiCrystalAnalysis:
         return clustering
 
     def cluster_analysis(self):
-        from xia2.Modules.MultiCrystal import multi_crystal_analysis
-
-        labels = [
-            self._data_manager.identifiers_to_ids_map[i]
-            for i in self._data_manager.experiments.identifiers()
-        ]
-        mca = multi_crystal_analysis(
-            self._intensities_separate[0], labels=labels, prefix=None
+        reflections = []
+        identifiers = []
+        filtered_ids_to_identifiers_map = copy.deepcopy(
+            self._data_manager.ids_to_identifiers_map
         )
 
-        self._cc_cluster_json = mca.to_plotly_json(
-            mca.cc_matrix, mca.cc_linkage_matrix, labels=labels
-        )
-        self._cc_cluster_table = mca.as_table(mca.cc_clusters)
-
-        self._cos_angle_cluster_json = mca.to_plotly_json(
-            mca.cos_angle_matrix,
-            mca.cos_angle_linkage_matrix,
-            labels=labels,
-            matrix_type="cos_angle",
-        )
-        self._cos_angle_cluster_table = mca.as_table(mca.cos_angle_clusters)
-
-        self._cosym_graphs = OrderedDict()
-        self._cosym_graphs.update(
-            plot_rij_histogram(
-                mca.cosym.target.rij_matrix, key="cosym_rij_histogram_sg"
+        for i in self._data_manager.experiments:
+            selected = self._data_manager.reflections.select_on_experiment_identifiers(
+                [i.identifier]
             )
-        )
-        self._cosym_graphs.update(
-            plot_coords(mca.cosym.coords, key="cosym_coordinates_sg")
-        )
+            selected.reset_ids()
+            reflections.append(selected)
+            identifiers.append(i.identifier)
 
-        self._cluster_analysis = mca
-        return self._cluster_analysis
+        to_delete = []
+        for i in filtered_ids_to_identifiers_map:
+            if filtered_ids_to_identifiers_map[i] not in identifiers:
+                to_delete.append(i)
+
+        for i in to_delete:
+            filtered_ids_to_identifiers_map.pop(i)
+
+        matrices = CorrelationMatrix(
+            self._data_manager.experiments,
+            reflections,
+            self.params,
+            filtered_ids_to_identifiers_map,
+        )
+        matrices.calculate_matrices()
+        matrices.convert_to_html_json()
+        matrices.output_json()
+
+        logger.info("\nIntensity correlation clustering summary:")
+        logger.info(tabulate(matrices.cc_table, headers="firstrow", tablefmt="rst"))
+        logger.info("\nCos(angle) clustering summary:")
+        logger.info(tabulate(matrices.cos_table, headers="firstrow", tablefmt="rst"))
+
+        self.cc_clusters = matrices.correlation_clusters
+        self.cos_clusters = matrices.cos_angle_clusters
+        self._cc_cluster_json = matrices.cc_json
+        self._cos_angle_cluster_json = matrices.cos_json
+        self._cc_cluster_table = matrices.cc_table
+        self._cos_angle_cluster_table = matrices.cos_table
+        self._cosym_graphs = matrices.rij_graphs
+
+        # Need this here or else cos-angle dendrogram does not replicate original multiplex output
+        self._cluster_analysis = True
 
     def unit_cell_analysis(self):
         from dials.command_line.unit_cell_histogram import uc_params_from_experiments
@@ -206,13 +219,11 @@ relatively isomorphous.
 
     @staticmethod
     def interesting_cluster_identification(clusters, params):
-
         cluster_numbers = []
         heights = []
         labels = []
         number_of_datasets = []
         for cluster in clusters:
-
             # Because analysing each possible pair of clusters, to cut down computation time do initial filtering here
 
             if len(cluster.labels) >= params.min_cluster_size:
@@ -235,7 +246,6 @@ relatively isomorphous.
         clusters_for_analysis = []
 
         if len(cluster_data["Cluster Number"]) > 0:
-
             # Find all combinations of pairs
 
             cluster_pairs = list(combinations(cluster_data["Cluster Number"], 2))

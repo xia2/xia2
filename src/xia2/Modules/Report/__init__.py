@@ -76,7 +76,6 @@ class Report:
         report_dir=None,
         experiments=None,
     ):
-
         self.params = params
         self.n_bins = PhilIndex.params.xia2.settings.merging_statistics.n_bins
         # Remove this if statement block, and the corresponding PHIL parameter
@@ -238,22 +237,34 @@ class Report:
         return d
 
     def resolution_plots_and_stats(self):
-        self.merging_stats = merging_statistics.dataset_statistics(
-            self.intensities,
-            n_bins=self.n_bins,
-            cc_one_half_significance_level=self.params.cc_half_significance_level,
-            eliminate_sys_absent=self.params.eliminate_sys_absent,
-            use_internal_variance=self.params.use_internal_variance,
-            assert_is_not_unique_set_under_symmetry=False,
-        )
+        self.merging_stats = None
+        n_bins = self.n_bins
+        while self.merging_stats is None:
+            try:
+                self.merging_stats = merging_statistics.dataset_statistics(
+                    self.intensities,
+                    n_bins=n_bins,
+                    cc_one_half_significance_level=self.params.cc_half_significance_level,
+                    eliminate_sys_absent=self.params.eliminate_sys_absent,
+                    use_internal_variance=self.params.use_internal_variance,
+                    assert_is_not_unique_set_under_symmetry=False,
+                )
+            except merging_statistics.StatisticsError:
+                # Too few reflections for too many bins. Reduce number of bins and try again.
+                n_bins = n_bins - 3
+                if n_bins > 5:
+                    continue
+                else:
+                    raise
 
         intensities_anom = self.intensities.as_anomalous_array()
         intensities_anom = intensities_anom.map_to_asu().customized_copy(
             info=self.intensities.info()
         )
+
         self.merging_stats_anom = merging_statistics.dataset_statistics(
             intensities_anom,
-            n_bins=self.n_bins,
+            n_bins=n_bins,
             anomalous=True,
             cc_one_half_significance_level=self.params.cc_half_significance_level,
             eliminate_sys_absent=self.params.eliminate_sys_absent,
@@ -285,7 +296,6 @@ class Report:
         return d
 
     def pychef_plots(self, n_bins=8):
-
         intensities = self.intensities
         batches = self.batches
         dose = self.dose

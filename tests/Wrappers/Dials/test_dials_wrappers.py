@@ -6,7 +6,6 @@ import sys
 from unittest import mock
 
 import pytest
-
 from dials.array_family import flex
 from dxtbx.serialize import load
 

@@ -113,7 +113,6 @@ def _parse_idxref_lp(lp_file_lines):
 
 
 def _parse_idxref_lp_subtree(lp_file_lines):
-
     subtrees = {}
 
     i = 0
