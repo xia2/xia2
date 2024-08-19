@@ -1,3 +1,12 @@
+xia2 3.20.1 (2024-08-19)
+========================
+
+Bugfixes
+--------
+
+- ``xia2.ssx_reduce``: Make sure space group naming correct after cosym batch reindexing (`#798 <https://github.com/xia2/xia2/issues/798>`_)
+
+
 xia2 3.20.0 (2024-06-19)
 ========================
 
