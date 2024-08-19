@@ -8,12 +8,10 @@ import logging
 import math
 import os
 
-import numpy as np
-from orderedset import OrderedSet
-
 import dials.util.version
 import iotbx.cif
 import libtbx
+import numpy as np
 from cctbx.sgtbx import lattice_symmetry_group
 from dials.algorithms.scaling.plots import plot_absorption_plots
 from dials.array_family import flex
@@ -23,6 +21,7 @@ from dxtbx.serialize import load
 from iotbx import mtz
 from iotbx.scalepack import no_merge_original_index
 from iotbx.scalepack.merge import write as merge_scalepack_write
+from orderedset import OrderedSet
 
 from xia2.Handlers.CIF import CIF, mmCIF
 from xia2.Handlers.Citations import Citations
@@ -767,9 +766,9 @@ pipeline=dials (supported for pipeline=dials-aimless).
                     scaled_unmerged_mtz_path.rstrip(".mtz") + "_%s.mtz" % dname,
                 )
                 exporter.set_mtz_filename(mtz_filename)
-                self._scalr_scaled_reflection_files["mtz_unmerged"][
-                    dname
-                ] = mtz_filename
+                self._scalr_scaled_reflection_files["mtz_unmerged"][dname] = (
+                    mtz_filename
+                )
 
                 logger.debug("Exporting %s", mtz_filename)
                 exporter.run()
@@ -923,9 +922,9 @@ pipeline=dials (supported for pipeline=dials-aimless).
                     selected_band=(highest_suggested_resolution, None),
                     wave=key,
                 )
-                self._scalr_statistics[
-                    (self._scalr_pname, self._scalr_xname, key)
-                ] = stats
+                self._scalr_statistics[(self._scalr_pname, self._scalr_xname, key)] = (
+                    stats
+                )
 
         # add CIF data
         expts = load.experiment_list(self._scaled_experiments)
@@ -988,7 +987,6 @@ Scaling & analysis of unmerged intensities, absorption correction using spherica
             _add_to_block(blockname, mmcif_path)
 
     def _update_scaled_unit_cell_from_scaled_data(self):
-
         params = PhilIndex.params
         fast_mode = params.dials.fast_mode
         if (
@@ -996,7 +994,6 @@ Scaling & analysis of unmerged intensities, absorption correction using spherica
             and not fast_mode
             and params.xia2.settings.scale.two_theta_refine
         ):
-
             logger.notice(banner("Unit cell refinement"))
 
             # Collect a list of all sweeps, grouped by project, crystal, wavelength
@@ -1119,9 +1116,9 @@ Scaling & analysis of unmerged intensities, absorption correction using spherica
 
             # Write average unit cell to .cif
             cif_out = CIF.get_block("xia2")
-            cif_out[  # pylint: disable=E1137
-                "_computing_cell_refinement"
-            ] = "AIMLESS averaged unit cell"
+            cif_out["_computing_cell_refinement"] = (  # pylint: disable=E1137
+                "AIMLESS averaged unit cell"
+            )
             for cell, cifname in zip(
                 self._scalr_cell,
                 [
@@ -1228,7 +1225,7 @@ class DialsScalerHelper:
         assigner = DialsAssignIdentifiers()
         assigner.set_working_directory(self.get_working_directory())
         auto_logfiler(assigner)
-        for (exp, refl) in zip(experiments, reflections):
+        for exp, refl in zip(experiments, reflections):
             assigner.add_experiments(exp)
             assigner.add_reflections(refl)
         assigner.assign_identifiers()
@@ -1288,9 +1285,7 @@ class DialsScalerHelper:
         """A jiffy to centralise the interactions between dials.symmetry
         and the Indexer, multisweep edition."""
         # First check format of input against expected input
-        assert len(experiments) == len(
-            reflections
-        ), """
+        assert len(experiments) == len(reflections), """
 Unequal number of experiments/reflections passed to dials_symmetry_indexer_jiffy"""
         if len(experiments) > 1:
             assert multisweep, """
@@ -1367,7 +1362,7 @@ Passing multple datasets to indexer_jiffy but not set multisweep=True"""
             symmetry_analyser.get_log_file(),
         )
 
-        for (exp, refl) in zip(experiments, reflections):
+        for exp, refl in zip(experiments, reflections):
             symmetry_analyser.add_experiments(exp)
             symmetry_analyser.add_reflections(refl)
         symmetry_analyser.decide_pointgroup()

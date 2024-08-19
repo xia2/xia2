@@ -581,16 +581,12 @@ tick: {
 
         script.append("</script>")
 
-        html_graphs[
-            graph_name
-        ] = """
+        html_graphs[graph_name] = """
 <!--Div that will hold the chart-->
 %(div)s
 
 %(script)s
 
-  """ % (
-            {"script": "\n".join(script), "div": "\n".join(divs)}
-        )
+  """ % ({"script": "\n".join(script), "div": "\n".join(divs)})
 
     return html_graphs

@@ -28,7 +28,6 @@ def script_writer(
         with open(
             "%s.bat" % os.path.join(working_directory, script_name), "w"
         ) as script:
-
             # try to delete the .xstatus file - if it exists
             script.write(f"@if exist {script_name}.xstatus del {script_name}.xstatus\n")
 
@@ -74,7 +73,6 @@ def script_writer(
         with open(
             "%s.sh" % os.path.join(working_directory, script_name), "w"
         ) as script:
-
             script.write("#!/bin/bash\n\n")
 
             # FIXME might this add redundant elements to the path? is there
@@ -280,7 +278,7 @@ def executable_exists(executable):
         return executable_exists_cache[executable]
 
     if os.name == "nt":
-        if not executable.split(".")[-1] in ["exe", "bat"]:
+        if executable.split(".")[-1] not in ["exe", "bat"]:
             executable_files = ["%s.bat" % executable, "%s.exe" % executable]
         else:
             executable_files = [executable]

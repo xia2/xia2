@@ -44,7 +44,6 @@ class DataManager:
         self._set_batches()
 
     def _set_batches(self):
-
         if not self.all_stills:
             self.batch_offset_list = calculate_batch_offsets(self._experiments)
         else:
@@ -119,7 +118,6 @@ class DataManager:
         )
 
     def reflections_as_miller_arrays(self, combined=False):
-
         reflection_tables = []
         for id_ in set(self._reflections["id"]).difference({-1}):
             reflection_tables.append(
@@ -224,7 +222,7 @@ class DataManager:
         filename = f"{prefix}_WAVE{fmt % (index+1)}.mtz"
         if data["expt"]:
             mtz_obj = merge.merge_data_to_mtz(params, data["expt"], [data["refl"]])
-            mtz_obj.write(filename)
+            mtz_obj.write_to_file(filename)
             return filename
         return None
 
@@ -260,4 +258,4 @@ class DataManager:
         mtz_obj = merge.merge_data_to_mtz(
             params, self._experiments, [self._reflections]
         )
-        mtz_obj.write(filename)
+        mtz_obj.write_to_file(filename)

@@ -17,7 +17,7 @@ import shutil
 import sys
 
 from dials.util import Sorry
-from dials.util.mp import available_cores
+from dials.util.system import CPU_COUNT
 from dxtbx.serialize import load
 
 from xia2.Experts.FindImages import image2template_directory
@@ -219,7 +219,7 @@ class _CommandLine:
         # pipeline options
         self._read_pipeline()
 
-        for (parameter, value) in (
+        for parameter, value in (
             ("project", params.xia2.settings.project),
             ("crystal", params.xia2.settings.crystal),
         ):
@@ -239,11 +239,11 @@ class _CommandLine:
                 if not shutil.which("qsub"):
                     raise Sorry("qsub not available")
             if mp_params.njob is Auto:
-                mp_params.njob = available_cores()
+                mp_params.njob = CPU_COUNT
                 if mp_params.nproc is Auto:
                     mp_params.nproc = 1
             elif mp_params.nproc is Auto:
-                mp_params.nproc = available_cores()
+                mp_params.nproc = CPU_COUNT
         elif mp_params.mode == "serial":
             if mp_params.type == "qsub":
                 if not shutil.which("qsub"):
@@ -251,15 +251,12 @@ class _CommandLine:
             if mp_params.njob is Auto:
                 mp_params.njob = 1
             if mp_params.nproc is Auto:
-                mp_params.nproc = available_cores()
+                mp_params.nproc = CPU_COUNT
 
         PhilIndex.update("xia2.settings.multiprocessing.njob=%d" % mp_params.njob)
         PhilIndex.update("xia2.settings.multiprocessing.nproc=%d" % mp_params.nproc)
         params = PhilIndex.get_python_object()
         mp_params = params.xia2.settings.multiprocessing
-
-        if mp_params.nproc > 1 and os.name == "nt":
-            raise Sorry("nproc > 1 is not supported on Windows.")  # #191
 
         if params.xia2.settings.indexer is not None:
             add_preference("indexer", params.xia2.settings.indexer)
@@ -407,7 +404,6 @@ class _CommandLine:
         datasets = unroll_datasets(PhilIndex.params.xia2.settings.input.image)
 
         for dataset in datasets:
-
             start_end = None
 
             # here we only care about ':' which are later than C:\

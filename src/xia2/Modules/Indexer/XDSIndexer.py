@@ -246,7 +246,6 @@ class XDSIndexer(IndexerSingleSweep):
                 )
 
             else:
-
                 # add some half-way anyway
                 first = (len(images) // 2) - (block_size // 2) + images[0] - 1
                 if first > wedges[0][1]:
@@ -438,7 +437,6 @@ class XDSIndexer(IndexerSingleSweep):
             self._indxr_payload[file] = init.get_output_data_file(file)
 
         if PhilIndex.params.xia2.settings.developmental.use_dials_spotfinder:
-
             spotfinder = self.DialsSpotfinder()
 
             for block in self._indxr_images:
@@ -456,7 +454,6 @@ class XDSIndexer(IndexerSingleSweep):
                 self._indxr_payload[file] = export.get_output_data_file(file)
 
         else:
-
             # next start to process these - then colspot
 
             colspot = self.Colspot()
@@ -641,7 +638,6 @@ class XDSIndexer(IndexerSingleSweep):
         # ok, in here now ask if this solution was sensible!
 
         if not self.get_indexer_user_input_lattice():
-
             lattice = self._indxr_lattice
             cell = self._indxr_cell
 
@@ -662,7 +658,6 @@ class XDSIndexer(IndexerSingleSweep):
             if (
                 self._idxref_subtree_problem and (lattice2 != lattice)
             ) or doubled_lattice:
-
                 # hmm.... looks like we don't agree on the correct result...
                 # update the putative correct result as input
 

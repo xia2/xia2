@@ -274,7 +274,6 @@ def imageset_to_xds(
 
     if len(converter.panel_x_axis) > 1:
         for panel_id in range(len(converter.panel_x_axis)):
-
             result.append("")
             result.append("!")
             result.append("! SEGMENT %d" % (panel_id + 1))

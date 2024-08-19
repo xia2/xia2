@@ -45,7 +45,7 @@ class ISPyBXmlHandler:
         }
 
     def add_xcrystal(self, xcrystal):
-        if not xcrystal.get_name() in self._crystals:
+        if xcrystal.get_name() not in self._crystals:
             self._crystals[xcrystal.get_name()] = xcrystal
 
         # should ideally drill down and get the refined cell constants for
@@ -290,7 +290,6 @@ class ISPyBXmlHandler:
         fout.close()
 
     def json_object(self, command_line=""):
-
         result = {}
 
         for crystal in sorted(self._crystals):
@@ -352,7 +351,6 @@ class ISPyBXmlHandler:
                     statistics_cache = {"scalingStatisticsType": name}
 
                     for s in stats:
-
                         if s in self._name_map:
                             n = self._name_map[s]
                         else:

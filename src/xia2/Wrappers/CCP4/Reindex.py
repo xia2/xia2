@@ -126,7 +126,6 @@ def Reindex(DriverType=None):
             self.start()
 
             if self._spacegroup:
-
                 if isinstance(self._spacegroup, int):
                     spacegroup = spacegroup_number_to_name(self._spacegroup)
                 elif self._spacegroup[0] in "0123456789":

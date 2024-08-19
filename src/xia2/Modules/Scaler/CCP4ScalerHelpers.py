@@ -44,7 +44,6 @@ def ersatz_resolution(reflection_file, batch_ranges):
     uc = None
 
     for crystal in mtz_obj.crystals():
-
         if crystal.name() == "HKL_Base":
             continue
 
@@ -52,7 +51,6 @@ def ersatz_resolution(reflection_file, batch_ranges):
 
         for dataset in crystal.datasets():
             for column in dataset.columns():
-
                 if column.label() == "IPR":
                     ipr_column = column
                 elif column.label() == "SIGIPR":
@@ -362,7 +360,6 @@ class CCP4ScalerHelper:
 
 class SweepInformation:
     def __init__(self, integrater):
-
         self._project_info = integrater.get_integrater_project_info()
         self._sweep_name = integrater.get_integrater_sweep_name()
         self._integrater = integrater
@@ -465,7 +462,6 @@ class SweepInformation:
 
 class SweepInformationHandler:
     def __init__(self, epoch_to_integrater):
-
         self._sweep_information = {}
 
         for epoch in epoch_to_integrater:
