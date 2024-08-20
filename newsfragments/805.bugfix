@@ -1,2 +1,1 @@
-Fix parsing of INTEGRATE.LP for XDS BUILT=20240723 which changed some of the 
-column spacing
+Fix compatibility with XDS 20240723, which changed some output in INTEGRATE.LP.
