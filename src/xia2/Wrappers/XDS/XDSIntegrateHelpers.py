@@ -55,9 +55,11 @@ def parse_integrate_lp(filename):
 
         # look for explicitly per-image information
         if "IMAGEIERSCALE" in content.replace(" ", ""):
+            words = content.split()
+            indices = [0] + [content.index(word) + len(word) for word in words]
             j = i + 1
             while file_contents[j].strip():
-                tokens = file_contents[j].split()
+                tokens = [file_contents[j][indices[k]:indices[k+1]] for k in range(len(words))]
                 image = int(tokens[0])
                 status = int(tokens[1])
                 scale = float(tokens[2])
