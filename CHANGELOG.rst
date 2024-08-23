@@ -1,3 +1,12 @@
+xia2 3.21.1 (2024-08-23)
+========================
+
+Bugfixes
+--------
+
+- Fix compatibility with XDS 20240723, which changed some output in INTEGRATE.LP. (`#805 <https://github.com/xia2/xia2/issues/805>`_)
+
+
 xia2 3.21.0 (2024-08-20)
 ========================
 
