@@ -25,9 +25,6 @@ steps:
     # Temporarily make this pull an explicitly mainline cctbx
     sed -i.bak 's;"releases/" + _prebuilt_cctbx_base;"master";' bootstrap.py
     python bootstrap.py update --cmake
-    # Fix usage of libann in xfel
-    sed -i.bak 's/"ann"/"ann_cctbx"/' modules/cctbx_project/xfel/SConscript
-    sed -i.bak 's/"ann"/"ann_cctbx"/' modules/cctbx_project/xfel/mono_simulation/SConscript
   displayName: Repository checkout
   workingDirectory: $(Pipeline.Workspace)
 
@@ -39,7 +36,7 @@ steps:
 
     set +ux
     . conda_base/bin/activate
-    conda install -p conda_base -y dials-data pytest-azurepipelines pytest-cov pytest-timeout
+    mamba install -p conda_base -y dials-data pytest-azurepipelines pytest-cov pytest-timeout
     set -ux
 
     dials.data info -v
