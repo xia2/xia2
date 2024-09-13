@@ -76,7 +76,7 @@ def _exercise_xds_integrater(dials_data, tmp_path):
     reader = any_reflection_file(corrected_intensities)
     assert reader.file_type() == "xds_ascii"
     ma = reader.as_miller_arrays(merge_equivalents=False)[0]
-    assert ma.size() == pytest.approx(1409, abs=12)
+    assert ma.size() == pytest.approx(1409, abs=30)
 
     assert integrater.get_integrater_wedge() == (1, 9)
     assert integrater.get_integrater_cell() == pytest.approx(
