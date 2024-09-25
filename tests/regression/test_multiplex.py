@@ -352,7 +352,7 @@ def test_prot_k_multiwave_double(run_in_tmp_path, protk_experiments_and_reflecti
             "tmp.refl",
             "wavelength_tolerance=0.001",
             "clustering.output_clusters=True",
-            "clustering.min_completeness=0.5",
+            "clustering.min_completeness=0.55",  # 6",
             "filtering.method=deltacchalf",
             "resolution.d_min=2.6",
         ]
@@ -388,7 +388,7 @@ def test_prot_k_multiwave_double(run_in_tmp_path, protk_experiments_and_reflecti
 
     for f in expected_multi_data_files + ["scaled.mtz"]:
         assert (run_in_tmp_path / f).is_file(), f"expected file {f} missing"
-    cluster = run_in_tmp_path / "cos_cluster_5"
+    cluster = run_in_tmp_path / "cluster_5"
     assert cluster.is_dir()
     for f in expected_multi_data_files[:-2]:
         assert (
