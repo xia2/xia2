@@ -4,11 +4,11 @@ import os
 import subprocess
 
 import pytest
+from dials.algorithms.correlation.cluster import ClusterInfo
 from dials.util.options import ArgumentParser
 from libtbx import phil
 
 from xia2.cli.multiplex import run as run_multiplex
-from xia2.Modules.MultiCrystal import ClusterInfo
 from xia2.Modules.MultiCrystalAnalysis import MultiCrystalAnalysis
 
 phil_scope = phil.parse(
@@ -82,8 +82,11 @@ params_3.clustering.max_output_clusters = 2
 params_3.clustering.min_cluster_size = 2
 
 
-@pytest.mark.parametrize("clustering_analysis", [True, False])
-def test_serial_data(dials_data, tmp_path, clustering_analysis):
+@pytest.mark.parametrize(
+    "output_clusters,interesting_clusters",
+    [(False, False), (True, False), (True, True)],
+)
+def test_serial_data(dials_data, tmp_path, output_clusters, interesting_clusters):
     ssx = dials_data("cunir_serial_processed", pathlib=True)
     expt_int = os.fspath(ssx / "integrated.expt")
     refl_int = os.fspath(ssx / "integrated.refl")
@@ -97,13 +100,13 @@ def test_serial_data(dials_data, tmp_path, clustering_analysis):
     if os.name == "nt":
         cmd += ".bat"
     args_test_clustering = [
-        "xia2.cluster_analysis",
+        cmd,
         "clustering.min_cluster_size=2",
         expt_scaled,
         refl_scaled,
-        f"clustering.find_distinct_clusters={clustering_analysis}",
+        f"clustering.find_distinct_clusters={interesting_clusters}",
         "clustering.method=cos_angle+correlation",
-        f"clustering.output_clusters={clustering_analysis}",
+        f"clustering.output_clusters={output_clusters}",
     ]
     result_generate_scaled = subprocess.run(
         args_generate_scaled, cwd=tmp_path, capture_output=True
@@ -111,7 +114,7 @@ def test_serial_data(dials_data, tmp_path, clustering_analysis):
     assert not result_generate_scaled.returncode and not result_generate_scaled.stderr
     result = subprocess.run(args_test_clustering, cwd=tmp_path, capture_output=True)
     assert not result.returncode and not result.stderr
-    check_output(tmp_path, clustering_analysis)
+    check_output(tmp_path, output_clusters, interesting_clusters)
 
 
 def test_rotation_data(dials_data, run_in_tmp_path):
@@ -142,7 +145,7 @@ def test_rotation_data(dials_data, run_in_tmp_path):
     if os.name == "nt":
         cmd += ".bat"
     args_clustering = [
-        "xia2.cluster_analysis",
+        cmd,
         "clustering.find_distinct_clusters=True",
         "clustering.min_cluster_size=2",
         "clustering.method=cos_angle+correlation",
@@ -156,11 +159,14 @@ def test_rotation_data(dials_data, run_in_tmp_path):
     check_output(run_in_tmp_path)
 
 
-def check_output(main_dir, clustering_analysis=True):
-    assert (main_dir / "cc_cluster_2").exists() is clustering_analysis
-    assert (main_dir / "cos_cluster_2").exists() is clustering_analysis
-    assert (main_dir / "intensity_clusters.json").is_file()
-    assert (main_dir / "cos_angle_clusters.json").is_file()
+def check_output(main_dir, output_clusters=True, interesting_clusters=False):
+    if output_clusters and not interesting_clusters:
+        assert (main_dir / "cc_clusters" / "cluster_2").exists()
+        assert (main_dir / "cos_angle_clusters" / "cluster_2").exists()
+    if output_clusters and interesting_clusters:
+        assert (main_dir / "cc_clusters" / "cluster_3").exists()
+        assert (main_dir / "cos_angle_clusters" / "cluster_3").exists()
+    assert (main_dir / "xia2.cluster_analysis.json").is_file()
     assert (main_dir / "xia2.cluster_analysis.log").is_file()
     assert (main_dir / "xia2.cluster_analysis.html").is_file()
 

@@ -519,7 +519,6 @@ class MultiCrystalScale:
             n_processed_cc = 0
 
             for c, cluster in zip(ctype, clusters):
-
                 # This simplifies max_cluster_height into cc and cos angle versions
                 # But still gives the user the option of just selecting max_cluster_height
                 # Which makes more sense when they only want one type of clustering
@@ -602,51 +601,54 @@ class MultiCrystalScale:
                     os.chdir(cwd)
 
         if self._params.clustering.find_distinct_clusters:
-
             for k, clusters in enumerate([self.cos_clusters, self.cc_clusters]):
-                if k == 0:
+                if k == 0 and "cos_angle" in self._params.clustering.method:
                     cty = "cos"
-                elif k == 1:
+                elif k == 1 and "correlation" in self._params.clustering.method:
                     cty = "cc"
-                logger.info("----------------------")
-                logger.info(f"{cty} cluster analysis")
-                logger.info("----------------------")
+                else:
+                    cty = False
 
-                (
-                    file_data,
-                    list_of_clusters,
-                ) = MultiCrystalAnalysis.interesting_cluster_identification(
-                    clusters, self._params
-                )
+                if cty:
+                    logger.info("----------------------")
+                    logger.info(f"{cty} cluster analysis")
+                    logger.info("----------------------")
 
-                if len(list_of_clusters) > 0:
-                    for item in list_of_clusters:
-                        if k == 0:
-                            cluster_dir = "cos_" + item
-                        elif k == 1:
-                            cluster_dir = "cc_" + item
-                        if not os.path.exists(cluster_dir):
-                            os.mkdir(cluster_dir)
-                        os.chdir(cluster_dir)
-                        logger.info("Scaling: %s" % cluster_dir)
-                        free_flags_in_full_set = True
+                    (
+                        file_data,
+                        list_of_clusters,
+                    ) = MultiCrystalAnalysis.interesting_cluster_identification(
+                        clusters, self._params
+                    )
 
-                        for cluster in clusters:
-                            if "cluster_" + str(cluster.cluster_id) == item:
-                                if k == 0:
-                                    ids = self.cos_cluster_ids[cluster.cluster_id]
-                                elif k == 1:
-                                    ids = self.cc_cluster_ids[cluster.cluster_id]
+                    if len(list_of_clusters) > 0:
+                        for item in list_of_clusters:
+                            if k == 0:
+                                cluster_dir = "cos_" + item
+                            elif k == 1:
+                                cluster_dir = "cc_" + item
+                            if not os.path.exists(cluster_dir):
+                                os.mkdir(cluster_dir)
+                            os.chdir(cluster_dir)
+                            logger.info("Scaling: %s" % cluster_dir)
+                            free_flags_in_full_set = True
 
-                                scaled = self.scale_cluster(
-                                    data_manager, ids, free_flags_in_full_set
-                                )
-                                self._record_individual_report(
-                                    data_manager,
-                                    scaled.report(),
-                                    cluster_dir.replace("_", " "),
-                                )
-                        os.chdir("..")
+                            for cluster in clusters:
+                                if "cluster_" + str(cluster.cluster_id) == item:
+                                    if k == 0:
+                                        ids = self.cos_cluster_ids[cluster.cluster_id]
+                                    elif k == 1:
+                                        ids = self.cc_cluster_ids[cluster.cluster_id]
+
+                                    scaled = self.scale_cluster(
+                                        data_manager, ids, free_flags_in_full_set
+                                    )
+                                    self._record_individual_report(
+                                        data_manager,
+                                        scaled.report(),
+                                        cluster_dir.replace("_", " "),
+                                    )
+                            os.chdir("..")
 
         if self._params.filtering.method:
             # Final round of scaling, this time filtering out any bad datasets
@@ -1053,8 +1055,6 @@ class MultiCrystalScale:
         self._data_manager.reflections = flex.reflection_table.from_file(
             self._reflections_filename
         )
-        self._data_manager._set_batches()
-
         self._data_manager._set_batches()
 
         if not any(
