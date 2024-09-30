@@ -300,7 +300,7 @@ unit_cell_clustering {
     .help = 'Display the dendrogram with a log scale'
 }
 
-include scope dials.command_line.correlation_matrix.phil_scope
+include scope dials.algorithms.correlation.analysis.working_phil
 
 output {
   log = xia2.multi_crystal_analysis.log
