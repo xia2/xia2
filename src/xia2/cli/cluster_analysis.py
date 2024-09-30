@@ -37,10 +37,7 @@ unit_cell_clustering {
     .help = 'Display the dendrogram with a log scale'
 }
 
-
-include scope dials.command_line.correlation_matrix.phil_scope
-
-
+include scope dials.algorithms.correlation.analysis.working_phil
 
 run_cluster_identification = True
   .type = bool
@@ -71,6 +68,8 @@ exclude_cos_cluster_number = 0
 
 output {
   log = xia2.cluster_analysis.log
+    .type = str
+  json = xia2.cluster_analysis.json
     .type = str
 }
 %s
