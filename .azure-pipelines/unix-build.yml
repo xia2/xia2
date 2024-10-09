@@ -24,7 +24,7 @@ steps:
     set -eux
     # Temporarily make this pull an explicitly mainline cctbx
     sed -i.bak 's;"releases/" + _prebuilt_cctbx_base;"master";' bootstrap.py
-    python bootstrap.py update
+    python bootstrap.py update --libtbx
   displayName: Repository checkout
   workingDirectory: $(Pipeline.Workspace)
 
@@ -32,7 +32,7 @@ steps:
 # Extract the dials-data version so we can correctly cache regression data.
 - script: |
     set -eux
-    python bootstrap.py base --clean --python $(PYTHON_VERSION)
+    python bootstrap.py base --clean --python $(PYTHON_VERSION) --libtbx
 
     set +ux
     source conda_base/etc/profile.d/conda.sh
@@ -52,7 +52,7 @@ steps:
 # create a new one using the bootstrap script
 - bash: |
     set -eux
-    python bootstrap.py build
+    python bootstrap.py build --libtbx
   displayName: Build DIALS
   workingDirectory: $(Pipeline.Workspace)
 
