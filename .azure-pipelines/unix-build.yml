@@ -38,7 +38,7 @@ steps:
     source conda_base/etc/profile.d/conda.sh
     conda activate conda_base/
     set -euxo pipefail
-    mamba install -p conda_base -y dials-data pytest-azurepipelines pytest-cov pytest-timeout
+    conda install -y dials-data pytest-azurepipelines pytest-cov pytest-timeout
     set -ux
 
     dials.data info -v
