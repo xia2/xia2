@@ -35,10 +35,8 @@ steps:
     python bootstrap.py base --clean --python $(PYTHON_VERSION) --libtbx
 
     set +ux
-    source conda_base/etc/profile.d/conda.sh
-    conda activate conda_base/
-    set -euxo pipefail
-    conda install -y dials-data pytest-azurepipelines pytest-cov pytest-timeout
+    . conda_base/bin/activate
+    mamba install -p conda_base -y dials-data pytest-azurepipelines pytest-cov pytest-timeout
     set -ux
 
     dials.data info -v
