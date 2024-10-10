@@ -1,0 +1,60 @@
+on: push
+
+env:
+  # Python minimum version is used for testing xia2
+  PYTHON_MINIMUM_VERSION: '3.9'
+
+jobs:
+  build_test:
+    name: Build/Test
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu, macOS]
+    runs-on: ${{ matrix.os }}-latest
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v4
+      with:
+        path: modules/xia2
+    - uses: actions/setup-python@v5
+      with:
+        python-version: ${{ env.PYTHON_MINIMUM_VERSION }}
+    - name: Install Base Environment
+      shell: bash
+      run: |
+        wget https://raw.githubusercontent.com/dials/dials/main/installer/bootstrap.py
+        python bootstrap.py update base --python "${{ env.PYTHON_MINIMUM_VERSION }}"
+        micromamba/micromamba install -p ./conda_base -c conda-forge -y \
+          ninja dials-data pytest-azurepipelines pytest-cov pytest-timeout pytest-md
+        echo "$(pwd)/conda_base/bin" >> $GITHUB_PATH
+    - name: Build
+      env:
+        CMAKE_GENERATOR: Ninja
+      run: python bootstrap.py build
+    - name: Prepare for cache restoration
+      shell: bash
+      run: |
+        set -x
+        find . -name "dials.data*"
+        echo "DIALS_DATA_VERSION_FULL=$(dials.data info -v | grep version.full)" >> $GITHUB_ENV
+        echo "DIALS_DATA_VERSION=$(dials.data info -v | grep version.major_minor)" >> $GITHUB_ENV
+        echo "DIALS_DATA=${PWD}/data" >> $GITHUB_ENV
+        echo "CURRENT_WEEK=$(date +W%W)" >> $GITHUB_ENV
+        echo "TODAY_ISO=$(date +%Y%m%d)" >> $GITHUB_ENV
+    - name: Restore Cache
+      uses: actions/cache@v4
+      with:
+        key: ${{ env.CURRENT_WEEK }}-${{ env.DIALS_DATA_VERSION }}-${{ env.TODAY_ISO }}-${{ env.DIALS_DATA_VERSION_FULL }}
+        restore-keys: |
+          ${{ env.CURRENT_WEEK }}-${{ env.DIALS_DATA_VERSION }}-${{ env.TODAY_ISO }}-
+          ${{ env.CURRENT_WEEK }}-${{ env.DIALS_DATA_VERSION }}-
+        path: ${{ github.workspace }}/data
+    - name: Run pytest
+      uses: pavelzw/pytest-action@510c5e90c360a185039bea56ce8b3e7e51a16507   # v2.2.0
+      with:
+        verbose: true
+        emoji: false
+        job-summary: true
+        custom-arguments: modules/xia2 --regression --regression-full --timeout=5400
+        click-to-expand: true
