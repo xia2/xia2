@@ -28,10 +28,6 @@ logger = logging.getLogger("xia2.cluster_analysis")
 
 mca_phil = iotbx.phil.parse(
     """
-seed = 42
-  .type = int(value_min=0)
-  .help = "Seed value for random number generators used"
-
 unit_cell_clustering {
   threshold = 5000
     .type = float(value_min=0)
@@ -41,14 +37,7 @@ unit_cell_clustering {
     .help = 'Display the dendrogram with a log scale'
 }
 
-include scope dials.algorithms.symmetry.cosym.phil_scope
-
-min_reflections = 10
-  .type = int(value_min=1)
-  .help = "The minimum number of reflections per experiment."
-partiality_threshold = 0.4
-  .type = float(value_min=0, value_max=1)
-  .help = "Use reflections with a partiality greater than the threshold."
+include scope dials.algorithms.correlation.analysis.working_phil
 
 run_cluster_identification = True
   .type = bool
