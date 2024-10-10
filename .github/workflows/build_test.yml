@@ -25,7 +25,7 @@ jobs:
       run: |
         wget https://raw.githubusercontent.com/dials/dials/main/installer/bootstrap.py
         python bootstrap.py update base --python "${{ env.PYTHON_MINIMUM_VERSION }}"
-        micromamba/micromamba install -p ./conda_base -c conda-forge -y dials-data pytest-azurepipelines pytest-cov pytest-timeout
+        micromamba/micromamba install -p ./conda_base -c conda-forge -y ninja dials-data pytest-azurepipelines pytest-cov pytest-timeout
         echo "$(pwd)/conda_base/bin" >> $GITHUB_PATH
     - name: Build
       env:
