@@ -1,1 +1,0 @@
-Loosen tolerances on XDS tests, as the latest version of XDS reports lower numbers of reflections.
