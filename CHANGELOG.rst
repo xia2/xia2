@@ -1,3 +1,19 @@
+Xia2 3.22.0 (2024-10-15)
+========================
+
+Features
+--------
+
+- ``xia2.ssx_reduce``: Add option to apply a per-crystal I/sigma filter. (`#762 <https://github.com/xia2/xia2/issues/762>`_)
+- ``xia2.multiplex``: include dimension optimsation for cos-angle clustering from dials.correlation_matrix (`#814 <https://github.com/xia2/xia2/issues/814>`_)
+
+
+Misc
+----
+
+- `#806 <https://github.com/xia2/xia2/issues/806>`_, `#809 <https://github.com/xia2/xia2/issues/809>`_, `#811 <https://github.com/xia2/xia2/issues/811>`_, `#817 <https://github.com/xia2/xia2/issues/817>`_
+
+
 xia2 3.21.1 (2024-08-23)
 ========================
 
