@@ -50,6 +50,7 @@ class CrystalsData:
     crystals: List[Crystal]
     keep_all_original: bool = True
     lattice_ids: List[int] = field(default_factory=list)
+    mean_I_over_sigma_vals: List[float] = field(default_factory=list)
 
 
 CrystalsDict = Dict[str, CrystalsData]
@@ -57,16 +58,48 @@ CrystalsDict = Dict[str, CrystalsData]
 # filtering without needing to keep expt files open.
 
 
-def load_crystal_data_from_new_expts(new_data: List[FilePair]) -> CrystalsDict:
+def mean_I_over_sigma(refls, expts, partiality_cutoff=0.25):
+    tables = refls.split_by_experiment_id()
+    assert len(tables) == len(expts)
+    mean_I_over_sigma_values = []
+    for table in tables:
+        sel = table.get_flags(table.flags.integrated_sum) & (
+            table["partiality"] > partiality_cutoff
+        )
+        I = table["intensity.sum.value"].select(sel)
+        V = table["intensity.sum.variance"].select(sel)
+        if not V.all_gt(0):
+            sel2 = V > 0
+            I = I.select(sel2)
+            V = V.select(sel2)
+        if not I.size():
+            mean_I_over_sigma_values.append(0.0)
+        else:
+            mean_I_over_sigma_values.append(flex.mean(I / flex.sqrt(V)))
+    return mean_I_over_sigma_values
+
+
+def load_crystal_data_from_new_expts(
+    new_data: List[FilePair],
+    calculate_meanIsigma: bool = False,
+    partiality_thresold: float = 0.25,
+) -> CrystalsDict:
     data: CrystalsDict = {}
     n = 0
     for file_pair in new_data:
         new_expts = load.experiment_list(file_pair.expt, check_format=False)
         if new_expts:
-            # copy to avoid need to keep expt file open
+            if calculate_meanIsigma:
+                refls = flex.reflection_table.from_file(file_pair.refl)
+                mean_I_over_sigma_vals = mean_I_over_sigma(
+                    refls, new_expts, partiality_thresold
+                )
+            else:
+                mean_I_over_sigma_vals = [0.0] * len(new_expts)
             data[str(file_pair.expt)] = CrystalsData(
                 copy.deepcopy(new_expts.identifiers()),
                 copy.deepcopy(new_expts.crystals()),
+                mean_I_over_sigma_vals=mean_I_over_sigma_vals,
             )
             n += len(new_expts)
         else:
@@ -81,7 +114,11 @@ def filter_(
     integrated_data: list[FilePair],
     reduction_params: ReductionParams,
 ) -> Tuple[CrystalsDict, uctbx.unit_cell, sgtbx.space_group_info]:
-    crystals_data = load_crystal_data_from_new_expts(integrated_data)
+    crystals_data = load_crystal_data_from_new_expts(
+        integrated_data,
+        calculate_meanIsigma=bool(reduction_params.mean_i_over_sigma_threshold),
+        partiality_thresold=reduction_params.partiality_threshold,
+    )
     if not any(v.crystals for v in crystals_data.values()):
         raise ValueError(
             "No integrated images in integrated datafiles, processing finished."
@@ -177,6 +214,32 @@ def determine_best_unit_cell_from_crystals(
     return best_unit_cell
 
 
+def apply_isigma_filter(
+    good_crystals_data: CrystalsDict, mean_i_over_sigma_threshold: float
+) -> CrystalsDict:
+    new_good_crystals_data: CrystalsDict = {}
+    n_good = 0
+    n_tot = 0
+    for file_, data in good_crystals_data.items():
+        i_sig_vals = data.mean_I_over_sigma_vals
+        ids = [i for i, v in enumerate(i_sig_vals) if v > mean_i_over_sigma_threshold]
+        if len(ids) == len(i_sig_vals):
+            new_good_crystals_data[file_] = good_crystals_data[file_]
+        else:
+            new_good_crystals_data[file_] = CrystalsData(
+                identifiers=[data.identifiers[i] for i in ids],
+                crystals=[data.crystals[i] for i in ids],
+                mean_I_over_sigma_vals=[data.mean_I_over_sigma_vals[i] for i in ids],
+                keep_all_original=False,
+            )
+        n_good += len(ids)
+        n_tot += len(i_sig_vals)
+    xia2_logger.info(
+        f"I/sigma filtering:\n  Selected {n_good}/{n_tot} crystals with <I/sigma> >= {mean_i_over_sigma_threshold}"
+    )
+    return new_good_crystals_data
+
+
 def filter_new_data(
     working_directory: Path,
     crystals_data: dict,
@@ -212,6 +275,11 @@ def filter_new_data(
         good_crystals_data = crystals_data
         xia2_logger.info("No unit cell filtering applied")
 
+    # now filter on isigma
+    if reduction_params.mean_i_over_sigma_threshold:
+        good_crystals_data = apply_isigma_filter(
+            good_crystals_data, reduction_params.mean_i_over_sigma_threshold
+        )
     return good_crystals_data
 
 
@@ -263,14 +331,17 @@ def run_uc_cluster(
             if len(ids_this) < len(v.lattice_ids):
                 identifiers = []
                 crystals = []
+                mean_I_over_sigma_vals = []
                 for i, id_ in enumerate(v.lattice_ids):
                     if id_ in ids_this:
                         identifiers.append(v.identifiers[i])
                         crystals.append(v.crystals[i])
+                        mean_I_over_sigma_vals.append(v.mean_I_over_sigma_vals[i])
                 good_crystals_data[k] = CrystalsData(
                     identifiers=identifiers,
                     crystals=crystals,
                     keep_all_original=False,
+                    mean_I_over_sigma_vals=mean_I_over_sigma_vals,
                 )
             else:
                 good_crystals_data[k] = crystals_dict[k]
@@ -1005,11 +1076,15 @@ def select_crystals_close_to(
                     identifiers=identifiers,
                     crystals=data.crystals,
                     keep_all_original=True,
+                    mean_I_over_sigma_vals=data.mean_I_over_sigma_vals,
                 )
             else:
                 good_crystals_data[file_] = CrystalsData(
                     identifiers=[identifiers[i] for i in ids],
                     crystals=[data.crystals[i] for i in ids],
+                    mean_I_over_sigma_vals=[
+                        data.mean_I_over_sigma_vals[i] for i in ids
+                    ],
                     keep_all_original=False,
                 )
             n_good += n_this
