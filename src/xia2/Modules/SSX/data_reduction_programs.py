@@ -353,7 +353,7 @@ def merge(
     working_directory: Path,
     scaled_array: miller.array,
     experiments: ExperimentList,
-    d_min: float = None,
+    d_min: float | None = None,
     best_unit_cell: Optional[uctbx.unit_cell] = None,
     partiality_threshold: float = 0.25,
     name: str = "",
@@ -943,7 +943,7 @@ def scale_reindex_single(
 def cosym_reindex(
     working_directory: Path,
     batches_for_reindex: List[ProcessingBatch],
-    d_min: float = None,
+    d_min: float | None = None,
     max_delta: float = 0.5,
     partiality_threshold: float = 0.2,
     reference=None,

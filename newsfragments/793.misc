@@ -1,1 +1,0 @@
-``xia2.multiplex and xia2.cluster_analysis``: Migrated all code to dials - now calls dials.correlation_matrix for clustering
