@@ -1,3 +1,62 @@
+xia2 3.22.0 (2024-10-15)
+========================
+
+Features
+--------
+
+- ``xia2.ssx_reduce``: Add option to apply a per-crystal I/sigma filter. (`#762 <https://github.com/xia2/xia2/issues/762>`_)
+- ``xia2.multiplex``: Include dimension optimsation for cos-angle clustering from ``dials.correlation_matrix``. (`#814 <https://github.com/xia2/xia2/issues/814>`_)
+
+
+Misc
+----
+
+- `#806 <https://github.com/xia2/xia2/issues/806>`_, `#809 <https://github.com/xia2/xia2/issues/809>`_, `#811 <https://github.com/xia2/xia2/issues/811>`_, `#817 <https://github.com/xia2/xia2/issues/817>`_
+
+
+Xia2 3.22.0 (2024-10-15)
+========================
+
+Features
+--------
+
+- ``xia2.ssx_reduce``: Add option to apply a per-crystal I/sigma filter. (`#762 <https://github.com/xia2/xia2/issues/762>`_)
+- ``xia2.multiplex``: include dimension optimsation for cos-angle clustering from dials.correlation_matrix (`#814 <https://github.com/xia2/xia2/issues/814>`_)
+
+
+Misc
+----
+
+- `#806 <https://github.com/xia2/xia2/issues/806>`_, `#809 <https://github.com/xia2/xia2/issues/809>`_, `#811 <https://github.com/xia2/xia2/issues/811>`_, `#817 <https://github.com/xia2/xia2/issues/817>`_
+
+
+xia2 3.21.1 (2024-08-23)
+========================
+
+Bugfixes
+--------
+
+- Fix compatibility with XDS 20240723, which changed some output in INTEGRATE.LP. (`#805 <https://github.com/xia2/xia2/issues/805>`_)
+
+
+xia2 3.21.0 (2024-08-20)
+========================
+
+Bugfixes
+--------
+
+- Fix various tests to work on Windows. (`#777 <https://github.com/xia2/xia2/issues/777>`_)
+- ``xia2.ssx_reduce``: Make sure space group naming is correct after cosym batch reindexing. (`#798 <https://github.com/xia2/xia2/issues/798>`_)
+- Convert merged MTZ output to use GEMMI, following https://github.com/dials/dials/pull/2700 (`#799 <https://github.com/xia2/xia2/issues/799>`_)
+- Try to reduce number of resolution bins for report generation, for sparse data, to avoid crash. (`#801 <https://github.com/xia2/xia2/issues/801>`_)
+
+
+Misc
+----
+
+- `#775 <https://github.com/xia2/xia2/issues/775>`_, `#793 <https://github.com/xia2/xia2/issues/793>`_, `#802 <https://github.com/xia2/xia2/issues/802>`_
+
+
 xia2 3.20.0 (2024-06-19)
 ========================
 

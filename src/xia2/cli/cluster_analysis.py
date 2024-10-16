@@ -71,11 +71,7 @@ clustering
 """
 
 mca_phil = iotbx.phil.parse(
-    """\
-seed = 42
-  .type = int(value_min=0)
-  .help = "Seed value for random number generators used"
-
+    """
 unit_cell_clustering {
   threshold = 5000
     .type = float(value_min=0)
@@ -99,7 +95,34 @@ clustering {
     .short_caption = "option to output all data excluding a specific cos cluster"
 }
 
-include scope dials.algorithms.correlation.analysis.phil_scope
+include scope dials.algorithms.correlation.analysis.working_phil
+
+run_cluster_identification = True
+  .type = bool
+  .short_caption = "If True, in addition to running clustering analysis, identify"
+                   "clusters of interest for further analysis."
+
+max_cluster_height_difference = 0.5
+  .type = float
+  .short_caption = "Maximum hight difference between clusters"
+max_output_clusters = 10
+  .type = int
+  .short_caption = "Maximum number of important clusters to be output"
+min_cluster_size = 5
+  .type = int
+  .short_caption = "Minimum number of datasets for an important cluster"
+output_correlation_cluster_number = 0
+  .type = int
+  .short_caption = "Option to output a specific correlation cluster when re-running the code"
+output_cos_cluster_number = 0
+  .type = int
+  .short_caption = "Option to output a specific cos cluster when re-running the code"
+exclude_correlation_cluster_number = 0
+  .type = int
+  .short_caption = "Option to output all data excluding a specific correlation cluster"
+exclude_cos_cluster_number = 0
+  .type = int
+  .short_caption = "option to output all data excluding a specific cos cluster"
 
 output {
   log = xia2.cluster_analysis.log

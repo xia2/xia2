@@ -54,18 +54,22 @@ def parse_integrate_lp(filename):
             block_images = list(range(int(lst[3]), int(lst[5]) + 1))
 
         # look for explicitly per-image information
-        if "IMAGE IER  SCALE" in content:
+        if "IMAGEIERSCALE" in content.replace(" ", ""):
+            words = content.split()
+            indices = [0] + [content.index(word) + len(word) for word in words]
             j = i + 1
             while file_contents[j].strip():
-                line = file_contents[j]
-                assert len(line) == 71, len(line)
-                image = int(line[0:6])
-                status = int(line[6:10])
-                scale = float(line[10:17])
-                overloads = int(line[26:31])
-                all = int(line[31:38])
-                strong = int(line[38:46])
-                rejected = int(line[46:52])
+                tokens = [
+                    file_contents[j][indices[k] : indices[k + 1]]
+                    for k in range(len(words))
+                ]
+                image = int(tokens[0])
+                status = int(tokens[1])
+                scale = float(tokens[2])
+                overloads = int(tokens[4])
+                all = int(tokens[5])
+                strong = int(tokens[6])
+                rejected = int(tokens[7])
 
                 if status == 0:
                     # trap e.g. missing images - need to be able to
