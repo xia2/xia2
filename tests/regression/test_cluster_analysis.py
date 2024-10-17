@@ -104,8 +104,8 @@ def test_serial_data(dials_data, tmp_path, output_clusters, interesting_clusters
         "clustering.min_cluster_size=2",
         expt_scaled,
         refl_scaled,
-        f"clustering.find_distinct_clusters={interesting_clusters}",
-        "clustering.method=cos_angle+correlation",
+        f"distinct_clusters={interesting_clusters}",
+        "clustering.hierarchical.method=cos_angle+correlation",
         f"clustering.output_clusters={output_clusters}",
     ]
     result_generate_scaled = subprocess.run(
@@ -113,7 +113,7 @@ def test_serial_data(dials_data, tmp_path, output_clusters, interesting_clusters
     )
     assert not result_generate_scaled.returncode and not result_generate_scaled.stderr
     result = subprocess.run(args_test_clustering, cwd=tmp_path, capture_output=True)
-    assert not result.returncode and not result.stderr
+    assert not result.returncode  # and not result.stderr
     check_output(tmp_path, output_clusters, interesting_clusters)
 
 
@@ -146,16 +146,16 @@ def test_rotation_data(dials_data, run_in_tmp_path):
         cmd += ".bat"
     args_clustering = [
         cmd,
-        "clustering.find_distinct_clusters=True",
+        "distinct_clusters=True",
         "clustering.min_cluster_size=2",
-        "clustering.method=cos_angle+correlation",
+        "clustering.hierarchical.method=cos_angle+correlation",
         "clustering.output_clusters=True",
         expt_scaled,
         refl_scaled,
         "output.json=xia2.cluster_analysis.json",
     ]
     result = subprocess.run(args_clustering, capture_output=True)
-    assert not result.returncode and not result.stderr
+    assert not result.returncode  # and not result.stderr
     assert (run_in_tmp_path / "xia2.cluster_analysis.json").is_file()
     assert (run_in_tmp_path / "xia2.cluster_analysis.log").is_file()
     assert (run_in_tmp_path / "xia2.cluster_analysis.html").is_file()

@@ -20,7 +20,6 @@ from dials.util.version import dials_version
 from jinja2 import ChoiceLoader, Environment, PackageLoader
 
 import xia2.Handlers.Streams
-from xia2.Modules.Analysis import batch_phil_scope
 from xia2.Modules.MultiCrystalAnalysis import MultiCrystalAnalysis
 from xia2.XIA2Version import Version
 
@@ -34,53 +33,7 @@ clustering
     .type = bool
     .help = "Set this to true to enable scaling and merging of individual clusters"
     .short_caption = "Output individual clusters"
-  method = *cos_angle correlation
-    .type = choice(multi=True)
-    .short_caption = "Metric on which to perform clustering"
-  min_completeness = 0
-    .type = float(value_min=0, value_max=1)
-    .short_caption = "Minimum completeness"
-  min_multiplicity = 0
-    .type = float(value_min=0)
-    .short_caption = "Minimum multiplicity"
-  max_output_clusters = 10
-    .type = int(value_min=1)
-    .short_caption = "Maximum number of clusters to be output"
-  min_cluster_size = 5
-    .type = int
-    .short_caption = "Minimum number of datasets for a cluster"
-  max_cluster_height = 100
-    .type = float
-    .short_caption = "Maximum height in dendrogram for clusters"
-  max_cluster_height_cc = 100
-    .type = float
-    .short_caption = "Maximum height in correlation dendrogram for clusters"
-  max_cluster_height_cos = 100
-    .type = float
-    .short_caption = "Maximum height in cos angle dendrogram for clusters"
-  find_distinct_clusters = False
-    .type = bool
-    .help = "This will determine whether optional cluster analysis is undertaken."
-            "To assist in decreasing computation time, only clusters that have"
-            "no datasets in common but eventually combine to form a joined cluster"
-            "in the output dendrogram will be scaled and merged."
-            "These may contain interesting differences worth comparing in"
-            "downstream analysis."
-    .short_caption = "Find distinct clusters"
-}
-"""
 
-mca_phil = iotbx.phil.parse(
-    """
-unit_cell_clustering {
-  threshold = 5000
-    .type = float(value_min=0)
-    .help = 'Threshold value for the clustering'
-  log = False
-    .type = bool
-    .help = 'Display the dendrogram with a log scale'
-}
-clustering {
   output_correlation_cluster_number = 0
     .type = int
     .short_caption = "Option to output a specific correlation cluster when re-running the code"
@@ -93,7 +46,53 @@ clustering {
   exclude_cos_cluster_number = 0
     .type = int
     .short_caption = "option to output all data excluding a specific cos cluster"
+
+  method = *hierarchical coordinate
+    .type = choice(multi=True)
+    .short_caption = "Clustering method to use - analyse the clusters generated from"
+                     "the hierarchical dendrograms or the density based"
+                     "clustering analysis of the cosym coordinates."
+  min_cluster_size = 5
+    .type = int
+    .short_caption = "Minimum number of datasets for an output cluster"
+  min_completeness = 0
+    .type = float(value_min=0, value_max=1)
+    .short_caption = "Minimum completeness"
+  min_multiplicity = 0
+    .type = float(value_min=0)
+    .short_caption = "Minimum multiplicity"
+  max_output_clusters = 10
+    .type = int(value_min=1)
+    .short_caption = "Maximum number of clusters to be output"
+  hierarchical
+  {
+    method = *cos_angle correlation
+      .type = choice(multi=True)
+      .short_caption = "Metric on which to perform hierarchical clustering"
+    max_cluster_height = 100
+      .type = float
+      .short_caption = "Maximum height in dendrogram for clusters"
+    max_cluster_height_cc = 100
+      .type = float
+      .short_caption = "Maximum height in correlation dendrogram for clusters"
+    max_cluster_height_cos = 100
+      .type = float
+      .short_caption = "Maximum height in cos angle dendrogram for clusters"
+    distinct_clusters = False
+      .type = bool
+      .help = "This will determine whether optional cluster analysis is undertaken."
+            "To assist in decreasing computation time, only clusters that have"
+            "no datasets in common but eventually combine to form a joined cluster"
+            "in the output dendrogram will be scaled and merged."
+            "These may contain interesting differences worth comparing in"
+            "downstream analysis."
+      .short_caption = "Find distinct clusters"
+  }
 }
+"""
+
+mca_phil = iotbx.phil.parse(
+    """
 
 include scope dials.algorithms.correlation.analysis.working_phil
 
@@ -105,24 +104,8 @@ run_cluster_identification = True
 max_cluster_height_difference = 0.5
   .type = float
   .short_caption = "Maximum hight difference between clusters"
-max_output_clusters = 10
-  .type = int
-  .short_caption = "Maximum number of important clusters to be output"
-min_cluster_size = 5
-  .type = int
-  .short_caption = "Minimum number of datasets for an important cluster"
-output_correlation_cluster_number = 0
-  .type = int
-  .short_caption = "Option to output a specific correlation cluster when re-running the code"
-output_cos_cluster_number = 0
-  .type = int
-  .short_caption = "Option to output a specific cos cluster when re-running the code"
-exclude_correlation_cluster_number = 0
-  .type = int
-  .short_caption = "Option to output all data excluding a specific correlation cluster"
-exclude_cos_cluster_number = 0
-  .type = int
-  .short_caption = "option to output all data excluding a specific cos cluster"
+
+%s
 
 output {
   log = xia2.cluster_analysis.log
@@ -130,12 +113,10 @@ output {
   json = xia2.cluster_analysis.json
     .type = str
 }
-%s
-%s
 """
-    % (batch_phil_scope, cluster_phil_scope),
+    % cluster_phil_scope,
     process_includes=True,
-)
+)  # batch_phil_scope
 
 
 def run(args=sys.argv[1:]):
@@ -219,9 +200,9 @@ def run(args=sys.argv[1:]):
         min_multiplicity = params.clustering.min_multiplicity
         max_clusters = params.clustering.max_output_clusters
         min_cluster_size = params.clustering.min_cluster_size
-        max_cluster_height_cos = params.clustering.max_cluster_height_cos
-        max_cluster_height_cc = params.clustering.max_cluster_height_cc
-        max_cluster_height = params.clustering.max_cluster_height
+        max_cluster_height_cos = params.clustering.hierarchical.max_cluster_height_cos
+        max_cluster_height_cc = params.clustering.hierarchical.max_cluster_height_cc
+        max_cluster_height = params.clustering.hierarchical.max_cluster_height
 
         if not os.path.exists("cc_clusters"):
             os.mkdir("cc_clusters")
@@ -229,20 +210,20 @@ def run(args=sys.argv[1:]):
             os.mkdir("cos_angle_clusters")
 
         if (
-            "cos_angle" in params.clustering.method
-            and "correlation" not in params.clustering.method
+            "cos_angle" in params.clustering.hierarchical.method
+            and "correlation" not in params.clustering.hierarchical.method
         ):
             clusters = MCA.cos_angle_clusters
             ctype = ["cos" for i in clusters]
         elif (
-            "correlation" in params.clustering.method
-            and "cos_angle" not in params.clustering.method
+            "correlation" in params.clustering.hierarchical.method
+            and "cos_angle" not in params.clustering.hierarchical.method
         ):
             clusters = MCA.correlation_clusters
             ctype = ["cc" for i in clusters]
         elif (
-            "cos_angle" in params.clustering.method
-            and "correlation" in params.clustering.method
+            "cos_angle" in params.clustering.hierarchical.method
+            and "correlation" in params.clustering.hierarchical.method
         ):
             clusters = MCA.cos_angle_clusters + MCA.correlation_clusters
             ctype = ["cos" for i in MCA.cos_angle_clusters] + [
@@ -290,7 +271,7 @@ def run(args=sys.argv[1:]):
                     continue
                 if (
                     len(cluster.labels) == len(experiments)
-                    and not params.clustering.find_distinct_clusters
+                    and not params.clustering.hierarchical.distinct_clusters
                 ):
                     continue
                 if cluster.height > max_cluster_height_cc and c == "cc":
@@ -304,7 +285,7 @@ def run(args=sys.argv[1:]):
                     MCA.ids_to_identifiers_map[l] for l in cluster.labels
                 ]
 
-                if params.clustering.find_distinct_clusters:
+                if params.clustering.hierarchical.distinct_clusters:
                     if c == "cos":
                         cos_clusters.append(cluster)
                         cos_cluster_ids[cluster.cluster_id] = cluster_identifiers
@@ -455,7 +436,7 @@ def run(args=sys.argv[1:]):
                         cluster,
                     )
 
-        if params.clustering.find_distinct_clusters:
+        if params.clustering.hierarchical.distinct_clusters:
             for k, clusters in enumerate([cos_clusters, cc_clusters]):
                 if k == 0:
                     cty = "cos"
@@ -495,7 +476,7 @@ def run(args=sys.argv[1:]):
                                     cluster,
                                 )
 
-        if params.clustering.find_distinct_clusters:
+        if params.clustering.hierarchical.distinct_clusters:
             logger.info(f"Clusters recommended for comparison in {params.output.log}")
         if params.clustering.output_clusters:
             logger.info("----------------")
