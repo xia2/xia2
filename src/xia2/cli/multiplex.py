@@ -207,19 +207,19 @@ def run(args=sys.argv[1:]):
                 f"symmetry.space_group has been set to: {params.symmetry.space_group}"
             )
 
-    if params.clustering.output_clusters and not params.reference:
+    """if params.clustering.output_clusters and not params.reference:
         logger.info(
             "WARNING: clustering selected but no reference given. "
             "Inconsistent settings may occur."
         )
         logger.info(
             "For consistent settings, please provide a reference .pdb, .mtz or .cif."
-        )
+        )"""
     if (
-        len(params.clustering.method) == 2
-        and params.clustering.max_cluster_height != 100
-        and params.clustering.max_cluster_height_cc == 100
-        and params.clustering.max_cluster_height_cos == 100
+        len(params.clustering.hierarchical.method) == 2
+        and params.clustering.hierarchicalmax_cluster_height != 100
+        and params.clustering.hierarchicalmax_cluster_height_cc == 100
+        and params.clustering.hierarchicalmax_cluster_height_cos == 100
     ):
         # This means user has changed max_cluster_height from default
         # BUT wants both cos and cc clustering

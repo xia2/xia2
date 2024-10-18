@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import copy
 import logging
 import pathlib
 import random
@@ -20,20 +19,19 @@ from dials.util.version import dials_version
 from jinja2 import ChoiceLoader, Environment, PackageLoader
 
 import xia2.Handlers.Streams
-from xia2.Modules.MultiCrystalAnalysis import MultiCrystalAnalysis
+from xia2.Modules.MultiCrystal.cluster_analysis import (
+    cluster_phil_scope,
+    output_cluster,
+    output_hierarchical_clusters,
+)
 from xia2.XIA2Version import Version
 
 logger = logging.getLogger("xia2.cluster_analysis")
 
-cluster_phil_scope = """\
+xia2_cluster_phil_scope = """\
 clustering
   .short_caption = "Clustering"
 {
-  output_clusters = False
-    .type = bool
-    .help = "Set this to true to enable scaling and merging of individual clusters"
-    .short_caption = "Output individual clusters"
-
   output_correlation_cluster_number = None
     .type = int
     .short_caption = "Option to output a specific correlation cluster when re-running the code"
@@ -46,48 +44,6 @@ clustering
   exclude_cos_cluster_number = None
     .type = int
     .short_caption = "option to output all data excluding a specific cos cluster"
-
-  method = *hierarchical coordinate
-    .type = choice(multi=True)
-    .short_caption = "Clustering method to use - analyse the clusters generated from"
-                     "the hierarchical dendrograms or the density based"
-                     "clustering analysis of the cosym coordinates."
-  min_cluster_size = 5
-    .type = int
-    .short_caption = "Minimum number of datasets for an output cluster"
-  min_completeness = 0
-    .type = float(value_min=0, value_max=1)
-    .short_caption = "Minimum completeness"
-  min_multiplicity = 0
-    .type = float(value_min=0)
-    .short_caption = "Minimum multiplicity"
-  max_output_clusters = 10
-    .type = int(value_min=1)
-    .short_caption = "Maximum number of clusters to be output"
-  hierarchical
-  {
-    method = *cos_angle correlation
-      .type = choice(multi=True)
-      .short_caption = "Metric on which to perform hierarchical clustering"
-    max_cluster_height = 100
-      .type = float
-      .short_caption = "Maximum height in dendrogram for clusters"
-    max_cluster_height_cc = 100
-      .type = float
-      .short_caption = "Maximum height in correlation dendrogram for clusters"
-    max_cluster_height_cos = 100
-      .type = float
-      .short_caption = "Maximum height in cos angle dendrogram for clusters"
-    distinct_clusters = False
-      .type = bool
-      .help = "This will determine whether optional cluster analysis is undertaken."
-            "To assist in decreasing computation time, only clusters that have"
-            "no datasets in common but eventually combine to form a joined cluster"
-            "in the output dendrogram will be scaled and merged."
-            "These may contain interesting differences worth comparing in"
-            "downstream analysis."
-      .short_caption = "Find distinct clusters"
-  }
 }
 """
 
@@ -106,6 +62,7 @@ max_cluster_height_difference = 0.5
   .short_caption = "Maximum hight difference between clusters"
 
 %s
+%s
 
 output {
   log = xia2.cluster_analysis.log
@@ -114,7 +71,7 @@ output {
     .type = str
 }
 """
-    % cluster_phil_scope,
+    % (cluster_phil_scope, xia2_cluster_phil_scope),
     process_includes=True,
 )  # batch_phil_scope
 
@@ -299,86 +256,29 @@ def run(args=sys.argv[1:]):
         # End of include/exclude options that are only available to xia2.cluster_analysis
 
         # all under if params.clustering.output_clusters:?
-        from xia2.Modules.MultiCrystal.ScaleAndMerge import get_subclusters
-
-        # First get subclusters that meet the required thresholds
-        # - min size, completeness, multiplciity, dendrogram height etc.
-        # subclusters will be of length max_output_clusters if distinct_clusters=False
-        subclusters = get_subclusters(
-            params.clustering,
-            MCA.ids_to_identifiers_map,
-            MCA.cos_angle_clusters,
-            MCA.correlation_clusters,
-        )
-
-        # if not doing distinct cluster analysis, can now output clusters
-        if not params.clustering.hierarchical.distinct_clusters:
-            for c, cluster_identifiers, cluster in subclusters:
-                cluster_dir = cwd / f"{c}_clusters/cluster_{cluster.cluster_id}"
-                logger.info(f"Outputting {c} cluster {cluster.cluster_id}:")
-                logger.info(cluster)
-                output_cluster(
-                    cluster_dir,
-                    experiments,
-                    reflections,
-                    cluster_identifiers,
-                )
-
-        # if doing distinct cluster analysis, do the analysis and output clusters
-        if params.clustering.hierarchical.distinct_clusters:
-            cos_clusters = []
-            cc_clusters = []
-            cos_cluster_ids = {}
-            cc_cluster_ids = {}
-            for c, cluster_identifiers, cluster in subclusters:
-                if c == "cos":
-                    cos_clusters.append(cluster)
-                    cos_cluster_ids[cluster.cluster_id] = cluster_identifiers
-                elif c == "cc":
-                    cc_clusters.append(cluster)
-                    cc_cluster_ids[cluster.cluster_id] = cluster_identifiers
-
-            for k, clusters in enumerate([cos_clusters, cc_clusters]):
-                cty = "cc" if k == 1 else "cos"  # cluster type as a string
-                logger.info("----------------------")
-                logger.info(f"{cty} cluster analysis")
-                logger.info("----------------------")
-
-                (
-                    file_data,
-                    list_of_clusters,
-                ) = MultiCrystalAnalysis.interesting_cluster_identification(
-                    clusters, params
-                )
-                for item in list_of_clusters:
-                    cluster_dir = f"{cty}_clusters/{item}"
-                    logger.info(f"Outputting: {cluster_dir}")
-                    output_dir = cwd / cluster_dir
-
-                    for cluster in clusters:
-                        if f"cluster_{cluster.cluster_id}" == item:
-                            ids = (
-                                cc_cluster_ids[cluster.cluster_id]
-                                if k
-                                else cos_cluster_ids[cluster.cluster_id]
-                            )
-                            output_cluster(
-                                output_dir,
-                                experiments,
-                                reflections,
-                                ids,
-                            )
-
-        if params.clustering.hierarchical.distinct_clusters:
-            logger.info(f"Clusters recommended for comparison in {params.output.log}")
         if params.clustering.output_clusters:
-            logger.info("----------------")
-            logger.info("Output given as DIALS .expt/.refl files:")
-            logger.info("To merge rotation data: use dials.merge")
-            logger.info(
-                "To merge still data: use xia2.ssx_reduce with the option steps=merge"
-            )
-            logger.info("----------------")
+            if "hierarchical" in params.clustering.method:
+                output_hierarchical_clusters(params, MCA, experiments, reflections)
+            if "coordinate" in params.clustering.method:
+                from dxtbx.model import ExperimentList
+
+                clusters = MCA.significant_clusters
+                if not pathlib.Path.exists(cwd / "coordinate_clusters"):
+                    pathlib.Path.mkdir(cwd / "coordinate_clusters")
+                for c in clusters:
+                    cluster_dir = f"coordinate_clusters/cluster_{c.cluster_id}"
+                    logger.info(f"Outputting: {cluster_dir}")
+                    if not pathlib.Path.exists(cwd / cluster_dir):
+                        pathlib.Path.mkdir(cwd / cluster_dir)
+                    expts = ExperimentList()
+                    tables = []
+                    print(dir(c))
+                    for idx in c.labels:
+                        expts.append(MCA._experiments[idx])
+                        tables.append(MCA._reflections[idx])
+                    joint_refl = flex.reflection_table.concat(tables)
+                    expts.as_file(cwd / cluster_dir / "cluster.expt")
+                    joint_refl.as_file(cwd / cluster_dir / "cluster.refl")
 
         loader = ChoiceLoader(
             [PackageLoader("xia2", "templates"), PackageLoader("dials", "templates")]
@@ -401,21 +301,3 @@ def run(args=sys.argv[1:]):
             f.write(html.encode("utf-8", "xmlcharrefreplace"))
 
         MCA.output_json()
-
-
-def output_cluster(new_folder, experiments, reflections, ids):
-    expts = copy.deepcopy(experiments)
-    expts.select_on_experiment_identifiers(ids)
-
-    refl = []
-    for table in reflections:
-        if table.experiment_identifiers().values()[0] in ids:
-            refl.append(table)
-
-    joint_refl = flex.reflection_table.concat(refl)
-
-    if not pathlib.Path.exists(new_folder):
-        pathlib.Path.mkdir(new_folder)
-
-    expts.as_file(new_folder / "cluster.expt")
-    joint_refl.as_file(new_folder / "cluster.refl")
