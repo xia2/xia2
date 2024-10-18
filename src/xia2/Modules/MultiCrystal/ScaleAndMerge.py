@@ -475,20 +475,14 @@ class MultiCrystalScale:
         self.cluster_analysis()
 
         # now do the interesting cluster identification algorithm from xia2.cluster_analysis.
-        # but don't repeat the code.
+        # Same code structure as MultiCrystalAnalysis/cluster_analysis.py but changes the call
+        # from output_cluster to self._scale_and_report_cluster
 
         if (
             self._params.clustering.output_clusters
             and "hierarchical" in self._params.clustering.method
         ):
-            ## note this is all hierarchical stuff first - need an if statement
             self._data_manager_original = self._data_manager
-            cwd = pathlib.Path.cwd()
-            """if not pathlib.Path.exists(cwd / "cos_clusters"):
-                pathlib.Path.mkdir(cwd / "cos_clusters")
-            if not pathlib.Path.exists(cwd / "cc_clusters"):
-                pathlib.Path.mkdir(cwd / "cc_clusters")"""
-
             subclusters = get_subclusters(
                 self._params.clustering,
                 self._data_manager.ids_to_identifiers_map,
@@ -498,7 +492,6 @@ class MultiCrystalScale:
 
             if not self._params.clustering.hierarchical.distinct_clusters:
                 for c, cluster_identifiers, cluster in subclusters:
-                    cluster_dir = cwd / f"{c}_clusters/cluster_{cluster.cluster_id}"
                     logger.info(f"Scaling {c} cluster {cluster.cluster_id}:")
                     logger.info(cluster)
                     cluster_dir = f"{c}_cluster_{cluster.cluster_id}"
@@ -532,7 +525,8 @@ class MultiCrystalScale:
                     )
 
                     for item in list_of_clusters:
-                        cluster_dir = f"{cty}_clusters/{item}"
+                        cluster_no = item.split("_")[-1]
+                        cluster_dir = f"{cty}_cluster_{cluster_no}"
                         logger.info(f"Scaling : {cluster_dir}")
 
                         for cluster in clusters:
@@ -551,13 +545,9 @@ class MultiCrystalScale:
             and "coordinate" in self._params.clustering.method
         ):
             clusters = self._mca.significant_coordinate_clusters
-            # if not pathlib.Path.exists(cwd / "coordinate_clusters"):
-            #    pathlib.Path.mkdir(cwd / "coordinate_clusters")
             for c in clusters:
                 cluster_dir = f"coordinate_cluster_{c.cluster_id}"
                 logger.info(f"Scaling: {cluster_dir}")
-                # if not pathlib.Path.exists(cwd / cluster_dir):
-                #    pathlib.Path.mkdir(cwd / cluster_dir)
                 cluster_identifiers = [
                     self._data_manager.ids_to_identifiers_map[l] for l in c.labels
                 ]
