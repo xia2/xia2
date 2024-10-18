@@ -316,6 +316,88 @@ symmetry.cosym.best_monoclinic_beta = False
 )
 
 
+def clusters_and_types(cos_angle_clusters, cc_clusters, methods):
+    if "cos_angle" in methods and "correlation" not in methods:
+        clusters = cos_angle_clusters
+        ctype = ["cos"] * len(clusters)
+    elif "correlation" in methods and "cos_angle" not in methods:
+        clusters = cc_clusters
+        ctype = ["cc"] * len(clusters)
+    elif "cos_angle" in methods and "correlation" in methods:
+        clusters = cos_angle_clusters + cc_clusters
+        ctype = ["cos"] * len(cos_angle_clusters) + ["cc"] * len(cc_clusters)
+    else:
+        raise ValueError("Invalid cluster method: %s" % methods)
+
+    clusters.reverse()
+    ctype.reverse()
+    return clusters, ctype
+
+
+def get_subclusters(params, ids_to_identifiers_map, cos_angle_clusters, cc_clusters):
+    subclusters = []
+
+    min_completeness = params.min_completeness
+    min_multiplicity = params.min_multiplicity
+    max_clusters = params.max_output_clusters
+    min_cluster_size = params.min_cluster_size
+    max_cluster_height_cos = params.hierarchical.max_cluster_height_cos
+    max_cluster_height_cc = params.hierarchical.max_cluster_height_cc
+    max_cluster_height = params.hierarchical.max_cluster_height
+
+    clusters, ctype = clusters_and_types(
+        cos_angle_clusters, cc_clusters, params.hierarchical.method
+    )
+
+    n_processed_cos = 0
+    n_processed_cc = 0
+
+    for c, cluster in zip(ctype, clusters):
+        # This simplifies max_cluster_height into cc and cos angle versions
+        # But still gives the user the option of just selecting max_cluster_height
+        # Which makes more sense when they only want one type of clustering
+
+        if c == "cc" and max_cluster_height != 100 and max_cluster_height_cc == 100:
+            max_cluster_height_cc = max_cluster_height
+            # if user has weirdly set both max_cluster_height and max_cluster_height_cc
+            # will still default to max_cluster_height_cc as intended
+        if c == "cos" and max_cluster_height != 100 and max_cluster_height_cos == 100:
+            max_cluster_height_cos = max_cluster_height
+
+        if n_processed_cos == max_clusters and c == "cos":
+            continue
+        if n_processed_cc == max_clusters and c == "cc":
+            continue
+        if cluster.completeness < min_completeness:
+            continue
+        if cluster.multiplicity < min_multiplicity:
+            continue
+        if (
+            len(cluster.labels)
+            == len(ids_to_identifiers_map)  # was len(data_manager_original.experiments)
+            and not params.hierarchical.distinct_clusters
+        ):
+            continue
+        if cluster.height > max_cluster_height_cc and c == "cc":
+            continue
+        if cluster.height > max_cluster_height_cos and c == "cos":
+            continue
+        if len(cluster.labels) < min_cluster_size:
+            continue
+
+        cluster_identifiers = [ids_to_identifiers_map[l] for l in cluster.labels]
+        subclusters.append((c, cluster_identifiers, cluster))
+        if (
+            not params.hierarchical.distinct_clusters
+        ):  # increment so that we only get up to N clusters
+            if c == "cos":
+                n_processed_cos += 1
+            elif c == "cc":
+                n_processed_cc += 1
+
+    return subclusters
+
+
 class MultiCrystalScale:
     def __init__(self, experiments, reflections, params):
         self._data_manager = DataManager(experiments, reflections)
@@ -472,119 +554,40 @@ class MultiCrystalScale:
         self._mca = self.multi_crystal_analysis()
         self.cluster_analysis()
 
-        min_completeness = self._params.clustering.min_completeness
-        min_multiplicity = self._params.clustering.min_multiplicity
-        max_clusters = self._params.clustering.max_output_clusters
-        min_cluster_size = self._params.clustering.min_cluster_size
-        max_cluster_height_cos = self._params.clustering.max_cluster_height_cos
-        max_cluster_height_cc = self._params.clustering.max_cluster_height_cc
-        max_cluster_height = self._params.clustering.max_cluster_height
-
-        if (
-            "cos_angle" in params.clustering.method
-            and "correlation" not in params.clustering.method
-        ):
-            clusters = self._cos_angle_clusters
-            ctype = ["cos" for i in clusters]
-        elif (
-            "correlation" in params.clustering.method
-            and "cos_angle" not in params.clustering.method
-        ):
-            clusters = self._cc_clusters
-            ctype = ["cc" for i in clusters]
-        elif (
-            "cos_angle" in params.clustering.method
-            and "correlation" in params.clustering.method
-        ):
-            clusters = self._cos_angle_clusters + self._cc_clusters
-            ctype = ["cos" for i in self._cos_angle_clusters] + [
-                "cc" for i in self._cc_clusters
-            ]
-        else:
-            raise ValueError(
-                "Invalid cluster method: %s" % self._params.clustering.method
-            )
-
-        clusters.reverse()
-        ctype.reverse()
-        self.cos_clusters = []
-        self.cc_clusters = []
-        self.cos_cluster_ids = {}
-        self.cc_cluster_ids = {}
+        # now do the interesting cluster identification algorithm from xia2.cluster_analysis.
+        # but don't repeat the code.
 
         if self._params.clustering.output_clusters:
+            ## note this is all hierarchical stuff first - need an if statement
             self._data_manager_original = self._data_manager
             cwd = os.path.abspath(os.getcwd())
-            n_processed_cos = 0
-            n_processed_cc = 0
 
-            for c, cluster in zip(ctype, clusters):
-                # This simplifies max_cluster_height into cc and cos angle versions
-                # But still gives the user the option of just selecting max_cluster_height
-                # Which makes more sense when they only want one type of clustering
+            subclusters = get_subclusters(
+                self._params.clustering,
+                data_manager.ids_to_identifiers_map,
+                self._cos_angle_clusters,
+                self._cc_clusters,
+            )
 
-                if (
-                    c == "cc"
-                    and max_cluster_height != 100
-                    and max_cluster_height_cc == 100
-                ):
-                    max_cluster_height_cc = max_cluster_height
-                    # if user has weirdly set both max_cluster_height and max_cluster_height_cc
-                    # will still default to max_cluster_height_cc as intended
-                if (
-                    c == "cos"
-                    and max_cluster_height != 100
-                    and max_cluster_height_cos == 100
-                ):
-                    max_cluster_height_cos = max_cluster_height
-
-                if n_processed_cos == max_clusters and c == "cos":
-                    continue
-                if n_processed_cc == max_clusters and c == "cc":
-                    continue
-                if cluster.completeness < min_completeness:
-                    continue
-                if cluster.multiplicity < min_multiplicity:
-                    continue
-                if (
-                    len(cluster.labels) == len(self._data_manager_original.experiments)
-                    and not params.clustering.find_distinct_clusters
-                ):
-                    continue
-                if cluster.height > max_cluster_height_cc and c == "cc":
-                    continue
-                if cluster.height > max_cluster_height_cos and c == "cos":
-                    continue
-                if len(cluster.labels) < min_cluster_size:
-                    continue
-
-                data_manager = copy.deepcopy(self._data_manager_original)
-                cluster_identifiers = [
-                    data_manager.ids_to_identifiers_map[l] for l in cluster.labels
-                ]
-
-                if self._params.clustering.find_distinct_clusters:
+            if not self._params.clustering.hierarchical.distinct_clusters:
+                for c, cluster_identifiers, cluster in subclusters:
+                    """if self._params.clustering.find_distinct_clusters:
+                    # set things up for later, but don't scale now?
                     if c == "cos":
                         self.cos_clusters.append(cluster)
                         self.cos_cluster_ids[cluster.cluster_id] = cluster_identifiers
                     elif c == "cc":
                         self.cc_clusters.append(cluster)
-                        self.cc_cluster_ids[cluster.cluster_id] = cluster_identifiers
+                        self.cc_cluster_ids[cluster.cluster_id] = cluster_identifiers"""
 
-                else:
-                    if c == "cos":
-                        n_processed_cos += 1
-                    elif c == "cc":
-                        n_processed_cc += 1
-
-                    if c == "cos":
-                        logger.info("Scaling cos cluster %i:" % cluster.cluster_id)
-                        logger.info(cluster)
-                        cluster_dir = "cos_cluster_%i" % cluster.cluster_id
-                    elif c == "cc":
-                        logger.info("Scaling cc cluster %i:" % cluster.cluster_id)
-                        logger.info(cluster)
-                        cluster_dir = "cc_cluster_%i" % cluster.cluster_id
+                    # else:
+                    # if c == "cos":
+                    #    n_processed_cos += 1
+                    # elif c == "cc":
+                    #    n_processed_cc += 1
+                    logger.info(f"Scaling {c} cluster {cluster.cluster_id}:")
+                    logger.info(cluster)
+                    cluster_dir = f"{c}_cluster_{cluster.cluster_id}"
 
                     if not os.path.exists(cluster_dir):
                         os.mkdir(cluster_dir)
@@ -600,28 +603,44 @@ class MultiCrystalScale:
                     )
                     os.chdir(cwd)
 
-        if self._params.clustering.find_distinct_clusters:
-            for k, clusters in enumerate([self.cos_clusters, self.cc_clusters]):
-                if k == 0 and "cos_angle" in self._params.clustering.method:
-                    cty = "cos"
-                elif k == 1 and "correlation" in self._params.clustering.method:
-                    cty = "cc"
-                else:
-                    cty = False
+            if self._params.clustering.hierarchical.distinct_clusters:
+                self.cos_clusters = []
+                self.cc_clusters = []
+                self.cos_cluster_ids = {}
+                self.cc_cluster_ids = {}
+                for c, cluster_identifiers in subclusters:
+                    if c == "cos":
+                        self.cos_clusters.append(cluster)
+                        self.cos_cluster_ids[cluster.cluster_id] = cluster_identifiers
+                    elif c == "cc":
+                        self.cc_clusters.append(cluster)
+                        self.cc_cluster_ids[cluster.cluster_id] = cluster_identifiers
 
-                if cty:
-                    logger.info("----------------------")
-                    logger.info(f"{cty} cluster analysis")
-                    logger.info("----------------------")
+                for k, clusters in enumerate([self.cos_clusters, self.cc_clusters]):
+                    if (
+                        k == 0
+                        and "cos_angle" in self._params.clustering.hierarchical.method
+                    ):
+                        cty = "cos"
+                    elif (
+                        k == 1
+                        and "correlation" in self._params.clustering.hierarchical.method
+                    ):
+                        cty = "cc"
+                    else:
+                        cty = False
 
-                    (
-                        file_data,
-                        list_of_clusters,
-                    ) = MultiCrystalAnalysis.interesting_cluster_identification(
-                        clusters, self._params
-                    )
+                    if cty:
+                        logger.info("----------------------")
+                        logger.info(f"{cty} cluster analysis")
+                        logger.info("----------------------")
 
-                    if len(list_of_clusters) > 0:
+                        _, list_of_clusters = (
+                            MultiCrystalAnalysis.interesting_cluster_identification(
+                                clusters, self._params
+                            )
+                        )
+
                         for item in list_of_clusters:
                             if k == 0:
                                 cluster_dir = "cos_" + item

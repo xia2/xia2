@@ -165,10 +165,10 @@ def test_rotation_data(dials_data, run_in_tmp_path):
 def check_output(main_dir, output_clusters=True, interesting_clusters=False):
     if output_clusters and not interesting_clusters:
         assert (main_dir / "cc_clusters" / "cluster_2").exists()
-        assert (main_dir / "cos_angle_clusters" / "cluster_2").exists()
+        assert (main_dir / "cos_clusters" / "cluster_2").exists()
     if output_clusters and interesting_clusters:
         assert (main_dir / "cc_clusters" / "cluster_2").exists()
-        assert (main_dir / "cos_angle_clusters" / "cluster_2").exists()
+        assert (main_dir / "cos_clusters" / "cluster_2").exists()
     assert (main_dir / "xia2.cluster_analysis.json").is_file()
     assert (main_dir / "xia2.cluster_analysis.log").is_file()
     assert (main_dir / "xia2.cluster_analysis.html").is_file()
