@@ -8,7 +8,6 @@ from dials.algorithms.correlation.cluster import ClusterInfo
 from dials.util.options import ArgumentParser
 from libtbx import phil
 
-from xia2.cli.multiplex import run as run_multiplex
 from xia2.Modules.MultiCrystalAnalysis import MultiCrystalAnalysis
 
 phil_scope = phil.parse(
@@ -104,8 +103,8 @@ def test_serial_data(dials_data, tmp_path, output_clusters, interesting_clusters
         "clustering.min_cluster_size=2",
         expt_scaled,
         refl_scaled,
-        f"clustering.find_distinct_clusters={interesting_clusters}",
-        "clustering.method=cos_angle+correlation",
+        f"distinct_clusters={interesting_clusters}",
+        "clustering.hierarchical.method=cos_angle+correlation",
         f"clustering.output_clusters={output_clusters}",
     ]
     result_generate_scaled = subprocess.run(
@@ -119,53 +118,67 @@ def test_serial_data(dials_data, tmp_path, output_clusters, interesting_clusters
 
 def test_rotation_data(dials_data, run_in_tmp_path):
     rot = dials_data("vmxi_proteinase_k_sweeps", pathlib=True)
-    expt_1 = os.fspath(rot / "experiments_0.expt")
-    expt_2 = os.fspath(rot / "experiments_1.expt")
-    expt_3 = os.fspath(rot / "experiments_2.expt")
-    expt_4 = os.fspath(rot / "experiments_3.expt")
-    refl_1 = os.fspath(rot / "reflections_0.refl")
-    refl_2 = os.fspath(rot / "reflections_1.refl")
-    refl_3 = os.fspath(rot / "reflections_2.refl")
-    refl_4 = os.fspath(rot / "reflections_3.refl")
-    expt_scaled = os.fspath(run_in_tmp_path / "scaled.expt")
-    refl_scaled = os.fspath(run_in_tmp_path / "scaled.refl")
-    run_multiplex(
-        [
-            expt_1,
-            refl_1,
-            expt_2,
-            refl_2,
-            expt_3,
-            refl_3,
-            expt_4,
-            refl_4,
-        ]
+
+    # First scale the data to get suitable input
+    cmd = "dials.scale"
+    if os.name == "nt":
+        cmd += ".bat"
+    result = subprocess.run(
+        [cmd]
+        + [rot / f"experiments_{i}.expt" for i in range(0, 4)]
+        + [rot / f"reflections_{i}.refl" for i in range(0, 4)],
+        capture_output=True,
     )
+    assert not result.returncode
+
     cmd = "xia2.cluster_analysis"
     if os.name == "nt":
         cmd += ".bat"
     args_clustering = [
         cmd,
-        "clustering.find_distinct_clusters=True",
+        "distinct_clusters=True",
         "clustering.min_cluster_size=2",
-        "clustering.method=cos_angle+correlation",
+        "clustering.hierarchical.method=cos_angle+correlation",
         "clustering.output_clusters=True",
-        expt_scaled,
-        refl_scaled,
+        "scaled.expt",
+        "scaled.refl",
         "output.json=xia2.cluster_analysis.json",
     ]
     result = subprocess.run(args_clustering, capture_output=True)
     assert not result.returncode and not result.stderr
-    check_output(run_in_tmp_path)
+    assert (run_in_tmp_path / "xia2.cluster_analysis.json").is_file()
+    assert (run_in_tmp_path / "xia2.cluster_analysis.log").is_file()
+    assert (run_in_tmp_path / "xia2.cluster_analysis.html").is_file()
+    assert (run_in_tmp_path / "cc_clusters" / "cluster_2").exists()
+    assert not (run_in_tmp_path / "coordinate_clusters").exists()
+    # now run coordinate clustering
+    args_clustering = [
+        cmd,
+        "clustering.method=coordinate",
+        "clustering.min_cluster_size=2",
+        "clustering.output_clusters=True",
+        "scaled.expt",
+        "scaled.refl",
+        "output.json=xia2.cluster_analysis.json",
+    ]
+    result = subprocess.run(args_clustering, capture_output=True)
+    assert not result.returncode and not result.stderr
+    assert (run_in_tmp_path / "coordinate_clusters" / "cluster_0").exists()
+    assert (
+        run_in_tmp_path / "coordinate_clusters" / "cluster_0" / "cluster.refl"
+    ).exists()
+    assert (
+        run_in_tmp_path / "coordinate_clusters" / "cluster_0" / "cluster.expt"
+    ).exists()
 
 
 def check_output(main_dir, output_clusters=True, interesting_clusters=False):
     if output_clusters and not interesting_clusters:
         assert (main_dir / "cc_clusters" / "cluster_2").exists()
-        assert (main_dir / "cos_angle_clusters" / "cluster_2").exists()
+        assert (main_dir / "cos_clusters" / "cluster_2").exists()
     if output_clusters and interesting_clusters:
-        assert (main_dir / "cc_clusters" / "cluster_3").exists()
-        assert (main_dir / "cos_angle_clusters" / "cluster_3").exists()
+        assert (main_dir / "cc_clusters" / "cluster_2").exists()
+        assert (main_dir / "cos_clusters" / "cluster_2").exists()
     assert (main_dir / "xia2.cluster_analysis.json").is_file()
     assert (main_dir / "xia2.cluster_analysis.log").is_file()
     assert (main_dir / "xia2.cluster_analysis.html").is_file()

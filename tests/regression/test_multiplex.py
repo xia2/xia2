@@ -205,10 +205,9 @@ def test_proteinase_k_dose(
     if threshold is not None:
         # one experiment should have been rejected after unit cell clustering
         assert len(multiplex_expts) == 7
-        expected_clusters = ("cos_cluster_4", "cos_cluster_5")
     else:
         assert len(multiplex_expts) == 8
-        expected_clusters = ("cos_cluster_5", "cos_cluster_6")
+    expected_clusters = ("cos_cluster_5", "cos_cluster_6")
 
     # Check that expected clusters have been scaled
     for cluster in expected_clusters:
@@ -227,22 +226,35 @@ def test_proteinase_k_dose(
             )
 
 
-@pytest.mark.parametrize(
-    "parameters",
-    (
-        [
-            "clustering.output_clusters=True",
-            "clustering.min_completeness=0.4",
-            "clustering.method=cos_angle",
-        ],
-        [
-            "clustering.output_clusters=True",
-            "clustering.min_completeness=0.5",
-            "clustering.method=correlation",
-        ],
-    ),
-)
-def test_proteinase_k_min_completeness(parameters, proteinase_k, run_in_tmp_path):
+def test_proteinase_k_coordinate_clusters(proteinase_k, run_in_tmp_path):
+    expts, refls = proteinase_k
+    parameters = [
+        "clustering.output_clusters=True",
+        "clustering.method=coordinate",
+        "symmetry.space_group=P422",
+    ]
+    command_line_args = parameters + expts + refls
+    run_multiplex(command_line_args)
+
+    for f in expected_data_files:
+        assert pathlib.Path(f).is_file(), "expected file %s missing" % f
+
+    multiplex_expts = load.experiment_list("scaled.expt", check_format=False)
+    assert len(multiplex_expts) == 8
+    clusters = list(pathlib.Path().glob("coordinate_cluster_[0-9]*"))
+    assert len(clusters)
+    for cluster in clusters:
+        assert (cluster / "scaled.mtz").is_file()
+        assert (cluster / "scaled_unmerged.mtz").is_file()
+
+
+def test_proteinase_k_hierarchical_clusters(proteinase_k, run_in_tmp_path):
+    parameters = [
+        "clustering.output_clusters=True",
+        "clustering.min_completeness=0.5",
+        "clustering.hierarchical.method=correlation+cos_angle",
+        "symmetry.space_group=P422",
+    ]
     expts, refls = proteinase_k
     command_line_args = parameters + expts[:-1] + refls[:-1]
     run_multiplex(command_line_args)
@@ -252,11 +264,33 @@ def test_proteinase_k_min_completeness(parameters, proteinase_k, run_in_tmp_path
 
     multiplex_expts = load.experiment_list("scaled.expt", check_format=False)
     assert len(multiplex_expts) == 7
-    if "correlation" in parameters[2]:
-        ctype = "cc"
-    else:
-        ctype = "cos"
-    clusters = list(pathlib.Path().glob(ctype + "_cluster_[0-9]*"))
+    for ctype in ["cc", "cos"]:
+        clusters = list(pathlib.Path().glob(ctype + "_cluster_[0-9]*"))
+        assert len(clusters)
+        for cluster in clusters:
+            assert (cluster / "scaled.mtz").is_file()
+            assert (cluster / "scaled_unmerged.mtz").is_file()
+
+
+def test_proteinase_k_hierarchical_clusters_distinct(proteinase_k, run_in_tmp_path):
+    parameters = [
+        "clustering.output_clusters=True",
+        "clustering.min_completeness=0.2",
+        "clustering.min_cluster_size=1",
+        "clustering.hierarchical.method=correlation",
+        "symmetry.space_group=P422",
+        "distinct_clusters=True",
+    ]
+    expts, refls = proteinase_k
+    command_line_args = parameters + expts[:-1] + refls[:-1]
+    run_multiplex(command_line_args)
+
+    for f in expected_data_files:
+        assert pathlib.Path(f).is_file(), "expected file %s missing" % f
+
+    multiplex_expts = load.experiment_list("scaled.expt", check_format=False)
+    assert len(multiplex_expts) == 7
+    clusters = list(pathlib.Path().glob("cc_cluster_[0-9]*"))
     assert len(clusters)
     for cluster in clusters:
         assert (cluster / "scaled.mtz").is_file()

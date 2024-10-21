@@ -149,6 +149,7 @@ class MultiCrystalAnalysis:
         self._cc_cluster_table = matrices.cc_table
         self._cos_angle_cluster_table = matrices.cos_table
         self._cosym_graphs = matrices.rij_graphs
+        self.significant_coordinate_clusters = matrices.significant_clusters
 
         # Need this here or else cos-angle dendrogram does not replicate original multiplex output
         self._cluster_analysis = True
