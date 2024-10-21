@@ -105,7 +105,6 @@ def get_subclusters(params, ids_to_identifiers_map, cos_angle_clusters, cc_clust
         # This simplifies max_cluster_height into cc and cos angle versions
         # But still gives the user the option of just selecting max_cluster_height
         # Which makes more sense when they only want one type of clustering
-
         if c == "cc" and max_cluster_height != 100 and max_cluster_height_cc == 100:
             max_cluster_height_cc = max_cluster_height
             # if user has weirdly set both max_cluster_height and max_cluster_height_cc

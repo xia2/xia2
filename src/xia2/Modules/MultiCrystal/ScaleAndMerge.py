@@ -277,7 +277,7 @@ mca_phil = iotbx.phil.parse(
     """
 include scope xia2.cli.report.phil_scope
 
-seed = 42
+seed = 230
   .type = int(value_min=0)
 
 unit_cell_clustering {
@@ -474,7 +474,7 @@ class MultiCrystalScale:
         self._mca = self.multi_crystal_analysis()
         self.cluster_analysis()
 
-        # now do the interesting cluster identification algorithm from xia2.cluster_analysis.
+        # now do cluster identification as in xia2.cluster_analysis.
         # Same code structure as MultiCrystalAnalysis/cluster_analysis.py but changes the call
         # from output_cluster to self._scale_and_report_cluster
 
