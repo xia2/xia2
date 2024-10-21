@@ -4,7 +4,11 @@ import copy
 import logging
 import pathlib
 
+import iotbx.phil
+from dials.algorithms.correlation.analysis import CorrelationMatrix
+from dials.algorithms.correlation.cluster import ClusterInfo
 from dials.array_family import flex
+from dxtbx.model import ExperimentList
 
 from xia2.Modules.MultiCrystalAnalysis import MultiCrystalAnalysis
 
@@ -65,7 +69,11 @@ clustering
 """
 
 
-def clusters_and_types(cos_angle_clusters, cc_clusters, methods):
+def clusters_and_types(
+    cos_angle_clusters: list[ClusterInfo],
+    cc_clusters: list[ClusterInfo],
+    methods: list[str],
+) -> tuple[list[ClusterInfo], list[str]]:
     if "cos_angle" in methods and "correlation" not in methods:
         clusters = cos_angle_clusters
         ctype = ["cos"] * len(clusters)
@@ -83,7 +91,12 @@ def clusters_and_types(cos_angle_clusters, cc_clusters, methods):
     return clusters, ctype
 
 
-def get_subclusters(params, ids_to_identifiers_map, cos_angle_clusters, cc_clusters):
+def get_subclusters(
+    params: iotbx.phil.scope_extract,
+    ids_to_identifiers_map: dict[int, str],
+    cos_angle_clusters: list[ClusterInfo],
+    cc_clusters: list[ClusterInfo],
+) -> list[tuple[str, list[str], ClusterInfo]]:
     subclusters = []
 
     min_completeness = params.min_completeness
@@ -146,7 +159,14 @@ def get_subclusters(params, ids_to_identifiers_map, cos_angle_clusters, cc_clust
     return subclusters
 
 
-def output_cluster(new_folder, experiments, reflections, ids):
+def output_cluster(
+    new_folder: pathlib.Path,
+    experiments: ExperimentList,
+    reflections: list[flex.reflection_table],
+    ids: list[str],
+) -> None:
+    if not new_folder.parent.exists():
+        pathlib.Path.mkdir(new_folder.parent)
     expts = copy.deepcopy(experiments)
     expts.select_on_experiment_identifiers(ids)
 
@@ -157,14 +177,19 @@ def output_cluster(new_folder, experiments, reflections, ids):
 
     joint_refl = flex.reflection_table.concat(refl)
 
-    if not pathlib.Path.exists(new_folder):
+    if not new_folder.exists():
         pathlib.Path.mkdir(new_folder)
 
     expts.as_file(new_folder / "cluster.expt")
     joint_refl.as_file(new_folder / "cluster.refl")
 
 
-def output_hierarchical_clusters(params, MCA, experiments, reflections):
+def output_hierarchical_clusters(
+    params: iotbx.phil.scope_extract,
+    MCA: CorrelationMatrix,
+    experiments: ExperimentList,
+    reflections: list[flex.reflection_table],
+) -> None:
     cwd = pathlib.Path.cwd()
 
     # First get subclusters that meet the required thresholds
@@ -180,11 +205,11 @@ def output_hierarchical_clusters(params, MCA, experiments, reflections):
     # if not doing distinct cluster analysis, can now output clusters
     if not params.clustering.hierarchical.distinct_clusters:
         for c, cluster_identifiers, cluster in subclusters:
-            cluster_dir = cwd / f"{c}_clusters/cluster_{cluster.cluster_id}"
+            output_dir = cwd / f"{c}_clusters/cluster_{cluster.cluster_id}"
             logger.info(f"Outputting {c} cluster {cluster.cluster_id}:")
             logger.info(cluster)
             output_cluster(
-                cluster_dir,
+                output_dir,
                 experiments,
                 reflections,
                 cluster_identifiers,

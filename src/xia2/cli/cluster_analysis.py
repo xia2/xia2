@@ -16,6 +16,7 @@ from dials.util.multi_dataset_handling import (
 )
 from dials.util.options import ArgumentParser, reflections_and_experiments_from_files
 from dials.util.version import dials_version
+from dxtbx.model import ExperimentList
 from jinja2 import ChoiceLoader, Environment, PackageLoader
 
 import xia2.Handlers.Streams
@@ -145,11 +146,6 @@ def run(args=sys.argv[1:]):
         logger.info(tabulate(MCA.cos_table, headers="firstrow", tablefmt="rst"))
 
         cwd = pathlib.Path.cwd()
-        if not pathlib.Path.exists(cwd / "cos_clusters"):
-            pathlib.Path.mkdir(cwd / "cos_clusters")
-        if not pathlib.Path.exists(cwd / "cc_clusters"):
-            pathlib.Path.mkdir(cwd / "cc_clusters")
-
         # First get any specific requested/excluded clusters
 
         # These are options that are only available to xia2.cluster_analysis
@@ -251,11 +247,7 @@ def run(args=sys.argv[1:]):
             if "hierarchical" in params.clustering.method:
                 output_hierarchical_clusters(params, MCA, experiments, reflections)
             if "coordinate" in params.clustering.method:
-                from dxtbx.model import ExperimentList
-
                 clusters = MCA.significant_clusters
-                if not pathlib.Path.exists(cwd / "coordinate_clusters"):
-                    pathlib.Path.mkdir(cwd / "coordinate_clusters")
                 count = 0
                 for c in clusters:
                     if c.completeness < params.clustering.min_completeness:
@@ -266,6 +258,11 @@ def run(args=sys.argv[1:]):
                         continue
                     if count >= params.clustering.max_output_clusters:
                         continue
+                    # for the first cluster, make the directory if not exists
+                    if not count and not pathlib.Path.exists(
+                        cwd / "coordinate_clusters"
+                    ):
+                        pathlib.Path.mkdir(cwd / "coordinate_clusters")
                     cluster_dir = f"coordinate_clusters/cluster_{c.cluster_id}"
                     logger.info(f"Outputting: {cluster_dir}")
                     if not pathlib.Path.exists(cwd / cluster_dir):
