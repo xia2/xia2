@@ -545,7 +545,16 @@ class MultiCrystalScale:
             and "coordinate" in self._params.clustering.method
         ):
             clusters = self._mca.significant_coordinate_clusters
+            count = 0
             for c in clusters:
+                if c.completeness < params.clustering.min_completeness:
+                    continue
+                if c.multiplicity < params.clustering.min_multiplicity:
+                    continue
+                if len(c.labels) < params.clustering.min_cluster_size:
+                    continue
+                if count >= params.clustering.max_output_clusters:
+                    continue
                 cluster_dir = f"coordinate_cluster_{c.cluster_id}"
                 logger.info(f"Scaling: {cluster_dir}")
                 cluster_identifiers = [
@@ -554,6 +563,7 @@ class MultiCrystalScale:
                 self._scale_and_report_cluster(
                     self._data_manager, cluster_dir, cluster_identifiers
                 )
+                count += 1
 
         if self._params.filtering.method:
             # Final round of scaling, this time filtering out any bad datasets

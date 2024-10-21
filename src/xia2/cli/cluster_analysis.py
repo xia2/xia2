@@ -52,15 +52,6 @@ mca_phil = iotbx.phil.parse(
 
 include scope dials.algorithms.correlation.analysis.working_phil
 
-run_cluster_identification = True
-  .type = bool
-  .short_caption = "If True, in addition to running clustering analysis, identify"
-                   "clusters of interest for further analysis."
-
-max_cluster_height_difference = 0.5
-  .type = float
-  .short_caption = "Maximum hight difference between clusters"
-
 %s
 %s
 
@@ -73,7 +64,7 @@ output {
 """
     % (cluster_phil_scope, xia2_cluster_phil_scope),
     process_includes=True,
-)  # batch_phil_scope
+)
 
 
 def run(args=sys.argv[1:]):
@@ -265,20 +256,29 @@ def run(args=sys.argv[1:]):
                 clusters = MCA.significant_clusters
                 if not pathlib.Path.exists(cwd / "coordinate_clusters"):
                     pathlib.Path.mkdir(cwd / "coordinate_clusters")
+                count = 0
                 for c in clusters:
+                    if c.completeness < params.clustering.min_completeness:
+                        continue
+                    if c.multiplicity < params.clustering.min_multiplicity:
+                        continue
+                    if len(c.labels) < params.clustering.min_cluster_size:
+                        continue
+                    if count >= params.clustering.max_output_clusters:
+                        continue
                     cluster_dir = f"coordinate_clusters/cluster_{c.cluster_id}"
                     logger.info(f"Outputting: {cluster_dir}")
                     if not pathlib.Path.exists(cwd / cluster_dir):
                         pathlib.Path.mkdir(cwd / cluster_dir)
                     expts = ExperimentList()
                     tables = []
-                    print(dir(c))
                     for idx in c.labels:
                         expts.append(MCA._experiments[idx])
                         tables.append(MCA._reflections[idx])
                     joint_refl = flex.reflection_table.concat(tables)
                     expts.as_file(cwd / cluster_dir / "cluster.expt")
                     joint_refl.as_file(cwd / cluster_dir / "cluster.refl")
+                    count += 1
 
         loader = ChoiceLoader(
             [PackageLoader("xia2", "templates"), PackageLoader("dials", "templates")]
