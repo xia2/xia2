@@ -6,6 +6,7 @@ import subprocess
 import pytest
 from dials.algorithms.correlation.cluster import ClusterInfo
 from dials.util.options import ArgumentParser
+from dxtbx.model import ExperimentList
 from libtbx import phil
 
 from xia2.Modules.MultiCrystalAnalysis import MultiCrystalAnalysis
@@ -82,10 +83,23 @@ params_3.clustering.min_cluster_size = 2
 
 
 @pytest.mark.parametrize(
-    "output_clusters,interesting_clusters",
-    [(False, False), (True, False), (True, True)],
+    "output_clusters,interesting_clusters,output_correlation_cluster_number,exclude_correlation_cluster_number",
+    [
+        (False, False, None, None),
+        (True, False, None, None),
+        (True, True, None, None),
+        (True, False, 1, None),
+        (True, False, None, 1),
+    ],
 )
-def test_serial_data(dials_data, tmp_path, output_clusters, interesting_clusters):
+def test_serial_data(
+    dials_data,
+    tmp_path,
+    output_clusters,
+    interesting_clusters,
+    output_correlation_cluster_number,
+    exclude_correlation_cluster_number,
+):
     ssx = dials_data("cunir_serial_processed", pathlib=True)
     expt_int = os.fspath(ssx / "integrated.expt")
     refl_int = os.fspath(ssx / "integrated.refl")
@@ -106,6 +120,8 @@ def test_serial_data(dials_data, tmp_path, output_clusters, interesting_clusters
         f"distinct_clusters={interesting_clusters}",
         "clustering.hierarchical.method=cos_angle+correlation",
         f"clustering.output_clusters={output_clusters}",
+        f"output_correlation_cluster_number={output_correlation_cluster_number}",
+        f"exclude_correlation_cluster_number={exclude_correlation_cluster_number}",
     ]
     result_generate_scaled = subprocess.run(
         args_generate_scaled, cwd=tmp_path, capture_output=True
@@ -113,7 +129,13 @@ def test_serial_data(dials_data, tmp_path, output_clusters, interesting_clusters
     assert not result_generate_scaled.returncode and not result_generate_scaled.stderr
     result = subprocess.run(args_test_clustering, cwd=tmp_path, capture_output=True)
     assert not result.returncode and not result.stderr
-    check_output(tmp_path, output_clusters, interesting_clusters)
+    check_output(
+        tmp_path,
+        output_clusters,
+        interesting_clusters,
+        output_correlation_cluster_number,
+        exclude_correlation_cluster_number,
+    )
 
 
 def test_rotation_data(dials_data, run_in_tmp_path):
@@ -172,7 +194,13 @@ def test_rotation_data(dials_data, run_in_tmp_path):
     ).exists()
 
 
-def check_output(main_dir, output_clusters=True, interesting_clusters=False):
+def check_output(
+    main_dir,
+    output_clusters=True,
+    interesting_clusters=False,
+    output_correlation_cluster_number=None,
+    exclude_correlation_cluster_number=None,
+):
     if output_clusters and not interesting_clusters:
         assert (main_dir / "cc_clusters" / "cluster_2").exists()
         assert (main_dir / "cos_clusters" / "cluster_2").exists()
@@ -182,6 +210,46 @@ def check_output(main_dir, output_clusters=True, interesting_clusters=False):
     assert (main_dir / "xia2.cluster_analysis.json").is_file()
     assert (main_dir / "xia2.cluster_analysis.log").is_file()
     assert (main_dir / "xia2.cluster_analysis.html").is_file()
+    if output_correlation_cluster_number:
+        assert (
+            main_dir / "cc_clusters" / f"cluster_{output_correlation_cluster_number}"
+        ).exists()
+        expts = ExperimentList.from_file(
+            main_dir
+            / "cc_clusters"
+            / f"cluster_{output_correlation_cluster_number}"
+            / "cluster.expt"
+        )
+        assert len(expts.imagesets()) == 2
+    if exclude_correlation_cluster_number:
+        assert (
+            main_dir
+            / "cc_clusters"
+            / f"excluded_cluster_{exclude_correlation_cluster_number}"
+        ).exists()
+        expts_ex = ExperimentList.from_file(
+            main_dir
+            / "cc_clusters"
+            / f"excluded_cluster_{exclude_correlation_cluster_number}"
+            / "cluster.expt"
+        )
+        expts_inc = ExperimentList.from_file(
+            main_dir
+            / "cc_clusters"
+            / f"cluster_{exclude_correlation_cluster_number}"
+            / "cluster.expt"
+        )
+        assert len(expts_ex.imagesets()) == 3
+        assert len(expts_inc.imagesets()) == 2
+        list_ex = []
+        list_inc = []
+        for i in expts_ex.imagesets():
+            list_ex.append(i.paths()[0])
+        for i in expts_inc.imagesets():
+            list_inc.append(i.paths()[0])
+        set_ex = set(list_ex)
+        set_inc = set(list_inc)
+        assert len(set_ex.intersection(set_inc)) == 0
 
 
 @pytest.mark.parametrize(

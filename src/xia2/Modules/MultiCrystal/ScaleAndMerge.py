@@ -326,9 +326,6 @@ class MultiCrystalScale:
         if all([params.symmetry.laue_group, params.symmetry.space_group]):
             raise ValueError("Can not specify both laue_group and space_group")
 
-        # self._params.symmetry.cosym.weights = "standard_error"
-        # self._params.symmetry.cosym.cc_weights= "sigma"
-
         if self._params.nproc is Auto:
             self._params.nproc = CPU_COUNT
             PhilIndex.params.xia2.settings.multiprocessing.nproc = self._params.nproc
