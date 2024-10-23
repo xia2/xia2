@@ -218,7 +218,8 @@ def check_output(
             main_dir
             / "cc_clusters"
             / f"cluster_{output_correlation_cluster_number}"
-            / "cluster.expt"
+            / "cluster.expt",
+            check_format=False,
         )
         assert len(expts.imagesets()) == 2
     if exclude_correlation_cluster_number:
@@ -231,13 +232,15 @@ def check_output(
             main_dir
             / "cc_clusters"
             / f"excluded_cluster_{exclude_correlation_cluster_number}"
-            / "cluster.expt"
+            / "cluster.expt",
+            check_format=False,
         )
         expts_inc = ExperimentList.from_file(
             main_dir
             / "cc_clusters"
             / f"cluster_{exclude_correlation_cluster_number}"
-            / "cluster.expt"
+            / "cluster.expt",
+            check_format=False,
         )
         assert len(expts_ex.imagesets()) == 3
         assert len(expts_inc.imagesets()) == 2
