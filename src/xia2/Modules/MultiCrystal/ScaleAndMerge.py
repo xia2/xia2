@@ -3,6 +3,7 @@ from __future__ import annotations
 import copy
 import logging
 import os
+import pathlib
 from collections import OrderedDict
 
 import iotbx.phil
@@ -19,6 +20,7 @@ from scitbx.math import five_number_summary
 from xia2.Handlers.Phil import PhilIndex
 from xia2.lib.bits import auto_logfiler
 from xia2.Modules import Report
+from xia2.Modules.MultiCrystal.cluster_analysis import get_subclusters
 from xia2.Modules.MultiCrystal.data_manager import DataManager
 from xia2.Modules.MultiCrystalAnalysis import MultiCrystalAnalysis
 from xia2.Modules.Scaler.DialsScaler import (
@@ -246,20 +248,7 @@ two_theta_refine
     .short_caption = "Combine crystal models"
 }
 
-min_completeness = None
-  .type = float(value_min=0, value_max=1)
-  .short_caption = "Minimum completeness"
-min_multiplicity = None
-  .type = float(value_min=0)
-  .short_caption = "Minimum multiplicity"
-max_clusters = None
-  .type = int(value_min=1)
-  .short_caption = "Maximum number of clusters"
-cluster_method = *cos_angle correlation
-  .type = choice
-  .short_caption = "Metric on which to perform clustering"
-
-
+include scope xia2.cli.cluster_analysis.cluster_phil_scope
 
 identifiers = None
   .type = strings
@@ -288,7 +277,7 @@ mca_phil = iotbx.phil.parse(
     """
 include scope xia2.cli.report.phil_scope
 
-seed = 42
+seed = 230
   .type = int(value_min=0)
 
 unit_cell_clustering {
@@ -339,7 +328,7 @@ class MultiCrystalScale:
 
         if self._params.nproc is Auto:
             self._params.nproc = CPU_COUNT
-        PhilIndex.params.xia2.settings.multiprocessing.nproc = self._params.nproc
+            PhilIndex.params.xia2.settings.multiprocessing.nproc = self._params.nproc
 
         if self._params.identifiers is not None:
             self._data_manager.select(self._params.identifiers)
@@ -482,103 +471,97 @@ class MultiCrystalScale:
         self._mca = self.multi_crystal_analysis()
         self.cluster_analysis()
 
-        min_completeness = self._params.min_completeness
-        min_multiplicity = self._params.min_multiplicity
-        max_clusters = self._params.max_clusters
-        if self._params.cluster_method == "cos_angle":
-            clusters = self._cos_angle_clusters
-        elif self._params.cluster_method == "correlation":
-            clusters = self._cc_clusters
-        else:
-            raise ValueError("Invalid cluster method: %s" % self._params.cluster_method)
+        # now do cluster identification as in xia2.cluster_analysis.
+        # Same code structure as MultiCrystalAnalysis/cluster_analysis.py but changes the call
+        # from output_cluster to self._scale_and_report_cluster
 
-        if max_clusters or min_completeness is not None or min_multiplicity is not None:
+        if (
+            self._params.clustering.output_clusters
+            and "hierarchical" in self._params.clustering.method
+        ):
             self._data_manager_original = self._data_manager
-            cwd = os.path.abspath(os.getcwd())
-            n_processed = 0
-            for cluster in reversed(clusters):
-                if max_clusters is not None and n_processed == max_clusters:
-                    break
-                if (
-                    min_completeness is not None
-                    and cluster.completeness < min_completeness
-                ):
-                    continue
-                if (
-                    min_multiplicity is not None
-                    and cluster.multiplicity < min_multiplicity
-                ):
-                    continue
-                if len(cluster.labels) == len(self._data_manager_original.experiments):
-                    continue
-                n_processed += 1
+            subclusters = get_subclusters(
+                self._params.clustering,
+                self._data_manager.ids_to_identifiers_map,
+                self._cos_angle_clusters,
+                self._cc_clusters,
+            )
 
-                logger.info("Scaling cluster %i:" % cluster.cluster_id)
-                logger.info(cluster)
-                cluster_dir = "cluster_%i" % cluster.cluster_id
-                if not os.path.exists(cluster_dir):
-                    os.mkdir(cluster_dir)
-                os.chdir(cluster_dir)
-                data_manager = copy.deepcopy(self._data_manager_original)
+            if not self._params.clustering.hierarchical.distinct_clusters:
+                for c, cluster_identifiers, cluster in subclusters:
+                    logger.info(f"Scaling {c} cluster {cluster.cluster_id}:")
+                    logger.info(cluster)
+                    cluster_dir = f"{c}_cluster_{cluster.cluster_id}"
+                    self._scale_and_report_cluster(
+                        self._data_manager,
+                        cluster_dir,
+                        cluster_identifiers,
+                    )
+
+            if self._params.clustering.hierarchical.distinct_clusters:
+                self.cos_clusters = []
+                self.cc_clusters = []
+                self.cos_cluster_ids = {}
+                self.cc_cluster_ids = {}
+                for c, cluster_identifiers, cluster in subclusters:
+                    if c == "cos":
+                        self.cos_clusters.append(cluster)
+                        self.cos_cluster_ids[cluster.cluster_id] = cluster_identifiers
+                    elif c == "cc":
+                        self.cc_clusters.append(cluster)
+                        self.cc_cluster_ids[cluster.cluster_id] = cluster_identifiers
+
+                for k, clusters in enumerate([self.cos_clusters, self.cc_clusters]):
+                    cty = "cc" if k == 1 else "cos"  # cluster type as a string
+                    logger.info("-" * 22 + f"\n{cty} cluster analysis\n" + "-" * 22)
+
+                    _, list_of_clusters = (
+                        MultiCrystalAnalysis.interesting_cluster_identification(
+                            clusters, self._params
+                        )
+                    )
+
+                    for item in list_of_clusters:
+                        cluster_no = item.split("_")[-1]
+                        cluster_dir = f"{cty}_cluster_{cluster_no}"
+                        logger.info(f"Scaling : {cluster_dir}")
+
+                        for cluster in clusters:
+                            if f"cluster_{cluster.cluster_id}" == item:
+                                ids = (
+                                    self.cc_cluster_ids[cluster.cluster_id]
+                                    if k
+                                    else self.cos_cluster_ids[cluster.cluster_id]
+                                )
+                                self._scale_and_report_cluster(
+                                    self._data_manager, cluster_dir, ids
+                                )
+                                break
+        if (
+            self._params.clustering.output_clusters
+            and "coordinate" in self._params.clustering.method
+        ):
+            clusters = self._mca.significant_coordinate_clusters
+            count = 0
+            for c in clusters:
+                if c.completeness < params.clustering.min_completeness:
+                    continue
+                if c.multiplicity < params.clustering.min_multiplicity:
+                    continue
+                if len(c.labels) < params.clustering.min_cluster_size:
+                    continue
+                if count >= params.clustering.max_output_clusters:
+                    continue
+                cluster_dir = f"coordinate_cluster_{c.cluster_id}"
+                logger.info(f"Scaling: {cluster_dir}")
                 cluster_identifiers = [
-                    self._data_manager.ids_to_identifiers_map[l] for l in cluster.labels
+                    self._data_manager.ids_to_identifiers_map[l] for l in c.labels
                 ]
-                data_manager.select(cluster_identifiers)
-                scaled = Scale(data_manager, self._params)
-                data_manager.export_experiments("scaled.expt")
-                data_manager.export_reflections("scaled.refl", d_min=scaled.d_min)
-
-                # if we didn't have an external reference for the free_flags set, we need to make
-                # and record one here.
-                data_manager.export_merged_mtz(
-                    "scaled.mtz",
-                    d_min=scaled.d_min,
-                    r_free_params=self._params.r_free_flags,
-                    wavelength_tolerance=self._params.wavelength_tolerance,
+                self._scale_and_report_cluster(
+                    self._data_manager, cluster_dir, cluster_identifiers
                 )
-                if (not free_flags_in_full_set) and (
-                    self._params.r_free_flags.extend is True
-                ):
-                    self._params.r_free_flags.reference = os.path.join(
-                        os.getcwd(), "scaled.mtz"
-                    )
-                    free_flags_in_full_set = True
+                count += 1
 
-                if len(self.wavelengths) > 1:
-                    data_manager.split_by_wavelength(self._params.wavelength_tolerance)
-                    for wl in self.wavelengths:
-                        name = data_manager.export_unmerged_wave_mtz(
-                            wl,
-                            "scaled_unmerged",
-                            d_min=scaled.d_min,
-                            wavelength_tolerance=self._params.wavelength_tolerance,
-                        )
-                        if name:
-                            convert_unmerged_mtz_to_sca(name)
-                    # now export merged of each
-                    for wl in self.wavelengths:
-                        name = data_manager.export_merged_wave_mtz(
-                            wl,
-                            "scaled",
-                            d_min=scaled.d_min,
-                            r_free_params=self._params.r_free_flags,
-                            wavelength_tolerance=self._params.wavelength_tolerance,
-                        )
-                        if name:
-                            convert_merged_mtz_to_sca(name)
-                else:
-                    data_manager.export_unmerged_mtz(
-                        "scaled_unmerged.mtz",
-                        d_min=scaled.d_min,
-                        wavelength_tolerance=self._params.wavelength_tolerance,
-                    )
-                    convert_merged_mtz_to_sca("scaled.mtz")
-                    convert_unmerged_mtz_to_sca("scaled_unmerged.mtz")
-
-                self._record_individual_report(
-                    data_manager, scaled.report(), cluster_dir.replace("_", " ")
-                )
-                os.chdir(cwd)
         if self._params.filtering.method:
             # Final round of scaling, this time filtering out any bad datasets
             data_manager = copy.deepcopy(self._data_manager)
@@ -643,6 +626,72 @@ class MultiCrystalScale:
             self.scale_and_filter_results = None
 
         self.report()
+
+    def scale_cluster(self, data_manager_input, identifiers, free_flags_in_full_set):
+        data_manager = copy.deepcopy(data_manager_input)
+        data_manager.select(identifiers)
+
+        scaled = Scale(data_manager, self._params)
+        data_manager.export_experiments("scaled.expt")
+        data_manager.export_reflections("scaled.refl", d_min=scaled.d_min)
+
+        # if we didn't have an external reference for the free_flags set, we need to make
+        # and record one here.
+
+        data_manager.export_merged_mtz(
+            "scaled.mtz",
+            d_min=scaled.d_min,
+            r_free_params=self._params.r_free_flags,
+            wavelength_tolerance=self._params.wavelength_tolerance,
+        )
+        if (not free_flags_in_full_set) and (self._params.r_free_flags.extend is True):
+            self._params.r_free_flags.reference = os.path.join(
+                os.getcwd(), "scaled.mtz"
+            )
+            free_flags_in_full_set = True
+
+        if len(self.wavelengths) > 1:
+            data_manager.split_by_wavelength(self._params.wavelength_tolerance)
+            for wl in self.wavelengths:
+                name = data_manager.export_unmerged_wave_mtz(
+                    wl,
+                    "scaled_unmerged",
+                    d_min=scaled.d_min,
+                    wavelength_tolerance=self._params.wavelength_tolerance,
+                )
+                if name:
+                    convert_unmerged_mtz_to_sca(name)
+            for wl in self.wavelengths:
+                name = data_manager.export_merged_wave_mtz(
+                    wl,
+                    "scaled",
+                    d_min=scaled.d_min,
+                    r_free_params=self._params.r_free_flags,
+                    wavelength_tolerance=self._params.wavelength_tolerance,
+                )
+                if name:
+                    convert_merged_mtz_to_sca(name)
+        else:
+            data_manager.export_unmerged_mtz(
+                "scaled_unmerged.mtz",
+                d_min=scaled.d_min,
+                wavelength_tolerance=self._params.wavelength_tolerance,
+            )
+            convert_merged_mtz_to_sca("scaled.mtz")
+            convert_unmerged_mtz_to_sca("scaled_unmerged.mtz")
+
+        return scaled
+
+    def _scale_and_report_cluster(self, data_manager, cluster_dir, cluster_identifiers):
+        cwd = pathlib.Path.cwd()
+        if not os.path.exists(cluster_dir):
+            os.mkdir(cluster_dir)
+        os.chdir(cluster_dir)
+        scaled = self.scale_cluster(data_manager, cluster_identifiers, True)
+        self._record_individual_report(
+            "", scaled.report(), cluster_dir.replace("_", " ")
+        )
+        os.chdir(cwd)
 
     def _record_individual_report(self, data_manager, report, cluster_name):
         d = self._report_as_dict(report)

@@ -5,41 +5,32 @@ import subprocess
 
 import pytest
 from dials.algorithms.correlation.cluster import ClusterInfo
-from libtbx.phil import scope_extract
+from dials.util.options import ArgumentParser
+from dxtbx.model import ExperimentList
+from libtbx import phil
 
-from xia2.cli.multiplex import run as run_multiplex
 from xia2.Modules.MultiCrystalAnalysis import MultiCrystalAnalysis
 
-# Setup Test Clusters
+phil_scope = phil.parse(
+    """include scope xia2.cli.cluster_analysis.mca_phil""", process_includes=True
+)
+parser = ArgumentParser(phil=phil_scope, check_format=False)
+params, _ = parser.parse_args(args=[], quick_parse=True)
+
+#  Setup Test Clusters
 # Test 1 - test rejects staircasing
-# Test 2 - test only looks for ones with none in common AND min height threshold
-# test 3 - checks min cluster size - rejects pairs where it's too small
-# test 4 - test only outputs defined number of clusters
+# test 2 - checks min cluster size - rejects pairs where it's too small
+# test 3 - test only outputs defined number of clusters
 data_1 = [
     ClusterInfo(1, [1, 2, 3], 5, 100, [1, 1, 1, 90, 90, 90], 0.3),
     ClusterInfo(2, [1, 2, 3, 4, 5], 5, 100, [1, 1, 1, 90, 90, 90], 0.35),
 ]
-params_1 = scope_extract("test", "test", "test")
-params_1.__inject__("max_cluster_height_difference", 0.1)
-params_1.__inject__("max_output_clusters", 10)
-params_1.__inject__("min_cluster_size", 2)
+
+params_1 = params
+params_1.clustering.max_output_clusters = 10
+params_1.clustering.min_cluster_size = 2
 
 data_2 = [
-    ClusterInfo(1, [1, 2, 3], 5, 100, [1, 1, 1, 90, 90, 90], 0.32),
-    ClusterInfo(2, [4, 5], 5, 100, [1, 1, 1, 90, 90, 90], 0.33),
-    ClusterInfo(3, [1, 2, 3, 4, 5], 5, 100, [1, 1, 1, 90, 90, 90], 0.35),
-]
-params_2 = scope_extract("test", "test", "test")
-params_2.__inject__("max_cluster_height_difference", 0.0005)
-params_2.__inject__("max_output_clusters", 10)
-params_2.__inject__("min_cluster_size", 2)
-
-params_2_5 = scope_extract("test", "test", "test")
-params_2_5.__inject__("max_cluster_height_difference", 0.5)
-params_2_5.__inject__("max_output_clusters", 10)
-params_2_5.__inject__("min_cluster_size", 2)
-
-data_3 = [
     ClusterInfo(1, [1, 2], 5, 100, [1, 1, 1, 90, 90, 90], 0.32),
     ClusterInfo(2, [4, 5], 5, 100, [1, 1, 1, 90, 90, 90], 0.33),
     ClusterInfo(3, [1, 2, 3, 4, 5], 5, 100, [1, 1, 1, 90, 90, 90], 0.35),
@@ -49,12 +40,12 @@ data_3 = [
         6, [1, 2, 3, 4, 5, 6, 7, 8, 9, 10], 5, 100, [1, 1, 1, 90, 90, 90], 0.39
     ),
 ]
-params_3 = scope_extract("test", "test", "test")
-params_3.__inject__("max_cluster_height_difference", 0.5)
-params_3.__inject__("max_output_clusters", 10)
-params_3.__inject__("min_cluster_size", 3)
 
-data_4 = [
+params_2 = params
+params_2.clustering.max_output_clusters = 10
+params_2.clustering.min_cluster_size = 3
+
+data_3 = [
     ClusterInfo(1, [1, 2, 3], 5, 100, [1, 1, 1, 90, 90, 90], 0.32),
     ClusterInfo(2, [4, 5], 5, 100, [1, 1, 1, 90, 90, 90], 0.33),
     ClusterInfo(3, [1, 2, 3, 4, 5], 5, 100, [1, 1, 1, 90, 90, 90], 0.34),
@@ -85,14 +76,30 @@ data_4 = [
         0.39,
     ),
 ]
-params_4 = scope_extract("test", "test", "test")
-params_4.__inject__("max_cluster_height_difference", 0.5)
-params_4.__inject__("max_output_clusters", 2)
-params_4.__inject__("min_cluster_size", 2)
+
+params_3 = params
+params_3.clustering.max_output_clusters = 2
+params_3.clustering.min_cluster_size = 2
 
 
-@pytest.mark.parametrize("run_cluster_identification", [True, False])
-def test_serial_data(dials_data, tmp_path, run_cluster_identification):
+@pytest.mark.parametrize(
+    "output_clusters,interesting_clusters,output_correlation_cluster_number,exclude_correlation_cluster_number",
+    [
+        (False, False, None, None),
+        (True, False, None, None),
+        (True, True, None, None),
+        (True, False, 1, None),
+        (True, False, None, 1),
+    ],
+)
+def test_serial_data(
+    dials_data,
+    tmp_path,
+    output_clusters,
+    interesting_clusters,
+    output_correlation_cluster_number,
+    exclude_correlation_cluster_number,
+):
     ssx = dials_data("cunir_serial_processed", pathlib=True)
     expt_int = os.fspath(ssx / "integrated.expt")
     refl_int = os.fspath(ssx / "integrated.refl")
@@ -107,11 +114,14 @@ def test_serial_data(dials_data, tmp_path, run_cluster_identification):
         cmd += ".bat"
     args_test_clustering = [
         cmd,
-        "min_cluster_size=2",
+        "clustering.min_cluster_size=2",
         expt_scaled,
         refl_scaled,
-        f"run_cluster_identification={run_cluster_identification}",
-        "output.json=xia2.cluster_analysis.json",
+        f"distinct_clusters={interesting_clusters}",
+        "clustering.hierarchical.method=cos_angle+correlation",
+        f"clustering.output_clusters={output_clusters}",
+        f"output_correlation_cluster_number={output_correlation_cluster_number}",
+        f"exclude_correlation_cluster_number={exclude_correlation_cluster_number}",
     ]
     result_generate_scaled = subprocess.run(
         args_generate_scaled, cwd=tmp_path, capture_output=True
@@ -119,64 +129,138 @@ def test_serial_data(dials_data, tmp_path, run_cluster_identification):
     assert not result_generate_scaled.returncode and not result_generate_scaled.stderr
     result = subprocess.run(args_test_clustering, cwd=tmp_path, capture_output=True)
     assert not result.returncode and not result.stderr
-    check_output(tmp_path, run_cluster_identification)
+    check_output(
+        tmp_path,
+        output_clusters,
+        interesting_clusters,
+        output_correlation_cluster_number,
+        exclude_correlation_cluster_number,
+    )
 
 
 def test_rotation_data(dials_data, run_in_tmp_path):
     rot = dials_data("vmxi_proteinase_k_sweeps", pathlib=True)
-    expt_1 = os.fspath(rot / "experiments_0.expt")
-    expt_2 = os.fspath(rot / "experiments_1.expt")
-    expt_3 = os.fspath(rot / "experiments_2.expt")
-    expt_4 = os.fspath(rot / "experiments_3.expt")
-    refl_1 = os.fspath(rot / "reflections_0.refl")
-    refl_2 = os.fspath(rot / "reflections_1.refl")
-    refl_3 = os.fspath(rot / "reflections_2.refl")
-    refl_4 = os.fspath(rot / "reflections_3.refl")
-    expt_scaled = os.fspath(run_in_tmp_path / "scaled.expt")
-    refl_scaled = os.fspath(run_in_tmp_path / "scaled.refl")
-    run_multiplex(
-        [
-            expt_1,
-            refl_1,
-            expt_2,
-            refl_2,
-            expt_3,
-            refl_3,
-            expt_4,
-            refl_4,
-        ]
+
+    # First scale the data to get suitable input
+    cmd = "dials.scale"
+    if os.name == "nt":
+        cmd += ".bat"
+    result = subprocess.run(
+        [cmd]
+        + [rot / f"experiments_{i}.expt" for i in range(0, 4)]
+        + [rot / f"reflections_{i}.refl" for i in range(0, 4)],
+        capture_output=True,
     )
+    assert not result.returncode
+
     cmd = "xia2.cluster_analysis"
     if os.name == "nt":
         cmd += ".bat"
     args_clustering = [
         cmd,
-        "min_cluster_size=2",
-        expt_scaled,
-        refl_scaled,
+        "distinct_clusters=True",
+        "clustering.min_cluster_size=2",
+        "clustering.hierarchical.method=cos_angle+correlation",
+        "clustering.output_clusters=True",
+        "scaled.expt",
+        "scaled.refl",
         "output.json=xia2.cluster_analysis.json",
     ]
     result = subprocess.run(args_clustering, capture_output=True)
     assert not result.returncode and not result.stderr
-    check_output(run_in_tmp_path)
+    assert (run_in_tmp_path / "xia2.cluster_analysis.json").is_file()
+    assert (run_in_tmp_path / "xia2.cluster_analysis.log").is_file()
+    assert (run_in_tmp_path / "xia2.cluster_analysis.html").is_file()
+    assert (run_in_tmp_path / "cc_clusters" / "cluster_2").exists()
+    assert not (run_in_tmp_path / "coordinate_clusters").exists()
+    # now run coordinate clustering
+    args_clustering = [
+        cmd,
+        "clustering.method=coordinate",
+        "clustering.min_cluster_size=2",
+        "clustering.output_clusters=True",
+        "scaled.expt",
+        "scaled.refl",
+        "output.json=xia2.cluster_analysis.json",
+    ]
+    result = subprocess.run(args_clustering, capture_output=True)
+    assert not result.returncode and not result.stderr
+    assert (run_in_tmp_path / "coordinate_clusters" / "cluster_0").exists()
+    assert (
+        run_in_tmp_path / "coordinate_clusters" / "cluster_0" / "cluster.refl"
+    ).exists()
+    assert (
+        run_in_tmp_path / "coordinate_clusters" / "cluster_0" / "cluster.expt"
+    ).exists()
 
 
-def check_output(main_dir, run_cluster_identification=True):
-    assert (main_dir / "cc_clusters").exists() is run_cluster_identification
-    assert (main_dir / "cos_angle_clusters").exists() is run_cluster_identification
+def check_output(
+    main_dir,
+    output_clusters=True,
+    interesting_clusters=False,
+    output_correlation_cluster_number=None,
+    exclude_correlation_cluster_number=None,
+):
+    if output_clusters and not interesting_clusters:
+        assert (main_dir / "cc_clusters" / "cluster_2").exists()
+        assert (main_dir / "cos_clusters" / "cluster_2").exists()
+    if output_clusters and interesting_clusters:
+        assert (main_dir / "cc_clusters" / "cluster_2").exists()
+        assert (main_dir / "cos_clusters" / "cluster_2").exists()
     assert (main_dir / "xia2.cluster_analysis.json").is_file()
     assert (main_dir / "xia2.cluster_analysis.log").is_file()
     assert (main_dir / "xia2.cluster_analysis.html").is_file()
+    if output_correlation_cluster_number:
+        assert (
+            main_dir / "cc_clusters" / f"cluster_{output_correlation_cluster_number}"
+        ).exists()
+        expts = ExperimentList.from_file(
+            main_dir
+            / "cc_clusters"
+            / f"cluster_{output_correlation_cluster_number}"
+            / "cluster.expt",
+            check_format=False,
+        )
+        assert len(expts.imagesets()) == 2
+    if exclude_correlation_cluster_number:
+        assert (
+            main_dir
+            / "cc_clusters"
+            / f"excluded_cluster_{exclude_correlation_cluster_number}"
+        ).exists()
+        expts_ex = ExperimentList.from_file(
+            main_dir
+            / "cc_clusters"
+            / f"excluded_cluster_{exclude_correlation_cluster_number}"
+            / "cluster.expt",
+            check_format=False,
+        )
+        expts_inc = ExperimentList.from_file(
+            main_dir
+            / "cc_clusters"
+            / f"cluster_{exclude_correlation_cluster_number}"
+            / "cluster.expt",
+            check_format=False,
+        )
+        assert len(expts_ex.imagesets()) == 3
+        assert len(expts_inc.imagesets()) == 2
+        list_ex = []
+        list_inc = []
+        for i in expts_ex.imagesets():
+            list_ex.append(i.paths()[0])
+        for i in expts_inc.imagesets():
+            list_inc.append(i.paths()[0])
+        set_ex = set(list_ex)
+        set_inc = set(list_inc)
+        assert len(set_ex.intersection(set_inc)) == 0
 
 
 @pytest.mark.parametrize(
     "clusters,params,expected",
     [
         (data_1, params_1, []),
-        (data_2, params_2, []),
-        (data_2, params_2_5, ["cluster_1", "cluster_2"]),
-        (data_3, params_3, ["cluster_4", "cluster_5"]),
-        (data_4, params_4, ["cluster_3", "cluster_4", "cluster_6", "cluster_7"]),
+        (data_2, params_2, ["cluster_4", "cluster_5"]),
+        (data_3, params_3, ["cluster_3", "cluster_4", "cluster_6", "cluster_7"]),
     ],
 )
 def test_interesting_cluster_algorithm(clusters, params, expected):

@@ -123,7 +123,8 @@ def test_proteinase_k_filter_deltacchalf(d_min, proteinase_k, run_in_tmp_path):
         + [
             "filtering.method=deltacchalf",
             "filtering.deltacchalf.stdcutoff=1",
-            "max_clusters=1",
+            "clustering.output_clusters=True",
+            "clustering.max_output_clusters=1",
             "nproc=1",
             "resolution.d_min=%s" % d_min,
         ]
@@ -154,7 +155,8 @@ def test_proteinase_k_filter_deltacchalf(d_min, proteinase_k, run_in_tmp_path):
 
     with open("xia2.multiplex.json") as fh:
         d = json.load(fh)
-    assert list(d["datasets"].keys()) == ["All data", "cluster 6", "Filtered"]
+    print(list(d["datasets"].keys()))
+    assert list(d["datasets"].keys()) == ["All data", "cos cluster 6", "Filtered"]
     # assert that the recorded merging statistics are different
     assert (
         d["datasets"]["All data"]["resolution_graphs"]["cc_one_half_All_data"]["data"][
@@ -166,7 +168,7 @@ def test_proteinase_k_filter_deltacchalf(d_min, proteinase_k, run_in_tmp_path):
     )
 
     # Check that cluster 6 has been scaled
-    cluster = pathlib.Path("cluster_6")
+    cluster = pathlib.Path("cos_cluster_6")
     assert cluster.is_dir()
     assert (cluster / "scaled.mtz").is_file()
     assert (cluster / "scaled_unmerged.mtz").is_file()
@@ -185,7 +187,9 @@ def test_proteinase_k_dose(
             "dose=1,20",
             "symmetry.laue_group=%s" % laue_group,
             "symmetry.space_group=%s" % space_group,
-            "max_clusters=2",
+            "clustering.output_clusters=True",
+            "clustering.max_output_clusters=2",
+            "clustering.min_cluster_size=2",
         ]
         + expts
         + refls
@@ -201,10 +205,9 @@ def test_proteinase_k_dose(
     if threshold is not None:
         # one experiment should have been rejected after unit cell clustering
         assert len(multiplex_expts) == 7
-        expected_clusters = ("cluster_4", "cluster_5")
     else:
         assert len(multiplex_expts) == 8
-        expected_clusters = ("cluster_5", "cluster_6")
+    expected_clusters = ("cos_cluster_5", "cos_cluster_6")
 
     # Check that expected clusters have been scaled
     for cluster in expected_clusters:
@@ -223,14 +226,35 @@ def test_proteinase_k_dose(
             )
 
 
-@pytest.mark.parametrize(
-    "parameters",
-    (
-        ["min_completeness=0.5", "cluster_method=cos_angle"],
-        ["min_completeness=0.5", "cluster_method=correlation"],
-    ),
-)
-def test_proteinase_k_min_completeness(parameters, proteinase_k, run_in_tmp_path):
+def test_proteinase_k_coordinate_clusters(proteinase_k, run_in_tmp_path):
+    expts, refls = proteinase_k
+    parameters = [
+        "clustering.output_clusters=True",
+        "clustering.method=coordinate",
+        "symmetry.space_group=P422",
+    ]
+    command_line_args = parameters + expts[:-1] + refls[:-1]
+    run_multiplex(command_line_args)
+
+    for f in expected_data_files:
+        assert pathlib.Path(f).is_file(), "expected file %s missing" % f
+
+    multiplex_expts = load.experiment_list("scaled.expt", check_format=False)
+    assert len(multiplex_expts) == 7
+    clusters = list(pathlib.Path().glob("coordinate_cluster_[0-9]*"))
+    assert len(clusters)
+    for cluster in clusters:
+        assert (cluster / "scaled.mtz").is_file()
+        assert (cluster / "scaled_unmerged.mtz").is_file()
+
+
+def test_proteinase_k_hierarchical_clusters(proteinase_k, run_in_tmp_path):
+    parameters = [
+        "clustering.output_clusters=True",
+        "clustering.min_completeness=0.5",
+        "clustering.hierarchical.method=correlation+cos_angle",
+        "symmetry.space_group=P422",
+    ]
     expts, refls = proteinase_k
     command_line_args = parameters + expts[:-1] + refls[:-1]
     run_multiplex(command_line_args)
@@ -240,11 +264,38 @@ def test_proteinase_k_min_completeness(parameters, proteinase_k, run_in_tmp_path
 
     multiplex_expts = load.experiment_list("scaled.expt", check_format=False)
     assert len(multiplex_expts) == 7
-    clusters = list(pathlib.Path().glob("cluster_[0-9]*"))
-    assert len(clusters)
-    for cluster in clusters:
-        assert (cluster / "scaled.mtz").is_file()
-        assert (cluster / "scaled_unmerged.mtz").is_file()
+    for ctype in ["cc", "cos"]:
+        clusters = list(pathlib.Path().glob(ctype + "_cluster_[0-9]*"))
+        assert len(clusters)
+        for cluster in clusters:
+            assert (cluster / "scaled.mtz").is_file()
+            assert (cluster / "scaled_unmerged.mtz").is_file()
+
+
+def test_proteinase_k_hierarchical_clusters_distinct(proteinase_k, run_in_tmp_path):
+    parameters = [
+        "clustering.output_clusters=True",
+        "clustering.min_completeness=0.2",
+        "clustering.min_cluster_size=1",
+        "clustering.hierarchical.method=correlation",
+        "symmetry.space_group=P422",
+        "distinct_clusters=True",
+    ]
+    expts, refls = proteinase_k
+    command_line_args = parameters + expts[:-1] + refls[:-1]
+    run_multiplex(command_line_args)
+
+    for f in expected_data_files:
+        assert pathlib.Path(f).is_file(), "expected file %s missing" % f
+
+    multiplex_expts = load.experiment_list("scaled.expt", check_format=False)
+    assert len(multiplex_expts) == 7
+    clusters = list(pathlib.Path().glob("cc_cluster_[0-9]*"))
+    # Has shown to be unstable if it finds clusters or not: just need to make sure code runs to completion
+    if len(clusters):
+        for cluster in clusters:
+            assert (cluster / "scaled.mtz").is_file()
+            assert (cluster / "scaled_unmerged.mtz").is_file()
 
 
 def test_proteinase_k_single_dataset_raises_error(proteinase_k, run_in_tmp_path):
@@ -335,7 +386,8 @@ def test_prot_k_multiwave_double(run_in_tmp_path, protk_experiments_and_reflecti
             "tmp.expt",
             "tmp.refl",
             "wavelength_tolerance=0.001",
-            "min_completeness=0.5",
+            "clustering.output_clusters=True",
+            "clustering.min_completeness=0.55",  # 6",
             "filtering.method=deltacchalf",
             "resolution.d_min=2.6",
         ]
@@ -371,10 +423,10 @@ def test_prot_k_multiwave_double(run_in_tmp_path, protk_experiments_and_reflecti
 
     for f in expected_multi_data_files + ["scaled.mtz"]:
         assert (run_in_tmp_path / f).is_file(), f"expected file {f} missing"
-    cluster = run_in_tmp_path / "cluster_5"
-    assert cluster.is_dir()
     for f in expected_multi_data_files[:-2]:
-        assert (cluster / f).is_file(), f"expected file {f} missing"
+        assert (
+            run_in_tmp_path / "cos_cluster_5" / f
+        ).is_file(), f"expected file {f} missing"
     for f in expected_filtered:
         assert (run_in_tmp_path / f).is_file(), f"expected file {f} missing"
 
