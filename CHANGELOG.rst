@@ -1,3 +1,12 @@
+xia2 3.23.0 (2024-10-28)
+========================
+
+Features
+--------
+
+- ``xia2.multiplex``: Improvements to clustering output and addition of cluster identification algorithm for comparisons (`#783 <https://github.com/xia2/xia2/issues/783>`_)
+
+
 xia2 3.22.0 (2024-10-15)
 ========================
 
