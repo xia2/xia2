@@ -83,8 +83,8 @@ def Integrate(DriverType=None):
 
         def set_profile_params(
             self,
-            min_spots_per_degree=None,  # type: Optional[int]
-            min_spots_overall=None,  # type: Optional[int]
+            min_spots_per_degree=None,  # type: int | None
+            min_spots_overall=None,  # type: int | None
             high_pressure=False,  # type: bool
         ):  # type: (...) -> None
             """Options to override Gaussian profile parameters for integration."""
