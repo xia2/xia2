@@ -1035,9 +1035,9 @@ class CommonScaler(Scaler):
             assert scan_no.count(0) == 0
             assert image_no.count(0) == 0
 
-            h, k, l = [
+            h, k, l = (
                 hkl.iround() for hkl in intensities.indices().as_vec3_double().parts()
-            ]
+            )
             if PhilIndex.params.xia2.settings.output.mmcif.pdb_version == "v5_next":
                 loop_values = [
                     flex.size_t_range(1, intensities.size() + 1),

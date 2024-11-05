@@ -5,7 +5,6 @@ import os
 import pathlib
 import shutil
 import subprocess
-from typing import List
 
 import pytest
 from dials.algorithms.scaling.scaling_library import determine_best_unit_cell
@@ -69,7 +68,7 @@ def test_assess_crystals(dials_data, tmp_path, option, expected_success):
     assert (tmp_path / "assess_crystals" / "assess_crystals.json").is_file()
     assert (tmp_path / "assess_crystals" / "dials.cell_clusters.html").is_file()
 
-    with open(tmp_path / "assess_crystals" / "assess_crystals.json", "r") as f:
+    with open(tmp_path / "assess_crystals" / "assess_crystals.json") as f:
         data = json.load(f)
     assert data["success_per_image"] == expected_success
 
@@ -167,7 +166,7 @@ def test_geometry_refinement(dials_data, tmp_path, option, expected_success):
     # Inspect the output to check which images were used in refinement.
     assert (tmp_path / "geometry_refinement" / "geometry_refinement.json").is_file()
     assert (tmp_path / "geometry_refinement" / "dials.cell_clusters.html").is_file()
-    with open(tmp_path / "geometry_refinement" / "geometry_refinement.json", "r") as f:
+    with open(tmp_path / "geometry_refinement" / "geometry_refinement.json") as f:
         data = json.load(f)
     assert data["success_per_image"] == expected_success
     refined_expts = load.experiment_list(reference, check_format=False)
@@ -283,7 +282,7 @@ def test_slice_cbfs(dials_data, tmp_path, refined_expt):
     assert images == ["17002", "17003", "17004"]
     # Also check the correct images were reported in the indexing report.
     images = []
-    with open(tmp_path / "batch_1" / "dials.ssx_index.log", "r") as f:
+    with open(tmp_path / "batch_1" / "dials.ssx_index.log") as f:
         lines = f.readlines()
         for l in lines:
             if "merlin" in l:
@@ -648,14 +647,14 @@ grouping:
         file_name=os.fspath(tmp_path / "DataFiles" / f"{output_names[0]}.mtz")
     )
     n_g1 = g1_mtz.n_reflections()
-    with open(tmp_path / "LogFiles" / f"dials.merge.{output_names[0]}.json", "r") as f:
+    with open(tmp_path / "LogFiles" / f"dials.merge.{output_names[0]}.json") as f:
         data_1 = json.load(f)
     n_g1_unique = sum(data_1["1.37611"]["merging_stats"]["n_uniq"])
     g2_mtz = mtz.object(
         file_name=os.fspath(tmp_path / "DataFiles" / f"{output_names[1]}.mtz")
     )
     n_g2 = g2_mtz.n_reflections()
-    with open(tmp_path / "LogFiles" / f"dials.merge.{output_names[1]}.json", "r") as f:
+    with open(tmp_path / "LogFiles" / f"dials.merge.{output_names[1]}.json") as f:
         data_2 = json.load(f)
     n_g2_unique = sum(data_2["1.37611"]["merging_stats"]["n_uniq"])
     # A test to check things have made it to the right output files
@@ -728,7 +727,7 @@ grouping:
     ],
 )
 def test_ssx_reduce_filter_options(
-    dials_data, tmp_path, cluster_args: List[str], expected_results: dict
+    dials_data, tmp_path, cluster_args: list[str], expected_results: dict
 ):
     ssx = dials_data("cunir_serial_processed", pathlib=True)
     cmd = "xia2.ssx_reduce"

@@ -302,9 +302,7 @@ class Integrater(FrameProcessor):
         if not refiner.get_refiner_done() and self._intgr_prepare_done:
             for sweep in refiner._refinr_sweeps:
                 logger.debug(
-                    "Resetting integrater for sweep {} as refiner updated.".format(
-                        sweep._name
-                    )
+                    f"Resetting integrater for sweep {sweep._name} as refiner updated."
                 )
                 sweep._integrater._integrater_reset()
 

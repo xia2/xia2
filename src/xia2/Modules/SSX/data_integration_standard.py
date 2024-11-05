@@ -8,7 +8,6 @@ import os
 import pathlib
 import subprocess
 from dataclasses import asdict, dataclass, field
-from typing import List, Optional, Tuple
 
 import libtbx.easy_mp
 import numpy as np
@@ -48,28 +47,28 @@ xia2_logger = logging.getLogger(__name__)
 
 @dataclass
 class FileInput:
-    images: List[str] = field(default_factory=list)
-    templates: List[str] = field(default_factory=list)
-    directories: List[str] = field(default_factory=list)
-    mask: Optional[pathlib.Path] = None
-    reference_geometry: Optional[pathlib.Path] = None
-    starting_geometry: Optional[pathlib.Path] = None
-    import_phil: Optional[pathlib.Path] = None
+    images: list[str] = field(default_factory=list)
+    templates: list[str] = field(default_factory=list)
+    directories: list[str] = field(default_factory=list)
+    mask: pathlib.Path | None = None
+    reference_geometry: pathlib.Path | None = None
+    starting_geometry: pathlib.Path | None = None
+    import_phil: pathlib.Path | None = None
 
 
 @dataclass
 class AlgorithmParams:
-    assess_images_to_use: Optional[Tuple[int, int]] = None
-    refinement_images_to_use: Optional[Tuple[int, int]] = None
+    assess_images_to_use: tuple[int, int] | None = None
+    refinement_images_to_use: tuple[int, int] | None = None
     assess_crystals_n_crystals: int = 250
     geometry_refinement_n_crystals: int = 250
     batch_size: int = 1000
-    steps: List[str] = field(default_factory=list)
+    steps: list[str] = field(default_factory=list)
     nproc: int = 1
     njobs: int = 1
     multiprocessing_method: str = "multiprocessing"
     enable_live_reporting: bool = False
-    parsed_grouping: Optional[ParsedYAML] = None
+    parsed_grouping: ParsedYAML | None = None
 
 
 def process_batch(
@@ -146,7 +145,7 @@ def setup_main_process(
     main_directory: pathlib.Path,
     imported_expts: pathlib.Path,
     batch_size: int,
-) -> Tuple[List[pathlib.Path], dict]:
+) -> tuple[list[pathlib.Path], dict]:
     """
     Slice data from the imported data according to the batch size,
     saving each into its own subdirectory for batch processing.
@@ -158,7 +157,7 @@ def setup_main_process(
     template = functools.partial(
         "batch_{index:0{fmt:d}d}".format, fmt=len(str(n_batches))
     )
-    batch_directories: List[pathlib.Path] = []
+    batch_directories: list[pathlib.Path] = []
     setup_data: dict = {"images_per_batch": {}}
     for i in range(len(splits) - 1):
         subdir = main_directory / template(index=i + 1)
@@ -174,8 +173,8 @@ def setup_main_process(
 
 def inspect_existing_batch_directories(
     main_directory: pathlib.Path,
-) -> Tuple[List[pathlib.Path], dict]:
-    batch_directories: List[pathlib.Path] = []
+) -> tuple[list[pathlib.Path], dict]:
+    batch_directories: list[pathlib.Path] = []
     setup_data: dict = {"images_per_batch": {}}
     # use glob to find batch_*
     dirs_list = []
@@ -207,7 +206,7 @@ class NoMoreImages(Exception):
 def slice_images_from_experiments(
     imported_expts: pathlib.Path,
     destination_directory: pathlib.Path,
-    images: Tuple[int, int],
+    images: tuple[int, int],
 ) -> None:
     """Saves a slice of the experiment list into the destination directory."""
 
@@ -234,7 +233,7 @@ def slice_images_from_experiments(
 
 def check_previous_import(
     working_directory: pathlib.Path, file_input: FileInput
-) -> Tuple[bool, dict]:
+) -> tuple[bool, dict]:
     same_as_previous = False
     previous = {}
     if (working_directory / "file_input.json").is_file():
@@ -348,7 +347,7 @@ def run_import(
         if ignore_manual_detector_phil_options:
             # remove any geometry options from the user phil, if we are now using the refined
             # reference geometry
-            with open(file_input.import_phil, "r") as f:
+            with open(file_input.import_phil) as f:
                 params = phil.parse(input_string=f.read())
             non_detector_phil = ""
             for obj in params.objects:
@@ -415,7 +414,7 @@ def run_import(
 def assess_crystal_parameters_from_images(
     working_directory: pathlib.Path,
     imported_expts: pathlib.Path,
-    images_to_use: Tuple[int, int],
+    images_to_use: tuple[int, int],
     spotfinding_params: SpotfindingParams,
     indexing_params: IndexingParams,
 ) -> None:
@@ -427,9 +426,9 @@ def assess_crystal_parameters_from_images(
     Always outputs a assess_crystals.json containing at least the success_per_image.
     """
     xia2_logger.notice(banner("Assess crystal parameters"))  # type: ignore
-    large_clusters: List[Cluster] = []
+    large_clusters: list[Cluster] = []
     cluster_plots: dict = {}
-    success_per_image: List[bool] = []
+    success_per_image: list[bool] = []
 
     slice_images_from_experiments(imported_expts, working_directory, images_to_use)
 
@@ -491,9 +490,9 @@ def cumulative_assess_crystal_parameters(
     indexing_params: IndexingParams,
 ):
     xia2_logger.notice(banner("Assess crystal parameters"))  # type: ignore
-    large_clusters: List[Cluster] = []
+    large_clusters: list[Cluster] = []
     cluster_plots: dict = {}
-    success_per_image: List[bool] = []
+    success_per_image: list[bool] = []
 
     n_xtal = 0
     first_image = 0
@@ -568,7 +567,7 @@ def cumulative_assess_crystal_parameters(
 
 
 def _report_on_assess_crystals(
-    experiments: ExperimentList, large_clusters: List[Cluster]
+    experiments: ExperimentList, large_clusters: list[Cluster]
 ) -> None:
     if experiments:
         if large_clusters:
@@ -588,7 +587,7 @@ def _report_on_assess_crystals(
 def determine_reference_geometry_from_images(
     working_directory: pathlib.Path,
     imported_expts: pathlib.Path,
-    images_to_use: Tuple[int, int],
+    images_to_use: tuple[int, int],
     spotfinding_params: SpotfindingParams,
     indexing_params: IndexingParams,
     refinement_params: RefinementParams,
@@ -598,7 +597,7 @@ def determine_reference_geometry_from_images(
     slice_images_from_experiments(imported_expts, working_directory, images_to_use)
 
     cluster_plots: dict = {}
-    success_per_image: List[bool] = []
+    success_per_image: list[bool] = []
     progress_reporter = ProgressReport({"images_per_batch": {}})
 
     strong = ssx_find_spots(working_directory, spotfinding_params)
@@ -680,7 +679,7 @@ def cumulative_determine_reference_geometry(
 ) -> None:
     xia2_logger.notice(banner("Joint-refinement of experimental geometry"))  # type: ignore
     cluster_plots: dict = {}
-    success_per_image: List[bool] = []
+    success_per_image: list[bool] = []
 
     n_xtal = 0
     first_image = 0
@@ -776,7 +775,7 @@ def cumulative_determine_reference_geometry(
     )
 
 
-class ProcessBatch(object):
+class ProcessBatch:
     """A processing class as required for multi_node_parallel_map"""
 
     def __init__(
@@ -806,7 +805,7 @@ class ProcessBatch(object):
         return summary_data
 
 
-class ProgressReport(object):
+class ProgressReport:
     # class to store progress for reporting.
     # Either add and report after each step, or add all at the end (so can
     # distribute batch processing and not have mixed up reporting)
@@ -925,7 +924,7 @@ class ProgressReport(object):
 
 
 def process_batches(
-    batch_directories: List[pathlib.Path],
+    batch_directories: list[pathlib.Path],
     spotfinding_params: SpotfindingParams,
     indexing_params: IndexingParams,
     integration_params: IntegrationParams,
@@ -974,7 +973,7 @@ def process_batches(
             process_output(summary_data, add_all_to_progress=False)
 
 
-def check_for_gaps_in_steps(steps: List[str]) -> bool:
+def check_for_gaps_in_steps(steps: list[str]) -> bool:
     if "find_spots" not in steps:
         if "index" in steps or "integrate" in steps:
             return True
@@ -993,7 +992,7 @@ def run_data_integration(
     indexing_params: IndexingParams,
     refinement_params: RefinementParams,
     integration_params: IntegrationParams,
-) -> List[pathlib.Path]:
+) -> list[pathlib.Path]:
     """
     The main data integration processing function.
     Import the data, followed by option crystal assessment (if the unit cell and

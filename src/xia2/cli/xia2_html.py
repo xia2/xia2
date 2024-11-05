@@ -345,9 +345,7 @@ def generate_xia2_html(xinfo, filename="xia2.html", params=None, args=[]):
         if os.path.exists(os.path.join(data_dir, other_file)):
             other_files.append(
                 [
-                    '<a href="DataFiles/{filename}">{filename}</a>'.format(
-                        filename=other_file
-                    ),
+                    f'<a href="DataFiles/{other_file}">{other_file}</a>',
                     description,
                 ]
             )

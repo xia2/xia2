@@ -4,7 +4,6 @@ import json
 import logging
 import math
 import os
-from typing import Optional
 
 from xia2.Driver.DriverFactory import DriverFactory
 from xia2.Handlers.Phil import PhilIndex
@@ -44,8 +43,8 @@ def Integrate(DriverType=None):
 
             # The minimum number of spots required for profile modelling, per degree
             # and overall.
-            self._min_spots_per_degree: Optional[int] = None
-            self._min_spots_overall: Optional[int] = None
+            self._min_spots_per_degree: int | None = None
+            self._min_spots_overall: int | None = None
 
             self._integration_report = {}
 
