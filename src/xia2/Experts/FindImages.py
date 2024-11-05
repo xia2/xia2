@@ -200,7 +200,7 @@ def ensure_no_batches_numbered_zero(template, images, offset):
         prefix = prefix[:-1]
         images = [add + i for i in images]
 
-    template = "%s%s%s" % (prefix, "#" * hashes, suffix)
+    template = "{}{}{}".format(prefix, "#" * hashes, suffix)
 
     return template, images, offset
 

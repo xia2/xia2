@@ -244,8 +244,7 @@ class DialsIntegrater(Integrater):
             or PhilIndex.params.xia2.settings.resolution.keep_all_reflections
         ):
             logger.debug(
-                "Overriding high resolution limit: %f => %f"
-                % (self._intgr_reso_high, d_min_limit)
+                f"Overriding high resolution limit: {self._intgr_reso_high:f} => {d_min_limit:f}"
             )
             self._intgr_reso_high = d_min_limit
 
@@ -311,8 +310,9 @@ class DialsIntegrater(Integrater):
             self.set_integrater_mosaic_min_mean_max(mosaic, mosaic, mosaic)
 
         logger.info(
-            "Mosaic spread: %.3f < %.3f < %.3f"
-            % self.get_integrater_mosaic_min_mean_max()
+            "Mosaic spread: {:.3f} < {:.3f} < {:.3f}".format(
+                *self.get_integrater_mosaic_min_mean_max()
+            )
         )
 
         # If running in high-pressure mode, run dials.anvil_correction to
@@ -342,7 +342,7 @@ class DialsIntegrater(Integrater):
             exporter = self.ExportMtz()
             exporter.set_reflections_filename(self._intgr_integrated_reflections)
             mtz_filename = os.path.join(
-                self.get_working_directory(), "%s_integrated.mtz" % "dials"
+                self.get_working_directory(), "{}_integrated.mtz".format("dials")
             )
             exporter.set_mtz_filename(mtz_filename)
             exporter.run()

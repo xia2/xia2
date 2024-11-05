@@ -234,8 +234,7 @@ class DefaultDriver:
             error_python_traceback(records)
         except Exception:
             raise RuntimeError(
-                "%s terminated with an error: see %s for more details"
-                % (os.path.basename(self._executable), self.get_log_file())
+                f"{os.path.basename(self._executable)} terminated with an error: see {self.get_log_file()} for more details"
             )
 
     def check_for_errors(self):

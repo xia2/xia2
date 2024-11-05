@@ -97,7 +97,7 @@ def Import(DriverType=None):
             elif self._mosflm_beam_centre is not None:
                 assert len(self._mosflm_beam_centre) == 2
                 self.add_command_line(
-                    "mosflm_beam_centre=%s,%s" % (self._mosflm_beam_centre)
+                    "mosflm_beam_centre={},{}".format(*self._mosflm_beam_centre)
                 )
 
             if fast_mode:

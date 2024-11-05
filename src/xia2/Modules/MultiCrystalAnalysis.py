@@ -406,7 +406,7 @@ any systematic grouping of points may suggest a preferential crystal orientation
 """
                     % hkl
                 )
-                key = "stereographic_projection_%s%s%s" % hkl
+                key = "stereographic_projection_{}{}{}".format(*hkl)
                 orientation_graphs[key] = d
                 styles[key] = "square-plot"
 

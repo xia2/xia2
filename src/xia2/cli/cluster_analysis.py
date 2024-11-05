@@ -49,21 +49,20 @@ clustering
 """
 
 mca_phil = iotbx.phil.parse(
-    """
+    f"""
 
 include scope dials.algorithms.correlation.analysis.working_phil
 
-%s
-%s
+{cluster_phil_scope}
+{xia2_cluster_phil_scope}
 
-output {
+output {{
   log = xia2.cluster_analysis.log
     .type = str
   json = xia2.cluster_analysis.json
     .type = str
-}
-"""
-    % (cluster_phil_scope, xia2_cluster_phil_scope),
+}}
+""",
     process_includes=True,
 )
 
@@ -121,8 +120,7 @@ def run(args=sys.argv[1:]):
     reflections = parse_multiple_datasets(reflections)
     if len(experiments) != len(reflections):
         sys.exit(
-            "Mismatched number of experiments and reflection tables found: %s & %s."
-            % (len(experiments), len(reflections))
+            f"Mismatched number of experiments and reflection tables found: {len(experiments)} & {len(reflections)}."
         )
     if len(experiments) < 2:
         sys.exit(

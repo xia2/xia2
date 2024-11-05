@@ -737,7 +737,11 @@ class DialsIndexer(Indexer):
 
         if self._indxr_input_cell:
             indexer.set_indexer_input_cell(self._indxr_input_cell)
-            logger.debug("Set cell: %f %f %f %f %f %f" % self._indxr_input_cell)
+            logger.debug(
+                "Set cell: {:f} {:f} {:f} {:f} {:f} {:f}".format(
+                    *self._indxr_input_cell
+                )
+            )
 
         if method is None:
             if PhilIndex.params.dials.index.method is None:

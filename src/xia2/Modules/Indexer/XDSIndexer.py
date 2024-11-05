@@ -390,7 +390,9 @@ class XDSIndexer(IndexerSingleSweep):
                         scan.get_image_index_from_angle(best_bg_range[1]),
                     )
                     logger.debug(
-                        "Setting background images: %s -> %s" % self._background_images
+                        "Setting background images: {} -> {}".format(
+                            *self._background_images
+                        )
                     )
 
         init = self.Init()
@@ -520,7 +522,11 @@ class XDSIndexer(IndexerSingleSweep):
             idxref.set_indexer_input_cell(self._indxr_input_cell)
 
             logger.debug("Set lattice: %s", self._indxr_input_lattice)
-            logger.debug("Set cell: %f %f %f %f %f %f" % self._indxr_input_cell)
+            logger.debug(
+                "Set cell: {:f} {:f} {:f} {:f} {:f} {:f}".format(
+                    *self._indxr_input_cell
+                )
+            )
 
             original_cell = self._indxr_input_cell
         elif self._indxr_input_lattice:
@@ -664,13 +670,13 @@ class XDSIndexer(IndexerSingleSweep):
                 logger.debug("Detected pseudocentred lattice")
                 logger.debug(
                     "Inserting solution: %s " % lattice2
-                    + "%6.2f %6.2f %6.2f %6.2f %6.2f %6.2f" % cell2
+                    + "{:6.2f} {:6.2f} {:6.2f} {:6.2f} {:6.2f} {:6.2f}".format(*cell2)
                 )
 
                 self._indxr_replace(lattice2, cell2)
 
                 logger.debug("Set lattice: %s", lattice2)
-                logger.debug("Set cell: %f %f %f %f %f %f" % cell2)
+                logger.debug("Set cell: {:f} {:f} {:f} {:f} {:f} {:f}".format(*cell2))
 
                 # then rerun
 

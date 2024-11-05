@@ -66,7 +66,7 @@ def anvil_correction(driver_type=None):
             )
             self.add_command_line("anvil.density=%s" % self.density)
             self.add_command_line("anvil.thickness=%s" % self.thickness)
-            self.add_command_line("anvil.normal=%s,%s,%s" % tuple(self.normal))
+            self.add_command_line("anvil.normal={},{},{}".format(*tuple(self.normal)))
 
             self.start()
             self.close_wait()

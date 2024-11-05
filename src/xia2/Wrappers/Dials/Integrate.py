@@ -207,8 +207,9 @@ def Integrate(DriverType=None):
             for n, record in enumerate(dials_output):
                 if "Too few reflections for profile modelling" in record:
                     raise DIALSIntegrateError(
-                        "%s\n%s, %s\nsee %%s for more details"
-                        % tuple(dials_output[n + i].strip() for i in (0, 1, 2))
+                        "{}\n{}, {}\nsee %s for more details".format(
+                            *tuple(dials_output[n + i].strip() for i in (0, 1, 2))
+                        )
                         % self.get_log_file()
                     )
 
