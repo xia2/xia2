@@ -552,6 +552,8 @@ class MultiCrystalScale:
                     continue
                 if count >= params.clustering.max_output_clusters:
                     continue
+                if len(c.labels) == len(self._data_manager.experiments):
+                    continue
                 cluster_dir = f"coordinate_cluster_{c.cluster_id}"
                 logger.info(f"Scaling: {cluster_dir}")
                 cluster_identifiers = [
