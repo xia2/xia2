@@ -627,13 +627,19 @@ class MultiCrystalScale:
 
         self.report()
 
-    def scale_cluster(self, data_manager_input, identifiers, free_flags_in_full_set):
+    def scale_cluster(
+        self,
+        data_manager_input,
+        identifiers,
+        free_flags_in_full_set,
+        output_name="scaled",
+    ):
         data_manager = copy.deepcopy(data_manager_input)
         data_manager.select(identifiers)
 
         scaled = Scale(data_manager, self._params)
-        data_manager.export_experiments("scaled.expt")
-        data_manager.export_reflections("scaled.refl", d_min=scaled.d_min)
+        data_manager.export_experiments(f"{output_name}.expt")
+        data_manager.export_reflections(f"{output_name}.refl", d_min=scaled.d_min)
 
         # if we didn't have an external reference for the free_flags set, we need to make
         # and record one here.
@@ -687,7 +693,9 @@ class MultiCrystalScale:
         if not os.path.exists(cluster_dir):
             os.mkdir(cluster_dir)
         os.chdir(cluster_dir)
-        scaled = self.scale_cluster(data_manager, cluster_identifiers, True)
+        scaled = self.scale_cluster(
+            data_manager, cluster_identifiers, True, f"{cluster_dir}_scaled"
+        )
         self._record_individual_report(
             "", scaled.report(), cluster_dir.replace("_", " ")
         )
