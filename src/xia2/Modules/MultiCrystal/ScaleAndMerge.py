@@ -647,14 +647,14 @@ class MultiCrystalScale:
         # and record one here.
 
         data_manager.export_merged_mtz(
-            "scaled.mtz",
+            f"{output_name}.mtz",
             d_min=scaled.d_min,
             r_free_params=self._params.r_free_flags,
             wavelength_tolerance=self._params.wavelength_tolerance,
         )
         if (not free_flags_in_full_set) and (self._params.r_free_flags.extend is True):
             self._params.r_free_flags.reference = os.path.join(
-                os.getcwd(), "scaled.mtz"
+                os.getcwd(), f"{output_name}.mtz"
             )
             free_flags_in_full_set = True
 
@@ -663,7 +663,7 @@ class MultiCrystalScale:
             for wl in self.wavelengths:
                 name = data_manager.export_unmerged_wave_mtz(
                     wl,
-                    "scaled_unmerged",
+                    f"{output_name}_unmerged",
                     d_min=scaled.d_min,
                     wavelength_tolerance=self._params.wavelength_tolerance,
                 )
@@ -672,7 +672,7 @@ class MultiCrystalScale:
             for wl in self.wavelengths:
                 name = data_manager.export_merged_wave_mtz(
                     wl,
-                    "scaled",
+                    output_name,
                     d_min=scaled.d_min,
                     r_free_params=self._params.r_free_flags,
                     wavelength_tolerance=self._params.wavelength_tolerance,
@@ -681,12 +681,12 @@ class MultiCrystalScale:
                     convert_merged_mtz_to_sca(name)
         else:
             data_manager.export_unmerged_mtz(
-                "scaled_unmerged.mtz",
+                f"{output_name}_unmerged.mtz",
                 d_min=scaled.d_min,
                 wavelength_tolerance=self._params.wavelength_tolerance,
             )
-            convert_merged_mtz_to_sca("scaled.mtz")
-            convert_unmerged_mtz_to_sca("scaled_unmerged.mtz")
+            convert_merged_mtz_to_sca(f"{output_name}.mtz")
+            convert_unmerged_mtz_to_sca(f"{output_name}_unmerged.mtz")
 
         return scaled
 
