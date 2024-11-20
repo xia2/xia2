@@ -22,6 +22,7 @@ from dxtbx.model import ExperimentList
 from dxtbx.serialize import load
 from libtbx import phil
 
+from xia2.Driver.DriverHelper import windows_resolve
 from xia2.Driver.timing import record_step
 from xia2.Handlers.Files import FileHandler
 from xia2.Handlers.Streams import banner
@@ -336,14 +337,13 @@ def run_import(
         pathlib.Path.mkdir(working_directory)
 
     xia2_logger.info("New images or geometry detected, running import")
-    cmd = "dials.import"
-    if os.name == "nt":
-        cmd += ".bat"
     import_command = [
-        cmd,
+        "dials.import",
         "output.experiments=imported.expt",
         "convert_stills_to_sequences=True",
     ]
+    if os.name == "nt":
+        import_command = windows_resolve(import_command)
     if file_input.import_phil:
         if ignore_manual_detector_phil_options:
             # remove any geometry options from the user phil, if we are now using the refined
@@ -654,16 +654,16 @@ def determine_reference_geometry_from_images(
     xia2_logger.info(
         f"Refined reference geometry saved to {working_directory}/refined.expt"
     )
-    cmd = "dxtbx.plot_detector_models"
+    cmd = [
+        "dxtbx.plot_detector_models",
+        "imported.expt",
+        "refined.expt",
+        "pdf_file=detector_models.pdf",
+    ]
     if os.name == "nt":
-        cmd += ".bat"
+        cmd = windows_resolve(cmd)
     subprocess.run(
-        [
-            cmd,
-            "imported.expt",
-            "refined.expt",
-            "pdf_file=detector_models.pdf",
-        ],
+        cmd,
         cwd=working_directory,
         capture_output=False,
         encoding="utf-8",
@@ -760,16 +760,16 @@ def cumulative_determine_reference_geometry(
     xia2_logger.info(
         f"Refined reference geometry saved to {working_directory}/refined.expt"
     )
-    cmd = "dxtbx.plot_detector_models"
+    cmd = [
+        "dxtbx.plot_detector_models",
+        "imported.expt",
+        "refined.expt",
+        "pdf_file=detector_models.pdf",
+    ]
     if os.name == "nt":
-        cmd += ".bat"
+        cmd = windows_resolve(cmd)
     subprocess.run(
-        [
-            cmd,
-            "imported.expt",
-            "refined.expt",
-            "pdf_file=detector_models.pdf",
-        ],
+        cmd,
         cwd=working_directory,
         capture_output=False,
         encoding="utf-8",

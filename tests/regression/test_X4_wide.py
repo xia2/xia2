@@ -8,6 +8,7 @@ import pytest
 from dxtbx.serialize import load
 
 import xia2.Test.regression
+from xia2.Driver.DriverHelper import windows_resolve
 
 
 def _split_xinfo(data_dir, tmp_path) -> str:
@@ -47,11 +48,11 @@ END PROJECT AUTOMATIC
 
 @pytest.mark.parametrize("pipeline,scaler", (("dials", "xdsa"), ("3dii", "dials")))
 def test_incompatible_pipeline_scaler(pipeline, scaler, tmp_path, ccp4):
-    cmd = "xia2"
+    cmd = ["xia2", f"pipeline={pipeline}", "nproc=1", f"scaler={scaler}"]
     if os.name == "nt":
-        cmd += ".bat"
+        cmd = windows_resolve(cmd)
     result = subprocess.run(
-        [cmd, f"pipeline={pipeline}", "nproc=1", f"scaler={scaler}"],
+        cmd,
         cwd=tmp_path,
         capture_output=True,
     )
@@ -63,11 +64,8 @@ def test_incompatible_pipeline_scaler(pipeline, scaler, tmp_path, ccp4):
 
 
 def test_dials_aimless(regression_test, dials_data, tmp_path, ccp4):
-    cmd = "xia2"
-    if os.name == "nt":
-        cmd += ".bat"
     command_line = [
-        cmd,
+        "xia2",
         "pipeline=dials-aimless",
         "nproc=1",
         "trust_beam_centre=True",
@@ -75,6 +73,8 @@ def test_dials_aimless(regression_test, dials_data, tmp_path, ccp4):
         "truncate=cctbx",
         dials_data("x4wide", pathlib=True),
     ]
+    if os.name == "nt":
+        command_line = windows_resolve(command_line)
     result = subprocess.run(command_line, cwd=tmp_path, capture_output=True)
     success, issues = xia2.Test.regression.check_result(
         "X4_wide.dials-aimless", result, tmp_path, ccp4, expected_space_group="P41212"
@@ -84,11 +84,8 @@ def test_dials_aimless(regression_test, dials_data, tmp_path, ccp4):
 
 def test_dials_aimless_with_dials_pipeline(regression_test, dials_data, tmp_path, ccp4):
     # This should be functionally equivalent to 'test_dials_aimless' above
-    cmd = "xia2"
-    if os.name == "nt":
-        cmd += ".bat"
     command_line = [
-        cmd,
+        "xia2",
         "pipeline=dials",
         "scaler=ccp4a",
         "nproc=1",
@@ -97,6 +94,8 @@ def test_dials_aimless_with_dials_pipeline(regression_test, dials_data, tmp_path
         "truncate=cctbx",
         dials_data("x4wide", pathlib=True),
     ]
+    if os.name == "nt":
+        command_line = windows_resolve(command_line)
     result = subprocess.run(command_line, cwd=tmp_path, capture_output=True)
     success, issues = xia2.Test.regression.check_result(
         "X4_wide.dials-aimless", result, tmp_path, ccp4
@@ -105,11 +104,8 @@ def test_dials_aimless_with_dials_pipeline(regression_test, dials_data, tmp_path
 
 
 def test_dials(regression_test, dials_data, tmp_path, ccp4):
-    cmd = "xia2"
-    if os.name == "nt":
-        cmd += ".bat"
     command_line = [
-        cmd,
+        "xia2",
         "pipeline=dials",
         "nproc=1",
         "trust_beam_centre=True",
@@ -120,6 +116,8 @@ def test_dials(regression_test, dials_data, tmp_path, ccp4):
         "crystal=bar",
         dials_data("x4wide", pathlib=True),
     ]
+    if os.name == "nt":
+        command_line = windows_resolve(command_line)
     result = subprocess.run(command_line, cwd=tmp_path, capture_output=True)
     scaled_expt_file = tmp_path / "DataFiles" / "foo_bar_scaled.expt"
     assert scaled_expt_file.is_file()
@@ -158,11 +156,8 @@ def test_dials(regression_test, dials_data, tmp_path, ccp4):
 
 
 def test_dials_aimless_split(regression_test, dials_data, tmp_path, ccp4):
-    cmd = "xia2"
-    if os.name == "nt":
-        cmd += ".bat"
     command_line = [
-        cmd,
+        "xia2",
         "pipeline=dials-aimless",
         "nproc=1",
         "njob=2",
@@ -170,6 +165,8 @@ def test_dials_aimless_split(regression_test, dials_data, tmp_path, ccp4):
         "trust_beam_centre=True",
         "xinfo=%s" % _split_xinfo(dials_data("x4wide", pathlib=True), tmp_path),
     ]
+    if os.name == "nt":
+        command_line = windows_resolve(command_line)
     result = subprocess.run(command_line, cwd=tmp_path, capture_output=True)
     success, issues = xia2.Test.regression.check_result(
         "X4_wide_split.dials-aimless", result, tmp_path, ccp4
@@ -178,11 +175,8 @@ def test_dials_aimless_split(regression_test, dials_data, tmp_path, ccp4):
 
 
 def test_dials_split(regression_test, dials_data, tmp_path, ccp4):
-    cmd = "xia2"
-    if os.name == "nt":
-        cmd += ".bat"
     command_line = [
-        cmd,
+        "xia2",
         "pipeline=dials",
         "nproc=1",
         "njob=2",
@@ -190,6 +184,8 @@ def test_dials_split(regression_test, dials_data, tmp_path, ccp4):
         "xinfo=%s" % _split_xinfo(dials_data("x4wide", pathlib=True), tmp_path),
         "mode=parallel",
     ]
+    if os.name == "nt":
+        command_line = windows_resolve(command_line)
     result = subprocess.run(command_line, cwd=tmp_path, capture_output=True)
     success, issues = xia2.Test.regression.check_result(
         "X4_wide_split.dials",
@@ -205,17 +201,16 @@ def test_dials_split(regression_test, dials_data, tmp_path, ccp4):
 
 
 def test_xds(regression_test, dials_data, tmp_path, ccp4, xds):
-    cmd = "xia2"
-    if os.name == "nt":
-        cmd += ".bat"
     command_line = [
-        cmd,
+        "xia2",
         "pipeline=3di",
         "nproc=1",
         "trust_beam_centre=True",
         "read_all_image_headers=False",
         dials_data("x4wide", pathlib=True),
     ]
+    if os.name == "nt":
+        command_line = windows_resolve(command_line)
     result = subprocess.run(command_line, cwd=tmp_path, capture_output=True)
     success, issues = xia2.Test.regression.check_result(
         "X4_wide.xds", result, tmp_path, ccp4, xds, expected_space_group="P41212"
@@ -224,11 +219,8 @@ def test_xds(regression_test, dials_data, tmp_path, ccp4, xds):
 
 
 def test_xds_split(regression_test, dials_data, tmp_path, ccp4, xds):
-    cmd = "xia2"
-    if os.name == "nt":
-        cmd += ".bat"
     command_line = [
-        cmd,
+        "xia2",
         "pipeline=3di",
         "nproc=1",
         "njob=2",
@@ -236,6 +228,8 @@ def test_xds_split(regression_test, dials_data, tmp_path, ccp4, xds):
         "trust_beam_centre=True",
         "xinfo=%s" % _split_xinfo(dials_data("x4wide", pathlib=True), tmp_path),
     ]
+    if os.name == "nt":
+        command_line = windows_resolve(command_line)
     result = subprocess.run(command_line, cwd=tmp_path, capture_output=True)
     success, issues = xia2.Test.regression.check_result(
         "X4_wide_split.xds", result, tmp_path, ccp4, xds
@@ -244,17 +238,16 @@ def test_xds_split(regression_test, dials_data, tmp_path, ccp4, xds):
 
 
 def test_xds_ccp4a(regression_test, dials_data, tmp_path, ccp4, xds):
-    cmd = "xia2"
-    if os.name == "nt":
-        cmd += ".bat"
     command_line = [
-        cmd,
+        "xia2",
         "pipeline=3di",
         "nproc=1",
         "scaler=ccp4a",
         "trust_beam_centre=True",
         dials_data("x4wide", pathlib=True),
     ]
+    if os.name == "nt":
+        command_line = windows_resolve(command_line)
     result = subprocess.run(command_line, cwd=tmp_path, capture_output=True)
     success, issues = xia2.Test.regression.check_result(
         "X4_wide.ccp4a", result, tmp_path, ccp4, xds
@@ -263,11 +256,8 @@ def test_xds_ccp4a(regression_test, dials_data, tmp_path, ccp4, xds):
 
 
 def test_xds_ccp4a_split(regression_test, dials_data, tmp_path, ccp4, xds):
-    cmd = "xia2"
-    if os.name == "nt":
-        cmd += ".bat"
     command_line = [
-        cmd,
+        "xia2",
         "pipeline=3di",
         "nproc=1",
         "scaler=ccp4a",
@@ -277,6 +267,8 @@ def test_xds_ccp4a_split(regression_test, dials_data, tmp_path, ccp4, xds):
         "mode=parallel",
         "xinfo=%s" % _split_xinfo(dials_data("x4wide", pathlib=True), tmp_path),
     ]
+    if os.name == "nt":
+        command_line = windows_resolve(command_line)
     result = subprocess.run(command_line, cwd=tmp_path, capture_output=True)
     success, issues = xia2.Test.regression.check_result(
         "X4_wide_split.ccp4a", result, tmp_path, ccp4, xds
@@ -289,11 +281,8 @@ def test_xds_ccp4a_split(regression_test, dials_data, tmp_path, ccp4, xds):
 def test_space_group_dials(
     pipeline, space_group, regression_test, dials_data, tmp_path, ccp4
 ):
-    cmd = "xia2"
-    if os.name == "nt":
-        cmd += ".bat"
     command_line = [
-        cmd,
+        "xia2",
         "pipeline=%s" % pipeline,
         f"space_group={space_group}",
         "nproc=1",
@@ -304,6 +293,8 @@ def test_space_group_dials(
         "image=%s"
         % dials_data("x4wide", pathlib=True).joinpath("X4_wide_M1S4_2_0001.cbf:20:30"),
     ]
+    if os.name == "nt":
+        command_line = windows_resolve(command_line)
     result = subprocess.run(command_line, cwd=tmp_path, capture_output=True)
     success, issues = xia2.Test.regression.check_result(
         "X4_wide.space_group.%s" % pipeline,
@@ -319,11 +310,8 @@ def test_space_group_dials(
 def test_space_group_3dii(
     space_group, regression_test, dials_data, tmp_path, ccp4, xds
 ):
-    cmd = "xia2"
-    if os.name == "nt":
-        cmd += ".bat"
     command_line = [
-        cmd,
+        "xia2",
         "pipeline=3dii",
         f"space_group={space_group}",
         "nproc=1",
@@ -334,6 +322,8 @@ def test_space_group_3dii(
         "image=%s"
         % dials_data("x4wide", pathlib=True).joinpath("X4_wide_M1S4_2_0001.cbf:20:30"),
     ]
+    if os.name == "nt":
+        command_line = windows_resolve(command_line)
     result = subprocess.run(command_line, cwd=tmp_path, capture_output=True)
     success, issues = xia2.Test.regression.check_result(
         "X4_wide.space_group.3dii",

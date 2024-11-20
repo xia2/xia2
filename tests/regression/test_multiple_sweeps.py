@@ -15,6 +15,8 @@ import subprocess
 
 import pytest
 
+from xia2.Driver.DriverHelper import windows_resolve
+
 
 @pytest.mark.parametrize(
     "multi_sweep_type",
@@ -39,12 +41,9 @@ def test_multiple_sweeps(multi_sweep_type, ccp4, dials_data, tmp_path):
     data_dir = dials_data("l_cysteine_dials_output", pathlib=True)
     images = [data_dir / f"l-cyst_{sweep:02d}_00001.cbf:1:15" for sweep in (1, 2)]
 
-    cmd = "xia2"
-    if os.name == "nt":
-        cmd += ".bat"
     command = [
         # Obviously, we're going to run xia2.
-        cmd,
+        "xia2",
         # Set one of the multiple-sweep flags.
         f"{multi_sweep_type}=True",
         # Reduce the required number of reflections per degree for profile modelling
@@ -53,6 +52,8 @@ def test_multiple_sweeps(multi_sweep_type, ccp4, dials_data, tmp_path):
         # Don't run the Xtriage analysis — we don't have enough reflections overall.
         "xtriage_analysis=False",
     ]
+    if os.name == "nt":
+        command = windows_resolve(command)
     result = subprocess.run(
         command + [f"image={str(image)}" for image in images],
         capture_output=True,

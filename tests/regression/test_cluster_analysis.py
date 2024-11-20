@@ -9,6 +9,7 @@ from dials.util.options import ArgumentParser
 from dxtbx.model import ExperimentList
 from libtbx import phil
 
+from xia2.Driver.DriverHelper import windows_resolve
 from xia2.Modules.MultiCrystalAnalysis import MultiCrystalAnalysis
 
 phil_scope = phil.parse(
@@ -103,17 +104,13 @@ def test_serial_data(
     ssx = dials_data("cunir_serial_processed", pathlib=True)
     expt_int = os.fspath(ssx / "integrated.expt")
     refl_int = os.fspath(ssx / "integrated.refl")
-    cmd = "xia2.ssx_reduce"
+    args_generate_scaled = ["xia2.ssx_reduce", expt_int, refl_int]
     if os.name == "nt":
-        cmd += ".bat"
-    args_generate_scaled = [cmd, expt_int, refl_int]
+        args_generate_scaled = windows_resolve(args_generate_scaled)
     expt_scaled = os.fspath(tmp_path / "DataFiles" / "scaled.expt")
     refl_scaled = os.fspath(tmp_path / "DataFiles" / "scaled.refl")
-    cmd = "xia2.cluster_analysis"
-    if os.name == "nt":
-        cmd += ".bat"
     args_test_clustering = [
-        cmd,
+        "xia2.cluster_analysis",
         "clustering.min_cluster_size=2",
         expt_scaled,
         refl_scaled,
@@ -123,6 +120,8 @@ def test_serial_data(
         f"output_correlation_cluster_number={output_correlation_cluster_number}",
         f"exclude_correlation_cluster_number={exclude_correlation_cluster_number}",
     ]
+    if os.name == "nt":
+        args_test_clustering = windows_resolve(args_test_clustering)
     result_generate_scaled = subprocess.run(
         args_generate_scaled, cwd=tmp_path, capture_output=True
     )
@@ -142,22 +141,23 @@ def test_rotation_data(dials_data, run_in_tmp_path):
     rot = dials_data("vmxi_proteinase_k_sweeps", pathlib=True)
 
     # First scale the data to get suitable input
-    cmd = "dials.scale"
-    if os.name == "nt":
-        cmd += ".bat"
-    result = subprocess.run(
-        [cmd]
+    cmd = (
+        [
+            "dials.scale",
+        ]
         + [rot / f"experiments_{i}.expt" for i in range(0, 4)]
-        + [rot / f"reflections_{i}.refl" for i in range(0, 4)],
+        + [rot / f"reflections_{i}.refl" for i in range(0, 4)]
+    )
+    if os.name == "nt":
+        cmd = windows_resolve(cmd)
+    result = subprocess.run(
+        cmd,
         capture_output=True,
     )
     assert not result.returncode
 
-    cmd = "xia2.cluster_analysis"
-    if os.name == "nt":
-        cmd += ".bat"
     args_clustering = [
-        cmd,
+        "xia2.cluster_analysis",
         "distinct_clusters=True",
         "clustering.min_cluster_size=2",
         "clustering.hierarchical.method=cos_angle+correlation",
@@ -166,6 +166,8 @@ def test_rotation_data(dials_data, run_in_tmp_path):
         "scaled.refl",
         "output.json=xia2.cluster_analysis.json",
     ]
+    if os.name == "nt":
+        args_clustering = windows_resolve(args_clustering)
     result = subprocess.run(args_clustering, capture_output=True)
     assert not result.returncode and not result.stderr
     assert (run_in_tmp_path / "xia2.cluster_analysis.json").is_file()
@@ -175,7 +177,7 @@ def test_rotation_data(dials_data, run_in_tmp_path):
     assert not (run_in_tmp_path / "coordinate_clusters").exists()
     # now run coordinate clustering
     args_clustering = [
-        cmd,
+        "xia2.cluster_analysis",
         "clustering.method=coordinate",
         "clustering.min_cluster_size=2",
         "clustering.output_clusters=True",
@@ -183,6 +185,8 @@ def test_rotation_data(dials_data, run_in_tmp_path):
         "scaled.refl",
         "output.json=xia2.cluster_analysis.json",
     ]
+    if os.name == "nt":
+        args_clustering = windows_resolve(args_clustering)
     result = subprocess.run(args_clustering, capture_output=True)
     assert not result.returncode and not result.stderr
     assert (run_in_tmp_path / "coordinate_clusters" / "cluster_0").exists()
