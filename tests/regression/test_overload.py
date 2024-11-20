@@ -12,6 +12,6 @@ def test(dials_data, tmp_path):
     cmd = ["xia2.overload"]
     if os.name == "nt":
         cmd = windows_resolve(cmd)
-    result = subprocess.run([cmd] + images, cwd=tmp_path, capture_output=True)
+    result = subprocess.run(cmd + images, cwd=tmp_path, capture_output=True)
     assert not result.returncode and not result.stderr
     assert (tmp_path / "overload.json").is_file()
