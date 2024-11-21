@@ -336,7 +336,7 @@ def windows_resolve(command, path=None):
     found_executable = shutil.which(command[0], path=path)
     if found_executable:
         logger.debug("Resolved %s as %s", command[0], found_executable)
-        return (found_executable, *command[1:])
+        return [found_executable, *command[1:]]
 
     if "\\" in command[0]:
         # Special case. shutil.which may not detect file extensions if a full
@@ -344,7 +344,7 @@ def windows_resolve(command, path=None):
         for extension in os.getenv("PATHEXT").split(os.pathsep):
             found_executable = shutil.which(command[0] + extension, path=path)
             if found_executable:
-                return (found_executable, *command[1:])
+                return [found_executable, *command[1:]]
 
     logger.warning("Error trying to resolve the executable: %s", command[0])
     return command
