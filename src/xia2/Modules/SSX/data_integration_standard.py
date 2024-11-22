@@ -338,8 +338,7 @@ def run_import(
 
     xia2_logger.info("New images or geometry detected, running import")
     cmd = shutil.which("dials.import")
-    if not cmd:
-        raise RuntimeError("dials.import not found")
+    assert cmd
     import_command = [
         cmd,
         "output.experiments=imported.expt",
@@ -656,8 +655,7 @@ def determine_reference_geometry_from_images(
         f"Refined reference geometry saved to {working_directory}/refined.expt"
     )
     cmd = shutil.which("dxtbx.plot_detector_models")
-    if not cmd:
-        raise RuntimeError("dxtbx.plot_detector_models not found")
+    assert cmd
     command_line = [
         cmd,
         "imported.expt",
@@ -763,8 +761,7 @@ def cumulative_determine_reference_geometry(
         f"Refined reference geometry saved to {working_directory}/refined.expt"
     )
     cmd = shutil.which("dxtbx.plot_detector_models")
-    if not cmd:
-        raise RuntimeError("dxtbx.plot_detector_models not found")
+    assert cmd
     command_line = [
         cmd,
         "imported.expt",
