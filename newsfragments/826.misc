@@ -1,0 +1,2 @@
+``xia2.ssx_reduce``: Use cosym option weights=count, rather than standard_error, for indexing ambiguity resolution.
+
