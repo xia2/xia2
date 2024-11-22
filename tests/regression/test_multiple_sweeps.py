@@ -10,12 +10,10 @@ Test the behaviour of the `multiple_sweep_indexing`, `multiple_sweep_refinement`
 
 from __future__ import annotations
 
-import os
+import shutil
 import subprocess
 
 import pytest
-
-from xia2.Driver.DriverHelper import windows_resolve
 
 
 @pytest.mark.parametrize(
@@ -43,7 +41,7 @@ def test_multiple_sweeps(multi_sweep_type, ccp4, dials_data, tmp_path):
 
     command = [
         # Obviously, we're going to run xia2.
-        "xia2",
+        shutil.which("xia2"),
         # Set one of the multiple-sweep flags.
         f"{multi_sweep_type}=True",
         # Reduce the required number of reflections per degree for profile modelling
@@ -52,8 +50,6 @@ def test_multiple_sweeps(multi_sweep_type, ccp4, dials_data, tmp_path):
         # Don't run the Xtriage analysis — we don't have enough reflections overall.
         "xtriage_analysis=False",
     ]
-    if os.name == "nt":
-        command = windows_resolve(command)
     result = subprocess.run(
         command + [f"image={str(image)}" for image in images],
         capture_output=True,

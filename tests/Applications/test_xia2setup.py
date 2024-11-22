@@ -6,7 +6,6 @@ import subprocess
 
 import pytest
 
-from xia2.Driver.DriverHelper import windows_resolve
 from xia2.Handlers.XInfo import XInfo
 
 
@@ -28,11 +27,9 @@ def insulin_with_missing_image(dials_data, tmp_path):
 
 def test_write_xinfo_insulin_with_missing_image(insulin_with_missing_image, tmp_path):
     cmd = [
-        "xia2.setup",
+        shutil.which("xia2.setup"),
         f"image={insulin_with_missing_image.parent.joinpath('insulin_1_001.img')}",
     ]
-    if os.name == "nt":
-        cmd = windows_resolve(cmd)
     result = subprocess.run(
         cmd,
         env={"CCP4": str(tmp_path), **os.environ},
@@ -50,12 +47,10 @@ def test_write_xinfo_insulin_with_missing_image(insulin_with_missing_image, tmp_
 
 def test_write_xinfo_template_missing_images(insulin_with_missing_image, tmp_path):
     cmd = [
-        "xia2.setup",
+        shutil.which("xia2.setup"),
         f"image={insulin_with_missing_image.parent.joinpath('insulin_1_001.img:1:22')}",
         "read_all_image_headers=False",
     ]
-    if os.name == "nt":
-        cmd = windows_resolve(cmd)
     result = subprocess.run(
         cmd,
         env={"CCP4": str(tmp_path), **os.environ},
@@ -72,13 +67,11 @@ def test_write_xinfo_template_missing_images(insulin_with_missing_image, tmp_pat
 
 def test_write_xinfo_split_sweep(dials_data, tmp_path):
     cmd = [
-        "xia2.setup",
+        shutil.which("xia2.setup"),
         f"image={dials_data('insulin', pathlib=True) / 'insulin_1_001.img:1:22'}",
         f"image={dials_data('insulin', pathlib=True) / 'insulin_1_001.img:23:45'}",
         "read_all_image_headers=False",
     ]
-    if os.name == "nt":
-        cmd = windows_resolve(cmd)
     result = subprocess.run(
         cmd,
         env={"CCP4": str(tmp_path), **os.environ},
@@ -97,12 +90,10 @@ def test_write_xinfo_split_sweep(dials_data, tmp_path):
 def test_write_xinfo_unroll(dials_data, tmp_path):
     # This test partially exercises the fix to https://github.com/xia2/xia2/issues/498 with a different syntax
     cmd = [
-        "xia2.setup",
+        shutil.which("xia2.setup"),
         f"image={dials_data('insulin', pathlib=True) / 'insulin_1_001.img:1:45:15'}",
         "read_all_image_headers=False",
     ]
-    if os.name == "nt":
-        cmd = windows_resolve(cmd)
     result = subprocess.run(
         cmd,
         env={"CCP4": str(tmp_path), **os.environ},

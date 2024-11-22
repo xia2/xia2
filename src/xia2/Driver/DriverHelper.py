@@ -3,7 +3,6 @@ from __future__ import annotations
 import logging
 import os
 import random
-import shutil
 import signal
 import stat
 import string
@@ -315,39 +314,6 @@ def executable_exists(executable):
                     return os.path.join(directory, file)
 
     return ""
-
-
-def windows_resolve(command, path=None):
-    """
-    Try and find the full path and file extension of the executable to run.
-    This is so that e.g. calls to 'somescript' will point at 'somescript.cmd'
-    without the need to set shell=True in the subprocess. Based on the function
-    _windows_resolve from https://pypi.org/project/procrunner/ by @Anthchirp.
-
-    :param command: The command array to be run, with the first element being
-                    the command with or w/o path, with or w/o extension.
-    :return: Returns the command array with the executable resolved with the
-             correct extension. If the executable cannot be resolved for any
-             reason the original command array is returned.
-    """
-    if not command or not isinstance(command[0], str):
-        return command
-
-    found_executable = shutil.which(command[0], path=path)
-    if found_executable:
-        logger.debug("Resolved %s as %s", command[0], found_executable)
-        return [found_executable, *command[1:]]
-
-    if "\\" in command[0]:
-        # Special case. shutil.which may not detect file extensions if a full
-        # path is given, so try to resolve the executable explicitly
-        for extension in os.getenv("PATHEXT").split(os.pathsep):
-            found_executable = shutil.which(command[0] + extension, path=path)
-            if found_executable:
-                return [found_executable, *command[1:]]
-
-    logger.warning("Error trying to resolve the executable: %s", command[0])
-    return command
 
 
 def generate_random_name():
