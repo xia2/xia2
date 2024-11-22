@@ -1,13 +1,10 @@
 from __future__ import annotations
 
-import logging
 import os
 import random
 import signal
 import stat
 import string
-
-logger = logging.getLogger("xia2.Driver.DriverHelper")
 
 
 def script_writer(
