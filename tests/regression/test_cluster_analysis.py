@@ -122,6 +122,7 @@ def test_serial_data(
         f"clustering.output_clusters={output_clusters}",
         f"output_correlation_cluster_number={output_correlation_cluster_number}",
         f"exclude_correlation_cluster_number={exclude_correlation_cluster_number}",
+        "d_min=1.0",
     ]
     result_generate_scaled = subprocess.run(
         args_generate_scaled, cwd=tmp_path, capture_output=True
