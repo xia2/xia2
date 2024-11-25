@@ -337,8 +337,7 @@ def run_import(
         pathlib.Path.mkdir(working_directory)
 
     xia2_logger.info("New images or geometry detected, running import")
-    cmd = shutil.which("dials.import")
-    assert cmd
+    assert (cmd := shutil.which("dials.import"))
     import_command = [
         cmd,
         "output.experiments=imported.expt",
@@ -654,8 +653,7 @@ def determine_reference_geometry_from_images(
     xia2_logger.info(
         f"Refined reference geometry saved to {working_directory}/refined.expt"
     )
-    cmd = shutil.which("dxtbx.plot_detector_models")
-    assert cmd
+    assert (cmd := shutil.which("dxtbx.plot_detector_models"))
     command_line = [
         cmd,
         "imported.expt",
@@ -760,8 +758,7 @@ def cumulative_determine_reference_geometry(
     xia2_logger.info(
         f"Refined reference geometry saved to {working_directory}/refined.expt"
     )
-    cmd = shutil.which("dxtbx.plot_detector_models")
-    assert cmd
+    assert (cmd := shutil.which("dxtbx.plot_detector_models"))
     command_line = [
         cmd,
         "imported.expt",
