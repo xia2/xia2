@@ -14,6 +14,10 @@ from pathlib import Path
 
 import pytest
 
+# Avoid unicode logging failures on Windows
+if os.name == "nt":
+    os.environ["PYTHONUTF8"] = "1"
+
 
 def pytest_addoption(parser):
     """

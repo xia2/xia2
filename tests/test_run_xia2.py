@@ -3,13 +3,10 @@
 
 from __future__ import annotations
 
-import os
+import shutil
 import subprocess
 
 
 def test_start_xia2():
-    cmd = "xia2"
-    if os.name == "nt":
-        cmd += ".bat"
-    result = subprocess.run([cmd])
+    result = subprocess.run([shutil.which("xia2")])
     assert result.returncode == 0

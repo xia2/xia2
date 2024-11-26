@@ -6,6 +6,7 @@ import logging
 import math
 import os
 import pathlib
+import shutil
 import subprocess
 from dataclasses import asdict, dataclass, field
 from typing import List, Optional, Tuple
@@ -336,9 +337,7 @@ def run_import(
         pathlib.Path.mkdir(working_directory)
 
     xia2_logger.info("New images or geometry detected, running import")
-    cmd = "dials.import"
-    if os.name == "nt":
-        cmd += ".bat"
+    assert (cmd := shutil.which("dials.import"))
     import_command = [
         cmd,
         "output.experiments=imported.expt",
@@ -654,16 +653,15 @@ def determine_reference_geometry_from_images(
     xia2_logger.info(
         f"Refined reference geometry saved to {working_directory}/refined.expt"
     )
-    cmd = "dxtbx.plot_detector_models"
-    if os.name == "nt":
-        cmd += ".bat"
+    assert (cmd := shutil.which("dxtbx.plot_detector_models"))
+    command_line = [
+        cmd,
+        "imported.expt",
+        "refined.expt",
+        "pdf_file=detector_models.pdf",
+    ]
     subprocess.run(
-        [
-            cmd,
-            "imported.expt",
-            "refined.expt",
-            "pdf_file=detector_models.pdf",
-        ],
+        command_line,
         cwd=working_directory,
         capture_output=False,
         encoding="utf-8",
@@ -760,16 +758,15 @@ def cumulative_determine_reference_geometry(
     xia2_logger.info(
         f"Refined reference geometry saved to {working_directory}/refined.expt"
     )
-    cmd = "dxtbx.plot_detector_models"
-    if os.name == "nt":
-        cmd += ".bat"
+    assert (cmd := shutil.which("dxtbx.plot_detector_models"))
+    command_line = [
+        cmd,
+        "imported.expt",
+        "refined.expt",
+        "pdf_file=detector_models.pdf",
+    ]
     subprocess.run(
-        [
-            cmd,
-            "imported.expt",
-            "refined.expt",
-            "pdf_file=detector_models.pdf",
-        ],
+        command_line,
         cwd=working_directory,
         capture_output=False,
         encoding="utf-8",

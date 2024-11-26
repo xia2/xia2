@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-import os
+import shutil
 import subprocess
 
 import pytest
@@ -13,11 +13,8 @@ def test_xia2(pipeline, regression_test, dials_data, tmp_path, ccp4):
     master_h5 = (
         dials_data("vmxi_thaumatin", pathlib=True) / "image_15799_master.h5:1:20"
     )
-    cmd = "xia2"
-    if os.name == "nt":
-        cmd += ".bat"
     command_line = [
-        cmd,
+        shutil.which("xia2"),
         f"pipeline={pipeline}",
         "nproc=1",
         "trust_beam_centre=True",
