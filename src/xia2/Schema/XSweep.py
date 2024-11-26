@@ -461,9 +461,8 @@ class XSweep:
 
     def get_output(self):
         if self.get_wavelength():
-            text = "SWEEP %s [WAVELENGTH %s]\n" % (
-                self._name,
-                self.get_wavelength().get_name(),
+            text = (
+                f"SWEEP {self._name} [WAVELENGTH {self.get_wavelength().get_name()}]\n"
             )
         else:
             text = "SWEEP %s [WAVELENGTH UNDEFINED]\n" % self._name
@@ -530,8 +529,7 @@ class XSweep:
                 and all(ibeam)
             ):
                 summary.append(
-                    "Beam %.2f %.2f => %.2f %.2f"
-                    % (hbeam[0], hbeam[1], ibeam[0], ibeam[1])
+                    f"Beam {hbeam[0]:.2f} {hbeam[1]:.2f} => {ibeam[0]:.2f} {ibeam[1]:.2f}"
                 )
             else:
                 summary.append("Beam not on detector")
@@ -715,13 +713,7 @@ class XSweep:
             self._integrater.set_integrater_refiner(self._get_refiner())
 
             logger.debug(
-                "Integrater / refiner / indexer for sweep %s: %s/%s/%s"
-                % (
-                    self._name,
-                    self._integrater.__class__.__name__,
-                    self._get_refiner().__class__.__name__,
-                    self._get_indexer().__class__.__name__,
-                )
+                f"Integrater / refiner / indexer for sweep {self._name}: {self._integrater.__class__.__name__}/{self._get_refiner().__class__.__name__}/{self._get_indexer().__class__.__name__}"
             )
 
             # or if we have been told this on the command-line -
@@ -887,8 +879,7 @@ class XSweep:
 
             bl_info = ddb.get_beamline_definition(detector_id)
             logger.debug(
-                "Beamline information available for %s: %s"
-                % (detector_id, str(bl_info))
+                f"Beamline information available for {detector_id}: {str(bl_info)}"
             )
             if bl_info:
                 from xia2.Handlers.CIF import CIF, mmCIF

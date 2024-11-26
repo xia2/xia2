@@ -271,8 +271,7 @@ class MultiplicityViewJson(render_2d):
             "layout": {
                 "plot_bgcolor": "rgb(%i,%i,%i)"
                 % tuple(rgb * 264 for rgb in self._background),
-                "title": "Multiplicity plot (%s=%s)"
-                % (self.settings.slice_axis, self.settings.slice_index),
+                "title": f"Multiplicity plot ({self.settings.slice_axis}={self.settings.slice_index})",
                 "shapes": shapes,
                 "hovermode": False,
                 "xaxis": {

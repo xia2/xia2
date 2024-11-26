@@ -71,7 +71,9 @@ def LatticeSymmetry(DriverType=None):
             if not self._spacegroup:
                 raise RuntimeError("no spacegroup specified")
 
-            self.add_command_line("--unit_cell=%f,%f,%f,%f,%f,%f" % tuple(self._cell))
+            self.add_command_line(
+                "--unit_cell={:f},{:f},{:f},{:f},{:f},{:f}".format(*tuple(self._cell))
+            )
             self.add_command_line("--space_group=%s" % self._spacegroup)
 
             self.start()

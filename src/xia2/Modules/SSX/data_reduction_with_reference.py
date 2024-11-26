@@ -4,7 +4,7 @@ import concurrent.futures
 import functools
 import logging
 from pathlib import Path
-from typing import Any, Dict, Tuple
+from typing import Any
 
 from cctbx import sgtbx, uctbx
 
@@ -25,7 +25,7 @@ class DataReductionWithReference(BaseDataReduction):
     ### This implementation uses the reference model when reindexing and scaling,
     ### allowing parallel processing in batches.
 
-    def _filter(self) -> Tuple[CrystalsDict, uctbx.unit_cell, sgtbx.space_group_info]:
+    def _filter(self) -> tuple[CrystalsDict, uctbx.unit_cell, sgtbx.space_group_info]:
         good_crystals_data, best_unit_cell, space_group = filter_(
             self._filter_wd, self._integrated_data, self._reduction_params
         )
@@ -55,7 +55,7 @@ class DataReductionWithReference(BaseDataReduction):
         ), concurrent.futures.ProcessPoolExecutor(
             max_workers=self._reduction_params.nproc
         ) as pool:
-            scale_futures: Dict[Any, int] = {
+            scale_futures: dict[Any, int] = {
                 pool.submit(
                     scale_against_reference,
                     self._scale_wd,

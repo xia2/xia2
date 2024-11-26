@@ -5,8 +5,8 @@ import io
 import logging
 import os
 import time
+from collections.abc import Generator
 from pathlib import Path
-from typing import Generator
 
 from dials.util.log import DialsLogfileFormatter, print_banner
 

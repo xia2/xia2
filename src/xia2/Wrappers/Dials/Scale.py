@@ -384,8 +384,9 @@ def DialsScale(DriverType=None, decay_correction=None):
 
             if self._isigma_selection is not None:
                 self.add_command_line(
-                    "reflection_selection.Isigma_range=%f,%f"
-                    % tuple(self._isigma_selection)
+                    "reflection_selection.Isigma_range={:f},{:f}".format(
+                        *tuple(self._isigma_selection)
+                    )
                 )
 
             if self._reflection_selection_method is not None:
@@ -411,7 +412,7 @@ def DialsScale(DriverType=None, decay_correction=None):
                 self.add_command_line(f"n_absorption_bins={self._n_absorption_bins}")
             if self._best_unit_cell is not None:
                 self.add_command_line(
-                    "best_unit_cell=%s,%s,%s,%s,%s,%s" % self._best_unit_cell
+                    "best_unit_cell={},{},{},{},{},{}".format(*self._best_unit_cell)
                 )
             if self._overwrite_existing_models is not None:
                 self.add_command_line("overwrite_existing_models=True")

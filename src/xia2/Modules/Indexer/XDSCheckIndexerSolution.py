@@ -66,7 +66,7 @@ def xds_check_indexer_solution(xparm_file, spot_file):
     # lattice point - a for a random point this will be about 0.8% of
     # the time...
     differences = hkl_float - hkl_int.as_vec3_double()
-    dh, dk, dl = [flex.abs(d) for d in differences.parts()]
+    dh, dk, dl = (flex.abs(d) for d in differences.parts())
     tolerance = 0.1
     sel = (dh < tolerance) and (dk < tolerance) and (dl < tolerance)
 

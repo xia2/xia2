@@ -122,7 +122,7 @@ def XDSXycorr(DriverType=None):
                 xds_inp.write("SPOT_RANGE=%d %d\n" % spot_range)
             xds_inp.write("BACKGROUND_RANGE=%d %d\n" % self._background_range)
 
-            xds_inp.write("ORGX=%f ORGY=%f\n" % tuple(self._org))
+            xds_inp.write("ORGX={:f} ORGY={:f}\n".format(*tuple(self._org)))
             xds_inp.close()
 
             # copy the input file...

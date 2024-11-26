@@ -157,4 +157,4 @@ if __name__ == "__main__":
     status = c.detect()
 
     for s in status:
-        print("%s %s" % s)
+        print("{} {}".format(*s))

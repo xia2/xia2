@@ -45,8 +45,7 @@ def export_native_hkl(params):
         )
     hkl_filename = "%s_nat.hkl" % params["prefix"]
     print(
-        "Exporting data from columns %s to %s"
-        % (pformat(data[0].info().labels), hkl_filename)
+        f"Exporting data from columns {pformat(data[0].info().labels)} to {hkl_filename}"
     )
     with open(hkl_filename, "w") as fp:
         miller_array_export_as_shelx_hklf(data[0], fp)
@@ -79,8 +78,7 @@ def export_sad_hkl(params):
                 )
     hkl_filename = "%s.hkl" % params["prefix"]
     print(
-        "Exporting data from columns %s to %s"
-        % (pformat(sel_data.info().labels), hkl_filename)
+        f"Exporting data from columns {pformat(sel_data.info().labels)} to {hkl_filename}"
     )
     with open(hkl_filename, "w") as fp:
         miller_array_export_as_shelx_hklf(sel_data, fp)
@@ -94,7 +92,7 @@ def export_mad_hkl(params):
             data = read_input_data(lb, params)
             if len(data) > 1:
                 raise ValueError("Multiple datasets found in %s" % params[lb])
-            hkl_filename = "%s_%s.hkl" % (params["prefix"], lb)
+            hkl_filename = "{}_{}.hkl".format(params["prefix"], lb)
             with open(hkl_filename, "w") as fp:
                 miller_array_export_as_shelx_hklf(data[0], fp)
             res[lb] = hkl_filename
@@ -118,10 +116,9 @@ def export_single_mad_hkl(params):
         for dt_name in dt_labels:
             if dt_name in "".join(dt.info().labels):
                 dt_label = dt_labels[dt_name]
-                hkl_filename = "%s_%s.hkl" % (params["prefix"], dt_label)
+                hkl_filename = "{}_{}.hkl".format(params["prefix"], dt_label)
                 print(
-                    "Exporting data from columns %s to %s"
-                    % (pformat(dt.info().labels), hkl_filename)
+                    f"Exporting data from columns {pformat(dt.info().labels)} to {hkl_filename}"
                 )
                 with open(hkl_filename, "w") as fp:
                     miller_array_export_as_shelx_hklf(dt, fp)
@@ -130,7 +127,7 @@ def export_single_mad_hkl(params):
 
 
 def write_shelxc_script(hkl_files, params):
-    datasets = ["%s %s" % vals for vals in hkl_files.items()]
+    datasets = ["{} {}".format(*vals) for vals in hkl_files.items()]
 
     # spacegroup name disputes
     sg = params["spacegroup"]
@@ -148,7 +145,7 @@ def write_shelxc_script(hkl_files, params):
             "\n".join(
                 [
                     "shelxc %s << eof" % params["prefix"],
-                    "cell %f %f %f %f %f %f" % params["unit_cell"],
+                    "cell {:f} {:f} {:f} {:f} {:f} {:f}".format(*params["unit_cell"]),
                     "spag %s" % sg,
                 ]
                 + datasets

@@ -302,9 +302,7 @@ class Integrater(FrameProcessor):
         if not refiner.get_refiner_done() and self._intgr_prepare_done:
             for sweep in refiner._refinr_sweeps:
                 logger.debug(
-                    "Resetting integrater for sweep {} as refiner updated.".format(
-                        sweep._name
-                    )
+                    f"Resetting integrater for sweep {sweep._name} as refiner updated."
                 )
                 sweep._integrater._integrater_reset()
 
@@ -537,10 +535,7 @@ class Integrater(FrameProcessor):
                 if self._intgr_sweep_name:
                     if PhilIndex.params.xia2.settings.show_template:
                         logger.notice(
-                            banner(
-                                "Integrating %s (%s)"
-                                % (self._intgr_sweep_name, template)
-                            )
+                            banner(f"Integrating {self._intgr_sweep_name} ({template})")
                         )
                     else:
                         logger.notice(banner("Integrating %s" % self._intgr_sweep_name))
@@ -652,8 +647,7 @@ class Integrater(FrameProcessor):
 
         if reason:
             logger.debug(
-                "Reindexing to %s (compose=%s) because %s"
-                % (reindex_operator, compose, reason)
+                f"Reindexing to {reindex_operator} (compose={compose}) because {reason}"
             )
 
         if self._intgr_reindex_operator is None or not compose:
@@ -666,8 +660,7 @@ class Integrater(FrameProcessor):
             )
 
             logger.debug(
-                "Composing %s and %s -> %s"
-                % (old_operator, reindex_operator, self._intgr_reindex_operator)
+                f"Composing {old_operator} and {reindex_operator} -> {self._intgr_reindex_operator}"
             )
 
         # convert this to a 3x3 matrix form for e.g. XDS CORRECT

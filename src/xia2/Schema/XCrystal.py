@@ -316,8 +316,7 @@ class XCrystal:
                     idxr = xsweep._get_indexer()
                     if PhilIndex.params.xia2.settings.show_template:
                         result += "%s\n" % banner(
-                            "Autoindexing %s (%s)"
-                            % (idxr.get_indexer_sweep_name(), idxr.get_template())
+                            f"Autoindexing {idxr.get_indexer_sweep_name()} ({idxr.get_template()})"
                         )
                     else:
                         result += "%s\n" % banner(
@@ -328,8 +327,7 @@ class XCrystal:
                     intgr = xsweep._get_integrater()
                     if PhilIndex.params.xia2.settings.show_template:
                         result += "%s\n" % banner(
-                            "Integrating %s (%s)"
-                            % (intgr.get_integrater_sweep_name(), intgr.get_template())
+                            f"Integrating {intgr.get_integrater_sweep_name()} ({intgr.get_template()})"
                         )
                     else:
                         result += "%s\n" % banner(
@@ -344,16 +342,9 @@ class XCrystal:
                 (limit, suggested),
             ) in scaler.get_scaler_resolution_limits().items():
                 if suggested is None or limit == suggested:
-                    result += "Resolution limit for %s/%s: %5.2f\n" % (
-                        dname,
-                        sname,
-                        limit,
-                    )
+                    result += f"Resolution limit for {dname}/{sname}: {limit:5.2f}\n"
                 else:
-                    result += (
-                        "Resolution limit for %s/%s: %5.2f (%5.2f suggested)\n"
-                        % (dname, sname, limit, suggested)
-                    )
+                    result += f"Resolution limit for {dname}/{sname}: {limit:5.2f} ({suggested:5.2f} suggested)\n"
 
         # this is now deprecated - be explicit in what you are
         # asking for...
@@ -364,7 +355,7 @@ class XCrystal:
 
         for key in list(statistics_all.keys()):
             result += format_statistics(
-                statistics_all[key], caption="For %s/%s/%s" % key
+                statistics_all[key], caption="For {}/{}/{}".format(*key)
             )
 
         # then print out some "derived" information based on the
@@ -391,11 +382,7 @@ class XCrystal:
             )
         else:
             for wavelength in list(self._wavelengths.keys()):
-                full_wave_name = "%s_%s_%s" % (
-                    self._project._name,
-                    self._name,
-                    wavelength,
-                )
+                full_wave_name = f"{self._project._name}_{self._name}_{wavelength}"
                 CIF.get_block(full_wave_name)["_diffrn_radiation_wavelength"] = (
                     self._wavelengths[wavelength].get_wavelength()
                 )
@@ -407,11 +394,7 @@ class XCrystal:
             )
 
         for wavelength in list(self._wavelengths.keys()):
-            full_wave_name = "%s_%s_%s" % (
-                self._project._name,
-                self._name,
-                wavelength,
-            )
+            full_wave_name = f"{self._project._name}_{self._name}_{wavelength}"
             mmCIF.get_block(full_wave_name)[
                 "_diffrn_radiation_wavelength.wavelength"
             ] = self._wavelengths[wavelength].get_wavelength()
@@ -455,7 +438,9 @@ class XCrystal:
             result += "%s %s %s\n%s %s %s\n" % (formatted_rows[0] + formatted_rows[1])
         else:
             result += "Unit cell:\n"
-            result += "%7.3f %7.3f %7.3f\n%7.3f %7.3f %7.3f\n" % tuple(cell)
+            result += "{:7.3f} {:7.3f} {:7.3f}\n{:7.3f} {:7.3f} {:7.3f}\n".format(
+                *tuple(cell)
+            )
 
         # now, use this information and the sequence (if provided)
         # and also matthews_coef (should I be using this directly, here?)
@@ -550,7 +535,7 @@ class XCrystal:
             "Anomalous multiplicity",
         )
         for key in statistics_all:
-            summary.append("For %s/%s/%s:" % key)
+            summary.append("For {}/{}/{}:".format(*key))
             available = statistics_all[key].keys()
 
             for s in keys:
@@ -582,7 +567,9 @@ class XCrystal:
         cell = self._get_scaler().get_scaler_cell()
         spacegroup = self._get_scaler().get_scaler_likely_spacegroups()[0]
 
-        summary.append("Cell: %7.3f %7.3f %7.3f %7.3f %7.3f %7.3f" % tuple(cell))
+        summary.append(
+            "Cell: {:7.3f} {:7.3f} {:7.3f} {:7.3f} {:7.3f} {:7.3f}".format(*tuple(cell))
+        )
         summary.append("Spacegroup: %s" % spacegroup)
 
         return summary

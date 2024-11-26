@@ -55,7 +55,7 @@ def Matthews_coef(DriverType=None):
         def compute_solvent(self):
             self.start()
 
-            self.input("cell %f %f %f %f %f %f" % tuple(self._cell))
+            self.input("cell {:f} {:f} {:f} {:f} {:f} {:f}".format(*tuple(self._cell)))
 
             # cannot cope with spaces in the spacegroup!
 

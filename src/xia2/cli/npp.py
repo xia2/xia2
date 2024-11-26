@@ -63,8 +63,7 @@ def npp(hklin):
         )
 
     sys.stderr.write(
-        "Mean gradients: %.2f %.2f\n"
-        % (flex.sum(all) / all.size(), flex.sum(cen) / cen.size())
+        f"Mean gradients: {flex.sum(all) / all.size():.2f} {flex.sum(cen) / cen.size():.2f}\n"
     )
 
 

@@ -4,7 +4,6 @@ import json
 import logging
 import math
 import os
-from typing import Optional
 
 from xia2.Driver.DriverFactory import DriverFactory
 from xia2.Handlers.Phil import PhilIndex
@@ -44,8 +43,8 @@ def Integrate(DriverType=None):
 
             # The minimum number of spots required for profile modelling, per degree
             # and overall.
-            self._min_spots_per_degree: Optional[int] = None
-            self._min_spots_overall: Optional[int] = None
+            self._min_spots_per_degree: int | None = None
+            self._min_spots_overall: int | None = None
 
             self._integration_report = {}
 
@@ -84,10 +83,10 @@ def Integrate(DriverType=None):
 
         def set_profile_params(
             self,
-            min_spots_per_degree=None,  # type: Optional[int]
-            min_spots_overall=None,  # type: Optional[int]
-            high_pressure=False,  # type: bool
-        ):  # type: (...) -> None
+            min_spots_per_degree: int | None = None,
+            min_spots_overall: int | None = None,
+            high_pressure: bool = False,
+        ) -> None:
             """Options to override Gaussian profile parameters for integration."""
             # If using a diamond anvil cell, and unless the user specifies otherwise,
             if high_pressure:
@@ -208,8 +207,9 @@ def Integrate(DriverType=None):
             for n, record in enumerate(dials_output):
                 if "Too few reflections for profile modelling" in record:
                     raise DIALSIntegrateError(
-                        "%s\n%s, %s\nsee %%s for more details"
-                        % tuple(dials_output[n + i].strip() for i in (0, 1, 2))
+                        "{}\n{}, {}\nsee %s for more details".format(
+                            *tuple(dials_output[n + i].strip() for i in (0, 1, 2))
+                        )
                         % self.get_log_file()
                     )
 

@@ -89,11 +89,11 @@ def CCP4DecoratorFactory(DriverInstance):
             description = "CCP4 program: %s" % self.get_executable()
 
             if self._hklin is not None:
-                description += " %s" % ("hklin")
+                description += " {}".format("hklin")
                 description += " %s" % (self._hklin)
 
             if self._hklout is not None:
-                description += " %s" % ("hklout")
+                description += " {}".format("hklout")
                 description += " %s" % (self._hklout)
 
             return description

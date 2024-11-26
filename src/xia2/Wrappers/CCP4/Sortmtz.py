@@ -61,19 +61,14 @@ def Sortmtz(DriverType=None):
 
             if self._hklin_files:
                 self.set_task(
-                    "Sorting reflections %s => %s"
-                    % (
+                    "Sorting reflections {} => {}".format(
                         " ".join(self._hklin_files),
                         os.path.split(self.get_hklout())[-1],
                     )
                 )
             else:
                 self.set_task(
-                    "Sorting reflections %s => %s"
-                    % (
-                        os.path.split(self.get_hklin())[-1],
-                        os.path.split(self.get_hklout())[-1],
-                    )
+                    f"Sorting reflections {os.path.split(self.get_hklin())[-1]} => {os.path.split(self.get_hklout())[-1]}"
                 )
 
             self.start()

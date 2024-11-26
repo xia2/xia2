@@ -223,16 +223,14 @@ def XDSIntegrate(DriverType=None, params=None):
                 and "BEAM_DIVERGENCE_E.S.D." in self._updates
             ):
                 xds_inp.write(
-                    "BEAM_DIVERGENCE=%f BEAM_DIVERGENCE_E.S.D.=%f\n"
-                    % (
+                    "BEAM_DIVERGENCE={:f} BEAM_DIVERGENCE_E.S.D.={:f}\n".format(
                         self._updates["BEAM_DIVERGENCE"],
                         self._updates["BEAM_DIVERGENCE_E.S.D."],
                     )
                 )
             elif self._params.beam_divergence and self._params.beam_divergence_esd:
                 xds_inp.write(
-                    "BEAM_DIVERGENCE=%f BEAM_DIVERGENCE_E.S.D.=%f\n"
-                    % (self._params.beam_divergence, self._params.beam_divergence_esd)
+                    f"BEAM_DIVERGENCE={self._params.beam_divergence:f} BEAM_DIVERGENCE_E.S.D.={self._params.beam_divergence_esd:f}\n"
                 )
 
             if (
@@ -240,16 +238,14 @@ def XDSIntegrate(DriverType=None, params=None):
                 and "REFLECTING_RANGE_E.S.D." in self._updates
             ):
                 xds_inp.write(
-                    "REFLECTING_RANGE=%f REFLECTING_RANGE_E.S.D.=%f\n"
-                    % (
+                    "REFLECTING_RANGE={:f} REFLECTING_RANGE_E.S.D.={:f}\n".format(
                         self._updates["REFLECTING_RANGE"],
                         self._updates["REFLECTING_RANGE_E.S.D."],
                     )
                 )
             elif self._params.reflecting_range and self._params.reflecting_range_esd:
                 xds_inp.write(
-                    "REFLECTING_RANGE=%f REFLECTING_RANGE_E.S.D.=%f\n"
-                    % (self._params.reflecting_range, self._params.reflecting_range_esd)
+                    f"REFLECTING_RANGE={self._params.reflecting_range:f} REFLECTING_RANGE_E.S.D.={self._params.reflecting_range_esd:f}\n"
                 )
 
             for record in header:

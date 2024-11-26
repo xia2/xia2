@@ -126,7 +126,7 @@ setuptools.setup(
     entry_points={
         "console_scripts": console_scripts,
         "libtbx.dispatcher.script": [
-            "%s=%s" % (x.split("=")[0], x.split("=")[0]) for x in console_scripts
+            "{}={}".format(x.split("=")[0], x.split("=")[0]) for x in console_scripts
         ],
         "libtbx.precommit": ["xia2=xia2"],
     },

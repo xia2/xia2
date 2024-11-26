@@ -240,8 +240,7 @@ class CCP4ScalerA(Scaler):
 
                     hklout = os.path.join(
                         self.get_working_directory(),
-                        "%s_%s_%s_%s_prepointless.mtz"
-                        % (pname, xname, dname, si.get_sweep_name()),
+                        f"{pname}_{xname}_{dname}_{si.get_sweep_name()}_prepointless.mtz",
                     )
 
                     # we will want to delete this one exit
@@ -270,8 +269,7 @@ class CCP4ScalerA(Scaler):
 
                 pointless_hklin = os.path.join(
                     self.get_working_directory(),
-                    "%s_%s_prepointless_sorted.mtz"
-                    % (self._scalr_pname, self._scalr_xname),
+                    f"{self._scalr_pname}_{self._scalr_xname}_prepointless_sorted.mtz",
                 )
 
                 s.set_hklout(pointless_hklin)
@@ -286,8 +284,7 @@ class CCP4ScalerA(Scaler):
 
                 pointless_const = os.path.join(
                     self.get_working_directory(),
-                    "%s_%s_prepointless_const.mtz"
-                    % (self._scalr_pname, self._scalr_xname),
+                    f"{self._scalr_pname}_{self._scalr_xname}_prepointless_const.mtz",
                 )
                 FileHandler.record_temporary_file(pointless_const)
 
@@ -298,8 +295,7 @@ class CCP4ScalerA(Scaler):
 
                 pointless_const = os.path.join(
                     self.get_working_directory(),
-                    "%s_%s_prepointless_const_unmerged.mtz"
-                    % (self._scalr_pname, self._scalr_xname),
+                    f"{self._scalr_pname}_{self._scalr_xname}_prepointless_const_unmerged.mtz",
                 )
                 FileHandler.record_temporary_file(pointless_const)
                 pointless_hklin = pointless_const
@@ -460,8 +456,7 @@ class CCP4ScalerA(Scaler):
 
                 hklout = os.path.join(
                     self.get_working_directory(),
-                    "%s_%s_%s_%s_prepointless.mtz"
-                    % (pname, xname, dname, si.get_sweep_name()),
+                    f"{pname}_{xname}_{dname}_{si.get_sweep_name()}_prepointless.mtz",
                 )
 
                 # we will want to delete this one exit
@@ -490,8 +485,7 @@ class CCP4ScalerA(Scaler):
 
             pointless_hklin = os.path.join(
                 self.get_working_directory(),
-                "%s_%s_prepointless_sorted.mtz"
-                % (self._scalr_pname, self._scalr_xname),
+                f"{self._scalr_pname}_{self._scalr_xname}_prepointless_sorted.mtz",
             )
 
             s.set_hklout(pointless_hklin)
@@ -514,8 +508,7 @@ class CCP4ScalerA(Scaler):
 
             pointless_const = os.path.join(
                 self.get_working_directory(),
-                "%s_%s_prepointless_const_unmerged.mtz"
-                % (self._scalr_pname, self._scalr_xname),
+                f"{self._scalr_pname}_{self._scalr_xname}_prepointless_const_unmerged.mtz",
             )
             FileHandler.record_temporary_file(pointless_const)
             pointless_hklin = pointless_const
@@ -746,12 +739,17 @@ class CCP4ScalerA(Scaler):
 
                 if lattice != reference_lattice:
                     raise RuntimeError(
-                        "lattices differ in %s and %s"
-                        % (self._reference, si.get_reflections())
+                        f"lattices differ in {self._reference} and {si.get_reflections()}"
                     )
 
-                logger.debug("Cell: %.2f %.2f %.2f %.2f %.2f %.2f" % cell)
-                logger.debug("Ref:  %.2f %.2f %.2f %.2f %.2f %.2f" % reference_cell)
+                logger.debug(
+                    "Cell: {:.2f} {:.2f} {:.2f} {:.2f} {:.2f} {:.2f}".format(*cell)
+                )
+                logger.debug(
+                    "Ref:  {:.2f} {:.2f} {:.2f} {:.2f} {:.2f} {:.2f}".format(
+                        *reference_cell
+                    )
+                )
 
                 for j in range(6):
                     if (
@@ -759,8 +757,7 @@ class CCP4ScalerA(Scaler):
                         > 0.1
                     ):
                         raise RuntimeError(
-                            "unit cell parameters differ in %s and %s"
-                            % (self._reference, si.get_reflections())
+                            f"unit cell parameters differ in {self._reference} and {si.get_reflections()}"
                         )
 
         # ---------- SORT TOGETHER DATA ----------

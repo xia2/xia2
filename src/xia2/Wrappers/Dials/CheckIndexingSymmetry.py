@@ -58,8 +58,8 @@ def CheckIndexingSymmetry(DriverType=None):
                             break
                         tokens = line.split()
                         assert len(tokens) == 5
-                        h, k, l = [int(t) for t in tokens[:3]]
-                        nref, cc = [float(t) for t in tokens[3:]]
+                        h, k, l = (int(t) for t in tokens[:3])
+                        nref, cc = (float(t) for t in tokens[3:])
                         hkl_offsets[(h, k, l)] = cc
                         hkl_nref[(h, k, l)] = nref
 
