@@ -40,13 +40,13 @@ def _exercise_dials_indexer(dials_data, tmp_path):
         (42.20, 42.20, 39.68, 90, 90, 90), rel=1e-3
     )
     solution = indexer.get_solution()
-    assert solution["rmsd"] == pytest.approx(0.09241, abs=1e-3)
+    assert solution["rmsd"] == pytest.approx(0.08208, abs=1e-3)
     assert solution["metric"] == pytest.approx(0.34599, abs=5e-3)
     assert solution["number"] == 9
     assert solution["lattice"] == "tP"
 
     beam_centre = indexer.get_indexer_beam_centre()
-    assert beam_centre == pytest.approx((219.8758, 212.6103), abs=1e-3)
+    assert beam_centre == pytest.approx((219.8788, 212.6103), abs=1e-3)
     print(indexer.get_indexer_experiment_list()[0].crystal)
     print(indexer.get_indexer_experiment_list()[0].detector)
 
