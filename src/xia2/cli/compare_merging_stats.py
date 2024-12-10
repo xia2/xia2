@@ -257,7 +257,7 @@ def plot_data(
 
     ref_ax = None
     for i, result in enumerate(results):
-        if not isinstance(result, (list, tuple)):
+        if not isinstance(result, list | tuple):
             result = (result,)
         if labels is not None:
             label = labels[i].replace("\\$", "$")

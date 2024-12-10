@@ -6,7 +6,7 @@ on:
 
 env:
   # Python minimum version is used for testing xia2
-  PYTHON_MINIMUM_VERSION: '3.9'
+  PYTHON_MINIMUM_VERSION: '3.10'
 
 jobs:
   build_test:

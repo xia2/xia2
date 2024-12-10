@@ -342,11 +342,11 @@ class DialsScaler(Scaler):
                 state = refiner.set_refiner_asserted_lattice(correct_lattice)
 
                 if state == refiner.LATTICE_CORRECT:
-                    logger.info("Lattice %s ok for sweep %s" % _tup)
+                    logger.info("Lattice {} ok for sweep {}".format(*_tup))
                 elif state == refiner.LATTICE_IMPOSSIBLE:
-                    raise RuntimeError("Lattice %s impossible for %s" % _tup)
+                    raise RuntimeError("Lattice {} impossible for {}".format(*_tup))
                 elif state == refiner.LATTICE_POSSIBLE:
-                    logger.info("Lattice %s assigned for sweep %s" % _tup)
+                    logger.info("Lattice {} assigned for sweep {}".format(*_tup))
                     need_to_return = True
 
         if need_to_return:
@@ -544,8 +544,14 @@ pipeline=dials (supported for pipeline=dials-aimless).
                 cell = exp[0].crystal.get_unit_cell().parameters()
 
                 # Note - no lattice check as this will already be caught by reindex
-                logger.debug("Cell: %.2f %.2f %.2f %.2f %.2f %.2f" % cell)
-                logger.debug("Ref:  %.2f %.2f %.2f %.2f %.2f %.2f" % reference_cell)
+                logger.debug(
+                    "Cell: {:.2f} {:.2f} {:.2f} {:.2f} {:.2f} {:.2f}".format(*cell)
+                )
+                logger.debug(
+                    "Ref:  {:.2f} {:.2f} {:.2f} {:.2f} {:.2f} {:.2f}".format(
+                        *reference_cell
+                    )
+                )
 
                 for j in range(6):
                     if (
@@ -553,8 +559,7 @@ pipeline=dials (supported for pipeline=dials-aimless).
                         > 0.1
                     ):
                         raise RuntimeError(
-                            "unit cell parameters differ in %s and %s"
-                            % (reference_expt, si.get_reflections())
+                            f"unit cell parameters differ in {reference_expt} and {si.get_reflections()}"
                         )
 
         # Now make sure all batches ok before finish preparing
@@ -810,8 +815,7 @@ pipeline=dials (supported for pipeline=dials-aimless).
                 auto_logfiler(merger)
                 mtz_filename = os.path.join(
                     self.get_working_directory(),
-                    "%s_%s_scaled_%s.mtz"
-                    % (self._scalr_pname, self._scalr_xname, dname),
+                    f"{self._scalr_pname}_{self._scalr_xname}_scaled_{dname}.mtz",
                 )
                 self._scalr_scaled_refl_files[dname] = mtz_filename
                 self._scalr_scaled_reflection_files["mtz"][dname] = mtz_filename
@@ -1033,10 +1037,11 @@ Scaling & analysis of unmerged intensities, absorption correction using spherica
                     tt_grouprefiner.set_output_p4p(p4p_file)
                     tt_grouprefiner.run()
                     logger.info(
-                        "%s: %6.2f %6.2f %6.2f %6.2f %6.2f %6.2f"
-                        % tuple(
-                            ["".join(pi.split("_")[2:])]
-                            + list(tt_grouprefiner.get_unit_cell())
+                        "{}: {:6.2f} {:6.2f} {:6.2f} {:6.2f} {:6.2f} {:6.2f}".format(
+                            *tuple(
+                                ["".join(pi.split("_")[2:])]
+                                + list(tt_grouprefiner.get_unit_cell())
+                            )
                         )
                     )
                     self._scalr_cell_dict[pi] = (
@@ -1077,8 +1082,9 @@ Scaling & analysis of unmerged intensities, absorption correction using spherica
 
             self._scalr_cell = tt_refiner.get_unit_cell()
             logger.info(
-                "Overall: %6.2f %6.2f %6.2f %6.2f %6.2f %6.2f"
-                % tt_refiner.get_unit_cell()
+                "Overall: {:6.2f} {:6.2f} {:6.2f} {:6.2f} {:6.2f} {:6.2f}".format(
+                    *tt_refiner.get_unit_cell()
+                )
             )
             self._scalr_cell_esd = tt_refiner.get_unit_cell_esd()
             cif_in = tt_refiner.import_cif()
@@ -1132,7 +1138,9 @@ Scaling & analysis of unmerged intensities, absorption correction using spherica
             ):
                 cif_out["_cell_%s" % cifname] = cell  # pylint: disable=E1137
 
-        logger.debug("%7.3f %7.3f %7.3f %7.3f %7.3f %7.3f" % self._scalr_cell)
+        logger.debug(
+            "{:7.3f} {:7.3f} {:7.3f} {:7.3f} {:7.3f} {:7.3f}".format(*self._scalr_cell)
+        )
 
     def apply_reindex_operator_to_sweep_info(self, si, reindex_operator, reason):
         """Use a reindex operator to reindex the data.

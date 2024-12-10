@@ -3,7 +3,6 @@ from __future__ import annotations
 import concurrent.futures
 import logging
 from pathlib import Path
-from typing import List, Tuple
 
 import numpy as np
 from cctbx import sgtbx, uctbx
@@ -39,13 +38,13 @@ xia2_logger = logging.getLogger(__name__)
 
 
 def inspect_directories(
-    directories_to_process: List[Path], validate: bool = False
-) -> List[FilePair]:
+    directories_to_process: list[Path], validate: bool = False
+) -> list[FilePair]:
     """
     Inspect the directories and match up integrated .expt and .refl files
     by name.
     """
-    new_data: List[FilePair] = []
+    new_data: list[FilePair] = []
     for d in directories_to_process:
         expts_this, refls_this = ([], [])
         for file_ in list(d.glob("integrated*.expt")):
@@ -87,10 +86,10 @@ def validate(expt: Path, refl: Path):
 
 
 def inspect_files(
-    reflection_files: List[Path], experiment_files: List[Path], validate: bool = False
-) -> List[FilePair]:
+    reflection_files: list[Path], experiment_files: list[Path], validate: bool = False
+) -> list[FilePair]:
     """Inspect the input data, matching by the order of input."""
-    new_data: List[FilePair] = []
+    new_data: list[FilePair] = []
     for refl_file, expt_file in zip(reflection_files, experiment_files):
         fp = FilePair(expt_file, refl_file)
         fp.check()
@@ -105,7 +104,7 @@ def inspect_files(
     return new_data
 
 
-class BaseDataReduction(object):
+class BaseDataReduction:
     _no_input_error_msg = (
         "No input data, (experiments+reflections files or integrated directories)\n"
         + "have been found in the input. Please provide at least some integrated/scaled data or\n"
@@ -118,7 +117,7 @@ class BaseDataReduction(object):
     def __init__(
         self,
         main_directory: Path,
-        data: List[FilePair],
+        data: list[FilePair],
         reduction_params,
     ):
         self._main_directory: Path = main_directory
@@ -130,11 +129,11 @@ class BaseDataReduction(object):
         self._scale_wd = self._data_reduction_wd / "scale"
         self._merge_wd = self._data_reduction_wd / "merge"
 
-        self._integrated_data: List[FilePair] = []
-        self._filtered_batches_to_process: List[ProcessingBatch] = []
+        self._integrated_data: list[FilePair] = []
+        self._filtered_batches_to_process: list[ProcessingBatch] = []
         # self._files_to_scale: List[FilePair] = []
-        self._batches_to_scale: List[ProcessingBatch] = []
-        self._files_to_merge: List[FilePair] = []
+        self._batches_to_scale: list[ProcessingBatch] = []
+        self._files_to_merge: list[FilePair] = []
 
         if not data:
             raise ValueError(self._no_input_error_msg)
@@ -186,7 +185,7 @@ class BaseDataReduction(object):
     def from_directories(
         cls,
         main_directory: Path,
-        directories_to_process: List[Path],
+        directories_to_process: list[Path],
         reduction_params,
         validate=False,
     ):
@@ -197,8 +196,8 @@ class BaseDataReduction(object):
     def from_files(
         cls,
         main_directory: Path,
-        reflection_files: List[Path],
-        experiment_files: List[Path],
+        reflection_files: list[Path],
+        experiment_files: list[Path],
         reduction_params,
         validate=False,
     ):
@@ -249,7 +248,7 @@ class BaseDataReduction(object):
             self._reduction_params,
         )
 
-    def _filter(self) -> Tuple[CrystalsDict, uctbx.unit_cell, sgtbx.space_group_info]:
+    def _filter(self) -> tuple[CrystalsDict, uctbx.unit_cell, sgtbx.space_group_info]:
         return filter_(self._filter_wd, self._integrated_data, self._reduction_params)
 
     def _reindex(self) -> None:
@@ -385,7 +384,7 @@ class BaseDataReduction(object):
             merge_input = apply_scaled_array_to_all_files(
                 merge_wds["merged"], scaled_results, self._reduction_params
             )
-        name_to_expts_arr: dict[str, Tuple] = {name: () for name in merge_input.keys()}
+        name_to_expts_arr: dict[str, tuple] = {name: () for name in merge_input.keys()}
 
         futures = {}
         with concurrent.futures.ProcessPoolExecutor(

@@ -943,8 +943,7 @@ class MultiCrystalScale:
         for p in uc_params:
             min_x, q1_x, med_x, q3_x, max_x = five_number_summary(p)
             logger.info(
-                "Five number summary: min %.2f, q1 %.2f, med %.2f, q3 %.2f, max %.2f"
-                % (min_x, q1_x, med_x, q3_x, max_x)
+                f"Five number summary: min {min_x:.2f}, q1 {q1_x:.2f}, med {med_x:.2f}, q3 {q3_x:.2f}, max {max_x:.2f}"
             )
             iqr_x = q3_x - q1_x
             if iqr_x < 1e-6:

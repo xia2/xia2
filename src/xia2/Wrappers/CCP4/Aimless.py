@@ -379,19 +379,11 @@ def Aimless(DriverType=None, absorption_correction=None, decay_correction=None):
 
             if not self._scalepack:
                 self.set_task(
-                    "Merging scaled reflections from %s => %s"
-                    % (
-                        os.path.split(self.get_hklin())[-1],
-                        os.path.split(self.get_hklout())[-1],
-                    )
+                    f"Merging scaled reflections from {os.path.split(self.get_hklin())[-1]} => {os.path.split(self.get_hklout())[-1]}"
                 )
             else:
                 self.set_task(
-                    "Merging reflections from %s => scalepack %s"
-                    % (
-                        os.path.split(self.get_hklin())[-1],
-                        os.path.split(self.get_hklout())[-1],
-                    )
+                    f"Merging reflections from {os.path.split(self.get_hklin())[-1]} => scalepack {os.path.split(self.get_hklout())[-1]}"
                 )
 
             self._xmlout = os.path.join(
@@ -453,19 +445,11 @@ def Aimless(DriverType=None, absorption_correction=None, decay_correction=None):
 
             if not self._scalepack:
                 self.set_task(
-                    "Scaling reflections from %s => %s"
-                    % (
-                        os.path.split(self.get_hklin())[-1],
-                        os.path.split(self.get_hklout())[-1],
-                    )
+                    f"Scaling reflections from {os.path.split(self.get_hklin())[-1]} => {os.path.split(self.get_hklout())[-1]}"
                 )
             else:
                 self.set_task(
-                    "Scaling reflections from %s => scalepack %s"
-                    % (
-                        os.path.split(self.get_hklin())[-1],
-                        os.path.split(self.get_hklout())[-1],
-                    )
+                    f"Scaling reflections from {os.path.split(self.get_hklin())[-1]} => scalepack {os.path.split(self.get_hklout())[-1]}"
                 )
 
             self._xmlout = os.path.join(
@@ -648,19 +632,11 @@ def Aimless(DriverType=None, absorption_correction=None, decay_correction=None):
 
             if not self._scalepack:
                 self.set_task(
-                    "Scaling reflections from %s => %s"
-                    % (
-                        os.path.split(self.get_hklin())[-1],
-                        os.path.split(self.get_hklout())[-1],
-                    )
+                    f"Scaling reflections from {os.path.split(self.get_hklin())[-1]} => {os.path.split(self.get_hklout())[-1]}"
                 )
             else:
                 self.set_task(
-                    "Scaling reflections from %s => scalepack %s"
-                    % (
-                        os.path.split(self.get_hklin())[-1],
-                        os.path.split(self.get_hklout())[-1],
-                    )
+                    f"Scaling reflections from {os.path.split(self.get_hklin())[-1]} => scalepack {os.path.split(self.get_hklout())[-1]}"
                 )
 
             self.start()

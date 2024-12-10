@@ -4,7 +4,6 @@ import logging
 import shutil
 from multiprocessing import Pool
 from pathlib import Path
-from typing import List, Optional, Tuple
 
 from dials.array_family import flex
 from dials.util.filter_reflections import filter_reflection_table
@@ -29,7 +28,7 @@ xia2_logger = logging.getLogger(__name__)
 
 
 def dose_series_repeat_to_groupings(
-    experiments: List[ExperimentList], dose_series_repeat: int
+    experiments: list[ExperimentList], dose_series_repeat: int
 ) -> ParsedYAML:
     """
     For a dose series data collection, attempt to create and then parse a
@@ -74,7 +73,7 @@ grouping:
 
 def save_scaled_array_for_merge(
     input_: SplittingIterable,
-) -> Optional[Tuple[str, FilePair]]:
+) -> tuple[str, FilePair] | None:
     refls = flex.reflection_table.from_file(input_.fp.refl)
     if not any(refls.get_flags(refls.flags.scaled)):
         raise ValueError("Unscaled data input for merging")
@@ -143,14 +142,14 @@ def save_scaled_array_for_merge(
 
 def apply_scaled_array_to_all_files(
     working_directory: Path,
-    scaled_files: List[FilePair],
+    scaled_files: list[FilePair],
     reduction_params: ReductionParams,
-) -> dict[str, List[FilePair]]:
+) -> dict[str, list[FilePair]]:
     groupindex = 0
     name = "merged"  # note this name becomes the filename of the output mtz
     groupdata = GroupsForExpt(0)
     input_iterable = []
-    filesdict: dict[str, List[FilePair]] = {name: []}
+    filesdict: dict[str, list[FilePair]] = {name: []}
     for i, fp in enumerate(scaled_files):
         input_iterable.append(
             SplittingIterable(
@@ -177,7 +176,7 @@ def apply_scaled_array_to_all_files(
 def yml_to_merged_filesdict(
     working_directory: Path,
     parsed: ParsedYAML,
-    integrated_files: List[FilePair],
+    integrated_files: list[FilePair],
     reduction_params: ReductionParams,
     grouping: str = "merge_by",
 ):

@@ -169,11 +169,7 @@ def visualise_db(timing_db):
                     tbreak["runtime_readable"] = "%.1fs" % tbreak["runtime"]
                 else:
                     tbreak["runtime_readable"] = "%.1fm" % (tbreak["runtime"] / 60)
-                tbreak["command"] = (
-                    "xia2 thinking time ({tbreak[runtime_readable]})".format(
-                        tbreak=tbreak
-                    )
-                )
+                tbreak["command"] = f"xia2 thinking time ({tbreak['runtime_readable']})"
                 thinking_breaks.append(tbreak)
                 output.append(
                     "{timestamp:{time_width}.1f}s  {t[index_readable]:>{index_width}} {nothing:<5} {t[command]}".format(

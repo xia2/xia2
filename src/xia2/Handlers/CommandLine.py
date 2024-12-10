@@ -432,7 +432,7 @@ class _CommandLine:
                         break
                 if not found:
                     raise Sorry(
-                        "Could not find %s in %s" % (dataset, " ".join(directories))
+                        "Could not find {} in {}".format(dataset, " ".join(directories))
                     )
 
             if is_hdf5_name(dataset):
@@ -566,9 +566,10 @@ class _CommandLine:
                 allowed_scalers = ("dials", "ccp4a")
             if settings.scaler not in allowed_scalers:
                 raise ValueError(
-                    "scaler=%s not compatible with pipeline=%s "
-                    "(compatible scalers are %s)"
-                    % (settings.scaler, settings.pipeline, " or ".join(allowed_scalers))
+                    "scaler={} not compatible with pipeline={} "
+                    "(compatible scalers are {})".format(
+                        settings.scaler, settings.pipeline, " or ".join(allowed_scalers)
+                    )
                 )
 
 

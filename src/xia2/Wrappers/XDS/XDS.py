@@ -197,15 +197,21 @@ def imageset_to_xds(
         % (detector, trusted[0], trusted[1])
     )
 
-    result.append("DIRECTION_OF_DETECTOR_X-AXIS=%f %f %f" % converter.detector_x_axis)
+    result.append(
+        "DIRECTION_OF_DETECTOR_X-AXIS={:f} {:f} {:f}".format(*converter.detector_x_axis)
+    )
 
-    result.append("DIRECTION_OF_DETECTOR_Y-AXIS=%f %f %f" % converter.detector_y_axis)
+    result.append(
+        "DIRECTION_OF_DETECTOR_Y-AXIS={:f} {:f} {:f}".format(*converter.detector_y_axis)
+    )
 
     from xia2.Handlers.Phil import PhilIndex
 
     params = PhilIndex.get_python_object()
     if params.xds.trusted_region:
-        result.append("TRUSTED_REGION= %.2f %.2f" % tuple(params.xds.trusted_region))
+        result.append(
+            "TRUSTED_REGION= {:.2f} {:.2f}".format(*tuple(params.xds.trusted_region))
+        )
     elif detector_class_is_square[
         detector_helpers_types.get(sensor, fast, slow, df, ds).replace("-", " ")
     ]:
@@ -231,14 +237,22 @@ def imageset_to_xds(
     # format class reverse phi: n.b. double-negative warning!
 
     if refined_rotation_axis:
-        result.append("ROTATION_AXIS= %f %f %f" % refined_rotation_axis)
+        result.append("ROTATION_AXIS= {:f} {:f} {:f}".format(*refined_rotation_axis))
     else:
-        result.append("ROTATION_AXIS= %.3f %.3f %.3f" % converter.rotation_axis)
+        result.append(
+            "ROTATION_AXIS= {:.3f} {:.3f} {:.3f}".format(*converter.rotation_axis)
+        )
 
     if refined_beam_vector:
-        result.append("INCIDENT_BEAM_DIRECTION=%f %f %f" % refined_beam_vector)
+        result.append(
+            "INCIDENT_BEAM_DIRECTION={:f} {:f} {:f}".format(*refined_beam_vector)
+        )
     else:
-        result.append("INCIDENT_BEAM_DIRECTION= %.3f %.3f %.3f" % converter.beam_vector)
+        result.append(
+            "INCIDENT_BEAM_DIRECTION= {:.3f} {:.3f} {:.3f}".format(
+                *converter.beam_vector
+            )
+        )
 
     if hasattr(beam, "get_polarization_fraction"):
         R = converter.imagecif_to_xds_transformation_matrix
@@ -246,8 +260,9 @@ def imageset_to_xds(
             "FRACTION_OF_POLARIZATION= %.3f" % beam.get_polarization_fraction()
         )
         result.append(
-            "POLARIZATION_PLANE_NORMAL= %.3f %.3f %.3f"
-            % (R * matrix.col(beam.get_polarization_normal())).elems
+            "POLARIZATION_PLANE_NORMAL= {:.3f} {:.3f} {:.3f}".format(
+                *(R * matrix.col(beam.get_polarization_normal())).elems
+            )
         )
 
     # 24/NOV/14 XDS determines the air absorption automatically
@@ -280,17 +295,20 @@ def imageset_to_xds(
             result.append("!")
             result.append("SEGMENT= %d %d %d %d" % converter.panel_limits[panel_id])
             result.append(
-                "DIRECTION_OF_SEGMENT_X-AXIS= %.3f %.3f %.3f"
-                % converter.panel_x_axis[panel_id]
+                "DIRECTION_OF_SEGMENT_X-AXIS= {:.3f} {:.3f} {:.3f}".format(
+                    *converter.panel_x_axis[panel_id]
+                )
             )
             result.append(
-                "DIRECTION_OF_SEGMENT_Y-AXIS= %.3f %.3f %.3f"
-                % converter.panel_y_axis[panel_id]
+                "DIRECTION_OF_SEGMENT_Y-AXIS= {:.3f} {:.3f} {:.3f}".format(
+                    *converter.panel_y_axis[panel_id]
+                )
             )
             result.append("SEGMENT_DISTANCE= %.3f" % converter.panel_distance[panel_id])
             result.append(
-                "SEGMENT_ORGX= %.1f SEGMENT_ORGY= %.1f"
-                % converter.panel_origin[panel_id]
+                "SEGMENT_ORGX= {:.1f} SEGMENT_ORGY= {:.1f}".format(
+                    *converter.panel_origin[panel_id]
+                )
             )
             result.append("")
 

@@ -35,12 +35,12 @@ class _Versions(Mapping):
         return not (self == other)
 
 
-@functools.lru_cache(maxsize=None)
+@functools.cache
 def get_xia2_version():
     return xia2.XIA2Version.Version
 
 
-@functools.lru_cache(maxsize=None)
+@functools.cache
 def get_xds_version():
     try:
         result = subprocess.run(
@@ -56,7 +56,7 @@ def get_xds_version():
     return None
 
 
-@functools.lru_cache(maxsize=None)
+@functools.cache
 def get_aimless_version():
     result = subprocess.run(
         ["aimless", "--no-input"],
@@ -69,7 +69,7 @@ def get_aimless_version():
     return None
 
 
-@functools.lru_cache(maxsize=None)
+@functools.cache
 def get_pointless_version():
     result = subprocess.run(
         ["pointless"],

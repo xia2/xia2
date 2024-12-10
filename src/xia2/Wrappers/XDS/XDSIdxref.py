@@ -252,9 +252,11 @@ def XDSIdxref(DriverType=None, params=None):
             # FIXME this needs to be calculated from the beam centre...
 
             if self._refined_origin:
-                xds_inp.write("ORGX=%f ORGY=%f\n" % tuple(self._refined_origin))
+                xds_inp.write(
+                    "ORGX={:f} ORGY={:f}\n".format(*tuple(self._refined_origin))
+                )
             else:
-                xds_inp.write("ORGX=%f ORGY=%f\n" % tuple(self._org))
+                xds_inp.write("ORGX={:f} ORGY={:f}\n".format(*tuple(self._org)))
 
             # FIXME in here make sure sweep is wider than 5 degrees
             # before specifying AXIS: if <= 5 degrees replace AXIS with
@@ -288,13 +290,25 @@ def XDSIdxref(DriverType=None, params=None):
                 xds_inp.write("UNIT_CELL_CONSTANTS=%s\n" % cell_format % self._cell)
 
             if self._a_axis:
-                xds_inp.write("UNIT_CELL_A-AXIS=%.2f %.2f %.2f\n" % tuple(self._a_axis))
+                xds_inp.write(
+                    "UNIT_CELL_A-AXIS={:.2f} {:.2f} {:.2f}\n".format(
+                        *tuple(self._a_axis)
+                    )
+                )
 
             if self._b_axis:
-                xds_inp.write("UNIT_CELL_B-AXIS=%.2f %.2f %.2f\n" % tuple(self._b_axis))
+                xds_inp.write(
+                    "UNIT_CELL_B-AXIS={:.2f} {:.2f} {:.2f}\n".format(
+                        *tuple(self._b_axis)
+                    )
+                )
 
             if self._c_axis:
-                xds_inp.write("UNIT_CELL_C-AXIS=%.2f %.2f %.2f\n" % tuple(self._c_axis))
+                xds_inp.write(
+                    "UNIT_CELL_C-AXIS={:.2f} {:.2f} {:.2f}\n".format(
+                        *tuple(self._c_axis)
+                    )
+                )
 
             for record in header:
                 xds_inp.write("%s\n" % record)
@@ -460,13 +474,9 @@ def XDSIdxref(DriverType=None, params=None):
             # one, if self._symm is set...
 
             if self._symm:
-                assert self._indexing_solutions, (
-                    "No remaining indexing solutions (%s, %s)"
-                    % (
-                        s2l(self._symm),
-                        self._symm,
-                    )
-                )
+                assert (
+                    self._indexing_solutions
+                ), f"No remaining indexing solutions ({s2l(self._symm)}, {self._symm})"
             else:
                 assert self._indexing_solutions, "No remaining indexing solutions"
 
@@ -497,7 +507,9 @@ def XDSIdxref(DriverType=None, params=None):
                 # only solution in the table..
 
                 logger.debug(
-                    "Target unit cell: %.2f %.2f %.2f %.2f %.2f %.2f" % self._cell
+                    "Target unit cell: {:.2f} {:.2f} {:.2f} {:.2f} {:.2f} {:.2f}".format(
+                        *self._cell
+                    )
                 )
 
                 for l in items:
@@ -506,7 +518,9 @@ def XDSIdxref(DriverType=None, params=None):
                         # check the unit cell...
                         cell = l[1]
 
-                        cell_str = "%.2f %.2f %.2f %.2f %.2f %.2f" % cell
+                        cell_str = "{:.2f} {:.2f} {:.2f} {:.2f} {:.2f} {:.2f}".format(
+                            *cell
+                        )
                         logger.debug("Chosen unit cell: %s" % cell_str)
 
                         self._indxr_lattice = l[0]

@@ -33,7 +33,7 @@ def banner(comment, size=60):
     l = len(comment)
     m = (size - (l + 2)) // 2
     n = size - (l + 2 + m)
-    return "%s %s %s" % ("-" * m, comment, "-" * n)
+    return "{} {} {}".format("-" * m, comment, "-" * n)
 
 
 logger = logging.getLogger("xia2.Handlers.Streams")

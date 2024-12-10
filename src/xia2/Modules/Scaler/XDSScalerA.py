@@ -840,8 +840,9 @@ class XDSScalerA(Scaler):
         self._scalr_resolution_limits = {}
 
         logger.debug(
-            "Determined unit cell: %.2f %.2f %.2f %.2f %.2f %.2f"
-            % tuple(self._scalr_cell)
+            "Determined unit cell: {:.2f} {:.2f} {:.2f} {:.2f} {:.2f} {:.2f}".format(
+                *tuple(self._scalr_cell)
+            )
         )
 
         if os.path.exists(os.path.join(self.get_working_directory(), "REMOVE.HKL")):
@@ -864,7 +865,9 @@ class XDSScalerA(Scaler):
         xscale.set_cell(self._scalr_cell)
 
         logger.debug(
-            "Set CELL: %.2f %.2f %.2f %.2f %.2f %.2f" % tuple(self._scalr_cell)
+            "Set CELL: {:.2f} {:.2f} {:.2f} {:.2f} {:.2f} {:.2f}".format(
+                *tuple(self._scalr_cell)
+            )
         )
         logger.debug("Set SPACEGROUP_NUMBER: %d", self._xds_spacegroup)
 

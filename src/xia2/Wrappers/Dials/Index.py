@@ -177,8 +177,9 @@ def Index(DriverType=None):
                 self.add_command_line("known_symmetry.space_group=%s" % self._symm)
             if self._indxr_input_cell is not None:
                 self.add_command_line(
-                    'known_symmetry.unit_cell="%s,%s,%s,%s,%s,%s"'
-                    % self._indxr_input_cell
+                    'known_symmetry.unit_cell="{},{},{},{},{},{}"'.format(
+                        *self._indxr_input_cell
+                    )
                 )
             if self._maximum_spot_error:
                 self.add_command_line(

@@ -224,7 +224,9 @@ def XDSCorrect(DriverType=None, params=None):
                 ).readlines():
                     resol = tuple(map(float, record.split()[:2]))
 
-                    xds_inp.write("EXCLUDE_RESOLUTION_RANGE= %.2f %.2f\n" % resol)
+                    xds_inp.write(
+                        "EXCLUDE_RESOLUTION_RANGE= {:.2f} {:.2f}\n".format(*resol)
+                    )
 
             # exclude requested resolution ranges
             if self._excluded_regions:
@@ -261,8 +263,7 @@ def XDSCorrect(DriverType=None, params=None):
             # include the resolution range, perhaps
             if self._resolution_high or self._resolution_low:
                 xds_inp.write(
-                    "INCLUDE_RESOLUTION_RANGE=%.2f %.2f\n"
-                    % (self._resolution_low, self._resolution_high)
+                    f"INCLUDE_RESOLUTION_RANGE={self._resolution_low:.2f} {self._resolution_high:.2f}\n"
                 )
 
             if self._anomalous:
@@ -279,7 +280,9 @@ def XDSCorrect(DriverType=None, params=None):
             if self._cell:
                 xds_inp.write("UNIT_CELL_CONSTANTS=")
                 xds_inp.write(
-                    "%6.2f %6.2f %6.2f %6.2f %6.2f %6.2f\n" % tuple(self._cell)
+                    "{:6.2f} {:6.2f} {:6.2f} {:6.2f} {:6.2f} {:6.2f}\n".format(
+                        *tuple(self._cell)
+                    )
                 )
             if self._reindex_matrix:
                 xds_inp.write(

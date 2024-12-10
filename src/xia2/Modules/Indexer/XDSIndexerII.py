@@ -164,7 +164,11 @@ class XDSIndexerII(XDSIndexer):
             idxref.set_indexer_input_cell(self._indxr_input_cell)
 
             logger.debug("Set lattice: %s", self._indxr_input_lattice)
-            logger.debug("Set cell: %f %f %f %f %f %f" % self._indxr_input_cell)
+            logger.debug(
+                "Set cell: {:f} {:f} {:f} {:f} {:f} {:f}".format(
+                    *self._indxr_input_cell
+                )
+            )
 
             original_cell = self._indxr_input_cell
         elif self._indxr_input_lattice:
@@ -294,8 +298,8 @@ class XDSIndexerII(XDSIndexer):
             if fraction_etc_i and not fraction_etc_ii:
                 return "i"
 
-            logger.debug("I:  %.2f %.2f %.2f" % fraction_etc_i)
-            logger.debug("II: %.2f %.2f %.2f" % fraction_etc_ii)
+            logger.debug("I:  {:.2f} {:.2f} {:.2f}".format(*fraction_etc_i))
+            logger.debug("II: {:.2f} {:.2f} {:.2f}".format(*fraction_etc_ii))
 
             if (
                 fraction_etc_i[0] > fraction_etc_ii[0]
