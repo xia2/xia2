@@ -155,9 +155,11 @@ def ssx_find_spots(
         raise ValueError(f"Data has not yet been imported into {working_directory}")
     xia2_logger.notice(banner("Spotfinding"))  # type: ignore
     logfile = "dials.find_spots.log"
-    with run_in_directory(working_directory), log_to_file(
-        logfile
-    ) as dials_logger, record_step("dials.find_spots"):
+    with (
+        run_in_directory(working_directory),
+        log_to_file(logfile) as dials_logger,
+        record_step("dials.find_spots"),
+    ):
         # Set up the input
         imported_expts = load.experiment_list("imported.expt", check_format=True)
         xia2_phil = f"""
@@ -397,9 +399,11 @@ def run_refinement(
     xia2_logger.notice(banner("Joint refinement"))  # type: ignore
 
     logfile = "dials.refine.log"
-    with run_in_directory(working_directory), log_to_file(
-        logfile
-    ) as dials_logger, record_step("dials.refine"):
+    with (
+        run_in_directory(working_directory),
+        log_to_file(logfile) as dials_logger,
+        record_step("dials.refine"),
+    ):
         indexed_refl = flex.reflection_table.from_file("indexed.refl")
         indexed_expts = load.experiment_list("indexed.expt", check_format=False)
 

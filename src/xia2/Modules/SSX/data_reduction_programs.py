@@ -289,10 +289,11 @@ def run_uc_cluster(
     if not Path.is_dir(working_directory):
         Path.mkdir(working_directory)
 
-    with open(os.devnull, "w") as devnull, run_in_directory(
-        working_directory
-    ), record_step("dials.cluster_unit_cell"), log_to_file(
-        "dials.cluster_unit_cell.log"
+    with (
+        open(os.devnull, "w") as devnull,
+        run_in_directory(working_directory),
+        record_step("dials.cluster_unit_cell"),
+        log_to_file("dials.cluster_unit_cell.log"),
     ):
         sys.stdout = devnull  # block printing from cluster_uc
 
@@ -367,9 +368,11 @@ def merge(
         filename = f"{name}.mtz"
         html_file = f"dials.merge.{name}.html"
         json_file = f"dials.merge.{name}.json"
-    with run_in_directory(working_directory), log_to_file(
-        logfile
-    ) as dials_logger, record_step("dials.merge"):
+    with (
+        run_in_directory(working_directory),
+        log_to_file(logfile) as dials_logger,
+        record_step("dials.merge"),
+    ):
         params = merge_phil_scope.extract()
         params.output.additional_stats = True
         input_ = "Input parameters:\n"
@@ -659,9 +662,12 @@ def scale_parallel_batches(
     )
     jobs = {f"{batch_template(index=i+1)}": fp for i, fp in enumerate(batches)}
     # xia2_logger.notice(banner("Scaling"))  # type: ignore
-    with record_step("dials.scale (parallel)"), concurrent.futures.ProcessPoolExecutor(
-        max_workers=min(reduction_params.nproc, len(batches))
-    ) as pool:
+    with (
+        record_step("dials.scale (parallel)"),
+        concurrent.futures.ProcessPoolExecutor(
+            max_workers=min(reduction_params.nproc, len(batches))
+        ) as pool,
+    ):
         scale_futures: Dict[Any, int] = {
             pool.submit(
                 scale_on_batches,
@@ -702,9 +708,11 @@ def scale_on_batches(
     logfile = "dials.scale.log"
     if name:
         logfile = f"dials.scale.{name}.log"
-    with run_in_directory(working_directory), log_to_file(
-        logfile
-    ) as dials_logger, record_step("dials.scale"):
+    with (
+        run_in_directory(working_directory),
+        log_to_file(logfile) as dials_logger,
+        record_step("dials.scale"),
+    ):
         # Setup scaling
         input_ = ""
 
@@ -850,9 +858,11 @@ def individual_cosym(
 ) -> ProgramResult:
     """Run  cosym an the expt and refl file."""
     logfile = f"dials.cosym.{index}.log"
-    with run_in_directory(working_directory), record_step("dials.cosym"), log_to_file(
-        logfile
-    ) as dials_logger:
+    with (
+        run_in_directory(working_directory),
+        record_step("dials.cosym"),
+        log_to_file(logfile) as dials_logger,
+    ):
         cosym_params, diff_phil = _extract_cosym_params(reduction_params, index)
         dials_logger.info(
             "The following parameters have been modified:\n"
@@ -904,8 +914,10 @@ def scale_reindex_single(
         "batch1",
     )
     logfile = "dials.reindex.log"
-    with run_in_directory(working_directory), log_to_file(logfile), record_step(
-        "dials.reindex"
+    with (
+        run_in_directory(working_directory),
+        log_to_file(logfile),
+        record_step("dials.reindex"),
     ):
         expts = load.experiment_list(scaleresult.exptfile, check_format=False)
         refls = flex.reflection_table.from_file(scaleresult.reflfile)
@@ -976,9 +988,12 @@ def cosym_reindex(
     if d_min:
         params.d_min = d_min
 
-    with open(os.devnull, "w") as devnull, run_in_directory(
-        working_directory
-    ), log_to_file(logfile), record_step("cosym_reindex"):
+    with (
+        open(os.devnull, "w") as devnull,
+        run_in_directory(working_directory),
+        log_to_file(logfile),
+        record_step("cosym_reindex"),
+    ):
         sys.stdout = devnull  # block printing from cosym
         cosym_instance = BatchCosym(expts, refls, params)
         register_default_cosym_observers(cosym_instance)
@@ -1014,9 +1029,10 @@ def parallel_cosym(
     with open(os.devnull, "w") as devnull:
         sys.stdout = devnull  # block printing from cosym
 
-        with record_step(
-            "dials.cosym (parallel)"
-        ), concurrent.futures.ProcessPoolExecutor(max_workers=nproc) as pool:
+        with (
+            record_step("dials.cosym (parallel)"),
+            concurrent.futures.ProcessPoolExecutor(max_workers=nproc) as pool,
+        ):
             cosym_futures: dict[Any, int] = {
                 pool.submit(
                     individual_cosym,
