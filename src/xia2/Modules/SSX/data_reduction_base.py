@@ -401,11 +401,12 @@ class BaseDataReduction(object):
 
         future_list = []
         summaries = {name: "" for name in name_to_expts_arr.keys()}
-        with record_step(
-            "dials.merge (parallel)"
-        ), concurrent.futures.ProcessPoolExecutor(
-            max_workers=self._reduction_params.nproc
-        ) as pool:
+        with (
+            record_step("dials.merge (parallel)"),
+            concurrent.futures.ProcessPoolExecutor(
+                max_workers=self._reduction_params.nproc
+            ) as pool,
+        ):
             for name, (scaled_array, elist) in name_to_expts_arr.items():
                 future_list.append(
                     pool.submit(
