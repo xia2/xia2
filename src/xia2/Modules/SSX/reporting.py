@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import math
-from typing import Dict, List
 
 import numpy as np
 from dials.algorithms.clustering.unit_cell import Cluster
@@ -14,7 +13,7 @@ from dials.report.analysis import format_statistics, table_1_stats
 from dials.util.resolution_analysis import resolution_cc_half
 
 
-def condensed_unit_cell_info(clusters: List[Cluster]) -> str:
+def condensed_unit_cell_info(clusters: list[Cluster]) -> str:
     out_str = "Unit cell clustering for largest clusters (median & stdev)"
     al, be, ga = "med_" + "\u03b1", "med_" + "\u03b2", "med_" + "\u03b3"
     out_str += f"\n{'n_xtals'} {'s.g.':>7} {'med_a':>7} {'med_b':>7} {'med_c':>7} {al:>6} {be:>6} {ga:>6}"
@@ -32,7 +31,7 @@ def condensed_unit_cell_info(clusters: List[Cluster]) -> str:
     return out_str
 
 
-def condensed_metric_unit_cell_info(clusters: List[Cluster]) -> str:
+def condensed_metric_unit_cell_info(clusters: list[Cluster]) -> str:
     from xia2.Modules.SSX.data_integration_programs import best_cell_from_cluster
 
     out_str = "Highest possible symmetries and metric unit cells for clusters"
@@ -45,7 +44,7 @@ def condensed_metric_unit_cell_info(clusters: List[Cluster]) -> str:
     return out_str
 
 
-def indexing_summary_output(summary_data: Dict, summary_plots: Dict) -> str:
+def indexing_summary_output(summary_data: dict, summary_plots: dict) -> str:
     success = [
         str(len(v)) if len(v) > 1 else "\u2713" if v[0]["n_indexed"] else "."
         for v in summary_data.values()

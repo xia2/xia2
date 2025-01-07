@@ -80,7 +80,9 @@ class _IndexerHelper:
         """Return a string representation."""
 
         return [
-            "%s %s" % (l[0], "%6.2f %6.2f %6.2f %6.2f %6.2f %6.2f" % l[1])
+            "{} {}".format(
+                l[0], "{:6.2f} {:6.2f} {:6.2f} {:6.2f} {:6.2f} {:6.2f}".format(*l[1])
+            )
             for l in self._sorted_list
         ]
 
@@ -354,8 +356,8 @@ class Indexer:
         return self._indxr_pname, self._indxr_xname, self._indxr_dname
 
     def get_indexer_full_name(self):
-        return "%s %s %s %s" % tuple(
-            list(self.get_indexer_project_info()) + [self._indxr_sweep_name]
+        return "{} {} {} {}".format(
+            *tuple(list(self.get_indexer_project_info()) + [self._indxr_sweep_name])
         )
 
     # getters of the status - note well that these need to cascade
@@ -550,11 +552,11 @@ class Indexer:
         )
         lines.append("Indexing solution:")
         lines.append(
-            "%s %s"
-            % (
+            "{} {}".format(
                 lattice,
-                "%6.2f %6.2f %6.2f %6.2f %6.2f %6.2f"
-                % crystal_model.get_unit_cell().parameters(),
+                "{:6.2f} {:6.2f} {:6.2f} {:6.2f} {:6.2f} {:6.2f}".format(
+                    *crystal_model.get_unit_cell().parameters()
+                ),
             )
         )
         return "\n".join(lines)

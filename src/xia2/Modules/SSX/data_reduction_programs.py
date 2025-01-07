@@ -11,7 +11,7 @@ import random
 import sys
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any
 
 import numpy as np
 from cctbx import crystal, miller, sgtbx, uctbx
@@ -46,14 +46,14 @@ xia2_logger = logging.getLogger(__name__)
 @dataclass(eq=False)
 class CrystalsData:
     # Holds dxtbx.model.crystal data for an experimentlist, for use in filtering
-    identifiers: List[str]
-    crystals: List[Crystal]
+    identifiers: list[str]
+    crystals: list[Crystal]
     keep_all_original: bool = True
-    lattice_ids: List[int] = field(default_factory=list)
-    mean_I_over_sigma_vals: List[float] = field(default_factory=list)
+    lattice_ids: list[int] = field(default_factory=list)
+    mean_I_over_sigma_vals: list[float] = field(default_factory=list)
 
 
-CrystalsDict = Dict[str, CrystalsData]
+CrystalsDict = dict[str, CrystalsData]
 # CrystalsDict: stores crystal data contained in each expt file, for use in
 # filtering without needing to keep expt files open.
 
@@ -80,7 +80,7 @@ def mean_I_over_sigma(refls, expts, partiality_cutoff=0.25):
 
 
 def load_crystal_data_from_new_expts(
-    new_data: List[FilePair],
+    new_data: list[FilePair],
     calculate_meanIsigma: bool = False,
     partiality_thresold: float = 0.25,
 ) -> CrystalsDict:
@@ -113,7 +113,7 @@ def filter_(
     working_directory: Path,
     integrated_data: list[FilePair],
     reduction_params: ReductionParams,
-) -> Tuple[CrystalsDict, uctbx.unit_cell, sgtbx.space_group_info]:
+) -> tuple[CrystalsDict, uctbx.unit_cell, sgtbx.space_group_info]:
     crystals_data = load_crystal_data_from_new_expts(
         integrated_data,
         calculate_meanIsigma=bool(reduction_params.mean_i_over_sigma_threshold),
@@ -135,7 +135,7 @@ def filter_(
 
 def split_integrated_data(
     good_crystals_data, integrated_data, reduction_params
-) -> List[ProcessingBatch]:
+) -> list[ProcessingBatch]:
     new_batches_to_process = split_filtered_data(
         integrated_data,
         good_crystals_data,
@@ -355,7 +355,7 @@ def merge(
     scaled_array: miller.array,
     experiments: ExperimentList,
     d_min: float | None = None,
-    best_unit_cell: Optional[uctbx.unit_cell] = None,
+    best_unit_cell: uctbx.unit_cell | None = None,
     partiality_threshold: float = 0.25,
     name: str = "",
 ) -> MergeResult:
@@ -464,8 +464,8 @@ def _wrap_extend_expts(first_elist, second_elist):
 class MergeResult:
     merge_file: Path
     logfile: Path
-    jsonfile: Optional[Path] = None
-    htmlfile: Optional[Path] = None
+    jsonfile: Path | None = None
+    htmlfile: Path | None = None
     summary: str = ""
     table_1_stats: str = ""
     name: str = ""
@@ -605,9 +605,9 @@ class ProgramResult:
     exptfile: Path
     reflfile: Path
     logfile: Path
-    htmlfile: Optional[Path]
-    jsonfile: Optional[Path]
-    resolutionlimit: Optional[float] = None
+    htmlfile: Path | None
+    jsonfile: Path | None
+    resolutionlimit: float | None = None
 
 
 def scale_against_reference(
@@ -651,8 +651,8 @@ def scale_against_reference(
 
 
 def scale_parallel_batches(
-    working_directory, batches: List[ProcessingBatch], reduction_params
-) -> Tuple[List[ProcessingBatch], List[float]]:
+    working_directory, batches: list[ProcessingBatch], reduction_params
+) -> tuple[list[ProcessingBatch], list[float]]:
     # scale multiple batches in parallel
     scaled_results = [ProcessingBatch() for _ in range(len(batches))]
     d_mins = []
@@ -668,7 +668,7 @@ def scale_parallel_batches(
             max_workers=min(reduction_params.nproc, len(batches))
         ) as pool,
     ):
-        scale_futures: Dict[Any, int] = {
+        scale_futures: dict[Any, int] = {
             pool.submit(
                 scale_on_batches,
                 working_directory,
@@ -701,7 +701,7 @@ def scale_parallel_batches(
 
 def scale_on_batches(
     working_directory: Path,
-    batches_to_scale: List[ProcessingBatch],
+    batches_to_scale: list[ProcessingBatch],
     reduction_params: ReductionParams,
     name="",
 ) -> ProgramResult:
@@ -903,7 +903,7 @@ def scale_reindex_single(
     working_directory: Path,
     batch_for_reindex: ProcessingBatch,
     reduction_params: ReductionParams,
-) -> List[ProcessingBatch]:
+) -> list[ProcessingBatch]:
     assert (
         reduction_params.reference
     )  # this should only be called if we have a reference
@@ -955,14 +955,14 @@ def scale_reindex_single(
 
 def cosym_reindex(
     working_directory: Path,
-    batches_for_reindex: List[ProcessingBatch],
+    batches_for_reindex: list[ProcessingBatch],
     d_min: float | None = None,
     max_delta: float = 0.5,
     partiality_threshold: float = 0.2,
     reference=None,
     reference_ksol=0.35,
     reference_bsol=46.0,
-) -> List[ProcessingBatch]:
+) -> list[ProcessingBatch]:
     from dials.command_line.cosym import phil_scope as cosym_scope
 
     expts = []
@@ -1015,10 +1015,10 @@ def cosym_reindex(
 
 def parallel_cosym(
     working_directory: Path,
-    data_to_reindex: List[ProcessingBatch],
+    data_to_reindex: list[ProcessingBatch],
     reduction_params,
     nproc: int = 1,
-) -> List[ProcessingBatch]:
+) -> list[ProcessingBatch]:
     """Run dials.cosym on each batch to resolve indexing ambiguities."""
 
     if not Path.is_dir(working_directory):
@@ -1121,7 +1121,7 @@ def select_crystals_close_to(
     return good_crystals_data
 
 
-class ProcessingBatch(object):
+class ProcessingBatch:
     #  unit of file input for a processing job. Consisting of one or more filepairs,
     # optionally with additional subsets of identifiers for selecting data out
     # of those files.
@@ -1138,10 +1138,10 @@ class ProcessingBatch(object):
 
 
 def split_filtered_data(
-    new_data: List[FilePair],
+    new_data: list[FilePair],
     good_crystals_data: CrystalsDict,
     min_batch_size: int,
-) -> List[ProcessingBatch]:
+) -> list[ProcessingBatch]:
     n_cryst = sum(len(v.identifiers) for v in good_crystals_data.values())
     n_batches = max(math.floor(n_cryst / min_batch_size), 1)
     batches = [ProcessingBatch() for _ in range(n_batches)]
@@ -1196,8 +1196,8 @@ def split_filtered_data(
 
 
 def prepare_scaled_array(
-    filelist: List[FilePair], best_unit_cell: uctbx.unit_cell
-) -> Tuple[miller.array, ExperimentList]:
+    filelist: list[FilePair], best_unit_cell: uctbx.unit_cell
+) -> tuple[miller.array, ExperimentList]:
     """
     Loads a list of reflection tables and experiment lists, creates a miller
     array and concatenates into a combined miller array and experiment list.

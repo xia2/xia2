@@ -418,8 +418,9 @@ class XDSIntegrater(Integrater):
         self.set_integrater_mosaic_min_mean_max(m_min, m_mean, m_max)
 
         logger.info(
-            "Mosaic spread: %.3f < %.3f < %.3f"
-            % self.get_integrater_mosaic_min_mean_max()
+            "Mosaic spread: {:.3f} < {:.3f} < {:.3f}".format(
+                *self.get_integrater_mosaic_min_mean_max()
+            )
         )
 
         return os.path.join(self.get_working_directory(), "INTEGRATE.HKL")
@@ -476,11 +477,18 @@ class XDSIntegrater(Integrater):
             cell_esd = correct.get_result("cell_esd")
 
             logger.debug("Postrefinement in P1 results:")
-            logger.debug("%7.3f %7.3f %7.3f %7.3f %7.3f %7.3f" % tuple(cell))
-            logger.debug("%7.3f %7.3f %7.3f %7.3f %7.3f %7.3f" % tuple(cell_esd))
             logger.debug(
-                "Deviations: %.2f pixels %.2f degrees"
-                % (correct.get_result("rmsd_pixel"), correct.get_result("rmsd_phi"))
+                "{:7.3f} {:7.3f} {:7.3f} {:7.3f} {:7.3f} {:7.3f}".format(*tuple(cell))
+            )
+            logger.debug(
+                "{:7.3f} {:7.3f} {:7.3f} {:7.3f} {:7.3f} {:7.3f}".format(
+                    *tuple(cell_esd)
+                )
+            )
+            logger.debug(
+                "Deviations: {:.2f} pixels {:.2f} degrees".format(
+                    correct.get_result("rmsd_pixel"), correct.get_result("rmsd_phi")
+                )
             )
 
             p1_deviations = (
@@ -578,7 +586,11 @@ class XDSIntegrater(Integrater):
             correct.set_cell(cell)
 
             logger.debug("Setting spacegroup to: %d" % spacegroup_number)
-            logger.debug("Setting cell to: %.2f %.2f %.2f %.2f %.2f %.2f" % tuple(cell))
+            logger.debug(
+                "Setting cell to: {:.2f} {:.2f} {:.2f} {:.2f} {:.2f} {:.2f}".format(
+                    *tuple(cell)
+                )
+            )
 
         if self.get_integrater_reindex_matrix():
             # bug! if the lattice is not primitive the values in this
@@ -696,20 +708,25 @@ class XDSIntegrater(Integrater):
 
         logger.debug('Postrefinement in "correct" spacegroup results:')
         logger.debug(
-            "%7.3f %7.3f %7.3f %7.3f %7.3f %7.3f" % tuple(correct.get_result("cell"))
+            "{:7.3f} {:7.3f} {:7.3f} {:7.3f} {:7.3f} {:7.3f}".format(
+                *tuple(correct.get_result("cell"))
+            )
         )
         logger.debug(
-            "%7.3f %7.3f %7.3f %7.3f %7.3f %7.3f"
-            % tuple(correct.get_result("cell_esd"))
+            "{:7.3f} {:7.3f} {:7.3f} {:7.3f} {:7.3f} {:7.3f}".format(
+                *tuple(correct.get_result("cell_esd"))
+            )
         )
         logger.debug(
-            "Deviations: %.2f pixels %.2f degrees"
-            % (correct.get_result("rmsd_pixel"), correct.get_result("rmsd_phi"))
+            "Deviations: {:.2f} pixels {:.2f} degrees".format(
+                correct.get_result("rmsd_pixel"), correct.get_result("rmsd_phi")
+            )
         )
 
         logger.debug(
-            "Error correction parameters: A=%.3f B=%.3f"
-            % correct.get_result("sdcorrection")
+            "Error correction parameters: A={:.3f} B={:.3f}".format(
+                *correct.get_result("sdcorrection")
+            )
         )
 
         # compute misorientation of axes

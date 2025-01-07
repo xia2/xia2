@@ -168,16 +168,13 @@ class Report:
         )
 
     def symmetry_table_html(self):
-        symmetry_table_html = """
+        symmetry_table_html = f"""
   <p>
-    <b>Unit cell:</b> %s
+    <b>Unit cell:</b> {self.intensities.space_group_info().symbol_and_number()}
     <br>
-    <b>Space group:</b> %s
+    <b>Space group:</b> {str(self.intensities.unit_cell())}
   </p>
-""" % (
-            self.intensities.space_group_info().symbol_and_number(),
-            str(self.intensities.unit_cell()),
-        )
+"""
         return symmetry_table_html
 
     def xtriage_report(self):

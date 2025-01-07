@@ -141,7 +141,9 @@ class XDSRefiner(Refiner):
                 # FIXME this was changed in #42 but not sure logic is right
                 if not check:
                     logger.debug(
-                        "Inputting target cell: %.2f %.2f %.2f %.2f %.2f %.2f" % cell
+                        "Inputting target cell: {:.2f} {:.2f} {:.2f} {:.2f} {:.2f} {:.2f}".format(
+                            *cell
+                        )
                     )
                     idxr.set_indexer_input_cell(cell)
 

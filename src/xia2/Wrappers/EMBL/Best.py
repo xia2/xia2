@@ -289,16 +289,13 @@ if __name__ == "__main__":
 
     print("Native")
     print(
-        "Start / end / width: %.2f/%.2f/%.2f"
-        % (best.get_phi_start(), best.get_phi_end(), best.get_phi_width())
+        f"Start / end / width: {best.get_phi_start():.2f}/{best.get_phi_end():.2f}/{best.get_phi_width():.2f}"
     )
     print(
-        "Completeness / multiplicity / resolution: %.2f/%.2f/%.2f"
-        % (best.get_completeness(), best.get_multiplicity(), best.get_resolution())
+        f"Completeness / multiplicity / resolution: {best.get_completeness():.2f}/{best.get_multiplicity():.2f}/{best.get_resolution():.2f}"
     )
     print(
-        "Transmission / exposure %.3f/%.3f"
-        % (best.get_transmission(), best.get_exposure_time())
+        f"Transmission / exposure {best.get_transmission():.3f}/{best.get_exposure_time():.3f}"
     )
 
     best.set_anomalous(True)
@@ -307,14 +304,11 @@ if __name__ == "__main__":
 
     print("Anomalous")
     print(
-        "Start / end / width: %.2f/%.2f/%.2f"
-        % (best.get_phi_start(), best.get_phi_end(), best.get_phi_width())
+        f"Start / end / width: {best.get_phi_start():.2f}/{best.get_phi_end():.2f}/{best.get_phi_width():.2f}"
     )
     print(
-        "Completeness / multiplicity / resolution: %.2f/%.2f/%.2f"
-        % (best.get_completeness(), best.get_multiplicity(), best.get_resolution())
+        f"Completeness / multiplicity / resolution: {best.get_completeness():.2f}/{best.get_multiplicity():.2f}/{best.get_resolution():.2f}"
     )
     print(
-        "Transmission / exposure %.3f/%.3f"
-        % (best.get_transmission(), best.get_exposure_time())
+        f"Transmission / exposure {best.get_transmission():.3f}/{best.get_exposure_time():.3f}"
     )

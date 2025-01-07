@@ -8,7 +8,6 @@ from dataclasses import dataclass
 from functools import reduce
 from io import StringIO
 from pathlib import Path
-from typing import List, Optional, Tuple
 
 import iotbx.phil
 from cctbx import crystal, sgtbx, uctbx
@@ -52,9 +51,9 @@ xia2_logger = logging.getLogger(__name__)
 class SpotfindingParams:
     min_spot_size: int = 2
     max_spot_size: int = 10
-    d_min: Optional[float] = None
+    d_min: float | None = None
     nproc: int = 1
-    phil: Optional[Path] = None
+    phil: Path | None = None
 
     @classmethod
     def from_phil(cls, params):
@@ -74,13 +73,13 @@ class SpotfindingParams:
 
 @dataclass
 class IndexingParams:
-    space_group: Optional[sgtbx.space_group] = None
-    unit_cell: Optional[uctbx.unit_cell] = None
+    space_group: sgtbx.space_group | None = None
+    unit_cell: uctbx.unit_cell | None = None
     max_lattices: int = 1
     min_spots: int = 10
     nproc: int = 1
-    phil: Optional[Path] = None
-    output_nuggets_dir: Optional[Path] = None
+    phil: Path | None = None
+    output_nuggets_dir: Path | None = None
 
     @classmethod
     def from_phil(cls, params):
@@ -110,7 +109,7 @@ class IndexingParams:
 
 @dataclass
 class RefinementParams:
-    phil: Optional[Path] = None
+    phil: Path | None = None
 
     @classmethod
     def from_phil(cls, params):
@@ -126,10 +125,10 @@ class RefinementParams:
 class IntegrationParams:
     algorithm: str = "ellipsoid"
     rlp_mosaicity: str = "simple6"
-    d_min: Optional[float] = None
+    d_min: float | None = None
     nproc: int = 1
-    phil: Optional[Path] = None
-    output_nuggets_dir: Optional[Path] = None
+    phil: Path | None = None
+    output_nuggets_dir: Path | None = None
 
     @classmethod
     def from_phil(cls, params):
@@ -220,7 +219,7 @@ def ssx_find_spots(
 
 def clusters_from_experiments(
     experiments: ExperimentList, threshold: float | str = 5000
-) -> Tuple[dict, List[Cluster]]:
+) -> tuple[dict, list[Cluster]]:
     crystal_symmetries = [
         crystal.symmetry(
             unit_cell=expt.crystal.get_unit_cell(),
@@ -270,7 +269,7 @@ def clusters_from_experiments(
 def ssx_index(
     working_directory: Path,
     indexing_params: IndexingParams,
-) -> Tuple[ExperimentList, flex.reflection_table, dict]:
+) -> tuple[ExperimentList, flex.reflection_table, dict]:
     if not (working_directory / "imported.expt").is_file():
         raise ValueError(f"Data has not yet been imported into {working_directory}")
     if not (working_directory / "strong.refl").is_file():
@@ -625,7 +624,7 @@ def ssx_integrate(
     return summary_for_xia2
 
 
-def best_cell_from_cluster(cluster: Cluster) -> Tuple:
+def best_cell_from_cluster(cluster: Cluster) -> tuple:
     input_symmetry = crystal.symmetry(
         unit_cell=uctbx.unit_cell(cluster.median_cell[0:6]), space_group_symbol="P 1"
     )

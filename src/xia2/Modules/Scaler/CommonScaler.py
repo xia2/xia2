@@ -419,7 +419,9 @@ class CommonScaler(Scaler):
         self._prepared_reflections = hklout
 
         logger.debug(
-            "Updating unit cell to %.2f %.2f %.2f %.2f %.2f %.2f" % tuple(ri.get_cell())
+            "Updating unit cell to {:.2f} {:.2f} {:.2f} {:.2f} {:.2f} {:.2f}".format(
+                *tuple(ri.get_cell())
+            )
         )
         self._scalr_cell = tuple(ri.get_cell())
 
@@ -490,8 +492,9 @@ class CommonScaler(Scaler):
             m.set_space_group(s).write(hklout)
             self._scalr_cell = m.crystals()[-1].unit_cell().parameters()
             logger.debug(
-                "Updating unit cell to %.2f %.2f %.2f %.2f %.2f %.2f"
-                % tuple(self._scalr_cell)
+                "Updating unit cell to {:.2f} {:.2f} {:.2f} {:.2f} {:.2f} {:.2f}".format(
+                    *tuple(self._scalr_cell)
+                )
             )
             del m
             del s
@@ -505,8 +508,9 @@ class CommonScaler(Scaler):
             ri.reindex()
 
             logger.debug(
-                "Updating unit cell to %.2f %.2f %.2f %.2f %.2f %.2f"
-                % tuple(ri.get_cell())
+                "Updating unit cell to {:.2f} {:.2f} {:.2f} {:.2f} {:.2f} {:.2f}".format(
+                    *tuple(ri.get_cell())
+                )
             )
             self._scalr_cell = tuple(ri.get_cell())
 
@@ -576,8 +580,7 @@ class CommonScaler(Scaler):
                 truncate.set_anomalous(False)
 
             FileHandler.record_log_file(
-                "%s %s %s truncate"
-                % (self._scalr_pname, self._scalr_xname, wavelength),
+                f"{self._scalr_pname} {self._scalr_xname} {wavelength} truncate",
                 truncate.get_log_file(),
             )
 
@@ -591,8 +594,7 @@ class CommonScaler(Scaler):
             xmlout = truncate.get_xmlout()
             if xmlout is not None:
                 FileHandler.record_xml_file(
-                    "%s %s %s truncate"
-                    % (self._scalr_pname, self._scalr_xname, wavelength),
+                    f"{self._scalr_pname} {self._scalr_xname} {wavelength} truncate",
                     xmlout,
                 )
 
@@ -860,7 +862,7 @@ class CommonScaler(Scaler):
             logger.info("")
             logger.notice(banner("Local Scaling %s" % self._scalr_xname))
             for s in status:
-                logger.info("%s %s" % s)
+                logger.info("{} {}".format(*s))
             logger.info(banner(""))
         else:
             logger.debug("Local scaling failed")
@@ -1035,9 +1037,9 @@ class CommonScaler(Scaler):
             assert scan_no.count(0) == 0
             assert image_no.count(0) == 0
 
-            h, k, l = [
+            h, k, l = (
                 hkl.iround() for hkl in intensities.indices().as_vec3_double().parts()
-            ]
+            )
             if PhilIndex.params.xia2.settings.output.mmcif.pdb_version == "v5_next":
                 loop_values = [
                     flex.size_t_range(1, intensities.size() + 1),
@@ -1187,16 +1189,14 @@ class CommonScaler(Scaler):
         log_directory = self._base_path / "LogFiles"
         log_directory.mkdir(parents=True, exist_ok=True)
         merging_stats_file = log_directory.joinpath(
-            "%s_%s%s_merging-statistics.txt"
-            % (
+            "{}_{}{}_merging-statistics.txt".format(
                 self._scalr_pname,
                 self._scalr_xname,
                 "" if wave is None else "_%s" % wave,
             )
         )
         merging_stats_json = log_directory.joinpath(
-            "%s_%s%s_merging-statistics.json"
-            % (
+            "{}_{}{}_merging-statistics.json".format(
                 self._scalr_pname,
                 self._scalr_xname,
                 "" if wave is None else "_%s" % wave,
@@ -1369,10 +1369,11 @@ class CommonScaler(Scaler):
                 tt_grouprefiner.set_reindex_operators(reindex_ops)
                 tt_grouprefiner.run()
                 logger.info(
-                    "%s: %6.2f %6.2f %6.2f %6.2f %6.2f %6.2f"
-                    % tuple(
-                        ["".join(pi.split("_")[2:])]
-                        + list(tt_grouprefiner.get_unit_cell())
+                    "{}: {:6.2f} {:6.2f} {:6.2f} {:6.2f} {:6.2f} {:6.2f}".format(
+                        *tuple(
+                            ["".join(pi.split("_")[2:])]
+                            + list(tt_grouprefiner.get_unit_cell())
+                        )
                     )
                 )
                 self._scalr_cell_dict[pi] = (
@@ -1423,8 +1424,9 @@ class CommonScaler(Scaler):
                 tt_refiner.run()
                 self._scalr_cell = tt_refiner.get_unit_cell()
                 logger.info(
-                    "Overall: %6.2f %6.2f %6.2f %6.2f %6.2f %6.2f"
-                    % tt_refiner.get_unit_cell()
+                    "Overall: {:6.2f} {:6.2f} {:6.2f} {:6.2f} {:6.2f} {:6.2f}".format(
+                        *tt_refiner.get_unit_cell()
+                    )
                 )
                 self._scalr_cell_esd = tt_refiner.get_unit_cell_esd()
                 cif_in = tt_refiner.import_cif()
@@ -1475,7 +1477,9 @@ class CommonScaler(Scaler):
             ):
                 cif_out["_cell_%s" % cifname] = cell
 
-        logger.debug("%7.3f %7.3f %7.3f %7.3f %7.3f %7.3f" % self._scalr_cell)
+        logger.debug(
+            "{:7.3f} {:7.3f} {:7.3f} {:7.3f} {:7.3f} {:7.3f}".format(*self._scalr_cell)
+        )
 
     def unify_setting(self):
         """Unify the setting for the sweeps."""

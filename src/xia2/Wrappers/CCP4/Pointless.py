@@ -34,7 +34,7 @@ def mend_pointless_xml(xml_file):
             continue
         tokens = record.split("CenProb")
         assert len(tokens) == 3
-        result.append("%sCenProb%s/CenProb%s" % tuple(tokens))
+        result.append("{}CenProb{}/CenProb{}".format(*tuple(tokens)))
     with open(xml_file, "w") as fh:
         fh.write("\n".join(result))
 
@@ -174,8 +174,7 @@ def Pointless(DriverType=None):
 
             if self._pname and self._xname and self._dname:
                 self.input(
-                    "name project %s crystal %s dataset %s"
-                    % (self._pname, self._xname, self._dname)
+                    f"name project {self._pname} crystal {self._xname} dataset {self._dname}"
                 )
 
             self.input("xdsin %s" % self._xdsin)

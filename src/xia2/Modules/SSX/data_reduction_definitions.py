@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import List, Optional
 
 import iotbx.phil
 from cctbx import sgtbx, uctbx
@@ -48,23 +47,23 @@ class ReductionParams:
     space_group: sgtbx.space_group
     batch_size: int = 1000
     nproc: int = 1
-    d_min: Optional[float] = None
+    d_min: float | None = None
     anomalous: bool = False
     lattice_symmetry_max_delta: float = 0.5
     cluster_threshold: float = 1000.0
     absolute_angle_tolerance: float = 0.5
     absolute_length_tolerance: float = 0.2
-    central_unit_cell: Optional[uctbx.unit_cell] = None
-    reference: Optional[Path] = None
-    cosym_phil: Optional[Path] = None
-    scaling_phil: Optional[Path] = None
-    grouping: Optional[Path] = None
-    dose_series_repeat: Optional[int] = None
-    steps: List[str] = field(default_factory=lambda: ["scale", "merge"])
+    central_unit_cell: uctbx.unit_cell | None = None
+    reference: Path | None = None
+    cosym_phil: Path | None = None
+    scaling_phil: Path | None = None
+    grouping: Path | None = None
+    dose_series_repeat: int | None = None
+    steps: list[str] = field(default_factory=lambda: ["scale", "merge"])
     reference_ksol: float = 0.35
     reference_bsol: float = 46.0
     partiality_threshold: float = 0.25
-    mean_i_over_sigma_threshold: Optional[float] = None
+    mean_i_over_sigma_threshold: float | None = None
 
     @classmethod
     def from_phil(cls, params: iotbx.phil.scope_extract):

@@ -407,8 +407,9 @@ def _write_sweeps(sweeps, out):
 
     if settings.unit_cell is not None:
         out.write(
-            "USER_CELL %.2f %.2f %.2f %.2f %.2f %.2f\n"
-            % settings.unit_cell.parameters()
+            "USER_CELL {:.2f} {:.2f} {:.2f} {:.2f} {:.2f} {:.2f}\n".format(
+                *settings.unit_cell.parameters()
+            )
         )
         out.write("\n")
     if settings.chemical_formula:

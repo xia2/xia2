@@ -150,7 +150,9 @@ def XScaleR(
             xscale_inp.write("SPACE_GROUP_NUMBER=%d\n" % self._spacegroup_number)
             xscale_inp.write("UNIT_CELL_CONSTANTS=")
             xscale_inp.write(
-                "%6.2f %6.2f %6.2f %6.2f %6.2f %6.2f\n" % tuple(self._cell)
+                "{:6.2f} {:6.2f} {:6.2f} {:6.2f} {:6.2f} {:6.2f}\n".format(
+                    *tuple(self._cell)
+                )
             )
             if self._built >= 20191015:
                 xscale_inp.write("SNRC=%.1f\n" % PhilIndex.params.xds.xscale.min_isigma)
@@ -192,8 +194,7 @@ def XScaleR(
 
                     if resolution[0]:
                         xscale_inp.write(
-                            "INCLUDE_RESOLUTION_RANGE= %.2f %.2f\n"
-                            % (resolution[1], resolution[0])
+                            f"INCLUDE_RESOLUTION_RANGE= {resolution[1]:.2f} {resolution[0]:.2f}\n"
                         )
 
                     # FIXME this needs to be removed before being used again

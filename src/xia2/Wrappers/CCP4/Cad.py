@@ -276,7 +276,7 @@ def Cad(DriverType=None):
             self.start()
 
             self.input("labin file_number 1 E1=%s" % self._freein_column)
-            self.input("resolution file_number 1 %f %f" % resolution_range)
+            self.input("resolution file_number 1 {:f} {:f}".format(*resolution_range))
             self.input("labin file_number 2 all")
 
             self.close_wait()

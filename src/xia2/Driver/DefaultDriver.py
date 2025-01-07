@@ -234,8 +234,7 @@ class DefaultDriver:
             error_python_traceback(records)
         except Exception:
             raise RuntimeError(
-                "%s terminated with an error: see %s for more details"
-                % (os.path.basename(self._executable), self.get_log_file())
+                f"{os.path.basename(self._executable)} terminated with an error: see {self.get_log_file()} for more details"
             )
 
     def check_for_errors(self):
@@ -278,29 +277,17 @@ class DefaultDriver:
 
             if code == segv:
                 raise RuntimeError(
-                    "{executable}: child segmentation fault{log_file_extra}".format(
-                        executable=executable, log_file_extra=log_file_extra
-                    )
+                    f"{executable}: child segmentation fault{log_file_extra}"
                 )
 
             if code == kill:
-                raise RuntimeError(
-                    "{executable} killed{log_file_extra}".format(
-                        executable=executable, log_file_extra=log_file_extra
-                    )
-                )
+                raise RuntimeError(f"{executable} killed{log_file_extra}")
 
             if code == abrt:
-                raise RuntimeError(
-                    "{executable} failed{log_file_extra}".format(
-                        executable=executable, log_file_extra=log_file_extra
-                    )
-                )
+                raise RuntimeError(f"{executable} failed{log_file_extra}")
 
         raise RuntimeError(
-            "{executable} subprocess failed with exitcode {code}{log_file_extra}".format(
-                executable=executable, code=code, log_file_extra=log_file_extra
-            )
+            f"{executable} subprocess failed with exitcode {code}{log_file_extra}"
         )
 
     def _input(self, record):
@@ -419,9 +406,7 @@ class DefaultDriver:
                 self._log_file.write("#\n# timing information:\n")
                 for k in self._runtime_log:
                     self._log_file.write(
-                        "#   time since {name}: {time:.1f} seconds\n".format(
-                            name=k, time=endtime - self._runtime_log[k]
-                        )
+                        f"#   time since {k}: {endtime - self._runtime_log[k]:.1f} seconds\n"
                     )
             self._log_file.close()
             self._log_file = None

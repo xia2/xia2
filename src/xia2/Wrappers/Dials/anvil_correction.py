@@ -12,7 +12,7 @@ This wrapper is intended for use in the _integrate_finish step of the DialsInteg
 from __future__ import annotations
 
 import os
-from typing import List, Optional, SupportsFloat, Tuple
+from typing import SupportsFloat
 
 from xia2.Driver.DriverFactory import DriverFactory
 
@@ -32,15 +32,15 @@ def anvil_correction(driver_type=None):
 
             # Input and output files.
             # None is a valid value only for the output experiment list filename.
-            self.experiments_filenames: List[str] = []
-            self.reflections_filenames: List[str] = []
-            self.output_experiments_filename: Optional[str] = None
-            self.output_reflections_filename: Optional[str] = None
+            self.experiments_filenames: list[str] = []
+            self.reflections_filenames: list[str] = []
+            self.output_experiments_filename: str | None = None
+            self.output_reflections_filename: str | None = None
 
             # Parameters to pass to dials.anvil_correction
-            self.density: Optional[SupportsFloat] = None
-            self.thickness: Optional[SupportsFloat] = None
-            self.normal: Optional[Tuple[3 * (SupportsFloat,)]] = None
+            self.density: SupportsFloat | None = None
+            self.thickness: SupportsFloat | None = None
+            self.normal: tuple[3 * (SupportsFloat,)] | None = None
 
         def run(self):
             """Run dials.anvil_correction if the parameters are valid."""
@@ -66,7 +66,7 @@ def anvil_correction(driver_type=None):
             )
             self.add_command_line("anvil.density=%s" % self.density)
             self.add_command_line("anvil.thickness=%s" % self.thickness)
-            self.add_command_line("anvil.normal=%s,%s,%s" % tuple(self.normal))
+            self.add_command_line("anvil.normal={},{},{}".format(*tuple(self.normal)))
 
             self.start()
             self.close_wait()

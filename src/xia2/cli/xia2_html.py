@@ -229,23 +229,15 @@ def generate_xia2_html(xinfo, filename="xia2.html", params=None, args=[]):
             column = [
                 wname,
                 str(xwav.get_wavelength()),
-                "%.2f - %.2f (%.2f - %.2f)"
-                % (overall.d_max, overall.d_min, outer_shell.d_max, outer_shell.d_min),
-                "%.2f (%.2f)"
-                % (overall.completeness * 100, outer_shell.completeness * 100),
+                f"{overall.d_max:.2f} - {overall.d_min:.2f} ({outer_shell.d_max:.2f} - {outer_shell.d_min:.2f})",
+                f"{overall.completeness * 100:.2f} ({outer_shell.completeness * 100:.2f})",
                 f"{overall.mean_redundancy:.2f} ({outer_shell.mean_redundancy:.2f})",
                 f"{overall.cc_one_half:.4f} ({outer_shell.cc_one_half:.4f})",
-                "%.2f (%.2f)"
-                % (overall.i_over_sigma_mean, outer_shell.i_over_sigma_mean),
+                f"{overall.i_over_sigma_mean:.2f} ({outer_shell.i_over_sigma_mean:.2f})",
                 f"{overall.r_merge:.4f} ({outer_shell.r_merge:.4f})",
                 # anomalous statistics
-                "%.2f (%.2f)"
-                % (
-                    overall_anom.anom_completeness * 100,
-                    outer_shell_anom.anom_completeness * 100,
-                ),
-                "%.2f (%.2f)"
-                % (overall_anom.mean_redundancy, outer_shell_anom.mean_redundancy),
+                f"{overall_anom.anom_completeness * 100:.2f} ({outer_shell_anom.anom_completeness * 100:.2f})",
+                f"{overall_anom.mean_redundancy:.2f} ({outer_shell_anom.mean_redundancy:.2f})",
             ]
             columns.append(column)
 
@@ -287,8 +279,7 @@ def generate_xia2_html(xinfo, filename="xia2.html", params=None, args=[]):
             headers,
             [
                 "All datasets",
-                '<a href="%s">%s</a>'
-                % (os.path.relpath(merged_mtz), os.path.basename(merged_mtz)),
+                f'<a href="{os.path.relpath(merged_mtz)}">{os.path.basename(merged_mtz)}</a>',
             ],
         ]
 
@@ -296,8 +287,7 @@ def generate_xia2_html(xinfo, filename="xia2.html", params=None, args=[]):
             mtz_files.append(
                 [
                     wname,
-                    '<a href="%s">%s</a>'
-                    % (os.path.relpath(unmerged_mtz), os.path.basename(unmerged_mtz)),
+                    f'<a href="{os.path.relpath(unmerged_mtz)}">{os.path.basename(unmerged_mtz)}</a>',
                 ]
             )
 
@@ -307,8 +297,7 @@ def generate_xia2_html(xinfo, filename="xia2.html", params=None, args=[]):
                 sca_files.append(
                     [
                         wname,
-                        '<a href="%s">%s</a>'
-                        % (os.path.relpath(merged_sca), os.path.basename(merged_sca)),
+                        f'<a href="{os.path.relpath(merged_sca)}">{os.path.basename(merged_sca)}</a>',
                     ]
                 )
 
@@ -318,11 +307,7 @@ def generate_xia2_html(xinfo, filename="xia2.html", params=None, args=[]):
                 unmerged_sca_files.append(
                     [
                         wname,
-                        '<a href="%s">%s</a>'
-                        % (
-                            os.path.relpath(unmerged_sca),
-                            os.path.basename(unmerged_sca),
-                        ),
+                        f'<a href="{os.path.relpath(unmerged_sca)}">{os.path.basename(unmerged_sca)}</a>',
                     ]
                 )
 
@@ -345,9 +330,7 @@ def generate_xia2_html(xinfo, filename="xia2.html", params=None, args=[]):
         if os.path.exists(os.path.join(data_dir, other_file)):
             other_files.append(
                 [
-                    '<a href="DataFiles/{filename}">{filename}</a>'.format(
-                        filename=other_file
-                    ),
+                    f'<a href="DataFiles/{other_file}">{other_file}</a>',
                     description,
                 ]
             )
@@ -551,20 +534,17 @@ tick: {
         else:
             tick = ""
 
-        axis = """
-    {
-      x: {
-        label: {
-          text: '%(text)s',
+        axis = f"""
+    {{
+      x: {{
+        label: {{
+          text: '{xlabel}',
           position: 'outer-center'
-        },
-        %(tick)s
-      }
-    }
-""" % {
-            "text": xlabel,
-            "tick": tick,
-        }
+        }},
+        {tick}
+      }}
+    }}
+"""
 
         script.append(
             draw_chart_template
@@ -583,10 +563,10 @@ tick: {
 
         html_graphs[graph_name] = """
 <!--Div that will hold the chart-->
-%(div)s
+{div}
 
-%(script)s
+{script}
 
-  """ % ({"script": "\n".join(script), "div": "\n".join(divs)})
+  """.format(script="\n".join(script), div="\n".join(divs))
 
     return html_graphs

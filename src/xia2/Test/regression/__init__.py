@@ -227,12 +227,7 @@ def check_result(
                 ):
                     return (
                         False,
-                        "Unexpected space group %s in %s (expected %s)"
-                        % (
-                            ma.space_group().type().lookup_symbol(),
-                            data_file,
-                            expected_space_group,
-                        ),
+                        f"Unexpected space group {ma.space_group().type().lookup_symbol()} in {data_file} (expected {expected_space_group})",
                     )
 
     html_file = tmp_path / "xia2.html"

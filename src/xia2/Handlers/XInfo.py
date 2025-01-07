@@ -212,8 +212,7 @@ class XInfo:
                 # check that this is a new wavelength definition
                 if wavelength in self._crystals[crystal]["wavelengths"]:
                     raise RuntimeError(
-                        "wavelength %s already exists for crystal %s"
-                        % (wavelength, crystal)
+                        f"wavelength {wavelength} already exists for crystal {crystal}"
                     )
 
                 self._crystals[crystal]["wavelengths"][wavelength] = {}
@@ -330,8 +329,7 @@ class XInfo:
                         wavelength = record.replace("WAVELENGTH", "").strip()
                         if wavelength not in self._crystals[crystal]["wavelengths"]:
                             raise RuntimeError(
-                                "wavelength %s unknown for crystal %s"
-                                % (wavelength, crystal)
+                                f"wavelength {wavelength} unknown for crystal {crystal}"
                             )
                         self._crystals[crystal]["sweeps"][sweep]["wavelength"] = (
                             wavelength
