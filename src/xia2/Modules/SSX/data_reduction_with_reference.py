@@ -50,11 +50,12 @@ class DataReductionWithReference(BaseDataReduction):
             for i, fp in enumerate(self._batches_to_scale)
         }
 
-        with record_step(
-            "dials.scale (parallel)"
-        ), concurrent.futures.ProcessPoolExecutor(
-            max_workers=self._reduction_params.nproc
-        ) as pool:
+        with (
+            record_step("dials.scale (parallel)"),
+            concurrent.futures.ProcessPoolExecutor(
+                max_workers=self._reduction_params.nproc
+            ) as pool,
+        ):
             scale_futures: dict[Any, int] = {
                 pool.submit(
                     scale_against_reference,

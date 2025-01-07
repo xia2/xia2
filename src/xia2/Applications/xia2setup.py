@@ -578,7 +578,11 @@ def _get_sweeps(templates):
     mp_params = params.xia2.settings.multiprocessing
     nproc = mp_params.nproc
 
-    if params.xia2.settings.read_all_image_headers and nproc > 1:
+    if (
+        params.xia2.settings.read_all_image_headers
+        and nproc > 1
+        and not os.name == "nt"
+    ):
         method = "multiprocessing"
 
         # If xia2 was a proper cctbx module, then we wouldn't have to do this

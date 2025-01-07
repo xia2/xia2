@@ -170,8 +170,8 @@ def test_proteinase_k_filter_deltacchalf(d_min, proteinase_k, run_in_tmp_path):
     # Check that cluster 6 has been scaled
     cluster = pathlib.Path("cos_cluster_6")
     assert cluster.is_dir()
-    assert (cluster / "scaled.mtz").is_file()
-    assert (cluster / "scaled_unmerged.mtz").is_file()
+    assert (cluster / f"{cluster}_scaled.mtz").is_file()
+    assert (cluster / f"{cluster}_scaled_unmerged.mtz").is_file()
 
 
 @pytest.mark.parametrize(
@@ -213,8 +213,8 @@ def test_proteinase_k_dose(
     for cluster in expected_clusters:
         cluster = pathlib.Path(cluster)
         assert cluster.is_dir()
-        assert (cluster / "scaled.mtz").is_file()
-        assert (cluster / "scaled_unmerged.mtz").is_file()
+        assert (cluster / f"{cluster}_scaled.mtz").is_file()
+        assert (cluster / f"{cluster}_scaled_unmerged.mtz").is_file()
 
     for expt in multiplex_expts:
         if space_group is None:
@@ -242,10 +242,8 @@ def test_proteinase_k_coordinate_clusters(proteinase_k, run_in_tmp_path):
     multiplex_expts = load.experiment_list("scaled.expt", check_format=False)
     assert len(multiplex_expts) == 7
     clusters = list(pathlib.Path().glob("coordinate_cluster_[0-9]*"))
-    assert len(clusters)
-    for cluster in clusters:
-        assert (cluster / "scaled.mtz").is_file()
-        assert (cluster / "scaled_unmerged.mtz").is_file()
+    # Only coordinate cluster = all datasets, thus we don't output it
+    assert len(clusters) == 0
 
 
 def test_proteinase_k_hierarchical_clusters(proteinase_k, run_in_tmp_path):
@@ -268,8 +266,8 @@ def test_proteinase_k_hierarchical_clusters(proteinase_k, run_in_tmp_path):
         clusters = list(pathlib.Path().glob(ctype + "_cluster_[0-9]*"))
         assert len(clusters)
         for cluster in clusters:
-            assert (cluster / "scaled.mtz").is_file()
-            assert (cluster / "scaled_unmerged.mtz").is_file()
+            assert (cluster / f"{cluster}_scaled.mtz").is_file()
+            assert (cluster / f"{cluster}_scaled_unmerged.mtz").is_file()
 
 
 def test_proteinase_k_hierarchical_clusters_distinct(proteinase_k, run_in_tmp_path):
@@ -294,8 +292,8 @@ def test_proteinase_k_hierarchical_clusters_distinct(proteinase_k, run_in_tmp_pa
     # Has shown to be unstable if it finds clusters or not: just need to make sure code runs to completion
     if len(clusters):
         for cluster in clusters:
-            assert (cluster / "scaled.mtz").is_file()
-            assert (cluster / "scaled_unmerged.mtz").is_file()
+            assert (cluster / f"{cluster}_scaled.mtz").is_file()
+            assert (cluster / f"{cluster}_scaled_unmerged.mtz").is_file()
 
 
 def test_proteinase_k_single_dataset_raises_error(proteinase_k, run_in_tmp_path):
@@ -424,8 +422,9 @@ def test_prot_k_multiwave_double(run_in_tmp_path, protk_experiments_and_reflecti
     for f in expected_multi_data_files + ["scaled.mtz"]:
         assert (run_in_tmp_path / f).is_file(), f"expected file {f} missing"
     for f in expected_multi_data_files[:-2]:
+        file = "cos_cluster_5_" + f
         assert (
-            run_in_tmp_path / "cos_cluster_5" / f
+            run_in_tmp_path / "cos_cluster_5" / file
         ).is_file(), f"expected file {f} missing"
     for f in expected_filtered:
         assert (run_in_tmp_path / f).is_file(), f"expected file {f} missing"

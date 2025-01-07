@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-import os
+import shutil
 import subprocess
 
 import xia2.Test.regression
@@ -17,11 +17,8 @@ expected_data_files = [
 
 
 def test_dials(regression_test, dials_data, tmp_path, ccp4):
-    cmd = "xia2"
-    if os.name == "nt":
-        cmd += ".bat"
     command_line = [
-        cmd,
+        shutil.which("xia2"),
         "pipeline=dials",
         "nproc=1",
         "njob=2",
@@ -41,11 +38,8 @@ def test_dials(regression_test, dials_data, tmp_path, ccp4):
 
 
 def test_dials_aimless(regression_test, dials_data, tmp_path, ccp4):
-    cmd = "xia2"
-    if os.name == "nt":
-        cmd += ".bat"
     command_line = [
-        cmd,
+        shutil.which("xia2"),
         "pipeline=dials-aimless",
         "nproc=1",
         "njob=2",
@@ -65,11 +59,8 @@ def test_dials_aimless(regression_test, dials_data, tmp_path, ccp4):
 
 
 def test_xds(regression_test, dials_data, tmp_path, ccp4, xds):
-    cmd = "xia2"
-    if os.name == "nt":
-        cmd += ".bat"
     command_line = [
-        cmd,
+        shutil.which("xia2"),
         "pipeline=3di",
         "nproc=1",
         "njob=2",
@@ -90,11 +81,8 @@ def test_xds(regression_test, dials_data, tmp_path, ccp4, xds):
 
 
 def test_xds_ccp4a(regression_test, dials_data, tmp_path, ccp4, xds):
-    cmd = "xia2"
-    if os.name == "nt":
-        cmd += ".bat"
     command_line = [
-        cmd,
+        shutil.which("xia2"),
         "pipeline=3di",
         "nproc=1",
         "njob=2",

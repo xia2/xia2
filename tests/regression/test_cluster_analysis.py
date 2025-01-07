@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import os
+import shutil
 import subprocess
 
 import pytest
@@ -103,17 +104,11 @@ def test_serial_data(
     ssx = dials_data("cunir_serial_processed", pathlib=True)
     expt_int = os.fspath(ssx / "integrated.expt")
     refl_int = os.fspath(ssx / "integrated.refl")
-    cmd = "xia2.ssx_reduce"
-    if os.name == "nt":
-        cmd += ".bat"
-    args_generate_scaled = [cmd, expt_int, refl_int]
+    args_generate_scaled = [shutil.which("xia2.ssx_reduce"), expt_int, refl_int]
     expt_scaled = os.fspath(tmp_path / "DataFiles" / "scaled.expt")
     refl_scaled = os.fspath(tmp_path / "DataFiles" / "scaled.refl")
-    cmd = "xia2.cluster_analysis"
-    if os.name == "nt":
-        cmd += ".bat"
     args_test_clustering = [
-        cmd,
+        shutil.which("xia2.cluster_analysis"),
         "clustering.min_cluster_size=2",
         expt_scaled,
         refl_scaled,
@@ -122,6 +117,7 @@ def test_serial_data(
         f"clustering.output_clusters={output_clusters}",
         f"output_correlation_cluster_number={output_correlation_cluster_number}",
         f"exclude_correlation_cluster_number={exclude_correlation_cluster_number}",
+        "d_min=1.0",
     ]
     result_generate_scaled = subprocess.run(
         args_generate_scaled, cwd=tmp_path, capture_output=True
@@ -142,22 +138,21 @@ def test_rotation_data(dials_data, run_in_tmp_path):
     rot = dials_data("vmxi_proteinase_k_sweeps", pathlib=True)
 
     # First scale the data to get suitable input
-    cmd = "dials.scale"
-    if os.name == "nt":
-        cmd += ".bat"
-    result = subprocess.run(
-        [cmd]
+    cmd = (
+        [
+            shutil.which("dials.scale"),
+        ]
         + [rot / f"experiments_{i}.expt" for i in range(0, 4)]
-        + [rot / f"reflections_{i}.refl" for i in range(0, 4)],
+        + [rot / f"reflections_{i}.refl" for i in range(0, 4)]
+    )
+    result = subprocess.run(
+        cmd,
         capture_output=True,
     )
     assert not result.returncode
 
-    cmd = "xia2.cluster_analysis"
-    if os.name == "nt":
-        cmd += ".bat"
     args_clustering = [
-        cmd,
+        shutil.which("xia2.cluster_analysis"),
         "distinct_clusters=True",
         "clustering.min_cluster_size=2",
         "clustering.hierarchical.method=cos_angle+correlation",
@@ -175,7 +170,7 @@ def test_rotation_data(dials_data, run_in_tmp_path):
     assert not (run_in_tmp_path / "coordinate_clusters").exists()
     # now run coordinate clustering
     args_clustering = [
-        cmd,
+        shutil.which("xia2.cluster_analysis"),
         "clustering.method=coordinate",
         "clustering.min_cluster_size=2",
         "clustering.output_clusters=True",
