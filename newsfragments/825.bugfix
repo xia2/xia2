@@ -1,1 +1,1 @@
-Fix for getting multiple sweeps on Windows
+Fix issue where multiple sweeps were not handled correctly on Windows.

@@ -1,1 +1,1 @@
-Correctly resolve command paths on Windows
+Fix issue where command paths would fail to be resolved on Windows, with some configurations.
