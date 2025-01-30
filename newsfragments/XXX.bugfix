@@ -1,0 +1,1 @@
+``xia2.ssx``: Correctly handle incorrectly specified filepaths with a useful error message.

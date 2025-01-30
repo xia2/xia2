@@ -693,7 +693,7 @@ def scale_parallel_batches(
                     result.logfile.name.rstrip(".log"), result.logfile
                 )
                 d_mins.append(result.resolutionlimit)
-
+    scaled_results = [s for s in scaled_results if s.filepairs]
     if not scaled_results:
         raise ValueError("No groups successfully scaled")
     return scaled_results, d_mins
