@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import copy
+import errno
 import json
 import logging
 import os
@@ -61,7 +62,9 @@ class SpotfindingParams:
         if params.spotfinding.phil:
             spotfinding_phil = Path(params.spotfinding.phil).resolve()
             if not spotfinding_phil.is_file():
-                raise FileNotFoundError(os.fspath(spotfinding_phil))
+                raise FileNotFoundError(
+                    errno.ENOENT, os.strerror(errno.ENOENT), os.fspath(spotfinding_phil)
+                )
         return cls(
             params.spotfinding.min_spot_size,
             params.spotfinding.max_spot_size,
@@ -87,7 +90,9 @@ class IndexingParams:
         if params.indexing.phil:
             indexing_phil = Path(params.indexing.phil).resolve()
             if not indexing_phil.is_file():
-                raise FileNotFoundError(os.fspath(indexing_phil))
+                raise FileNotFoundError(
+                    errno.ENOENT, os.strerror(errno.ENOENT), os.fspath(indexing_phil)
+                )
         if params.indexing.unit_cell and params.space_group:
             try:
                 _ = crystal.symmetry(
@@ -117,7 +122,9 @@ class RefinementParams:
         if params.geometry_refinement.phil:
             refinement_phil = Path(params.geometry_refinement.phil).resolve()
             if not refinement_phil.is_file():
-                raise FileNotFoundError(os.fspath(refinement_phil))
+                raise FileNotFoundError(
+                    errno.ENOENT, os.strerror(errno.ENOENT), os.fspath(refinement_phil)
+                )
         return cls(refinement_phil)
 
 
@@ -136,7 +143,9 @@ class IntegrationParams:
         if params.integration.phil:
             integration_phil = Path(params.integration.phil).resolve()
             if not integration_phil.is_file():
-                raise FileNotFoundError(os.fspath(integration_phil))
+                raise FileNotFoundError(
+                    errno.ENOENT, os.strerror(errno.ENOENT), os.fspath(integration_phil)
+                )
         return cls(
             params.integration.algorithm,
             params.integration.ellipsoid.rlp_mosaicity,
