@@ -46,6 +46,7 @@ import os
 from functools import reduce
 
 from cctbx.sgtbx import bravais_types
+from dxtbx.model import ExperimentList
 
 from xia2.Experts.LatticeExpert import SortLattices
 from xia2.Handlers.Phil import PhilIndex
@@ -708,7 +709,9 @@ class Indexer:
         return self.LATTICE_POSSIBLE
 
     def set_indexer_experiment_list(self, experiments_list):
-        self._indxr_experiment_list = experiments_list
+        self._indxr_experiment_list = ExperimentList(
+            [e for e in experiments_list if e.crystal]
+        )
 
     def get_indexer_experiment_list(self):
         self.index()
