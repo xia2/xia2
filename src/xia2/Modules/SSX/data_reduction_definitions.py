@@ -1,7 +1,10 @@
 from __future__ import annotations
 
+import errno
+import os
 from dataclasses import dataclass, field
 from pathlib import Path
+from typing import Optional
 
 import iotbx.phil
 from cctbx import sgtbx, uctbx
@@ -11,14 +14,18 @@ from dxtbx.serialize import load
 
 @dataclass(eq=False)
 class FilePair:
-    _expt: Path
-    _refl: Path
+    _expt: Optional[Path] = None
+    _refl: Optional[Path] = None
 
     def check(self):
         if not self.expt.is_file():
-            raise FileNotFoundError(f"File {self.expt} does not exist")
+            raise FileNotFoundError(
+                errno.ENOENT, os.strerror(errno.ENOENT), os.fspath(self.expt)
+            )
         if not self.refl.is_file():
-            raise FileNotFoundError(f"File {self.refl} does not exist")
+            raise FileNotFoundError(
+                errno.ENOENT, os.strerror(errno.ENOENT), os.fspath(self.refl)
+            )
 
     def validate(self):
         expt = load.experiment_list(self.expt, check_format=False)
@@ -74,18 +81,38 @@ class ReductionParams:
         grouping = None
         if params.reference:
             reference = Path(params.reference).resolve()
+            if not reference.is_file():
+                raise FileNotFoundError(
+                    errno.ENOENT, os.strerror(errno.ENOENT), os.fspath(reference)
+                )
         elif params.scaling.model:
             reference = Path(params.scaling.model).resolve()
+            if not reference.is_file():
+                raise FileNotFoundError(
+                    errno.ENOENT, os.strerror(errno.ENOENT), os.fspath(reference)
+                )
         if params.clustering.central_unit_cell and params.clustering.threshold:
             raise ValueError(
                 "Only one of clustering.central_unit_cell and clustering.threshold can be specified"
             )
         if params.symmetry.phil:
             cosym_phil = Path(params.symmetry.phil).resolve()
+            if not cosym_phil.is_file():
+                raise FileNotFoundError(
+                    errno.ENOENT, os.strerror(errno.ENOENT), os.fspath(cosym_phil)
+                )
         if params.scaling.phil:
             scaling_phil = Path(params.scaling.phil).resolve()
+            if not scaling_phil.is_file():
+                raise FileNotFoundError(
+                    errno.ENOENT, os.strerror(errno.ENOENT), os.fspath(scaling_phil)
+                )
         if params.grouping:
             grouping = Path(params.grouping).resolve()
+            if not grouping.is_file():
+                raise FileNotFoundError(
+                    errno.ENOENT, os.strerror(errno.ENOENT), os.fspath(grouping)
+                )
         return cls(
             params.symmetry.space_group,
             params.reduction_batch_size,

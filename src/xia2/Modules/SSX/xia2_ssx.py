@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import errno
 import logging
 import os
 import pathlib
@@ -240,22 +241,30 @@ def run_xia2_ssx(
     if params.mask:
         mask_file = pathlib.Path(params.mask).resolve()
         if not mask_file.is_file():
-            raise FileNotFoundError(os.fspath(mask_file))
+            FileNotFoundError(
+                errno.ENOENT, os.strerror(errno.ENOENT), os.fspath(mask_file)
+            )
         file_input.mask = mask_file
     if params.reference_geometry:
         reference = pathlib.Path(params.reference_geometry).resolve()
         if not reference.is_file():
-            raise FileNotFoundError(os.fspath(reference))
+            FileNotFoundError(
+                errno.ENOENT, os.strerror(errno.ENOENT), os.fspath(reference)
+            )
         file_input.reference_geometry = reference
     if params.starting_geometry:
         starting = pathlib.Path(params.starting_geometry).resolve()
         if not starting.is_file():
-            raise FileNotFoundError(os.fspath(starting))
+            FileNotFoundError(
+                errno.ENOENT, os.strerror(errno.ENOENT), os.fspath(starting)
+            )
         file_input.starting_geometry = starting
     if params.dials_import.phil:
         import_phil = pathlib.Path(params.dials_import.phil).resolve()
         if not import_phil.is_file():
-            raise FileNotFoundError(os.fspath(import_phil))
+            FileNotFoundError(
+                errno.ENOENT, os.strerror(errno.ENOENT), os.fspath(import_phil)
+            )
         file_input.import_phil = import_phil
 
     if params.multiprocessing.nproc is Auto:

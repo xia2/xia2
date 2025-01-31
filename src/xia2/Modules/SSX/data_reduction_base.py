@@ -202,10 +202,7 @@ class BaseDataReduction:
         validate=False,
     ):
         # load and check all integrated files
-        try:
-            new_data = inspect_files(reflection_files, experiment_files, validate)
-        except FileNotFoundError as e:
-            raise ValueError(e)
+        new_data = inspect_files(reflection_files, experiment_files, validate)
         return cls(main_directory, new_data, reduction_params)
 
     def run(self) -> None:

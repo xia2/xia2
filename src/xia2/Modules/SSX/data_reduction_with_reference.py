@@ -39,7 +39,7 @@ class DataReductionWithReference(BaseDataReduction):
         if not Path.is_dir(self._scale_wd):
             Path.mkdir(self._scale_wd)
 
-        scaled_results = [FilePair(Path(), Path())] * len(self._batches_to_scale)
+        scaled_results = [FilePair()] * len(self._batches_to_scale)
 
         batch_template = functools.partial(
             "scaled_batch{index:0{maxindexlength:d}d}".format,
@@ -80,7 +80,7 @@ class DataReductionWithReference(BaseDataReduction):
                     FileHandler.record_log_file(
                         result.logfile.name.rstrip(".log"), result.logfile
                     )
-
+        scaled_results = [s for s in scaled_results if s.expt]
         if not scaled_results:
             raise ValueError("No groups successfully scaled")
         self._files_to_merge = scaled_results

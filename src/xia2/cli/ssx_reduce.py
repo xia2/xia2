@@ -45,6 +45,13 @@ def run(args=sys.argv[1:]):
     params, _, unhandled = parser.parse_args(
         args=args, show_diff_phil=False, return_unhandled=True
     )
+    xia2.Handlers.Streams.setup_logging(
+        logfile="xia2.ssx_reduce.log", debugfile="xia2.ssx_reduce.debug.log"
+    )
+    # remove the xia2 handler from the dials logger.
+    dials_logger = logging.getLogger("dials")
+    dials_logger.handlers.clear()
+
     # Do it this way to avoid loading all data into memory at start, as we
     # may never need to load all data at once.
     if unhandled:
@@ -54,15 +61,9 @@ def run(args=sys.argv[1:]):
             elif item.endswith(".refl"):
                 args[args.index(item)] = f"input.reflections = {item}"
             else:
-                raise ValueError(f"Unhandled argument: {item}")
+                xia2_logger.error(f"Unhandled argument: {item}")
+                sys.exit(0)
         params, _ = parser.parse_args(args=args, show_diff_phil=False)
-
-    xia2.Handlers.Streams.setup_logging(
-        logfile="xia2.ssx_reduce.log", debugfile="xia2.ssx_reduce.debug.log"
-    )
-    # remove the xia2 handler from the dials logger.
-    dials_logger = logging.getLogger("dials")
-    dials_logger.handlers.clear()
 
     diff_phil = parser.diff_phil.as_str()
     if diff_phil:
@@ -73,7 +74,10 @@ def run(args=sys.argv[1:]):
         with cleanup(cwd):
             run_xia2_ssx_reduce(cwd, params)
     except ValueError as e:
-        xia2_logger.info(f"Error: {e}")
+        xia2_logger.error(f"Error: {e}")
+        sys.exit(0)
+    except FileNotFoundError as e:
+        xia2_logger.error(e)
         sys.exit(0)
     except Exception as e:
         with (cwd / "xia2-error.txt").open(mode="w") as fh:

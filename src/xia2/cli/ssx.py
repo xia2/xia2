@@ -68,10 +68,10 @@ def run(args=sys.argv[1:]):
         with cleanup(cwd):
             run_xia2_ssx(cwd, params)
     except ValueError as e:
-        xia2_logger.info(f"Error: {e}")
+        xia2_logger.error(f"Error: {e}")
         sys.exit(0)
     except FileNotFoundError as e:
-        xia2_logger.info(f"Unable to find file: {e}")
+        xia2_logger.error(e)
         sys.exit(0)
     except Exception as e:
         with (cwd / "xia2-error.txt").open(mode="w") as fh:
