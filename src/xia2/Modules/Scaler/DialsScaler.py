@@ -21,7 +21,7 @@ from dxtbx.serialize import load
 from iotbx import mtz
 from iotbx.scalepack import no_merge_original_index
 from iotbx.scalepack.merge import write as merge_scalepack_write
-from orderedset import OrderedSet
+from ordered_set import OrderedSet
 
 from xia2.Handlers.CIF import CIF, mmCIF
 from xia2.Handlers.Citations import Citations
