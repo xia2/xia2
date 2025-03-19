@@ -1,3 +1,34 @@
+xia2 3.24.0 (2025-03-19)
+========================
+
+Features
+--------
+
+- ``xia2.multiplex``: Improvements to clustering output and addition of cluster identification algorithm for comparisons (`#783 <https://github.com/xia2/xia2/issues/783>`_)
+
+
+Bugfixes
+--------
+
+- Correctly resolve command paths on Windows (`#824 <https://github.com/xia2/xia2/issues/824>`_)
+- Fix for getting multiple sweeps on Windows (`#825 <https://github.com/xia2/xia2/issues/825>`_)
+- ``xia2.multiplex``: Improve PHIL help for ``identifiers`` option (`#828 <https://github.com/xia2/xia2/issues/828>`_)
+- ``xia2.ssx``: Correctly handle incorrectly specified filepaths with a useful error message. (`#833 <https://github.com/xia2/xia2/issues/833>`_)
+- Switch from using unmaintained ``orderedset`` to ``ordered_set`` (`#837 <https://github.com/xia2/xia2/issues/837>`_)
+
+
+Deprecations and Removals
+-------------------------
+
+- Python 3.10 is now the minimum (`#820 <https://github.com/xia2/xia2/issues/820>`_)
+
+
+Misc
+----
+
+- `#823 <https://github.com/xia2/xia2/issues/823>`_, `#826 <https://github.com/xia2/xia2/issues/826>`_, `#827 <https://github.com/xia2/xia2/issues/827>`_, `#830 <https://github.com/xia2/xia2/issues/830>`_
+
+
 xia2 3.22.0 (2024-10-15)
 ========================
 
