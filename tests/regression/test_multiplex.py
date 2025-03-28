@@ -111,11 +111,10 @@ def test_proteinase_k_anomalous(proteinase_k, run_in_tmp_path):
     assert ["I(+)", "SIGI(+)", "I(-)", "SIGI(-)"] in labels
 
 
-@pytest.mark.parametrize(
-    "d_min",
-    [None, 2.0],
-)
-def test_proteinase_k_filter_deltacchalf(d_min, proteinase_k, run_in_tmp_path):
+def test_proteinase_k_filter_deltacchalf(proteinase_k, run_in_tmp_path):
+    # Note we need to set a dmin, else the scaling lbfgs minimisation can give
+    # slightly different numerical results across platforms as there is low
+    # multiplicity, which ends up affecting the clustering.
     expts, refls = proteinase_k
     command_line_args = (
         expts
@@ -126,7 +125,7 @@ def test_proteinase_k_filter_deltacchalf(d_min, proteinase_k, run_in_tmp_path):
             "clustering.output_clusters=True",
             "clustering.max_output_clusters=1",
             "nproc=1",
-            "resolution.d_min=%s" % d_min,
+            "resolution.d_min=2.0",
         ]
     )
     run_multiplex(command_line_args)
@@ -146,10 +145,9 @@ def test_proteinase_k_filter_deltacchalf(d_min, proteinase_k, run_in_tmp_path):
     # should have fewer reflections as one data set has been removed
     mtz_scaled = iotbx.mtz.object("scaled_unmerged.mtz")
     mtz_filtered = iotbx.mtz.object("filtered_unmerged.mtz")
-    if d_min:
-        # assert that the input d_min has carried through to the output files
-        for mtz in (mtz_scaled, mtz_filtered):
-            assert mtz.as_miller_arrays()[0].d_min() == pytest.approx(d_min, abs=1e-4)
+    # assert that the input d_min has carried through to the output files
+    for mtz in (mtz_scaled, mtz_filtered):
+        assert mtz.as_miller_arrays()[0].d_min() == pytest.approx(2.0, abs=1e-4)
 
     assert mtz_filtered.n_reflections() != mtz_scaled.n_reflections()
 
