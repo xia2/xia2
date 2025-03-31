@@ -150,6 +150,7 @@ class MultiCrystalAnalysis:
         self._cos_angle_cluster_table = matrices.cos_table
         self._cosym_graphs = matrices.rij_graphs
         self.significant_coordinate_clusters = matrices.significant_clusters
+        self._pca_plot = matrices.pca_plot
 
         # Need this here or else cos-angle dendrogram does not replicate original multiplex output
         self._cluster_analysis = True
@@ -431,6 +432,7 @@ any systematic grouping of points may suggest a preferential crystal orientation
             cos_angle_cluster_table=self._cos_angle_cluster_table,
             cos_angle_cluster_json=self._cos_angle_cluster_json,
             cos_angle_cosym_graphs=self._cosym_graphs,
+            pca_plot=self._pca_plot,
             delta_cc_half_graphs=delta_cc_half_graphs,
             delta_cc_half_table=delta_cc_half_table,
             filter_plots=filter_plots,
@@ -447,6 +449,7 @@ any systematic grouping of points may suggest a preferential crystal orientation
         json_data.update(cosym_analysis["cosym_graphs"])
         json_data["cc_clustering"] = self._cc_cluster_json
         json_data["cos_angle_clustering"] = self._cos_angle_cluster_json
+        json_data["pca_clustering"] = self._pca_plot
         json_data.update(self._cosym_graphs)
         json_data.update(delta_cc_half_graphs)
         json_data.update(orientation_graphs)
