@@ -579,8 +579,8 @@ def ssx_integrate(
             for i, (int_expt, int_refl, aggregator) in enumerate(
                 run_integration(indexed_refl, indexed_expts, params)
             ):
-                reflections_filename = f"integrated_{i+1}.refl"
-                experiments_filename = f"integrated_{i+1}.expt"
+                reflections_filename = f"integrated_{i + 1}.refl"
+                experiments_filename = f"integrated_{i + 1}.expt"
                 n_refl += int_refl.size()
                 dials_logger.info(
                     f"Saving {int_refl.size()} reflections to {reflections_filename}"
@@ -590,16 +590,16 @@ def ssx_integrate(
                 dials_logger.info(f"Saving the experiments to {experiments_filename}")
                 int_expt.as_file(experiments_filename)
                 summary_for_xia2["DataFiles"]["tags"].append(
-                    f"integrated_{i+1} {working_directory.name}"
+                    f"integrated_{i + 1} {working_directory.name}"
                 )
                 summary_for_xia2["DataFiles"]["filenames"].append(
-                    working_directory / f"integrated_{i+1}.refl"
+                    working_directory / f"integrated_{i + 1}.refl"
                 )
                 summary_for_xia2["DataFiles"]["tags"].append(
-                    f"integrated_{i+1} {working_directory.name}"
+                    f"integrated_{i + 1} {working_directory.name}"
                 )
                 summary_for_xia2["DataFiles"]["filenames"].append(
-                    working_directory / f"integrated_{i+1}.expt"
+                    working_directory / f"integrated_{i + 1}.expt"
                 )
                 integrated_crystal_symmetries.extend(
                     [

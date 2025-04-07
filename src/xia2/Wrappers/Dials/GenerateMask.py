@@ -73,12 +73,12 @@ def GenerateMask(DriverType=None):
             self.start()
             self.close_wait()
             self.check_for_errors()
-            assert os.path.exists(
+            assert os.path.exists(self._output_mask_filename), (
                 self._output_mask_filename
-            ), self._output_mask_filename
-            assert os.path.exists(
+            )
+            assert os.path.exists(self._output_experiments_filename), (
                 self._output_experiments_filename
-            ), self._output_experiments_filename
+            )
             return self._output_experiments_filename, self._output_mask_filename
 
     return GenerateMaskWrapper()

@@ -196,7 +196,7 @@ class DataManager:
         index = sorted(self.wavelengths.keys()).index(wl)
         params = export.phil_scope.extract()
         params.mtz.d_min = d_min
-        params.mtz.hklout = f"{prefix}_WAVE{fmt % (index+1)}.mtz"
+        params.mtz.hklout = f"{prefix}_WAVE{fmt % (index + 1)}.mtz"
         params.mtz.wavelength_tolerance = wavelength_tolerance
         expt_to_export = copy.deepcopy(data["expt"])
         params.intensity = ["scale"]
@@ -219,7 +219,7 @@ class DataManager:
         params.wavelength_tolerance = wavelength_tolerance
         if r_free_params:
             params.r_free_flags = r_free_params
-        filename = f"{prefix}_WAVE{fmt % (index+1)}.mtz"
+        filename = f"{prefix}_WAVE{fmt % (index + 1)}.mtz"
         if data["expt"]:
             mtz_obj = merge.merge_data_to_mtz(params, data["expt"], [data["refl"]])
             mtz_obj.write_to_file(filename)

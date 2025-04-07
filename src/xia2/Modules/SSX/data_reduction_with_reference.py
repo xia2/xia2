@@ -46,7 +46,7 @@ class DataReductionWithReference(BaseDataReduction):
             maxindexlength=len(str(len(self._batches_to_scale))),
         )
         jobs = {
-            f"{batch_template(index=i+1)}": fp
+            f"{batch_template(index=i + 1)}": fp
             for i, fp in enumerate(self._batches_to_scale)
         }
 
@@ -73,7 +73,7 @@ class DataReductionWithReference(BaseDataReduction):
                 except Exception as e:
                     xia2_logger.warning(f"Unsuccessful scaling of group. Error:\n{e}")
                 else:
-                    xia2_logger.info(f"Completed scaling of batch {idx+1}")
+                    xia2_logger.info(f"Completed scaling of batch {idx + 1}")
                     scaled_results[idx] = FilePair(result.exptfile, result.reflfile)
                     FileHandler.record_data_file(result.exptfile)
                     FileHandler.record_data_file(result.reflfile)

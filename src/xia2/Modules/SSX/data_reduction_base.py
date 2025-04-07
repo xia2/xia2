@@ -279,7 +279,7 @@ class BaseDataReduction:
             )
             if not user_dmin:
                 self._reduction_params.d_min = None
-            xia2_logger.info(f"Consistently reindexed {len( batches_to_scale)} batches")
+            xia2_logger.info(f"Consistently reindexed {len(batches_to_scale)} batches")
         elif self._reduction_params.reference:
             # scale and reindex a single batch
             batches_to_scale = scale_reindex_single(
@@ -381,7 +381,7 @@ class BaseDataReduction:
             merge_input = apply_scaled_array_to_all_files(
                 merge_wds["merged"], scaled_results, self._reduction_params
             )
-        name_to_expts_arr: dict[str, tuple] = {name: () for name in merge_input.keys()}
+        name_to_expts_arr: dict[str, tuple] = dict.fromkeys(merge_input.keys(), ())
 
         futures = {}
         with concurrent.futures.ProcessPoolExecutor(
@@ -396,7 +396,7 @@ class BaseDataReduction:
             name_to_expts_arr[name] = future.result()
 
         future_list = []
-        summaries = {name: "" for name in name_to_expts_arr.keys()}
+        summaries = dict.fromkeys(name_to_expts_arr.keys(), "")
         with (
             record_step("dials.merge (parallel)"),
             concurrent.futures.ProcessPoolExecutor(
