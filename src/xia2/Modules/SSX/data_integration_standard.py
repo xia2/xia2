@@ -224,7 +224,7 @@ def slice_images_from_experiments(
     new_expts = expts[start:end]
     new_expts.as_file(destination_directory / "imported.expt")
     xia2_logger.info(
-        f"Saved images {start+1} to {end} into {destination_directory / 'imported.expt'}"
+        f"Saved images {start + 1} to {end} into {destination_directory / 'imported.expt'}"
     )
     output = {"input": os.fspath(imported_expts), "slice": images}
     outfile = destination_directory / "file_input.json"

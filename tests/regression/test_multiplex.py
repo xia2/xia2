@@ -421,9 +421,9 @@ def test_prot_k_multiwave_double(run_in_tmp_path, protk_experiments_and_reflecti
         assert (run_in_tmp_path / f).is_file(), f"expected file {f} missing"
     for f in expected_multi_data_files[:-2]:
         file = "cos_cluster_5_" + f
-        assert (
-            run_in_tmp_path / "cos_cluster_5" / file
-        ).is_file(), f"expected file {f} missing"
+        assert (run_in_tmp_path / "cos_cluster_5" / file).is_file(), (
+            f"expected file {f} missing"
+        )
     for f in expected_filtered:
         assert (run_in_tmp_path / f).is_file(), f"expected file {f} missing"
 
@@ -462,7 +462,9 @@ def test_run_with_reference_pdb(run_in_tmp_path, dials_data):
         os.fspath(data_dir / "reflections_1.pickle"),
         os.fspath(data_dir / "reflections_2.pickle"),
     ]
-    command_line_args = [f"reference={os.fspath(data_dir/'2id8.pdb')}"] + expts + refls
+    command_line_args = (
+        [f"reference={os.fspath(data_dir / '2id8.pdb')}"] + expts + refls
+    )
     run_multiplex(command_line_args)
 
     assert (run_in_tmp_path / "dials.reindex.log").is_file()
@@ -473,7 +475,7 @@ def test_run_with_reference_pdb(run_in_tmp_path, dials_data):
 
     # test EXIT if incompatible space group
     command_line_args = (
-        [f"reference={os.fspath(data_dir/'2id8.pdb')}", "symmetry.space_group=P1"]
+        [f"reference={os.fspath(data_dir / '2id8.pdb')}", "symmetry.space_group=P1"]
         + expts
         + refls
     )

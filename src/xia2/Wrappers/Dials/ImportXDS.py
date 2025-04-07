@@ -78,9 +78,9 @@ def ImportXDS(DriverType=None):
             self.check_for_errors()
 
             if self._reflection_filename is not None:
-                assert os.path.exists(
+                assert os.path.exists(self._reflection_filename), (
                     self._reflection_filename
-                ), self._reflection_filename
+                )
             else:
                 assert os.path.exists(self._experiments_json), self._experiments_json
 
