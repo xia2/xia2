@@ -1,3 +1,42 @@
+xia2 3.24.0 (2025-04-17)
+========================
+
+Features
+--------
+
+- ``xia2.multiplex``: Improvements to clustering output and addition of cluster identification algorithm for comparisons (`#783 <https://github.com/xia2/xia2/issues/783>`_)
+- ``xia2.multiplex``: Addition of new PCA style plot to visualise cosine-angle clustering. (`#841 <https://github.com/xia2/xia2/issues/841>`_)
+
+
+Bugfixes
+--------
+
+- Correctly resolve command paths on Windows (`#824 <https://github.com/xia2/xia2/issues/824>`_)
+- Fix for getting multiple sweeps on Windows (`#825 <https://github.com/xia2/xia2/issues/825>`_)
+- ``xia2.multiplex``: Improve PHIL help for ``identifiers`` option (`#828 <https://github.com/xia2/xia2/issues/828>`_)
+- Rename ``STRONG_PIXEL`` to ``SIGNAL_PIXEL`` following changes in XDS. (`#829 <https://github.com/xia2/xia2/issues/829>`_)
+- ``xia2.ssx``: Correctly handle incorrectly specified filepaths with a useful error message. (`#833 <https://github.com/xia2/xia2/issues/833>`_)
+- Switch from using unmaintained ``orderedset`` to ``ordered_set`` (`#837 <https://github.com/xia2/xia2/issues/837>`_)
+
+
+Improved Documentation
+----------------------
+
+- The DIALS user support mailing list is now dials-user-group@jiscmail.net (`#836 <https://github.com/xia2/xia2/issues/836>`_)
+
+
+Deprecations and Removals
+-------------------------
+
+- Python 3.10 is now the minimum (`#820 <https://github.com/xia2/xia2/issues/820>`_)
+
+
+Misc
+----
+
+- `#823 <https://github.com/xia2/xia2/issues/823>`_, `#826 <https://github.com/xia2/xia2/issues/826>`_, `#827 <https://github.com/xia2/xia2/issues/827>`_, `#830 <https://github.com/xia2/xia2/issues/830>`_, `#840 <https://github.com/xia2/xia2/issues/840>`_, `#842 <https://github.com/xia2/xia2/issues/842>`_
+
+
 xia2 3.22.0 (2024-10-15)
 ========================
 
