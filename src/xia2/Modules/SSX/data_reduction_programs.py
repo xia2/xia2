@@ -660,7 +660,7 @@ def scale_parallel_batches(
         "batch{index:0{maxindexlength:d}d}".format,
         maxindexlength=len(str(len(batches))),
     )
-    jobs = {f"{batch_template(index=i+1)}": fp for i, fp in enumerate(batches)}
+    jobs = {f"{batch_template(index=i + 1)}": fp for i, fp in enumerate(batches)}
     # xia2_logger.notice(banner("Scaling"))  # type: ignore
     with (
         record_step("dials.scale (parallel)"),
@@ -685,7 +685,7 @@ def scale_parallel_batches(
             except Exception as e:
                 xia2_logger.warning(f"Unsuccessful scaling of group. Error:\n{e}")
             else:
-                xia2_logger.info(f"Completed scaling of data reduction batch {idx+1}")
+                xia2_logger.info(f"Completed scaling of data reduction batch {idx + 1}")
                 scaled_results[idx].add_filepair(
                     FilePair(result.exptfile, result.reflfile)
                 )
@@ -887,7 +887,7 @@ def individual_cosym(
         joint_refls = flex.reflection_table.concat(cosym_instance.reflections)
         joint_refls.as_file(cosym_params.output.reflections)
         xia2_logger.info(
-            f"Consistently indexed {len(cosym_instance.experiments)} crystals in data reduction batch {index+1}"
+            f"Consistently indexed {len(cosym_instance.experiments)} crystals in data reduction batch {index + 1}"
         )
 
     return ProgramResult(

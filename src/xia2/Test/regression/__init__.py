@@ -123,9 +123,9 @@ def check_result(
                 expected_result_file_version = candidate_version
             elif expected_result_file is None:
                 expected_result_file = f
-    assert (
-        expected_result_file is not None
-    ), "Could not find expected results file to compare actual results to"
+    assert expected_result_file is not None, (
+        "Could not find expected results file to compare actual results to"
+    )
     with open(os.path.join(expected_result_dir, expected_result_file)) as fh:
         expected_summary_lines = fh.readlines()
 

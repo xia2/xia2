@@ -578,7 +578,7 @@ def test_reduce_with_grouping(dials_data, tmp_path, use_grouping):
         grouping = f"""
 metadata:
     dose_point:
-        {os.fspath(ssx_data / 'merlin0047_#####.cbf')} : "repeat=2"
+        {os.fspath(ssx_data / "merlin0047_#####.cbf")} : "repeat=2"
 grouping:
     merge_by:
         values:
