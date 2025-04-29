@@ -1,3 +1,31 @@
+xia2 3.24.0 (2025-04-29)
+========================
+
+Features
+--------
+
+- ``xia2.multiplex``: Addition of new PCA style plot to visualise cosine-angle clustering. (`#841 <https://github.com/xia2/xia2/issues/841>`_)
+
+
+Bugfixes
+--------
+
+- Rename ``STRONG_PIXEL`` to ``SIGNAL_PIXEL`` following changes in XDS. (`#829 <https://github.com/xia2/xia2/issues/829>`_)
+- ``xia2.ssx``: Correctly handle incorrectly specified filepaths with a useful error message. (`#833 <https://github.com/xia2/xia2/issues/833>`_)
+
+
+Improved Documentation
+----------------------
+
+- The DIALS user support mailing list is now dials-user-group@jiscmail.net (`#836 <https://github.com/xia2/xia2/issues/836>`_)
+
+
+Misc
+----
+
+- `#837 <https://github.com/xia2/xia2/issues/837>`_, `#840 <https://github.com/xia2/xia2/issues/840>`_, `#842 <https://github.com/xia2/xia2/issues/842>`_
+
+
 xia2 3.23.0 (2025-01-08)
 ========================
 
