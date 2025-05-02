@@ -11,6 +11,7 @@ from pathlib import Path
 
 import dials.precommitbx.nagger
 import libtbx
+import libtbx.env_config
 import libtbx.pkg_utils
 
 try:
@@ -21,7 +22,28 @@ except ModuleNotFoundError:
 dials.precommitbx.nagger.nag()
 
 
-def _install_setup_readonly_fallback(package_name: str):
+def _find_site_packages_with_metadata(
+    package_name: str, build_path: Path
+) -> Path | None:
+    """
+    Find the site-packages directory containing the package metadata.
+    Returns the site-packages directory if metadata is found, None otherwise.
+    """
+    # Look for Python site-packages directories in the build path
+    for python_dir in build_path.glob("lib/python*"):
+        site_packages = python_dir / "site-packages"
+        if site_packages.exists():
+            # Look for both .dist-info and .egg-info directories
+            for pattern in [f"{package_name}*.dist-info", f"{package_name}*.egg-info"]:
+                for metadata_dir in site_packages.glob(pattern):
+                    if metadata_dir.exists():
+                        # Return site-packages only if we actually found metadata
+                        return site_packages
+            # If no metadata found in this site-packages, continue searching
+    return None
+
+
+def _install_setup_readonly_fallback(package_name: str) -> None:
     """
     Partially install package in the libtbx build folder.
     This is a less complete installation - base python console_scripts
@@ -52,14 +74,15 @@ def _install_setup_readonly_fallback(package_name: str):
     # Get the actual environment being configured (NOT libtbx.env)
     env = _get_real_env_hack_hack_hack()
 
-    # Update the libtbx environment pythonpaths to point to the source
-    # location which now has an .egg-info folder; this will mean that
-    # the PYTHONPATH is written into the libtbx dispatchers
-    rel_path = libtbx.env.as_relocatable_path(import_path)
-    if rel_path not in env.pythonpath:
-        env.pythonpath.insert(0, rel_path)
+    # As of PEP 660, the package metadata (dist-info) goes in the install dir,
+    # not the source dir. Add this location to the python path.
+    metadata_dir = _find_site_packages_with_metadata(package_name, Path(build_path))
+    if metadata_dir and metadata_dir not in sys.path:
+        metadata_rel = libtbx.env.as_relocatable_path(str(metadata_dir))
+        if metadata_rel not in env.pythonpath:
+            env.pythonpath.insert(0, metadata_rel)
 
-    # Update the sys.path so that we can find the .egg-info in this process
+    # Update the sys.path so we can find the package in this process
     # if we do a full reconstruction of the working set
     if import_path not in sys.path:
         sys.path.insert(0, import_path)
@@ -100,7 +123,7 @@ def _install_setup_readonly_fallback(package_name: str):
         env.write_dispatcher(source_file=str(script), target_file=f"bin/{target_name}")
 
 
-def _get_real_env_hack_hack_hack():
+def _get_real_env_hack_hack_hack() -> libtbx.env_config.environment:
     """
     Get the real, currently-being-configured libtbx.env environment.
     This is not libtbx.env, because although libtbx.env_config.environment.cold_start
@@ -126,7 +149,7 @@ def _get_real_env_hack_hack_hack():
     raise RuntimeError("Could not determine real libtbx.env_config.environment object")
 
 
-def _show_xia2_version():
+def _show_xia2_version() -> None:
     try:
         from xia2.XIA2Version import Version
 
