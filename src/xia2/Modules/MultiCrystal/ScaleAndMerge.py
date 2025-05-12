@@ -446,6 +446,10 @@ class MultiCrystalScale:
                     wavelength_tolerance=self._params.wavelength_tolerance,
                 )
                 convert_unmerged_mtz_to_sca(name)
+
+                # unmerged mmcif for multiple wavelength
+                self._data_manager.export_unmerged_wave_mmcif(wl, "scaled_unmerged")
+
             # now export merged of each
             for wl in self.wavelengths:
                 name = self._data_manager.export_merged_wave_mtz(
@@ -464,6 +468,8 @@ class MultiCrystalScale:
             )
             convert_merged_mtz_to_sca("scaled.mtz")
             convert_unmerged_mtz_to_sca("scaled_unmerged.mtz")
+
+            self._data_manager.export_unmerged_mmcif("scaled_unmerged.mmcif")
 
         self._record_individual_report(
             self._data_manager, self._scaled.report(), "All data"
@@ -600,6 +606,10 @@ class MultiCrystalScale:
                     )
                     if name:
                         convert_unmerged_mtz_to_sca(name)
+
+                    # unmerged mmcif for multiple wavelength
+                    data_manager.export_unmerged_wave_mmcif(wl, "filtered_unmerged")
+
                 # now export merged of each
                 for wl in self.wavelengths:
                     name = data_manager.export_merged_wave_mtz(
@@ -619,6 +629,8 @@ class MultiCrystalScale:
                 )
                 convert_merged_mtz_to_sca("filtered.mtz")
                 convert_unmerged_mtz_to_sca("filtered_unmerged.mtz")
+
+                data_manager.export_unmerged_mmcif("filtered_unmerged.mmcif")
 
             data_manager._set_batches()
 
@@ -670,6 +682,10 @@ class MultiCrystalScale:
                 )
                 if name:
                     convert_unmerged_mtz_to_sca(name)
+
+                # unmerged mmcif for multiple wavelength
+                data_manager.export_unmerged_wave_mmcif(wl, f"{output_name}_unmerged")
+
             for wl in self.wavelengths:
                 name = data_manager.export_merged_wave_mtz(
                     wl,
@@ -688,6 +704,8 @@ class MultiCrystalScale:
             )
             convert_merged_mtz_to_sca(f"{output_name}.mtz")
             convert_unmerged_mtz_to_sca(f"{output_name}_unmerged.mtz")
+
+            data_manager.export_unmerged_mmcif(f"{output_name}_unmerged.mmcif")
 
         return scaled
 
