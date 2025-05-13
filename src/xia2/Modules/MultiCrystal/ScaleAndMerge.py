@@ -448,7 +448,9 @@ class MultiCrystalScale:
                 convert_unmerged_mtz_to_sca(name)
 
                 # unmerged mmcif for multiple wavelength
-                self._data_manager.export_unmerged_wave_mmcif(wl, "scaled_unmerged")
+                self._data_manager.export_unmerged_wave_mmcif(
+                    wl, "scaled_unmerged", d_min=self._scaled.d_min
+                )
 
             # now export merged of each
             for wl in self.wavelengths:
@@ -469,7 +471,9 @@ class MultiCrystalScale:
             convert_merged_mtz_to_sca("scaled.mtz")
             convert_unmerged_mtz_to_sca("scaled_unmerged.mtz")
 
-            self._data_manager.export_unmerged_mmcif("scaled_unmerged.mmcif")
+            self._data_manager.export_unmerged_mmcif(
+                "scaled_unmerged.mmcif", d_min=self._scaled.d_min
+            )
 
         self._record_individual_report(
             self._data_manager, self._scaled.report(), "All data"
@@ -608,7 +612,9 @@ class MultiCrystalScale:
                         convert_unmerged_mtz_to_sca(name)
 
                     # unmerged mmcif for multiple wavelength
-                    data_manager.export_unmerged_wave_mmcif(wl, "filtered_unmerged")
+                    data_manager.export_unmerged_wave_mmcif(
+                        wl, "filtered_unmerged", d_min=scaled.d_min
+                    )
 
                 # now export merged of each
                 for wl in self.wavelengths:
@@ -630,7 +636,9 @@ class MultiCrystalScale:
                 convert_merged_mtz_to_sca("filtered.mtz")
                 convert_unmerged_mtz_to_sca("filtered_unmerged.mtz")
 
-                data_manager.export_unmerged_mmcif("filtered_unmerged.mmcif")
+                data_manager.export_unmerged_mmcif(
+                    "filtered_unmerged.mmcif", d_min=scaled.d_min
+                )
 
             data_manager._set_batches()
 
@@ -684,7 +692,9 @@ class MultiCrystalScale:
                     convert_unmerged_mtz_to_sca(name)
 
                 # unmerged mmcif for multiple wavelength
-                data_manager.export_unmerged_wave_mmcif(wl, f"{output_name}_unmerged")
+                data_manager.export_unmerged_wave_mmcif(
+                    wl, f"{output_name}_unmerged", d_min=scaled.d_min
+                )
 
             for wl in self.wavelengths:
                 name = data_manager.export_merged_wave_mtz(
@@ -705,7 +715,9 @@ class MultiCrystalScale:
             convert_merged_mtz_to_sca(f"{output_name}.mtz")
             convert_unmerged_mtz_to_sca(f"{output_name}_unmerged.mtz")
 
-            data_manager.export_unmerged_mmcif(f"{output_name}_unmerged.mmcif")
+            data_manager.export_unmerged_mmcif(
+                f"{output_name}_unmerged.mmcif", d_min=scaled.d_min
+            )
 
         return scaled
 

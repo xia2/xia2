@@ -205,12 +205,13 @@ class DataManager:
             return params.mtz.hklout
         return None
 
-    def export_unmerged_wave_mmcif(self, wl, prefix):
+    def export_unmerged_wave_mmcif(self, wl, prefix, d_min):
         data = self.data_split_by_wl[wl]
         nn = len(self.wavelengths)
         fmt = "%%0%dd" % (math.log10(nn) + 1)
         index = sorted(self.wavelengths.keys()).index(wl)
         params = export.phil_scope.extract()
+        params.mtz.d_min = d_min
         params.mmcif.hklout = f"{prefix}_WAVE{fmt % (index + 1)}.mmcif"
         expt_to_export = copy.deepcopy(data["expt"])
         params.intensity = ["scale"]
@@ -258,9 +259,10 @@ class DataManager:
         params.intensity = ["scale"]
         export.export_mtz(params, expt_to_export, [self._reflections])
 
-    def export_unmerged_mmcif(self, filename):
+    def export_unmerged_mmcif(self, filename, d_min=None):
         params = export.phil_scope.extract()
         expt_to_export = copy.deepcopy(self._experiments)
+        params.mtz.d_min = d_min
         params.mmcif.hklout = filename
         params.intensity = ["scale"]
         export.export_mmcif(params, expt_to_export, [self._reflections])

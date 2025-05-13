@@ -172,6 +172,7 @@ def test_proteinase_k_filter_deltacchalf(proteinase_k, run_in_tmp_path):
     assert cluster.is_dir()
     assert (cluster / f"{cluster}_scaled.mtz").is_file()
     assert (cluster / f"{cluster}_scaled_unmerged.mtz").is_file()
+    assert (cluster / f"{cluster}_scaled_unmerged.mmcif").is_file()
 
 
 @pytest.mark.parametrize(
@@ -215,6 +216,7 @@ def test_proteinase_k_dose(
         assert cluster.is_dir()
         assert (cluster / f"{cluster}_scaled.mtz").is_file()
         assert (cluster / f"{cluster}_scaled_unmerged.mtz").is_file()
+        assert (cluster / f"{cluster}_scaled_unmerged.mmcif").is_file()
 
     for expt in multiplex_expts:
         if space_group is None:
@@ -268,6 +270,7 @@ def test_proteinase_k_hierarchical_clusters(proteinase_k, run_in_tmp_path):
         for cluster in clusters:
             assert (cluster / f"{cluster}_scaled.mtz").is_file()
             assert (cluster / f"{cluster}_scaled_unmerged.mtz").is_file()
+            assert (cluster / f"{cluster}_scaled_unmerged.mmcif").is_file()
 
 
 def test_proteinase_k_hierarchical_clusters_distinct(proteinase_k, run_in_tmp_path):
@@ -294,6 +297,7 @@ def test_proteinase_k_hierarchical_clusters_distinct(proteinase_k, run_in_tmp_pa
         for cluster in clusters:
             assert (cluster / f"{cluster}_scaled.mtz").is_file()
             assert (cluster / f"{cluster}_scaled_unmerged.mtz").is_file()
+            assert (cluster / f"{cluster}_scaled_unmerged.mmcif").is_file()
 
 
 def test_proteinase_k_single_dataset_raises_error(proteinase_k, run_in_tmp_path):
