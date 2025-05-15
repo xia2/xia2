@@ -25,6 +25,7 @@ expected_data_files = [
     "scaled.refl",
     "scaled.mtz",
     "scaled_unmerged.mtz",
+    "scaled_unmerged.mmcif",
     "scaled.sca",
     "scaled_unmerged.sca",
     "xia2.multiplex.html",
@@ -134,6 +135,7 @@ def test_proteinase_k_filter_deltacchalf(proteinase_k, run_in_tmp_path):
         "filtered.refl",
         "filtered.mtz",
         "filtered_unmerged.mtz",
+        "filtered_unmerged.mmcif",
         "filtered.sca",
         "filtered_unmerged.sca",
     ]:
@@ -170,6 +172,7 @@ def test_proteinase_k_filter_deltacchalf(proteinase_k, run_in_tmp_path):
     assert cluster.is_dir()
     assert (cluster / f"{cluster}_scaled.mtz").is_file()
     assert (cluster / f"{cluster}_scaled_unmerged.mtz").is_file()
+    assert (cluster / f"{cluster}_scaled_unmerged.mmcif").is_file()
 
 
 @pytest.mark.parametrize(
@@ -213,6 +216,7 @@ def test_proteinase_k_dose(
         assert cluster.is_dir()
         assert (cluster / f"{cluster}_scaled.mtz").is_file()
         assert (cluster / f"{cluster}_scaled_unmerged.mtz").is_file()
+        assert (cluster / f"{cluster}_scaled_unmerged.mmcif").is_file()
 
     for expt in multiplex_expts:
         if space_group is None:
@@ -266,6 +270,7 @@ def test_proteinase_k_hierarchical_clusters(proteinase_k, run_in_tmp_path):
         for cluster in clusters:
             assert (cluster / f"{cluster}_scaled.mtz").is_file()
             assert (cluster / f"{cluster}_scaled_unmerged.mtz").is_file()
+            assert (cluster / f"{cluster}_scaled_unmerged.mmcif").is_file()
 
 
 def test_proteinase_k_hierarchical_clusters_distinct(proteinase_k, run_in_tmp_path):
@@ -292,6 +297,7 @@ def test_proteinase_k_hierarchical_clusters_distinct(proteinase_k, run_in_tmp_pa
         for cluster in clusters:
             assert (cluster / f"{cluster}_scaled.mtz").is_file()
             assert (cluster / f"{cluster}_scaled_unmerged.mtz").is_file()
+            assert (cluster / f"{cluster}_scaled_unmerged.mmcif").is_file()
 
 
 def test_proteinase_k_single_dataset_raises_error(proteinase_k, run_in_tmp_path):
@@ -394,6 +400,8 @@ def test_prot_k_multiwave_double(run_in_tmp_path, protk_experiments_and_reflecti
         "scaled.refl",
         "scaled_unmerged_WAVE1.mtz",
         "scaled_unmerged_WAVE2.mtz",
+        "scaled_unmerged_WAVE1.mmcif",
+        "scaled_unmerged_WAVE2.mmcif",
         "scaled_unmerged_WAVE1.sca",
         "scaled_unmerged_WAVE2.sca",
         "scaled_WAVE1.mtz",
@@ -409,6 +417,8 @@ def test_prot_k_multiwave_double(run_in_tmp_path, protk_experiments_and_reflecti
         "filtered.refl",
         "filtered_unmerged_WAVE1.mtz",
         "filtered_unmerged_WAVE2.mtz",
+        "filtered_unmerged_WAVE1.mmcif",
+        "filtered_unmerged_WAVE2.mmcif",
         "filtered_unmerged_WAVE1.sca",
         "filtered_unmerged_WAVE2.sca",
         "filtered_WAVE1.mtz",
