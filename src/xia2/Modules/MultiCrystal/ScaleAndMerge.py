@@ -1092,6 +1092,11 @@ class MultiCrystalScale:
             for data in radar_data:
                 data["r"][i] /= max_r
 
+        # if there is only one dataset (i.e. no clusters), don't
+        # plot the comparison plots in the report.
+        if len(self._comparison_graphs["cc_one_half"]["data"]) == 1:
+            self._comparison_graphs = {}
+
         self._mca.report(
             self._individual_report_dicts,
             self._comparison_graphs,
