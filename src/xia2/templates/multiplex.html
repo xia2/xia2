@@ -53,7 +53,9 @@
 
                 {{ macros.panel('Cosym plots', 'cosym_plots', cosym_graphs) }}
 
+                {% if comparison_graphs %}
                 {{ macros.panel('Cluster comparison', 'comparison_graphs', comparison_graphs) }}
+                {% endif %}
 
                 {{ macros.panel('Data sets', 'datasets', {}, tables=image_range_tables) }}
 
