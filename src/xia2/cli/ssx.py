@@ -30,6 +30,8 @@ from dials.util.options import ArgumentParser
 
 import xia2.Driver.timing
 import xia2.Handlers.Streams
+from xia2.Applications.xia2_main import write_citations
+from xia2.Handlers.Citations import Citations
 from xia2.Handlers.Files import cleanup
 from xia2.Modules.SSX.xia2_ssx import full_phil_str, run_xia2_ssx
 
@@ -42,6 +44,8 @@ def run(args=sys.argv[1:]):
     """
     Parse the command line input, setup logging and run the ssx processing script.
     """
+    Citations.cite("dials")
+    Citations.cite("xia2.ssx")
     parser = ArgumentParser(
         usage="xia2.ssx template=images_####.cbf unit_cell=x space_group=y",
         read_experiments=False,
@@ -82,3 +86,5 @@ def run(args=sys.argv[1:]):
             "Please send the contents of xia2.ssx.log and xia2-error.txt to xia2.support@gmail.com"
         )
         sys.exit(1)
+
+    write_citations(program="xia2.ssx")

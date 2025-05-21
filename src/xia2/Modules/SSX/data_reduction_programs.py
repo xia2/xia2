@@ -34,6 +34,7 @@ from dxtbx.serialize import load
 from iotbx.phil import parse
 
 from xia2.Driver.timing import record_step
+from xia2.Handlers.Citations import Citations
 from xia2.Handlers.Files import FileHandler
 from xia2.Modules.SSX.batch_cosym import BatchCosym
 from xia2.Modules.SSX.data_reduction_definitions import FilePair, ReductionParams
@@ -616,6 +617,7 @@ def scale_against_reference(
     reduction_params,
     name="",
 ) -> ProgramResult:
+    Citations.cite("dials.scale")
     logfile = f"dials.scale.{name}.log"
     with run_in_directory(working_directory), log_to_file(logfile) as dials_logger:
         # Setup scaling
@@ -654,6 +656,7 @@ def scale_parallel_batches(
     working_directory, batches: list[ProcessingBatch], reduction_params
 ) -> tuple[list[ProcessingBatch], list[float]]:
     # scale multiple batches in parallel
+    Citations.cite("dials.scale")
     scaled_results = [ProcessingBatch() for _ in range(len(batches))]
     d_mins = []
     batch_template = functools.partial(
@@ -705,6 +708,7 @@ def scale_on_batches(
     reduction_params: ReductionParams,
     name="",
 ) -> ProgramResult:
+    Citations.cite("dials.scale")
     logfile = "dials.scale.log"
     if name:
         logfile = f"dials.scale.{name}.log"
@@ -856,7 +860,8 @@ def individual_cosym(
     index: int,
     reduction_params,
 ) -> ProgramResult:
-    """Run  cosym an the expt and refl file."""
+    """Run cosym an the expt and refl file."""
+    Citations.cite("dials.cosym")
     logfile = f"dials.cosym.{index}.log"
     with (
         run_in_directory(working_directory),
@@ -904,6 +909,7 @@ def scale_reindex_single(
     batch_for_reindex: ProcessingBatch,
     reduction_params: ReductionParams,
 ) -> list[ProcessingBatch]:
+    Citations.cite("dials.scale")
     assert (
         reduction_params.reference
     )  # this should only be called if we have a reference
@@ -963,6 +969,7 @@ def cosym_reindex(
     reference_ksol=0.35,
     reference_bsol=46.0,
 ) -> list[ProcessingBatch]:
+    Citations.cite("dials.cosym")
     from dials.command_line.cosym import phil_scope as cosym_scope
 
     expts = []
@@ -1020,7 +1027,7 @@ def parallel_cosym(
     nproc: int = 1,
 ) -> list[ProcessingBatch]:
     """Run dials.cosym on each batch to resolve indexing ambiguities."""
-
+    Citations.cite("dials.cosym")
     if not Path.is_dir(working_directory):
         Path.mkdir(working_directory)
 
