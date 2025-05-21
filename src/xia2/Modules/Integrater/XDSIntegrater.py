@@ -518,7 +518,9 @@ class XDSIntegrater(Integrater):
             )
             if masker is not None:
                 integrate_filename = integrate_hkl_to_reflection_file(
-                    integrate_hkl, os.path.join(self.get_working_directory(), "XPARM.XDS"), self.get_working_directory()
+                    integrate_hkl,
+                    os.path.join(self.get_working_directory(), "XPARM.XDS"),
+                    self.get_working_directory(),
                 )
                 reflections = flex.reflection_table.from_file(integrate_filename)
 
@@ -913,9 +915,7 @@ class XDSIntegrater(Integrater):
         return self._intgr_experiments_filename
 
 
-def integrate_hkl_to_reflection_file(
-    integrate_hkl, xparm_xds, working_directory
-):
+def integrate_hkl_to_reflection_file(integrate_hkl, xparm_xds, working_directory):
     importer = ImportXDS()
     importer.set_working_directory(working_directory)
     auto_logfiler(importer)
