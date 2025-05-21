@@ -48,8 +48,9 @@ def ImportXDS(DriverType=None):
                     self.get_working_directory(), "%s_spot_xds.refl" % self.get_xpid()
                 )
                 self.add_command_line(self._spot_xds)
-                self.add_command_line("output.filename=%s" % self._reflection_filename)
-                self.add_command_line("method=reflections")
+                self.add_command_line(
+                    "output.reflections=%s" % self._reflection_filename
+                )
 
             elif self._integrate_hkl is not None:
                 self._reflection_filename = os.path.join(
@@ -59,8 +60,9 @@ def ImportXDS(DriverType=None):
                 assert self._experiments_json is not None
                 self.add_command_line(self._integrate_hkl)
                 self.add_command_line(self._experiments_json)
-                self.add_command_line("output.filename=%s" % self._reflection_filename)
-                self.add_command_line("method=reflections")
+                self.add_command_line(
+                    "output.reflections=%s" % self._reflection_filename
+                )
 
             elif self._xparm_xds is not None:
                 if self._experiments_json is None:
@@ -71,7 +73,9 @@ def ImportXDS(DriverType=None):
                 directory, xparm = os.path.split(self._xparm_xds)
                 self.add_command_line(directory)
                 self.add_command_line("xds_file=%s" % xparm)
-                self.add_command_line("output.filename=%s" % self._experiments_json)
+                self.add_command_line(
+                    "output.xds_experiments=%s" % self._experiments_json
+                )
 
             self.start()
             self.close_wait()
