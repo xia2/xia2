@@ -267,3 +267,34 @@ xia2.multiplex:
   software_name: xia2.multiplex
   software_type: program
   url: https://doi.org/10.1107/S2059798322004399
+
+xia2.ssx:
+- acta: Beilsten-Edmands, J. et al. (2024) Methods in enzymology 709, 207-244.
+  bibtex: |
+    @article{beilsten2024processing,
+    title="Processing serial synchrotron crystallography diffraction data with DIALS",
+    author="Beilsten-Edmands, James and Parkhurst, James M and Winter, Graeme and Evans, Gwyndaf",
+    journal="Methods in enzymology",
+    volume="709",
+    pages="207--244",
+    year="2024",
+    abstract={This chapter describes additions to the DIALS software package for
+    processing serial still-shot crystallographic data, and the implementation of
+    a pipeline, xia2.ssx, for processing and merging serial crystallography data
+    using DIALS programs. To integrate partial still-shot diffraction data, a 3D
+    gaussian profile model was developed that can describe anisotropic spot shapes.
+    This model is optimised by maximum likelihood methods using the pixel-intensity
+    distributions of strong diffraction spots, enabling simultaneous refinement of
+    the profile model and Ewald-sphere offsets. We demonstrate the processing of an
+    example SSX dataset where the improved partiality estimates lead to better model
+    statistics compared with post-refined isotropic models. We also demonstrate some
+    of the workflows available for merging SSX data, including processing time/dose
+    resolved data series, where data can be separated at the point of merging after
+    scaling and discuss the program outputs used to investigate the data throughout
+    the pipeline.},
+    }
+  software_classification: data processing
+  software_description: 'xia2.ssx: a serial crystallography data-analysis pipeline'
+  software_name: xia2.ssx
+  software_type: program
+  url: https://doi.org/10.1016/bs.mie.2024.10.004

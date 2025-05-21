@@ -25,6 +25,8 @@ import iotbx.phil
 from dials.util.options import ArgumentParser
 
 import xia2.Handlers.Streams
+from xia2.Applications.xia2_main import write_citations
+from xia2.Handlers.Citations import Citations
 from xia2.Handlers.Files import cleanup
 from xia2.Modules.SSX.xia2_ssx_reduce import full_phil_str, run_xia2_ssx_reduce
 
@@ -34,6 +36,8 @@ xia2_logger = logging.getLogger(__name__)
 
 
 def run(args=sys.argv[1:]):
+    Citations.cite("dials")
+    Citations.cite("xia2.ssx")
     parser = ArgumentParser(
         usage="xia2.ssx_reduce directory=/path/to/integrated/directory/",
         read_experiments=False,
@@ -88,3 +92,5 @@ def run(args=sys.argv[1:]):
             "Please send the contents of xia2.ssx_reduce.log and xia2-error.txt to xia2.support@gmail.com"
         )
         sys.exit(1)
+
+    write_citations(program="xia2.ssx")
