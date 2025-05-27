@@ -41,6 +41,7 @@ def XDSCorrect(DriverType=None, params=None):
                 from xia2.Handlers.Phil import master_phil
 
                 params = master_phil.extract().xds.correct
+
             self._params = params
 
             # now set myself up...
@@ -376,4 +377,4 @@ def XDSCorrect(DriverType=None, params=None):
 
             return
 
-    return XDSCorrectWrapper()
+    return XDSCorrectWrapper(params=params)
