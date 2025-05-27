@@ -31,9 +31,6 @@ def ImportXDS(DriverType=None):
         def set_xparm_xds(self, xparm_xds):
             self._xparm_xds = xparm_xds
 
-        def set_experiments_json(self, experiments_json):
-            self._experiments_json = experiments_json
-
         def get_reflection_filename(self):
             return self._reflection_filename
 
@@ -57,19 +54,27 @@ def ImportXDS(DriverType=None):
                     self.get_working_directory(),
                     "%s_integrate_hkl.refl" % self.get_xpid(),
                 )
-                assert self._experiments_json is not None
+                self._experiments_json = os.path.join(
+                    self.get_working_directory(),
+                    "%s_xparm_xds.expt" % self.get_xpid(),
+                )
                 self.add_command_line(self._integrate_hkl)
-                self.add_command_line(self._experiments_json)
+                if self._xparm_xds:
+                    # Create the models from the xparm rather than integrate.hkl.
+                    # This is how this has always been done, not clear if intentional or not.
+                    self.add_command_line(f"xds_file={self._xparm_xds}")
+                self.add_command_line(
+                    f"output.xds_experiments={self._experiments_json}"
+                )
                 self.add_command_line(
                     "output.reflections=%s" % self._reflection_filename
                 )
 
             elif self._xparm_xds is not None:
-                if self._experiments_json is None:
-                    self._experiments_json = os.path.join(
-                        self.get_working_directory(),
-                        "%s_xparm_xds.expt" % self.get_xpid(),
-                    )
+                self._experiments_json = os.path.join(
+                    self.get_working_directory(),
+                    "%s_xparm_xds.expt" % self.get_xpid(),
+                )
                 directory, xparm = os.path.split(self._xparm_xds)
                 self.add_command_line(directory)
                 self.add_command_line("xds_file=%s" % xparm)
