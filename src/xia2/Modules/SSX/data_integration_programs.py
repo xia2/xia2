@@ -53,6 +53,7 @@ class SpotfindingParams:
     min_spot_size: int = 2
     max_spot_size: int = 10
     d_min: float | None = None
+    d_max: float | None = None
     nproc: int = 1
     phil: Path | None = None
 
@@ -69,6 +70,7 @@ class SpotfindingParams:
             params.spotfinding.min_spot_size,
             params.spotfinding.max_spot_size,
             params.d_min,
+            params.d_max,
             params.multiprocessing.nproc,
             spotfinding_phil,
         )
@@ -133,6 +135,7 @@ class IntegrationParams:
     algorithm: str = "ellipsoid"
     rlp_mosaicity: str = "simple6"
     d_min: float | None = None
+    d_max: float | None = None
     nproc: int = 1
     phil: Path | None = None
     output_nuggets_dir: Path | None = None
@@ -150,6 +153,7 @@ class IntegrationParams:
             params.integration.algorithm,
             params.integration.ellipsoid.rlp_mosaicity,
             params.d_min,
+            params.d_max,
             params.multiprocessing.nproc,
             integration_phil,
         )
@@ -178,6 +182,8 @@ def ssx_find_spots(
         """
         if spotfinding_params.d_min:
             xia2_phil += f"\nspotfinder.filter.d_min = {spotfinding_params.d_min}"
+        if spotfinding_params.d_max:
+            xia2_phil += f"\nspotfinder.filter.d_max = {spotfinding_params.d_max}"
         if spotfinding_params.phil:
             itpr = find_spots_phil.command_line_argument_interpreter()
             try:
@@ -497,10 +503,15 @@ def ssx_integrate(
                 model = integration_params.rlp_mosaicity
                 xia2_phil += f"\nprofile.ellipsoid.rlp_mosaicity.model={model}"
             d_min = integration_params.d_min
+            d_max = integration_params.d_max
             if d_min:
                 xia2_phil += f"\nprediction.d_min={d_min}"
                 if integration_params.algorithm == "ellipsoid":
                     xia2_phil += f"\nprofile.ellipsoid.prediction.d_min={d_min}"
+            if d_max:
+                xia2_phil += f"\nprediction.d_max={d_max}"
+                if integration_params.algorithm == "ellipsoid":
+                    xia2_phil += f"\nprofile.ellipsoid.prediction.d_max={d_max}"
             if integration_params.output_nuggets_dir:
                 xia2_phil += f"\noutput.nuggets={os.fspath(integration_params.output_nuggets_dir)}"
 
