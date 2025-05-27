@@ -55,6 +55,7 @@ class ReductionParams:
     batch_size: int = 1000
     nproc: int = 1
     d_min: float | None = None
+    d_max: float | None = None
     anomalous: bool = False
     lattice_symmetry_max_delta: float = 0.5
     cluster_threshold: float = 1000.0
@@ -118,6 +119,7 @@ class ReductionParams:
             params.reduction_batch_size,
             params.multiprocessing.nproc,
             params.d_min,
+            params.d_max,
             params.scaling.anomalous,
             params.symmetry.lattice_symmetry_max_delta,
             params.clustering.threshold,
