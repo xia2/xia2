@@ -8,6 +8,7 @@ import subprocess
 
 import pytest
 from dials.algorithms.scaling.scaling_library import determine_best_unit_cell
+from dials.array_family import flex
 from dxtbx.serialize import load
 from iotbx import mtz
 
@@ -273,14 +274,17 @@ def test_slice_cbfs(dials_data, tmp_path, refined_expt):
 
 def test_full_run_without_reference(dials_data, tmp_path):
     ssx = dials_data("cunir_serial", pathlib=True)
+    d_min = 2.0
+    d_max = 15.0
     args = [
         shutil.which("xia2.ssx"),
         "unit_cell=96.4,96.4,96.4,90,90,90",
         "space_group=P213",
         "integration.algorithm=stills",
-        "d_min=2.0",
+        f"d_min={d_min}",
         "enable_live_reporting=True",
         "max_lattices=1",
+        f"d_max={d_max}",
     ]
     args.append("image=" + os.fspath(ssx / "merlin0047_1700*.cbf"))
 
@@ -321,7 +325,7 @@ def test_full_run_without_reference(dials_data, tmp_path):
     assert len(list((tmp_path / "batch_1/nuggets").glob("nugget_integrate*"))) == 5
 
     # Check that data reduction completed.
-    check_data_reduction_files(tmp_path)
+    check_data_reduction_files(tmp_path, d_min=d_min, d_max=d_max)
 
 
 def test_stepwise_run_without_reference(dials_data, tmp_path):
@@ -387,7 +391,9 @@ def test_stepwise_run_without_reference(dials_data, tmp_path):
     check_output(tmp_path, find_spots=True, index=True, integrate=True)
 
 
-def check_data_reduction_files(tmp_path, reindex=True, reference=False):
+def check_data_reduction_files(
+    tmp_path, reindex=True, reference=False, d_min=None, d_max=None
+):
     assert (tmp_path / "data_reduction").is_dir()
     assert reindex is (tmp_path / "data_reduction" / "reindex").is_dir()
     assert reindex is (tmp_path / "LogFiles" / "dials.cosym.0.log").is_file()
@@ -399,13 +405,22 @@ def check_data_reduction_files(tmp_path, reindex=True, reference=False):
     assert (tmp_path / "LogFiles" / "dials.merge.log").is_file()
     assert (tmp_path / "LogFiles" / "dials.merge.json").is_file()
     if reference:
-        assert (tmp_path / "DataFiles" / "scaled_batch1.refl").is_file()
+        scaled_refl = tmp_path / "DataFiles" / "scaled_batch1.refl"
+        assert scaled_refl.is_file()
         assert (tmp_path / "DataFiles" / "scaled_batch1.expt").is_file()
         assert (tmp_path / "LogFiles" / "dials.scale.scaled_batch1.log").is_file()
     else:
-        assert (tmp_path / "DataFiles" / "scaled.refl").is_file()
+        scaled_refl = tmp_path / "DataFiles" / "scaled.refl"
+        assert scaled_refl.is_file()
         assert (tmp_path / "DataFiles" / "scaled.expt").is_file()
         assert (tmp_path / "LogFiles" / "dials.scale.log").is_file()
+    if d_min or d_max:
+        refls = flex.reflection_table.from_file(scaled_refl)
+        refls = refls.select(refls.get_flags(refls.flags.scaled))
+        if d_max:
+            assert flex.max(refls["d"]) < d_max
+        if d_min:
+            assert flex.min(refls["d"]) > d_min
 
 
 def check_data_reduction_files_on_scaled_only(tmp_path, reference=False):

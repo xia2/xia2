@@ -57,7 +57,12 @@ batch_size = None
   .expert_level = 1
 d_min = None
   .type = float
+  .help = "The high resolution cutoff to apply (excludes d < d_min)"
   .expert_level = 1
+d_max = None
+  .type = float
+  .help = "The low resolution cutoff to apply (excludes d > d_max)"
+  .expert_level = 2
 dose_series_repeat = None
   .type = int(value_min=2)
   .expert_level = 2

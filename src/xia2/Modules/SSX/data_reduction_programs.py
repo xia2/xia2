@@ -493,6 +493,8 @@ def _extract_scaling_params(reduction_params):
     """
     if reduction_params.d_min:
         xia2_phil += f"\ncut_data.d_min={reduction_params.d_min}"
+    if reduction_params.d_max:
+        xia2_phil += f"\ncut_data.d_max={reduction_params.d_max}"
     if reduction_params.central_unit_cell:
         vals = ",".join(
             str(round(p, 4)) for p in reduction_params.central_unit_cell.parameters()
@@ -560,6 +562,8 @@ def _extract_scaling_params_for_scale_against_reference(reduction_params, name):
     """
     if reduction_params.d_min:
         xia2_phil += f"\ncut_data.d_min={reduction_params.d_min}"
+    if reduction_params.d_max:
+        xia2_phil += f"\ncut_data.d_max={reduction_params.d_max}"
     if reduction_params.central_unit_cell:
         vals = ",".join(
             str(round(p, 4)) for p in reduction_params.central_unit_cell.parameters()
