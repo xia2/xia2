@@ -56,6 +56,17 @@ class FileInput:
     starting_geometry: pathlib.Path | None = None
     import_phil: pathlib.Path | None = None
 
+    def resolve_paths(self):
+        for filetype in [self.images, self.templates]:
+            for i, obj in enumerate(filetype):
+                if len(obj.split(":")) > 2:
+                    # Do it like this to avoid issues when calling pathlib on strings with ':' in
+                    name = ":".join(obj.split(":")[:-2])
+                    splits = ":".join(obj.split(":")[-2:])
+                    filetype[i] = str(pathlib.Path(name).resolve()) + ":" + splits
+                else:
+                    filetype[i] = str(pathlib.Path(obj).resolve())
+
 
 @dataclass
 class AlgorithmParams:

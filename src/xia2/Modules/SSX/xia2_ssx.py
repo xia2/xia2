@@ -231,9 +231,9 @@ def run_xia2_ssx(
     # to have as strings from the start.
     file_input = FileInput()
     if params.image:
-        file_input.images = [str(pathlib.Path(i).resolve()) for i in params.image]
+        file_input.images = list(params.image)
     elif params.template:
-        file_input.templates = [str(pathlib.Path(i).resolve()) for i in params.template]
+        file_input.templates = list(params.template)
     elif params.directory:
         file_input.directories = [
             str(pathlib.Path(i).resolve()) for i in params.directory
@@ -242,6 +242,7 @@ def run_xia2_ssx(
         raise ValueError(
             "No input data identified (use image=, template= or directory=)"
         )
+    file_input.resolve_paths()
     if params.mask:
         mask_file = pathlib.Path(params.mask).resolve()
         if not mask_file.is_file():
