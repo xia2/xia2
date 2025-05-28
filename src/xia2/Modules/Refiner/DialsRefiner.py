@@ -144,14 +144,20 @@ class DialsRefiner(Refiner):
                 reflections = flex.reflection_table.from_file(
                     idxr.get_indexer_payload("indexed_filename")
                 )
-                sel = reflections["id"] == i
+                identifier = experiments.identifiers()[0]
+                id_ = None
+                for k, ident in dict(reflections.experiment_identifiers()).items():
+                    if ident == identifier:
+                        id_ = k
+                        break
+                assert id_
+                sel = reflections["id"] == id_
                 assert sel.count(True) > 0
-                imageset_id = reflections["imageset_id"].select(sel)
-                assert imageset_id.all_eq(imageset_id[0])
-                sel = reflections["imageset_id"] == imageset_id[0]
                 reflections = reflections.select(sel)
+                imageset_id = reflections["imageset_id"]
+                assert imageset_id.all_eq(imageset_id[0])
                 # set indexed reflections to id == 0 and imageset_id == 0
-                reflections["id"].set_selected(reflections["id"] == i, 0)
+                reflections["id"] = flex.int(len(reflections), 0)
                 reflections["imageset_id"] = flex.int(len(reflections), 0)
                 reflections.as_file(indexed_reflections)
 
@@ -225,7 +231,9 @@ class DialsRefiner(Refiner):
             self.set_refiner_payload("observations.refl", self._refinr_indexed_filename)
 
             # this is the result of the cell refinement
-            self._refinr_cell = experiments.crystals()[0].get_unit_cell().parameters()
+            self._refinr_cell = (
+                [c for c in experiments.crystals() if c][0].get_unit_cell().parameters()
+            )
 
     def _refine_finish(self):
         # For multiple-sweep joint refinement, because integraters are fairly rigidly
