@@ -474,13 +474,7 @@ def template_to_xds(template):
         # we don't know what is in the master file but we know at this point
         # that the word master is in there, so... otherwise can get complicated
         # side-effects when people have a folder named e.g. data_200.
-
-        if template.endswith("master.h5"):
-            return template.replace("master.h5", "??????.h5")
-        elif template.endswith(".nxs"):
-            return template.replace(".nxs", "_??????.h5")
-        else:
-            return template
+      return re.sub(r"_master\.h5$|\.nxs$", "_??????.h5", template)
 
     return template.replace("#", "?")
 
