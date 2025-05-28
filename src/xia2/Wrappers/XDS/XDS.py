@@ -474,7 +474,7 @@ def template_to_xds(template):
         # we don't know what is in the master file but we know at this point
         # that the word master is in there, so... otherwise can get complicated
         # side-effects when people have a folder named e.g. data_200.
-      return re.sub(r"_master\.h5$|\.nxs$", "_??????.h5", template)
+        return re.sub(r"_master\.h5$|\.nxs$", "_??????.h5", template)
 
     return template.replace("#", "?")
 
