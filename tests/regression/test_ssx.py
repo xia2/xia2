@@ -526,21 +526,21 @@ def test_reduce_h5(dials_data, tmp_path):
     """Test the data reduction on data from h5 format. Use as an opportunity to test
     groupings too for h5 data."""
     ssx = dials_data("dtpb_serial_processed", pathlib=True)
-    grouping_yml = """
+    grouping_yml = f"""
 metadata:
   well_id:
-    "/dls/mx/data/nt30330/nt30330-15/VMXi-AB1698/well_39/images/image_58763.nxs" : 39
-    "/dls/mx/data/nt30330/nt30330-15/VMXi-AB1698/well_42/images/image_58766.nxs" : 42
+    {os.fspath("/dls/mx/data/nt30330/nt30330-15/VMXi-AB1698/well_39/images/image_58763.nxs")} : 39
+    {os.fspath("/dls/mx/data/nt30330/nt30330-15/VMXi-AB1698/well_42/images/image_58766.nxs")} : 42
 grouping:
   merge_by:
     values:
       - well_id
 """
     files = [
-        ssx / "well39_batch12_integrated.expt",
-        ssx / "well39_batch12_integrated.refl",
-        ssx / "well42_batch6_integrated.expt",
-        ssx / "well42_batch6_integrated.refl",
+        os.fspath(ssx / "well39_batch12_integrated.expt"),
+        os.fspath(ssx / "well39_batch12_integrated.refl"),
+        os.fspath(ssx / "well42_batch6_integrated.expt"),
+        os.fspath(ssx / "well42_batch6_integrated.refl"),
     ]
     with open(tmp_path / "example.yaml", "w") as f:
         f.write(grouping_yml)
