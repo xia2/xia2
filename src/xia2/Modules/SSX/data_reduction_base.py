@@ -92,7 +92,10 @@ def inspect_files(
     new_data: list[FilePair] = []
     for refl_file, expt_file in zip(reflection_files, experiment_files):
         fp = FilePair(expt_file, refl_file)
-        fp.check()
+        try:
+            fp.check()
+        except FileNotFoundError:
+            continue
         if validate:
             try:
                 fp.validate()
