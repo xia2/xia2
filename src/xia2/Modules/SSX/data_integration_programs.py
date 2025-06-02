@@ -162,7 +162,7 @@ class IntegrationParams:
 def ssx_find_spots(
     working_directory: Path,
     spotfinding_params: SpotfindingParams,
-) -> flex.reflection_table:
+) -> flex.reflection_table | None:
     if not (working_directory / "imported.expt").is_file():
         raise ValueError(f"Data has not yet been imported into {working_directory}")
     xia2_logger.notice(banner("Spotfinding"))  # type: ignore
@@ -209,6 +209,11 @@ def ssx_find_spots(
         )
         # Do spot-finding
         reflections = flex.reflection_table.from_observations(imported_expts, params)
+        if not reflections:
+            out_ = "No spots found"
+            dials_logger.info(out_)
+            xia2_logger.info(out_)
+            return None
         good = MaskCode.Foreground | MaskCode.Valid
         reflections["n_signal"] = reflections["shoebox"].count_mask_values(good)
 
@@ -479,13 +484,17 @@ def run_refinement(
 def ssx_integrate(
     working_directory: Path, integration_params: IntegrationParams
 ) -> dict:
+    xia2_logger.notice(banner("Integrating"))  # type: ignore
+    summary_for_xia2: dict = {"DataFiles": {"tags": [], "filenames": []}}
+    n_refl, n_cryst = (0, 0)
     if not (
         (working_directory / "indexed.expt").is_file()
         and (working_directory / "indexed.refl").is_file()
     ):
-        raise ValueError(f"Unable to find indexing results in {working_directory}")
+        summary_for_xia2["n_cryst_integrated"] = n_cryst
+        summary_for_xia2["large_clusters"] = []
+        return summary_for_xia2
 
-    xia2_logger.notice(banner("Integrating"))  # type: ignore
     with run_in_directory(working_directory):
         logfile = "dials.ssx_integrate.log"
         with log_to_file(logfile) as dials_logger, record_step("dials.ssx_integrate"):
@@ -584,43 +593,44 @@ def ssx_integrate(
             # Record the datafiles so that the information can be passed
             # out in the case of processing on multiple nodes, as adding to
             # the FileHandler won't work here.
-            summary_for_xia2: dict = {"DataFiles": {"tags": [], "filenames": []}}
             integrated_crystal_symmetries = []
-            n_refl, n_cryst = (0, 0)
             for i, (int_expt, int_refl, aggregator) in enumerate(
                 run_integration(indexed_refl, indexed_expts, params)
             ):
                 reflections_filename = f"integrated_{i + 1}.refl"
                 experiments_filename = f"integrated_{i + 1}.expt"
                 n_refl += int_refl.size()
-                dials_logger.info(
-                    f"Saving {int_refl.size()} reflections to {reflections_filename}"
-                )
-                int_refl.as_file(reflections_filename)
-                n_cryst += len(int_expt)
-                dials_logger.info(f"Saving the experiments to {experiments_filename}")
-                int_expt.as_file(experiments_filename)
-                summary_for_xia2["DataFiles"]["tags"].append(
-                    f"integrated_{i + 1} {working_directory.name}"
-                )
-                summary_for_xia2["DataFiles"]["filenames"].append(
-                    working_directory / f"integrated_{i + 1}.refl"
-                )
-                summary_for_xia2["DataFiles"]["tags"].append(
-                    f"integrated_{i + 1} {working_directory.name}"
-                )
-                summary_for_xia2["DataFiles"]["filenames"].append(
-                    working_directory / f"integrated_{i + 1}.expt"
-                )
-                integrated_crystal_symmetries.extend(
-                    [
-                        crystal.symmetry(
-                            unit_cell=copy.deepcopy(cryst.get_unit_cell()),
-                            space_group=copy.deepcopy(cryst.get_space_group()),
-                        )
-                        for cryst in int_expt.crystals()
-                    ]
-                )
+                if int_refl:
+                    dials_logger.info(
+                        f"Saving {int_refl.size()} reflections to {reflections_filename}"
+                    )
+                    int_refl.as_file(reflections_filename)
+                    n_cryst += len(int_expt)
+                    dials_logger.info(
+                        f"Saving the experiments to {experiments_filename}"
+                    )
+                    int_expt.as_file(experiments_filename)
+                    summary_for_xia2["DataFiles"]["tags"].append(
+                        f"integrated_{i + 1} {working_directory.name}"
+                    )
+                    summary_for_xia2["DataFiles"]["filenames"].append(
+                        working_directory / f"integrated_{i + 1}.refl"
+                    )
+                    summary_for_xia2["DataFiles"]["tags"].append(
+                        f"integrated_{i + 1} {working_directory.name}"
+                    )
+                    summary_for_xia2["DataFiles"]["filenames"].append(
+                        working_directory / f"integrated_{i + 1}.expt"
+                    )
+                    integrated_crystal_symmetries.extend(
+                        [
+                            crystal.symmetry(
+                                unit_cell=copy.deepcopy(cryst.get_unit_cell()),
+                                space_group=copy.deepcopy(cryst.get_space_group()),
+                            )
+                            for cryst in int_expt.crystals()
+                        ]
+                    )
             xia2_logger.info(f"{n_refl} reflections integrated from {n_cryst} crystals")
 
             # Report on clustering, and generate html report and json output
