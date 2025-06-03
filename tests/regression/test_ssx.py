@@ -522,15 +522,19 @@ def test_ssx_reduce(dials_data, tmp_path, pdb_model, idx_ambiguity):
     check_data_reduction_files_on_scaled_only(tmp_path / "reduce", reference=pdb_model)
 
 
+@pytest.mark.xfail(
+    os.name == "nt",
+    reason="Failures due to translated paths; see https://github.com/cctbx/dxtbx/issues/613",
+)
 def test_reduce_h5(dials_data, tmp_path):
     """Test the data reduction on data from h5 format. Use as an opportunity to test
     groupings too for h5 data."""
     ssx = dials_data("dtpb_serial_processed", pathlib=True)
-    grouping_yml = f"""
+    grouping_yml = """
 metadata:
   well_id:
-    {os.fspath("/dls/mx/data/nt30330/nt30330-15/VMXi-AB1698/well_39/images/image_58763.nxs")} : 39
-    {os.fspath("/dls/mx/data/nt30330/nt30330-15/VMXi-AB1698/well_42/images/image_58766.nxs")} : 42
+    "/dls/mx/data/nt30330/nt30330-15/VMXi-AB1698/well_39/images/image_58763.nxs" : 39
+    "/dls/mx/data/nt30330/nt30330-15/VMXi-AB1698/well_42/images/image_58766.nxs" : 42
 grouping:
   merge_by:
     values:

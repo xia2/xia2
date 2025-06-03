@@ -17,7 +17,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [windows]
+        os: [ubuntu, macOS, windows]
     runs-on: ${{ matrix.os }}-latest
     steps:
     - name: Checkout Repository
@@ -67,5 +67,5 @@ jobs:
         verbose: true
         emoji: false
         job-summary: true
-        custom-arguments: modules/xia2 -v --regression --regression-full --timeout=5400
+        custom-arguments: modules/xia2 --regression --regression-full --timeout=5400
         click-to-expand: true
