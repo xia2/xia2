@@ -8,11 +8,13 @@ from collections import OrderedDict
 
 import iotbx.phil
 from cctbx import sgtbx, uctbx
+from dials.algorithms.correlation.cluster import ClusterInfo
 from dials.array_family import flex
 from dials.command_line.unit_cell_histogram import plot_uc_histograms
 from dials.util import tabulate
 from dials.util.export_mtz import match_wavelengths
 from dials.util.system import CPU_COUNT
+from dxtbx.model import ExperimentList
 from dxtbx.serialize import load
 from libtbx import Auto
 from scitbx.math import five_number_summary
@@ -22,7 +24,7 @@ from xia2.lib.bits import auto_logfiler
 from xia2.Modules import Report
 from xia2.Modules.MultiCrystal.cluster_analysis import get_subclusters
 from xia2.Modules.MultiCrystal.data_manager import DataManager
-from xia2.Modules.MultiCrystalAnalysis import MultiCrystalAnalysis
+from xia2.Modules.MultiCrystalAnalysis import MultiCrystalAnalysis, MultiCrystalReport
 from xia2.Modules.Scaler.DialsScaler import (
     convert_merged_mtz_to_sca,
     convert_unmerged_mtz_to_sca,
@@ -320,7 +322,12 @@ symmetry.cosym.best_monoclinic_beta = False
 
 
 class MultiCrystalScale:
-    def __init__(self, experiments, reflections, params):
+    def __init__(
+        self,
+        experiments: ExperimentList,
+        reflections: flex.reflection_table,
+        params: iotbx.phil.scope_extract,
+    ):
         self._data_manager = DataManager(experiments, reflections)
 
         self._params = params
@@ -381,13 +388,14 @@ class MultiCrystalScale:
             )
             self._data_manager.select(keep_expts)
 
+        self._individual_report_dicts: OrderedDict = OrderedDict()
+        self._comparison_graphs: OrderedDict = OrderedDict()
+
+    def run(self) -> None:
         self.unit_cell_clustering(plot_name="cluster_unit_cell_p1.png")
 
         if self._params.symmetry.resolve_indexing_ambiguity:
             self.cosym()
-
-        self._individual_report_dicts = OrderedDict()
-        self._comparison_graphs = OrderedDict()
 
         self._scaled = Scale(self._data_manager, self._params)
         self._experiments_filename = self._scaled._experiments_filename
@@ -398,7 +406,7 @@ class MultiCrystalScale:
         else:
             self.decide_space_group()
 
-        d_spacings = self._scaled.data_manager._reflections["d"]
+        d_spacings: flex.double = self._scaled.data_manager._reflections["d"]
         self._params.r_free_flags.d_min = flex.min(d_spacings.select(d_spacings > 0))
         self._params.r_free_flags.d_max = flex.max(d_spacings)
         self._data_manager.export_experiments("scaled.expt")
@@ -475,11 +483,9 @@ class MultiCrystalScale:
                 "scaled_unmerged.mmcif", d_min=self._scaled.d_min
             )
 
-        self._record_individual_report(
-            self._data_manager, self._scaled.report(), "All data"
-        )
+        self._record_individual_report(self._scaled.report(), "All data")
 
-        self._mca = self.multi_crystal_analysis()
+        self._mca: MultiCrystalReport = self.multi_crystal_analysis()
         self.cluster_analysis()
 
         # now do cluster identification as in xia2.cluster_analysis.
@@ -552,23 +558,25 @@ class MultiCrystalScale:
             self._params.clustering.output_clusters
             and "coordinate" in self._params.clustering.method
         ):
-            clusters = self._mca.significant_coordinate_clusters
+            significant_clusters: list[ClusterInfo] = (
+                self._mca.significant_coordinate_clusters
+            )
             count = 0
-            for c in clusters:
-                if c.completeness < params.clustering.min_completeness:
+            for s_c in significant_clusters:
+                if s_c.completeness < self._params.clustering.min_completeness:
                     continue
-                if c.multiplicity < params.clustering.min_multiplicity:
+                if s_c.multiplicity < self._params.clustering.min_multiplicity:
                     continue
-                if len(c.labels) < params.clustering.min_cluster_size:
+                if len(s_c.labels) < self._params.clustering.min_cluster_size:
                     continue
-                if count >= params.clustering.max_output_clusters:
+                if count >= self._params.clustering.max_output_clusters:
                     continue
-                if len(c.labels) == len(self._data_manager.experiments):
+                if len(s_c.labels) == len(self._data_manager.experiments):
                     continue
-                cluster_dir = f"coordinate_cluster_{c.cluster_id}"
+                cluster_dir = f"coordinate_cluster_{s_c.cluster_id}"
                 logger.info(f"Scaling: {cluster_dir}")
                 cluster_identifiers = [
-                    self._data_manager.ids_to_identifiers_map[l] for l in c.labels
+                    self._data_manager.ids_to_identifiers_map[l] for l in s_c.labels
                 ]
                 self._scale_and_report_cluster(
                     self._data_manager, cluster_dir, cluster_identifiers
@@ -642,7 +650,7 @@ class MultiCrystalScale:
 
             data_manager._set_batches()
 
-            self._record_individual_report(data_manager, scaled.report(), "Filtered")
+            self._record_individual_report(scaled.report(), "Filtered")
             data_manager.export_experiments("filtered.expt")
             data_manager.export_reflections("filtered.refl", d_min=scaled.d_min)
         else:
@@ -656,7 +664,7 @@ class MultiCrystalScale:
         identifiers,
         free_flags_in_full_set,
         output_name="scaled",
-    ):
+    ) -> Scale:
         data_manager = copy.deepcopy(data_manager_input)
         data_manager.select(identifiers)
 
@@ -721,20 +729,22 @@ class MultiCrystalScale:
 
         return scaled
 
-    def _scale_and_report_cluster(self, data_manager, cluster_dir, cluster_identifiers):
+    def _scale_and_report_cluster(
+        self, data_manager: DataManager, cluster_dir, cluster_identifiers
+    ):
         cwd = pathlib.Path.cwd()
         if not os.path.exists(cluster_dir):
             os.mkdir(cluster_dir)
         os.chdir(cluster_dir)
-        scaled = self.scale_cluster(
+        scaled: Scale = self.scale_cluster(
             data_manager, cluster_identifiers, True, f"{cluster_dir}_scaled"
         )
-        self._record_individual_report(
-            "", scaled.report(), cluster_dir.replace("_", " ")
-        )
+        self._record_individual_report(scaled.report(), cluster_dir.replace("_", " "))
         os.chdir(cwd)
 
-    def _record_individual_report(self, data_manager, report, cluster_name):
+    def _record_individual_report(
+        self, report: Report.Report, cluster_name: str
+    ) -> None:
         d = self._report_as_dict(report)
 
         self._individual_report_dicts[cluster_name] = self._individual_report_dict(
@@ -828,7 +838,7 @@ class MultiCrystalScale:
         )
 
     @staticmethod
-    def _report_as_dict(report):
+    def _report_as_dict(report: Report.Report) -> dict:
         (
             overall_stats_table,
             merging_stats_table,
@@ -878,7 +888,7 @@ class MultiCrystalScale:
         return d
 
     @staticmethod
-    def _individual_report_dict(report_d, cluster_name):
+    def _individual_report_dict(report_d: dict, cluster_name: str) -> dict:
         cluster_name = cluster_name.replace(" ", "_")
         d = {
             "merging_statistics_table": report_d["merging_statistics_table"],
@@ -931,7 +941,7 @@ class MultiCrystalScale:
         d["merging_stats_anom"] = report_d["merging_stats_anom"]
         return d
 
-    def unit_cell_clustering(self, plot_name=None):
+    def unit_cell_clustering(self, plot_name: str | None = None) -> None:
         lattice_ids = [
             self._data_manager.identifiers_to_ids_map[i]
             for i in self._data_manager.experiments.identifiers()
@@ -961,7 +971,7 @@ class MultiCrystalScale:
         else:
             logger.info("Using all data sets for subsequent analysis")
 
-    def unit_cell_histogram(self, plot_name=None):
+    def unit_cell_histogram(self, plot_name: str | None = None):
         uc_params = [flex.double() for i in range(6)]
         for expt in self._data_manager.experiments:
             uc = expt.crystal.get_unit_cell()
@@ -1102,9 +1112,7 @@ class MultiCrystalScale:
 
         logger.info("Space group determined by dials.symmetry: %s" % space_group.info())
 
-    def multi_crystal_analysis(self):
-        from xia2.Modules.MultiCrystalAnalysis import MultiCrystalReport
-
+    def multi_crystal_analysis(self) -> MultiCrystalReport:
         params = mca_phil.extract()
         params.prefix = "xia2.multiplex"
         params.title = "xia2.multiplex report"
@@ -1114,7 +1122,7 @@ class MultiCrystalScale:
         mca = MultiCrystalReport(params=params, data_manager=data_manager)
         return mca
 
-    def report(self):
+    def report(self) -> None:
         # Scale so that all the data are in the range 0->1
         radar_data = self._comparison_graphs["radar"]["data"]
         for i in range(len(radar_data[0]["r"])):
@@ -1125,7 +1133,7 @@ class MultiCrystalScale:
         # if there is only one dataset (i.e. no clusters), don't
         # plot the comparison plots in the report.
         if len(self._comparison_graphs["cc_one_half"]["data"]) == 1:
-            self._comparison_graphs = {}
+            self._comparison_graphs = OrderedDict()
 
         self._mca.report(
             self._individual_report_dicts,
@@ -1145,13 +1153,18 @@ class MultiCrystalScale:
 
 
 class Scale:
-    def __init__(self, data_manager, params, filtering=False):
+    def __init__(
+        self,
+        data_manager: DataManager,
+        params: iotbx.phil.scope_extract,
+        filtering=False,
+    ):
         self._data_manager = data_manager
         self._params = params
         self._filtering = filtering
 
-        self._experiments_filename = "models.expt"
-        self._reflections_filename = "observations.refl"
+        self._experiments_filename: str = "models.expt"
+        self._reflections_filename: str = "observations.refl"
         self._data_manager.export_experiments(self._experiments_filename)
         self._data_manager.export_reflections(self._reflections_filename)
 
@@ -1168,7 +1181,7 @@ class Scale:
             if self._params.rescale_after_resolution_cutoff:
                 self.scale(d_min=self.d_min, d_max=d_max)
 
-    def refine(self):
+    def refine(self) -> None:
         # refine in correct bravais setting
         self._experiments_filename, self._reflections_filename = self._dials_refine(
             self._experiments_filename, self._reflections_filename
@@ -1180,7 +1193,7 @@ class Scale:
             self._reflections_filename
         )
 
-    def two_theta_refine(self):
+    def two_theta_refine(self) -> None:
         # two-theta refinement to get best estimate of unit cell
         self._experiments_filename = self._dials_two_theta_refine(
             self._experiments_filename,
@@ -1192,11 +1205,11 @@ class Scale:
         )
 
     @property
-    def data_manager(self):
+    def data_manager(self) -> DataManager:
         return self._data_manager
 
     @staticmethod
-    def _dials_refine(experiments_filename, reflections_filename):
+    def _dials_refine(experiments_filename, reflections_filename) -> tuple[str, str]:
         refiner = Refine()
         auto_logfiler(refiner)
         refiner.set_experiments_filename(experiments_filename)
@@ -1210,7 +1223,7 @@ class Scale:
     @staticmethod
     def _dials_two_theta_refine(
         experiments_filename, reflections_filename, combine_crystal_models=True
-    ):
+    ) -> str:
         tt_refiner = TwoThetaRefine()
         auto_logfiler(tt_refiner)
         tt_refiner.set_experiments([experiments_filename])
@@ -1219,7 +1232,7 @@ class Scale:
         tt_refiner.run()
         return tt_refiner.get_output_experiments()
 
-    def scale(self, d_min=None, d_max=None):
+    def scale(self, d_min: float | None = None, d_max: float | None = None) -> None:
         logger.debug("Scaling with dials.scale")
         scaler = DialsScale()
         auto_logfiler(scaler)
@@ -1304,19 +1317,16 @@ class Scale:
         self._params.resolution.labels = "IPR,SIGIPR"
         if self._filtering:
             self.scale_and_filter_results = scaler.get_scale_and_filter_results()
-        return scaler
 
-    def estimate_resolution_limit(self):
+    def estimate_resolution_limit(self) -> tuple[float, str]:
         # see also xia2/Modules/Scaler/CommonScaler.py: CommonScaler._estimate_resolution_limit()
         params = self._params.resolution
         m = EstimateResolution()
         auto_logfiler(m)
         # use the scaled .refl and .expt file
-        if self._experiments_filename and self._reflections_filename:
-            m.set_reflections(self._reflections_filename)
-            m.set_experiments(self._experiments_filename)
-        else:
-            m.set_hklin(self._scaled_unmerged_mtz)
+        assert self._experiments_filename and self._reflections_filename
+        m.set_reflections(self._reflections_filename)
+        m.set_experiments(self._experiments_filename)
         m.set_limit_rmerge(params.rmerge)
         m.set_limit_completeness(params.completeness)
         m.set_limit_cc_half(params.cc_half)
@@ -1365,14 +1375,14 @@ class Scale:
                 for limit, reason in zip(resolution_limits, reasoning)
                 if limit is not None and limit >= resolution
             ]
-            reasoning = ", ".join(reasoning)
+            final_reasoning = ", ".join(reasoning)
         else:
             resolution = 0.0
-            reasoning = None
+            final_reasoning = ""
 
-        return resolution, reasoning
+        return resolution, final_reasoning
 
-    def report(self):
+    def report(self) -> Report.Report:
         params = Report.phil_scope.extract()
         params.dose.batch = []
         params.d_min = self.d_min

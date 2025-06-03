@@ -23,7 +23,7 @@ from dials.util.version import dials_version
 import xia2.Handlers.Streams
 from xia2.Applications.xia2_main import write_citations
 from xia2.Handlers.Citations import Citations
-from xia2.Modules.MultiCrystal import ScaleAndMerge
+from xia2.Modules.MultiCrystal.ScaleAndMerge import MultiCrystalScale
 
 logger = logging.getLogger("xia2.multiplex")
 
@@ -224,7 +224,8 @@ def run(args=sys.argv[1:]):
         )
 
     try:
-        ScaleAndMerge.MultiCrystalScale(experiments, reflections_all, params)
+        runner = MultiCrystalScale(experiments, reflections_all, params)
+        runner.run()
     except ValueError as e:
         sys.exit(str(e))
 

@@ -9,6 +9,7 @@ from itertools import combinations
 import pandas as pd
 from dials.algorithms.clustering.unit_cell import cluster_unit_cells
 from dials.algorithms.correlation.analysis import CorrelationMatrix
+from dials.algorithms.correlation.cluster import ClusterInfo
 from dials.algorithms.scaling.scale_and_filter import make_scaling_filtering_plots
 from dials.algorithms.symmetry.cosym import SymmetryAnalysis
 from dials.util import tabulate
@@ -149,7 +150,9 @@ class MultiCrystalAnalysis:
         self._cc_cluster_table = matrices.cc_table
         self._cos_angle_cluster_table = matrices.cos_table
         self._cosym_graphs = matrices.rij_graphs
-        self.significant_coordinate_clusters = matrices.significant_clusters
+        self.significant_coordinate_clusters: list[ClusterInfo] = (
+            matrices.significant_clusters
+        )
         self._pca_plot = matrices.pca_plot
 
         # Need this here or else cos-angle dendrogram does not replicate original multiplex output
