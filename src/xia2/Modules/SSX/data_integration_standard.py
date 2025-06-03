@@ -9,6 +9,7 @@ import pathlib
 import shutil
 import subprocess
 from dataclasses import asdict, dataclass, field
+from typing import Any
 
 import libtbx.easy_mp
 import numpy as np
@@ -94,7 +95,7 @@ def process_batch(
     """Run find_spots, index and integrate in the working directory."""
     number = working_directory.name.split("_")[-1]
     xia2_logger.notice(banner(f"Processing batch {number}"))  # type: ignore
-    data = {
+    data: dict[str, Any] = {
         "n_images_indexed": None,
         "n_cryst_integrated": None,
         "directory": working_directory,
@@ -108,6 +109,17 @@ def process_batch(
 
     if "find_spots" in options.steps:
         strong = ssx_find_spots(working_directory, spotfinding_params)
+        if not strong:  # No strong spots, rare but could happen (e.g. blank images)
+            # Make sure correct metadata returned to allow reporting for the batch
+            data["n_hits"] = 0
+            data["n_images_indexed"] = 0
+            if progress_reporter:
+                progress_reporter.add_find_spots_result(data)
+                if "index" in options.steps:
+                    progress_reporter.add_index_result(data)
+                if "integrate" in options.steps:
+                    progress_reporter.add_integration_result(data)
+            return data
         strong.as_file(working_directory / "strong.refl")
         n_hits = np.sum(
             np.bincount(flumpy.to_numpy(strong["id"])) >= indexing_params.min_spots
@@ -120,13 +132,20 @@ def process_batch(
     integration_summary: dict = {}
 
     if "index" in options.steps:
-        expt, refl, summary = ssx_index(working_directory, indexing_params)
-        large_clusters = summary["large_clusters"]
-        data["n_images_indexed"] = summary["n_images_indexed"]
+        if not (
+            working_directory / "strong.refl"
+        ).is_file():  # Could happen if running in stepwise mode.
+            expt, refl, large_clusters = (None, None, None)
+            data["n_hits"] = 0
+        else:
+            expt, refl, summary = ssx_index(working_directory, indexing_params)
+            large_clusters = summary["large_clusters"]
+            data["n_images_indexed"] = summary["n_images_indexed"]
         if "n_hits" not in data:  # e.g. if just doing indexing step
             data["n_hits"] = summary["n_hits"]
-        expt.as_file(working_directory / "indexed.expt")
-        refl.as_file(working_directory / "indexed.refl")
+        if refl and expt:  # Only save non-empty datastructures
+            expt.as_file(working_directory / "indexed.expt")
+            refl.as_file(working_directory / "indexed.refl")
         if large_clusters:
             xia2_logger.info(f"{condensed_unit_cell_info(large_clusters)}")
         if progress_reporter:
@@ -446,6 +465,9 @@ def assess_crystal_parameters_from_images(
 
     # now run find spots and index
     strong = ssx_find_spots(working_directory, spotfinding_params)
+    if not strong:  # No strong spots, rare but could happen (e.g. blank images)
+        xia2_logger.info("No spots found in selected image range.")
+        return
     strong.as_file(working_directory / "strong.refl")
 
     data = {
@@ -521,15 +543,26 @@ def cumulative_assess_crystal_parameters(
         except NoMoreImages:
             break
         strong = ssx_find_spots(working_directory, spotfinding_params)
-        strong.as_file(working_directory / "strong.refl")
-        data = {
-            "n_hits": np.sum(
-                np.bincount(flumpy.to_numpy(strong["id"])) >= indexing_params.min_spots
-            )
-        }
         # NB ideally count is formatted the same as batch numbering e.g 01 if >9 batches
         dir_placeholder = pathlib.Path(f"assess_batch_{count}")
-        data["directory"] = dir_placeholder
+        data: dict[str, Any] = {"directory": dir_placeholder}
+        if not strong:  # No strong spots, rare but could happen (e.g. blank images)
+            data["n_hits"] = 0
+            progress_reporter.setup_data["images_per_batch"][dir_placeholder] = len(
+                load.experiment_list(
+                    working_directory / "imported.expt", check_format=False
+                )
+            )
+            progress_reporter.add_find_spots_result(data)
+            data["n_images_indexed"] = 0
+            progress_reporter.add_index_result(data)
+            progress_reporter.summarise()
+            first_image += options.batch_size
+            continue
+        strong.as_file(working_directory / "strong.refl")
+        data["n_hits"] = np.sum(
+            np.bincount(flumpy.to_numpy(strong["id"])) >= indexing_params.min_spots
+        )
         progress_reporter.setup_data["images_per_batch"][dir_placeholder] = len(
             strong.experiment_identifiers()
         )
@@ -611,6 +644,11 @@ def determine_reference_geometry_from_images(
     progress_reporter = ProgressReport({"images_per_batch": {}})
 
     strong = ssx_find_spots(working_directory, spotfinding_params)
+    if not strong:  # No strong spots, rare but could happen (e.g. blank images)
+        xia2_logger.info("No spots found in selected image range.")
+        raise ValueError(
+            "No images successfully indexed, unable to run geometry refinement"
+        )
     strong.as_file(working_directory / "strong.refl")
     data = {
         "n_hits": np.sum(
@@ -707,14 +745,26 @@ def cumulative_determine_reference_geometry(
         except NoMoreImages:
             break
         strong = ssx_find_spots(working_directory, spotfinding_params)
-        strong.as_file(working_directory / "strong.refl")
-        data = {
-            "n_hits": np.sum(
-                np.bincount(flumpy.to_numpy(strong["id"])) >= indexing_params.min_spots
-            )
-        }
         # NB ideally count is formatted the same as batch numbering e.g 01 if >9 batches
         dir_placeholder = pathlib.Path(f"refinement_batch_{count}")
+        data: dict[str, Any] = {"directory": dir_placeholder}
+        if not strong:  # No strong spots, rare but could happen (e.g. blank images)
+            data["n_hits"] = 0
+            progress_reporter.setup_data["images_per_batch"][dir_placeholder] = len(
+                load.experiment_list(
+                    working_directory / "imported.expt", check_format=False
+                )
+            )
+            progress_reporter.add_find_spots_result(data)
+            data["n_images_indexed"] = 0
+            progress_reporter.add_index_result(data)
+            progress_reporter.summarise()
+            first_image += options.batch_size
+            continue
+        strong.as_file(working_directory / "strong.refl")
+        data["n_hits"] = np.sum(
+            np.bincount(flumpy.to_numpy(strong["id"])) >= indexing_params.min_spots
+        )
         data["directory"] = dir_placeholder
         progress_reporter.setup_data["images_per_batch"][dir_placeholder] = len(
             strong.experiment_identifiers()
