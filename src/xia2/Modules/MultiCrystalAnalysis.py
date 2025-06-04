@@ -228,16 +228,15 @@ class MultiCrystalAnalysis:
     def delta_cc_half_analysis(
         self,
     ) -> tuple[dict[str, dict[str, Any]], list[list[str]]]:
-        # params.stdcutoff=100000 # we just want the analysis, not applying dont filter
         runner = CCHalfFromDials(
             cchalf_phil_scope.extract(),
             self._data_manager.experiments,
             self._data_manager.reflections,
         )
-        runner.algorithm.run()
+        runner.algorithm.run()  # Runs the analysis but not any filtering
         table = runner.get_table(html=True)
-        # calc the normalised delta ccs
         d = {}
+        # Calculate normalised values for generating the plots.
         delta_cc_half = flex.double(list(runner.algorithm.cchalf_i.values()))
         mav = flex.mean_and_variance(delta_cc_half)
         normalised = (
@@ -404,7 +403,7 @@ class MultiCrystalReport(MultiCrystalAnalysis):
         )
 
         delta_cc_half_graphs, delta_cc_half_table = self.delta_cc_half_analysis()
-        print(delta_cc_half_table)
+
         if scale_and_filter_results:
             filter_plots = self.make_scale_and_filter_plots(
                 scale_and_filter_results, scale_and_filter_mode
@@ -451,7 +450,6 @@ any systematic grouping of points may suggest a preferential crystal orientation
             [PackageLoader("xia2", "templates"), PackageLoader("dials", "templates")]
         )
         env = Environment(loader=loader)
-        print(self._cc_cluster_table)
         template = env.get_template("multiplex.html")
         html = template.render(
             page_title=self.params.title,
