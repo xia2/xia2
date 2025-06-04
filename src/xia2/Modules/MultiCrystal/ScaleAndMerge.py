@@ -9,6 +9,7 @@ from collections import OrderedDict
 import iotbx.phil
 from cctbx import sgtbx, uctbx
 from dials.algorithms.correlation.cluster import ClusterInfo
+from dials.algorithms.scaling import scale_and_filter
 from dials.array_family import flex
 from dials.command_line.unit_cell_histogram import plot_uc_histograms
 from dials.util import tabulate
@@ -390,6 +391,7 @@ class MultiCrystalScale:
 
         self._individual_report_dicts: OrderedDict = OrderedDict()
         self._comparison_graphs: OrderedDict = OrderedDict()
+        self.scale_and_filter_results: scale_and_filter.AnalysisResults | None = None
 
     def run(self) -> None:
         self.unit_cell_clustering(plot_name="cluster_unit_cell_p1.png")
@@ -453,7 +455,8 @@ class MultiCrystalScale:
                     d_min=self._scaled.d_min,
                     wavelength_tolerance=self._params.wavelength_tolerance,
                 )
-                convert_unmerged_mtz_to_sca(name)
+                if name:
+                    convert_unmerged_mtz_to_sca(name)
 
                 # unmerged mmcif for multiple wavelength
                 self._data_manager.export_unmerged_wave_mmcif(
@@ -653,17 +656,15 @@ class MultiCrystalScale:
             self._record_individual_report(scaled.report(), "Filtered")
             data_manager.export_experiments("filtered.expt")
             data_manager.export_reflections("filtered.refl", d_min=scaled.d_min)
-        else:
-            self.scale_and_filter_results = None
 
         self.report()
 
     def scale_cluster(
         self,
-        data_manager_input,
-        identifiers,
-        free_flags_in_full_set,
-        output_name="scaled",
+        data_manager_input: DataManager,
+        identifiers: list[str],
+        free_flags_in_full_set: bool,
+        output_name: str = "scaled",
     ) -> Scale:
         data_manager = copy.deepcopy(data_manager_input)
         data_manager.select(identifiers)
@@ -730,8 +731,11 @@ class MultiCrystalScale:
         return scaled
 
     def _scale_and_report_cluster(
-        self, data_manager: DataManager, cluster_dir, cluster_identifiers
-    ):
+        self,
+        data_manager: DataManager,
+        cluster_dir: str,
+        cluster_identifiers: list[str],
+    ) -> None:
         cwd = pathlib.Path.cwd()
         if not os.path.exists(cluster_dir):
             os.mkdir(cluster_dir)
@@ -954,24 +958,27 @@ class MultiCrystalScale:
             log=self._params.unit_cell_clustering.log,
             plot_name=plot_name,
         )
-        logger.info(clustering)
-        largest_cluster = sorted(clustering.clusters, key=len)[-1]
+        if clustering:
+            logger.info(clustering)
+            largest_cluster = sorted(clustering.clusters, key=len)[-1]
 
-        if len(largest_cluster) < len(self._data_manager.experiments):
-            logger.info(
-                "Selecting subset of data sets for subsequent analysis: %s"
-                % str(largest_cluster.lattice_ids)
-            )
-            cluster_identifiers = [
-                self._data_manager.ids_to_identifiers_map[l]
-                for l in largest_cluster.lattice_ids
-            ]
-            self._data_manager.select(cluster_identifiers)
-            self._data_manager._set_batches()
+            if len(largest_cluster) < len(self._data_manager.experiments):
+                logger.info(
+                    "Selecting subset of data sets for subsequent analysis: %s"
+                    % str(largest_cluster.lattice_ids)
+                )
+                cluster_identifiers = [
+                    self._data_manager.ids_to_identifiers_map[l]
+                    for l in largest_cluster.lattice_ids
+                ]
+                self._data_manager.select(cluster_identifiers)
+                self._data_manager._set_batches()
+            else:
+                logger.info("Using all data sets for subsequent analysis")
         else:
-            logger.info("Using all data sets for subsequent analysis")
+            logger.info("Clustering unsuccessful")
 
-    def unit_cell_histogram(self, plot_name: str | None = None):
+    def unit_cell_histogram(self, plot_name: str | None = None) -> None:
         uc_params = [flex.double() for i in range(6)]
         for expt in self._data_manager.experiments:
             uc = expt.crystal.get_unit_cell()
@@ -995,7 +1002,7 @@ class MultiCrystalScale:
 
         plot_uc_histograms(uc_params, outliers)
 
-    def cosym(self):
+    def cosym(self) -> None:
         logger.debug("Running cosym analysis")
         experiments_filename = self._data_manager.export_experiments("tmp.expt")
         reflections_filename = self._data_manager.export_reflections("tmp.refl")
@@ -1019,7 +1026,7 @@ class MultiCrystalScale:
             self._params.symmetry.cosym.lattice_symmetry_max_delta
         )
         cosym.run()
-        self._cosym_analysis = cosym.get_cosym_analysis()
+        self._cosym_analysis: dict = cosym.get_cosym_analysis()
         self._experiments_filename = cosym.get_reindexed_experiments()
         self._reflections_filename = cosym.get_reindexed_reflections()
         self._data_manager.experiments = load.experiment_list(
@@ -1042,7 +1049,7 @@ class MultiCrystalScale:
                 "Laue group determined by dials.cosym: %s" % best_space_group.info()
             )
 
-    def reindex(self):
+    def reindex(self) -> None:
         logger.debug("Running reindexing")
         logger.info("Re-indexing to reference")
         reindex = Reindex()
@@ -1063,7 +1070,7 @@ class MultiCrystalScale:
             self._reflections_filename
         )
 
-    def decide_space_group(self):
+    def decide_space_group(self) -> None:
         if self._params.symmetry.space_group is not None:
             # reindex to correct bravais setting
             cb_op = sgtbx.change_of_basis_op()
@@ -1146,7 +1153,7 @@ class MultiCrystalScale:
             scale_and_filter_mode=self._params.filtering.deltacchalf.mode,
         )
 
-    def cluster_analysis(self):
+    def cluster_analysis(self) -> None:
         self._mca.cluster_analysis()
         self._cos_angle_clusters = self._mca.cos_clusters
         self._cc_clusters = self._mca.cc_clusters
@@ -1157,7 +1164,7 @@ class Scale:
         self,
         data_manager: DataManager,
         params: iotbx.phil.scope_extract,
-        filtering=False,
+        filtering: bool = False,
     ):
         self._data_manager = data_manager
         self._params = params
@@ -1209,7 +1216,9 @@ class Scale:
         return self._data_manager
 
     @staticmethod
-    def _dials_refine(experiments_filename, reflections_filename) -> tuple[str, str]:
+    def _dials_refine(
+        experiments_filename: str, reflections_filename: str
+    ) -> tuple[str, str]:
         refiner = Refine()
         auto_logfiler(refiner)
         refiner.set_experiments_filename(experiments_filename)
@@ -1222,7 +1231,9 @@ class Scale:
 
     @staticmethod
     def _dials_two_theta_refine(
-        experiments_filename, reflections_filename, combine_crystal_models=True
+        experiments_filename: str,
+        reflections_filename: str,
+        combine_crystal_models: bool = True,
     ) -> str:
         tt_refiner = TwoThetaRefine()
         auto_logfiler(tt_refiner)

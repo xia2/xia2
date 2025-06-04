@@ -6,15 +6,21 @@ import logging
 from collections import OrderedDict
 from itertools import combinations
 
+import iotbx.phil
 import pandas as pd
-from dials.algorithms.clustering.unit_cell import cluster_unit_cells
+from dials.algorithms.clustering.unit_cell import ClusteringResult, cluster_unit_cells
 from dials.algorithms.correlation.analysis import CorrelationMatrix
 from dials.algorithms.correlation.cluster import ClusterInfo
-from dials.algorithms.scaling.scale_and_filter import make_scaling_filtering_plots
+from dials.algorithms.scaling.scale_and_filter import (
+    AnalysisResults,
+    make_scaling_filtering_plots,
+)
 from dials.algorithms.symmetry.cosym import SymmetryAnalysis
+from dials.array_family import flex
 from dials.util import tabulate
 from dials.util.filter_reflections import filtered_arrays_from_experiments_reflections
 from dials.util.multi_dataset_handling import parse_multiple_datasets
+from dxtbx.model import ExperimentList
 from libtbx import phil
 
 from xia2.Modules.Analysis import batch_phil_scope
@@ -26,9 +32,15 @@ logger = logging.getLogger(__name__)
 
 
 class MultiCrystalAnalysis:
-    def __init__(self, params, experiments=None, reflections=None, data_manager=None):
+    def __init__(
+        self,
+        params: iotbx.phil.scope_extract,
+        experiments: ExperimentList | None = None,
+        reflections: flex.reflection_table | None = None,
+        data_manager: DataManager | None = None,
+    ):
         self.params = params
-        self._cluster_analysis = None
+        self._cluster_analysis_run: bool = False
         if data_manager is not None:
             self._data_manager = data_manager
         else:
@@ -54,7 +66,9 @@ class MultiCrystalAnalysis:
         self.intensities.set_observation_type_xray_intensity()
 
     @staticmethod
-    def stereographic_projections(experiments_filename, labels=None):
+    def stereographic_projections(
+        experiments_filename: str, labels: list[int] | None = None
+    ) -> dict[tuple[int, int, int], str]:
         from xia2.Wrappers.Dials.StereographicProjection import StereographicProjection
 
         sp_json_files = {}
@@ -70,8 +84,12 @@ class MultiCrystalAnalysis:
 
     @staticmethod
     def unit_cell_clustering(
-        experiments, lattice_ids, threshold, log=True, plot_name=None
-    ):
+        experiments: ExperimentList,
+        lattice_ids: list[int],
+        threshold: float,
+        log: bool = True,
+        plot_name: str | None = None,
+    ) -> ClusteringResult | None:
         crystal_symmetries = []
         for expt in experiments:
             crystal_symmetry = expt.crystal.get_crystal_symmetry(
@@ -90,7 +108,7 @@ class MultiCrystalAnalysis:
         else:
             ax = None
 
-        clustering = cluster_unit_cells(
+        clustering: ClusteringResult | None = cluster_unit_cells(
             crystal_symmetries,
             lattice_ids=lattice_ids,
             threshold=threshold,
@@ -105,7 +123,7 @@ class MultiCrystalAnalysis:
 
         return clustering
 
-    def cluster_analysis(self):
+    def cluster_analysis(self) -> None:
         reflections = []
         identifiers = []
         filtered_ids_to_identifiers_map = copy.deepcopy(
@@ -156,9 +174,9 @@ class MultiCrystalAnalysis:
         self._pca_plot = matrices.pca_plot
 
         # Need this here or else cos-angle dendrogram does not replicate original multiplex output
-        self._cluster_analysis = True
+        self._cluster_analysis_run = True
 
-    def unit_cell_analysis(self):
+    def unit_cell_analysis(self) -> OrderedDict:
         from dials.command_line.unit_cell_histogram import uc_params_from_experiments
 
         # from dials.command_line.unit_cell_histogram import panel_distances_from_experiments
@@ -186,25 +204,27 @@ class MultiCrystalAnalysis:
         )
         from dials.algorithms.clustering.plots import scipy_dendrogram_to_plotly_json
 
-        d["uc_clustering"] = scipy_dendrogram_to_plotly_json(
-            clustering.dendrogram,
-            title="Unit cell clustering",
-            xtitle="Dataset",
-            ytitle="Distance (Å<sup>2</sup>)",
-            help="""\
-The results of single-linkage hierarchical clustering on the unit cell parameters using
-the Andrews–Bernstein NCDist distance metric (Andrews & Bernstein, 2014). The height at
-which two clusters are merged in the dendrogram is a measure of the similarity between
-the unit cells in each cluster. A larger separation between two clusters may be
-indicative of a higher degree of non-isomorphism between the clusters. Conversely, a
-small separation between two clusters suggests that their unit cell parameters are
-relatively isomorphous.
-""",
-        )
-
+        if clustering:
+            d["uc_clustering"] = scipy_dendrogram_to_plotly_json(
+                clustering.dendrogram,
+                title="Unit cell clustering",
+                xtitle="Dataset",
+                ytitle="Distance (Å<sup>2</sup>)",
+                help="""\
+    The results of single-linkage hierarchical clustering on the unit cell parameters using
+    the Andrews–Bernstein NCDist distance metric (Andrews & Bernstein, 2014). The height at
+    which two clusters are merged in the dendrogram is a measure of the similarity between
+    the unit cells in each cluster. A larger separation between two clusters may be
+    indicative of a higher degree of non-isomorphism between the clusters. Conversely, a
+    small separation between two clusters suggests that their unit cell parameters are
+    relatively isomorphous.
+    """,
+            )
+        else:
+            d["uc_clustering"] = {}
         return d
 
-    def delta_cc_half_analysis(self):
+    def delta_cc_half_analysis(self) -> tuple[dict, list[list[str]]]:
         # transform models into miller arrays
         intensities, batches = filtered_arrays_from_experiments_reflections(
             self._data_manager.experiments,
@@ -220,7 +240,9 @@ relatively isomorphous.
         return d, result.get_table(html=True)
 
     @staticmethod
-    def interesting_cluster_identification(clusters, params):
+    def interesting_cluster_identification(
+        clusters: list[ClusterInfo], params: iotbx.phil.scope_extract
+    ) -> tuple[list[str], list[ClusterInfo]]:
         cluster_numbers = []
         heights = []
         labels = []
@@ -322,7 +344,7 @@ relatively isomorphous.
             clusters_for_analysis = []
             final_clusters_to_compare = []
 
-        file_data = [
+        file_data: list[str] = [
             "Compare each pair of clusters below",
             "They have no datasets in common",
         ]
@@ -352,17 +374,18 @@ relatively isomorphous.
 class MultiCrystalReport(MultiCrystalAnalysis):
     def report(
         self,
-        individual_dataset_reports,
-        comparison_graphs,
-        cosym_analysis,
-        image_range_table,
-        scale_and_filter_results=None,
-        scale_and_filter_mode=None,
-    ):
+        individual_dataset_reports: OrderedDict,
+        comparison_graphs: OrderedDict,
+        cosym_analysis: dict,
+        image_range_table: list[list[str]],
+        scale_and_filter_results: AnalysisResults | None = None,
+        scale_and_filter_mode: str | None = None,
+    ) -> None:
         self._data_manager.export_experiments("tmp.expt")
         unit_cell_graphs = self.unit_cell_analysis()
-        if self._cluster_analysis is None:
-            self._cluster_analysis = self.cluster_analysis()
+
+        if not self._cluster_analysis_run:
+            self.cluster_analysis()
 
         labels = [
             self._data_manager.identifiers_to_ids_map[i]
@@ -447,7 +470,7 @@ any systematic grouping of points may suggest a preferential crystal orientation
             xia2_version=Version,
         )
 
-        json_data = {}
+        json_data: dict = {}
         json_data.update(unit_cell_graphs)
         json_data.update(cosym_analysis["cosym_graphs"])
         json_data["cc_clustering"] = self._cc_cluster_json
@@ -479,7 +502,9 @@ any systematic grouping of points may suggest a preferential crystal orientation
         with open("%s.html" % self.params.prefix, "wb") as f:
             f.write(html.encode("utf-8", "xmlcharrefreplace"))
 
-    def make_scale_and_filter_plots(self, filtering_results, mode):
+    def make_scale_and_filter_plots(
+        self, filtering_results: AnalysisResults, mode: str | None
+    ) -> dict[str, dict]:
         data = {
             "merging_stats": filtering_results.get_merging_stats(),
             "initial_expids_and_image_ranges": filtering_results.initial_expids_and_image_ranges,

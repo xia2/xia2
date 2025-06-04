@@ -4,7 +4,8 @@ import copy
 import logging
 import math
 
-from cctbx import miller
+import iotbx.phil
+from cctbx import miller, sgtbx
 from dials.array_family import flex
 from dials.command_line import export, merge
 from dials.command_line.slice_sequence import slice_experiments, slice_reflections
@@ -13,13 +14,14 @@ from dials.util.batch_handling import (
     assign_batches_to_reflections,
     calculate_batch_offsets,
 )
+from dials.util.export_mtz import WavelengthGroup, match_wavelengths
 from dxtbx.model import ExperimentList
 
 logger = logging.getLogger(__name__)
 
 
 class DataManager:
-    def __init__(self, experiments, reflections):
+    def __init__(self, experiments: ExperimentList, reflections: flex.reflection_table):
         self._input_experiments = experiments
         self._input_reflections = reflections
 
@@ -29,8 +31,10 @@ class DataManager:
         self.identifiers_to_ids_map = {
             value: key for key, value in self.ids_to_identifiers_map.items()
         }
-        self.wavelengths = {}  # map of wl to wavelength group.
-        self.batch_offset_list = []
+        self.wavelengths: dict[
+            float, WavelengthGroup
+        ] = {}  # map of wl to wavelength group.
+        self.batch_offset_list: list[int] = []
 
         if all(e.scan is None for e in self._experiments):
             self.all_stills = True
@@ -43,29 +47,29 @@ class DataManager:
 
         self._set_batches()
 
-    def _set_batches(self):
+    def _set_batches(self) -> None:
         if not self.all_stills:
             self.batch_offset_list = calculate_batch_offsets(self._experiments)
         else:
             self.batch_offset_list = list(range(len(self._experiments)))
 
     @property
-    def experiments(self):
+    def experiments(self) -> ExperimentList:
         return self._experiments
 
     @experiments.setter
-    def experiments(self, experiments):
+    def experiments(self, experiments) -> None:
         self._experiments = experiments
 
     @property
-    def reflections(self):
+    def reflections(self) -> flex.reflection_table:
         return self._reflections
 
     @reflections.setter
-    def reflections(self, reflections):
+    def reflections(self, reflections) -> None:
         self._reflections = reflections
 
-    def select(self, experiment_identifiers):
+    def select(self, experiment_identifiers: list[str]) -> None:
         self.batch_offset_list = [
             i
             for (i, expt) in zip(self.batch_offset_list, self._experiments)
@@ -84,7 +88,7 @@ class DataManager:
         self.reflections.reset_ids()
         self.reflections.assert_experiment_identifiers_are_consistent(self.experiments)
 
-    def filter_dose(self, dose_min, dose_max):
+    def filter_dose(self, dose_min: float, dose_max: float) -> None:
         keep_expts = []
         for i, expt in enumerate(self._experiments):
             start, end = expt.scan.get_image_range()
@@ -117,7 +121,7 @@ class DataManager:
             % (self._reflections.size(), n_refl_before)
         )
 
-    def reflections_as_miller_arrays(self, combined=False):
+    def reflections_as_miller_arrays(self, combined: bool = False):
         reflection_tables = []
         for id_ in set(self._reflections["id"]).difference({-1}):
             reflection_tables.append(
@@ -159,7 +163,11 @@ class DataManager:
                 scale_arrays.append(miller.array(scaled_arrays[-1], data=scales))
             return scaled_arrays, batch_arrays, scale_arrays
 
-    def reindex(self, cb_op, space_group=None):
+    def reindex(
+        self,
+        cb_op: sgtbx.change_of_basis_op,
+        space_group: sgtbx.space_group | None = None,
+    ) -> None:
         logger.info("Reindexing: %s" % cb_op)
         self._reflections["miller_index"] = cb_op.apply(
             self._reflections["miller_index"]
@@ -171,15 +179,15 @@ class DataManager:
                 cryst_reindexed.set_space_group(space_group)
             expt.crystal.update(cryst_reindexed)
 
-    def split_by_wavelength(self, wavelength_tolerance):
-        from dials.util.export_mtz import match_wavelengths
-
+    def split_by_wavelength(self, wavelength_tolerance: float) -> None:
         if (
             not self.wavelengths
         ):  # don't want this to update after filtering/clustering etc
             self.wavelengths = match_wavelengths(self.experiments, wavelength_tolerance)
 
-        self.data_split_by_wl = {}  # do want to update this based on current data
+        self.data_split_by_wl: dict[
+            float, dict
+        ] = {}  # do want to update this based on current data
 
         for wl in sorted(self.wavelengths.keys()):
             new_exps = copy.deepcopy(self.experiments)
@@ -189,7 +197,9 @@ class DataManager:
             )
             self.data_split_by_wl[wl] = {"expt": new_exps, "refl": new_refls}
 
-    def export_unmerged_wave_mtz(self, wl, prefix, d_min, wavelength_tolerance):
+    def export_unmerged_wave_mtz(
+        self, wl: float, prefix: str, d_min: float, wavelength_tolerance: float
+    ) -> str | None:
         data = self.data_split_by_wl[wl]
         nn = len(self.wavelengths)
         fmt = "%%0%dd" % (math.log10(nn) + 1)
@@ -200,12 +210,12 @@ class DataManager:
         params.mtz.wavelength_tolerance = wavelength_tolerance
         expt_to_export = copy.deepcopy(data["expt"])
         params.intensity = ["scale"]
-        if data["expt"]:
+        if data["expt"]:  # When is this not the case?
             export.export_mtz(params, expt_to_export, [data["refl"]])
             return params.mtz.hklout
         return None
 
-    def export_unmerged_wave_mmcif(self, wl, prefix, d_min):
+    def export_unmerged_wave_mmcif(self, wl: float, prefix: str, d_min: float) -> None:
         data = self.data_split_by_wl[wl]
         nn = len(self.wavelengths)
         fmt = "%%0%dd" % (math.log10(nn) + 1)
@@ -219,7 +229,12 @@ class DataManager:
             export.export_mmcif(params, expt_to_export, [data["refl"]])
 
     def export_merged_wave_mtz(
-        self, wl, prefix, d_min=None, r_free_params=None, wavelength_tolerance=None
+        self,
+        wl: float,
+        prefix: str,
+        d_min: float | None = None,
+        r_free_params: iotbx.phil.scope_extract | None = None,
+        wavelength_tolerance: float | None = None,
     ):
         data = self.data_split_by_wl[wl]
         nn = len(self.wavelengths)
@@ -239,18 +254,23 @@ class DataManager:
             return filename
         return None
 
-    def export_reflections(self, filename, d_min=None):
+    def export_reflections(self, filename: str, d_min: float | None = None) -> str:
         reflections = self._reflections
         if d_min:
             reflections = reflections.select(reflections["d"] >= d_min)
         reflections.as_file(filename)
         return filename
 
-    def export_experiments(self, filename):
+    def export_experiments(self, filename: str) -> str:
         self._experiments.as_file(filename)
         return filename
 
-    def export_unmerged_mtz(self, filename, d_min=None, wavelength_tolerance=0.0001):
+    def export_unmerged_mtz(
+        self,
+        filename: str,
+        d_min: float | None = None,
+        wavelength_tolerance: float = 0.0001,
+    ) -> None:
         params = export.phil_scope.extract()
         expt_to_export = copy.deepcopy(self._experiments)
         params.mtz.d_min = d_min
@@ -259,7 +279,7 @@ class DataManager:
         params.intensity = ["scale"]
         export.export_mtz(params, expt_to_export, [self._reflections])
 
-    def export_unmerged_mmcif(self, filename, d_min=None):
+    def export_unmerged_mmcif(self, filename: str, d_min: float | None = None) -> None:
         params = export.phil_scope.extract()
         expt_to_export = copy.deepcopy(self._experiments)
         params.mtz.d_min = d_min
@@ -268,8 +288,12 @@ class DataManager:
         export.export_mmcif(params, expt_to_export, [self._reflections])
 
     def export_merged_mtz(
-        self, filename, d_min=None, r_free_params=None, wavelength_tolerance=0.0001
-    ):
+        self,
+        filename: str,
+        d_min: float | None = None,
+        r_free_params: iotbx.phil.scope_extract | None = None,
+        wavelength_tolerance: float = 0.0001,
+    ) -> None:
         params = merge.phil_scope.extract()
         params.d_min = d_min
         params.assess_space_group = False
