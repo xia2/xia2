@@ -4,6 +4,8 @@ import json
 import logging
 import os
 
+from dials.algorithms.scaling import scale_and_filter
+
 from xia2.Driver.DriverFactory import DriverFactory
 from xia2.Handlers.Citations import Citations
 from xia2.Handlers.Phil import PhilIndex
@@ -280,7 +282,7 @@ def DialsScale(DriverType=None, decay_correction=None):
         def set_deltacchalf_stdcutoff(self, stdcutoff):
             self._deltacchalf_stdcutoff = stdcutoff
 
-        def get_scale_and_filter_results(self):
+        def get_scale_and_filter_results(self) -> scale_and_filter.AnalysisResults:
             return self._scale_and_filter_results
 
         def scale(self):
@@ -500,8 +502,6 @@ def DialsScale(DriverType=None, decay_correction=None):
 
             if self._filtering_method and os.path.isfile(scale_and_filter_filename):
                 with open(scale_and_filter_filename) as fh:
-                    from dials.algorithms.scaling import scale_and_filter
-
                     self._scale_and_filter_results = (
                         scale_and_filter.AnalysisResults.from_dict(json.load(fh))
                     )
