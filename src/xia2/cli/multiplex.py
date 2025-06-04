@@ -24,6 +24,7 @@ import xia2.Handlers.Streams
 from xia2.Applications.xia2_main import write_citations
 from xia2.Handlers.Citations import Citations
 from xia2.Modules.MultiCrystal.ScaleAndMerge import MultiCrystalScale
+from xia2.Modules.SSX.util import report_timing
 
 logger = logging.getLogger("xia2.multiplex")
 
@@ -106,6 +107,7 @@ r_free_flags.extend = True
 )
 
 
+@report_timing
 def run(args=sys.argv[1:]):
     Citations.cite("xia2.multiplex")
 
@@ -126,7 +128,9 @@ def run(args=sys.argv[1:]):
 
     # Configure the logging
     xia2.Handlers.Streams.setup_logging(
-        logfile=params.output.log, verbose=options.verbose
+        logfile=params.output.log,
+        verbose=options.verbose,
+        debugfile="xia2.multiplex.debug.log",
     )
 
     logger.info(dials_version())
