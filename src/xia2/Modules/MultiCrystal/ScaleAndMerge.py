@@ -5,6 +5,7 @@ import logging
 import os
 import pathlib
 from collections import OrderedDict
+from typing import Any
 
 import iotbx.phil
 from cctbx import sgtbx, uctbx
@@ -389,8 +390,8 @@ class MultiCrystalScale:
             )
             self._data_manager.select(keep_expts)
 
-        self._individual_report_dicts: OrderedDict = OrderedDict()
-        self._comparison_graphs: OrderedDict = OrderedDict()
+        self._individual_report_dicts: dict[str, dict[str, Any]] = OrderedDict()
+        self._comparison_graphs: dict[str, dict[str, Any]] = OrderedDict()
         self.scale_and_filter_results: scale_and_filter.AnalysisResults | None = None
 
     def run(self) -> None:
@@ -844,7 +845,7 @@ class MultiCrystalScale:
         )
 
     @staticmethod
-    def _report_as_dict(report: Report.Report) -> dict:
+    def _report_as_dict(report: Report.Report) -> dict[str, Any]:
         (
             overall_stats_table,
             merging_stats_table,
@@ -894,7 +895,9 @@ class MultiCrystalScale:
         return d
 
     @staticmethod
-    def _individual_report_dict(report_d: dict, cluster_name: str) -> dict:
+    def _individual_report_dict(
+        report_d: dict[str, Any], cluster_name: str
+    ) -> dict[str, Any]:
         cluster_name = cluster_name.replace(" ", "_")
         d = {
             "merging_statistics_table": report_d["merging_statistics_table"],
@@ -1028,7 +1031,7 @@ class MultiCrystalScale:
             self._params.symmetry.cosym.lattice_symmetry_max_delta
         )
         cosym.run()
-        self._cosym_analysis: dict = cosym.get_cosym_analysis()
+        self._cosym_analysis: dict[str, Any] = cosym.get_cosym_analysis()
         self._experiments_filename = cosym.get_reindexed_experiments()
         self._reflections_filename = cosym.get_reindexed_reflections()
         self._data_manager.experiments = load.experiment_list(

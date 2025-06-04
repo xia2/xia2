@@ -5,6 +5,7 @@ import json
 import logging
 from collections import OrderedDict
 from itertools import combinations
+from typing import Any
 
 import iotbx.phil
 import pandas as pd
@@ -224,7 +225,9 @@ class MultiCrystalAnalysis:
             d["uc_clustering"] = {}
         return d
 
-    def delta_cc_half_analysis(self) -> tuple[dict, list[list[str]]]:
+    def delta_cc_half_analysis(
+        self,
+    ) -> tuple[dict[str, dict[str, Any]], list[list[str]]]:
         # transform models into miller arrays
         intensities, batches = filtered_arrays_from_experiments_reflections(
             self._data_manager.experiments,
@@ -374,9 +377,9 @@ class MultiCrystalAnalysis:
 class MultiCrystalReport(MultiCrystalAnalysis):
     def report(
         self,
-        individual_dataset_reports: OrderedDict,
-        comparison_graphs: OrderedDict,
-        cosym_analysis: dict,
+        individual_dataset_reports: dict[str, dict[str, Any]],
+        comparison_graphs: dict[str, dict[str, Any]],
+        cosym_analysis: dict[str, Any],
         image_range_table: list[list[str]],
         scale_and_filter_results: AnalysisResults | None = None,
         scale_and_filter_mode: str | None = None,
