@@ -488,8 +488,10 @@ class MultiCrystalScale:
 
         self._record_individual_report(self._scaled.report(), "All data")
 
-        self._mca: MultiCrystalReport = self.multi_crystal_analysis()
-        self.cluster_analysis()
+        self._mca: MultiCrystalReport = (
+            self.multi_crystal_analysis()
+        )  # Sets up the analysis and reporting class
+        self.cluster_analysis()  # Actually does the cluster analysis
 
         # now do cluster identification as in xia2.cluster_analysis.
         # Same code structure as MultiCrystalAnalysis/cluster_analysis.py but changes the call
@@ -1126,6 +1128,7 @@ class MultiCrystalScale:
         data_manager = copy.deepcopy(self._data_manager)
         refl = data_manager.reflections
         data_manager.reflections = refl.select(refl["d"] >= self._scaled.d_min)
+        # Sets up the analysis and  report class, but doesn't do the clustering analysis.
         mca = MultiCrystalReport(params=params, data_manager=data_manager)
         return mca
 
