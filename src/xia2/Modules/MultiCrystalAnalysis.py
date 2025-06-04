@@ -16,11 +16,11 @@ from dials.algorithms.scaling.scale_and_filter import (
     AnalysisResults,
     make_scaling_filtering_plots,
 )
+from dials.algorithms.statistics.cc_half_algorithm import CCHalfFromDials
 from dials.algorithms.symmetry.cosym import SymmetryAnalysis
 from dials.array_family import flex
+from dials.command_line.compute_delta_cchalf import phil_scope as cchalf_phil_scope
 from dials.util import tabulate
-from dials.util.filter_reflections import filtered_arrays_from_experiments_reflections
-from dials.util.multi_dataset_handling import parse_multiple_datasets
 from dxtbx.model import ExperimentList
 from libtbx import phil
 
@@ -228,19 +228,24 @@ class MultiCrystalAnalysis:
     def delta_cc_half_analysis(
         self,
     ) -> tuple[dict[str, dict[str, Any]], list[list[str]]]:
-        # transform models into miller arrays
-        intensities, batches = filtered_arrays_from_experiments_reflections(
+        # params.stdcutoff=100000 # we just want the analysis, not applying dont filter
+        runner = CCHalfFromDials(
+            cchalf_phil_scope.extract(),
             self._data_manager.experiments,
-            parse_multiple_datasets([self._data_manager.reflections]),
-            outlier_rejection_after_filter=False,
-            partiality_threshold=0.99,
-            return_batches=True,
+            self._data_manager.reflections,
         )
-        result = DeltaCcHalf(intensities, batches)
+        runner.algorithm.run()
+        table = runner.get_table(html=True)
+        # calc the normalised delta ccs
         d = {}
-        d.update(result.histogram())
-        d.update(result.normalised_scores())
-        return d, result.get_table(html=True)
+        delta_cc_half = flex.double(list(runner.algorithm.cchalf_i.values()))
+        mav = flex.mean_and_variance(delta_cc_half)
+        normalised = (
+            mav.mean() - delta_cc_half
+        ) / mav.unweighted_sample_standard_deviation()
+        d.update(DeltaCcHalf.generate_histogram(normalised))
+        d.update(DeltaCcHalf.generate_normalised_scores_plot(normalised))
+        return d, table
 
     @staticmethod
     def interesting_cluster_identification(
@@ -399,7 +404,7 @@ class MultiCrystalReport(MultiCrystalAnalysis):
         )
 
         delta_cc_half_graphs, delta_cc_half_table = self.delta_cc_half_analysis()
-
+        print(delta_cc_half_table)
         if scale_and_filter_results:
             filter_plots = self.make_scale_and_filter_plots(
                 scale_and_filter_results, scale_and_filter_mode
@@ -446,7 +451,7 @@ any systematic grouping of points may suggest a preferential crystal orientation
             [PackageLoader("xia2", "templates"), PackageLoader("dials", "templates")]
         )
         env = Environment(loader=loader)
-
+        print(self._cc_cluster_table)
         template = env.get_template("multiplex.html")
         html = template.render(
             page_title=self.params.title,

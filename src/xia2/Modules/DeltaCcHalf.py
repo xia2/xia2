@@ -163,7 +163,10 @@ class DeltaCcHalf:
         return rows
 
     def histogram(self):
-        normalised_score = self.normalised_delta_cc
+        return self.generate_histogram(self.normalised_delta_cc)
+
+    @staticmethod
+    def generate_histogram(normalised_score):
         return {
             "delta_cc_half_histogram": {
                 "data": [
@@ -202,11 +205,15 @@ class DeltaCcHalf:
         plt.savefig(filename)
 
     def normalised_scores(self):
+        return self.generate_normalised_scores_plot(self.normalised_delta_cc)
+
+    @staticmethod
+    def generate_normalised_scores_plot(normalised_delta_cc):
         return {
             "delta_cc_half_normalised_score": {
                 "data": [
                     {
-                        "y": list(self.normalised_delta_cc),
+                        "y": list(normalised_delta_cc),
                         "type": "scatter",
                         "mode": "lines",
                         "name": "delta_cc_half_normalised_score",
