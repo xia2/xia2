@@ -401,9 +401,8 @@ class MultiCrystalScale:
         logger.notice(banner("Unit cell clustering"))  # type: ignore
         self.unit_cell_clustering(plot_name="cluster_unit_cell_p1.png")
 
-        logger.notice(banner("Apply consistent symmetry"))  # type: ignore
-
         if self._params.symmetry.resolve_indexing_ambiguity:
+            logger.notice(banner("Appling consistent symmetry"))  # type: ignore
             self.cosym()
 
         logger.notice(banner("Scaling"))  # type: ignore
@@ -419,7 +418,7 @@ class MultiCrystalScale:
             logger.notice(banner("Determining space group"))  # type: ignore
             self.decide_space_group()
 
-        logger.notice(banner("Merging"))  # type: ignore
+        logger.notice(banner("Merging (All data)"))  # type: ignore
 
         d_spacings: flex.double = self._scaled.data_manager._reflections["d"]
         self._params.r_free_flags.d_min = flex.min(d_spacings.select(d_spacings > 0))
@@ -527,13 +526,12 @@ class MultiCrystalScale:
 
             if not self._params.clustering.hierarchical.distinct_clusters:
                 for c, cluster_identifiers, cluster in subclusters:
-                    logger.notice(banner(f"{c} cluster {cluster.cluster_id}:"))  # type: ignore
-                    logger.info(cluster)
                     cluster_dir = f"{c}_cluster_{cluster.cluster_id}"
                     self._scale_and_report_cluster(
                         self._data_manager,
                         cluster_dir,
                         cluster_identifiers,
+                        cluster,
                     )
 
             if self._params.clustering.hierarchical.distinct_clusters:
@@ -572,7 +570,7 @@ class MultiCrystalScale:
                                     else self.cos_cluster_ids[cluster.cluster_id]
                                 )
                                 self._scale_and_report_cluster(
-                                    self._data_manager, cluster_dir, ids
+                                    self._data_manager, cluster_dir, ids, cluster
                                 )
                                 break
         if (
@@ -596,17 +594,16 @@ class MultiCrystalScale:
                 if len(s_c.labels) == len(self._data_manager.experiments):
                     continue
                 cluster_dir = f"coordinate_cluster_{s_c.cluster_id}"
-                logger.notice(banner(f"{cluster_dir}"))  # type: ignore
                 cluster_identifiers = [
                     self._data_manager.ids_to_identifiers_map[l] for l in s_c.labels
                 ]
                 self._scale_and_report_cluster(
-                    self._data_manager, cluster_dir, cluster_identifiers
+                    self._data_manager, cluster_dir, cluster_identifiers, s_c
                 )
                 count += 1
 
         if self._params.filtering.method:
-            logger.notice(banner("Rescale with extra filtering"))  # type: ignore
+            logger.notice(banner("Rescaling with extra filtering"))  # type: ignore
             # Final round of scaling, this time filtering out any bad datasets
             data_manager = copy.deepcopy(self._data_manager)
             params = copy.deepcopy(self._params)
@@ -616,7 +613,7 @@ class MultiCrystalScale:
             self.scale_and_filter_results = scaled.scale_and_filter_results
             logger.info("Scale and filtering:\n%s", self.scale_and_filter_results)
 
-            logger.notice(banner("Merging"))  # type: ignore
+            logger.notice(banner("Merging (Filtered)"))  # type: ignore
 
             data_manager.export_merged_mtz(
                 "filtered.mtz",
@@ -757,11 +754,14 @@ class MultiCrystalScale:
         data_manager: DataManager,
         cluster_dir: str,
         cluster_identifiers: list[str],
+        cluster: ClusterInfo,
     ) -> None:
         cwd = pathlib.Path.cwd()
         if not os.path.exists(cluster_dir):
             os.mkdir(cluster_dir)
         os.chdir(cluster_dir)
+        logger.notice(banner(f"{cluster_dir}"))  # type: ignore
+        logger.info(cluster)
         scaled: Scale = self.scale_cluster(
             data_manager, cluster_identifiers, True, f"{cluster_dir}_scaled"
         )
