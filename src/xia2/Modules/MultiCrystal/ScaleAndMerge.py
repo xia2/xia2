@@ -560,7 +560,6 @@ class MultiCrystalScale:
                     for item in list_of_clusters:
                         cluster_no = item.split("_")[-1]
                         cluster_dir = f"{cty}_cluster_{cluster_no}"
-                        logger.info(f"Scaling : {cluster_dir}")
 
                         for cluster in clusters:
                             if f"cluster_{cluster.cluster_id}" == item:
