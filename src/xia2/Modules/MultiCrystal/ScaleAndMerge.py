@@ -22,6 +22,7 @@ from libtbx import Auto
 from scitbx.math import five_number_summary
 
 from xia2.Handlers.Phil import PhilIndex
+from xia2.Handlers.Streams import banner
 from xia2.lib.bits import auto_logfiler
 from xia2.Modules import Report
 from xia2.Modules.MultiCrystal.cluster_analysis import get_subclusters
@@ -345,6 +346,8 @@ class MultiCrystalScale:
         if self._params.dose is not None:
             self._data_manager.filter_dose(*self._params.dose)
 
+        logger.notice(banner("Filtering reflections"))  # type: ignore
+
         if params.remove_profile_fitting_failures:
             reflections = self._data_manager.reflections
             profile_fitted_mask = reflections.get_flags(
@@ -395,19 +398,27 @@ class MultiCrystalScale:
         self.scale_and_filter_results: scale_and_filter.AnalysisResults | None = None
 
     def run(self) -> None:
+        logger.notice(banner("Unit cell clustering"))  # type: ignore
         self.unit_cell_clustering(plot_name="cluster_unit_cell_p1.png")
 
         if self._params.symmetry.resolve_indexing_ambiguity:
+            logger.notice(banner("Applying consistent symmetry"))  # type: ignore
             self.cosym()
+
+        logger.notice(banner("Scaling"))  # type: ignore
 
         self._scaled = Scale(self._data_manager, self._params)
         self._experiments_filename = self._scaled._experiments_filename
         self._reflections_filename = self._scaled._reflections_filename
 
         if self._params.reference is not None:
+            logger.notice(banner("Reindexing to reference"))  # type: ignore
             self.reindex()
         else:
+            logger.notice(banner("Determining space group"))  # type: ignore
             self.decide_space_group()
+
+        logger.notice(banner("Merging (All data)"))  # type: ignore
 
         d_spacings: flex.double = self._scaled.data_manager._reflections["d"]
         self._params.r_free_flags.d_min = flex.min(d_spacings.select(d_spacings > 0))
@@ -489,6 +500,8 @@ class MultiCrystalScale:
 
         self._record_individual_report(self._scaled.report(), "All data")
 
+        logger.notice(banner("Identifying intensity-based clusters"))  # type: ignore
+
         self._mca: MultiCrystalReport = (
             self.multi_crystal_analysis()
         )  # Sets up the analysis and reporting class
@@ -502,6 +515,7 @@ class MultiCrystalScale:
             self._params.clustering.output_clusters
             and "hierarchical" in self._params.clustering.method
         ):
+            logger.notice(banner("Scaling and merging hierarchical clusters"))  # type: ignore
             self._data_manager_original = self._data_manager
             subclusters = get_subclusters(
                 self._params.clustering,
@@ -512,13 +526,12 @@ class MultiCrystalScale:
 
             if not self._params.clustering.hierarchical.distinct_clusters:
                 for c, cluster_identifiers, cluster in subclusters:
-                    logger.info(f"Scaling {c} cluster {cluster.cluster_id}:")
-                    logger.info(cluster)
                     cluster_dir = f"{c}_cluster_{cluster.cluster_id}"
                     self._scale_and_report_cluster(
                         self._data_manager,
                         cluster_dir,
                         cluster_identifiers,
+                        cluster,
                     )
 
             if self._params.clustering.hierarchical.distinct_clusters:
@@ -547,7 +560,6 @@ class MultiCrystalScale:
                     for item in list_of_clusters:
                         cluster_no = item.split("_")[-1]
                         cluster_dir = f"{cty}_cluster_{cluster_no}"
-                        logger.info(f"Scaling : {cluster_dir}")
 
                         for cluster in clusters:
                             if f"cluster_{cluster.cluster_id}" == item:
@@ -557,13 +569,14 @@ class MultiCrystalScale:
                                     else self.cos_cluster_ids[cluster.cluster_id]
                                 )
                                 self._scale_and_report_cluster(
-                                    self._data_manager, cluster_dir, ids
+                                    self._data_manager, cluster_dir, ids, cluster
                                 )
                                 break
         if (
             self._params.clustering.output_clusters
             and "coordinate" in self._params.clustering.method
         ):
+            logger.notice(banner("Scaling and merging coordinate clusters"))  # type: ignore
             significant_clusters: list[ClusterInfo] = (
                 self._mca.significant_coordinate_clusters
             )
@@ -580,16 +593,16 @@ class MultiCrystalScale:
                 if len(s_c.labels) == len(self._data_manager.experiments):
                     continue
                 cluster_dir = f"coordinate_cluster_{s_c.cluster_id}"
-                logger.info(f"Scaling: {cluster_dir}")
                 cluster_identifiers = [
                     self._data_manager.ids_to_identifiers_map[l] for l in s_c.labels
                 ]
                 self._scale_and_report_cluster(
-                    self._data_manager, cluster_dir, cluster_identifiers
+                    self._data_manager, cluster_dir, cluster_identifiers, s_c
                 )
                 count += 1
 
         if self._params.filtering.method:
+            logger.notice(banner("Rescaling with extra filtering"))  # type: ignore
             # Final round of scaling, this time filtering out any bad datasets
             data_manager = copy.deepcopy(self._data_manager)
             params = copy.deepcopy(self._params)
@@ -598,6 +611,8 @@ class MultiCrystalScale:
             scaled = Scale(data_manager, params, filtering=True)
             self.scale_and_filter_results = scaled.scale_and_filter_results
             logger.info("Scale and filtering:\n%s", self.scale_and_filter_results)
+
+            logger.notice(banner("Merging (Filtered)"))  # type: ignore
 
             data_manager.export_merged_mtz(
                 "filtered.mtz",
@@ -738,11 +753,14 @@ class MultiCrystalScale:
         data_manager: DataManager,
         cluster_dir: str,
         cluster_identifiers: list[str],
+        cluster: ClusterInfo,
     ) -> None:
         cwd = pathlib.Path.cwd()
         if not os.path.exists(cluster_dir):
             os.mkdir(cluster_dir)
         os.chdir(cluster_dir)
+        logger.notice(banner(f"{cluster_dir}"))  # type: ignore
+        logger.info(cluster)
         scaled: Scale = self.scale_cluster(
             data_manager, cluster_identifiers, True, f"{cluster_dir}_scaled"
         )
