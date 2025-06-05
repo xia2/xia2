@@ -396,6 +396,7 @@ class MultiCrystalScale:
         self._individual_report_dicts: dict[str, dict[str, Any]] = OrderedDict()
         self._comparison_graphs: dict[str, dict[str, Any]] = OrderedDict()
         self.scale_and_filter_results: scale_and_filter.AnalysisResults | None = None
+        self._cosym_analysis: dict[str, Any] = OrderedDict({"cosym_graphs": {}})
 
     def run(self) -> None:
         logger.notice(banner("Unit cell clustering"))  # type: ignore
@@ -1049,7 +1050,7 @@ class MultiCrystalScale:
             self._params.symmetry.cosym.lattice_symmetry_max_delta
         )
         cosym.run()
-        self._cosym_analysis: dict[str, Any] = cosym.get_cosym_analysis()
+        self._cosym_analysis = cosym.get_cosym_analysis()
         self._experiments_filename = cosym.get_reindexed_experiments()
         self._reflections_filename = cosym.get_reindexed_reflections()
         self._data_manager.experiments = load.experiment_list(

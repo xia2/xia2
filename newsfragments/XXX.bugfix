@@ -1,0 +1,1 @@
+``xia2.multiplex``: Fix crash in report generation if run with resolve_indexing_ambiguity=False
