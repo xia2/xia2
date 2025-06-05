@@ -402,7 +402,7 @@ class MultiCrystalScale:
         self.unit_cell_clustering(plot_name="cluster_unit_cell_p1.png")
 
         if self._params.symmetry.resolve_indexing_ambiguity:
-            logger.notice(banner("Appling consistent symmetry"))  # type: ignore
+            logger.notice(banner("Applying consistent symmetry"))  # type: ignore
             self.cosym()
 
         logger.notice(banner("Scaling"))  # type: ignore
