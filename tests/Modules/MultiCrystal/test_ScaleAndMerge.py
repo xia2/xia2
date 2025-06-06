@@ -34,3 +34,12 @@ def test_init(dials_data):
 
     runner = MultiCrystalScale(expts, refls2, params)
     assert list(runner._data_manager.experiments.identifiers()) == [identifiers[1]]
+
+    # If no datasets have the flags set, then all are kept (or we would have no data)
+    refls3 = copy.deepcopy(refls)
+    sel = flex.bool(refls.size())
+    refls3.unset_flags(sel, refls3.flags.used_in_refinement)
+    refls3.unset_flags(sel, refls3.flags.integrated_prf)
+
+    runner = MultiCrystalScale(expts, refls3, params)
+    assert list(runner._data_manager.experiments.identifiers()) == identifiers
