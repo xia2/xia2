@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import logging
 from pathlib import Path
 from typing import Any
 
@@ -13,7 +14,9 @@ from xia2.Driver.timing import record_step
 from xia2.lib.bits import _get_number
 from xia2.Modules.DeltaCcHalf import DeltaCcHalf as xia2DeltaCcHalf
 from xia2.Modules.SSX.util import log_to_file, run_in_directory
-from xia2.Wrappers.Dials.Functional import diff_phil_from_params_and_scope
+from xia2.Wrappers.Dials.Functional import diff_phil_from_params_and_scope, handle_fail
+
+xia2_logger = logging.getLogger(__name__)
 
 
 class DeltaCCHalf:
@@ -39,12 +42,14 @@ class DeltaCCHalf:
     def delta_cc_half_table(self) -> list[list[str]]:
         return self._delta_cc_half_table
 
+    @handle_fail
     def run(
         self,
         experiments: ExperimentList,
         reflections: flex.reflection_table,
         log: bool = False,
     ) -> None:
+        xia2_logger.debug("Running dials.compute_delta_cchalf")
         xpid = _get_number()
         logfile = f"{xpid}_dials.compute_delta_cchalf.log"
         with (

@@ -1,7 +1,24 @@
 from __future__ import annotations
 
+import logging
+import traceback
+
 import iotbx.phil
 import libtbx.phil
+
+xia2_logger = logging.getLogger(__name__)
+
+
+def handle_fail(fn):
+    def wrap_fn(*args, **kwargs):
+        try:
+            return fn(*args, **kwargs)
+        except Exception:
+            xia2_logger.debug(traceback.format_exc())
+            xia2_logger.debug("A program terminated abruptly")
+            return None
+
+    return wrap_fn
 
 
 def diff_phil_from_params_and_scope(
