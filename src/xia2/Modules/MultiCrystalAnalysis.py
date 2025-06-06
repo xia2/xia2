@@ -16,17 +16,15 @@ from dials.algorithms.scaling.scale_and_filter import (
     AnalysisResults,
     make_scaling_filtering_plots,
 )
-from dials.algorithms.statistics.cc_half_algorithm import CCHalfFromDials
 from dials.algorithms.symmetry.cosym import SymmetryAnalysis
 from dials.array_family import flex
-from dials.command_line.compute_delta_cchalf import phil_scope as cchalf_phil_scope
 from dials.util import tabulate
 from dxtbx.model import ExperimentList
 from libtbx import phil
 
 from xia2.Modules.Analysis import batch_phil_scope
-from xia2.Modules.DeltaCcHalf import DeltaCcHalf
 from xia2.Modules.MultiCrystal.data_manager import DataManager
+from xia2.Wrappers.Dials.Functional.DeltaCCHalf import DeltaCCHalf
 from xia2.XIA2Version import Version
 
 logger = logging.getLogger(__name__)
@@ -228,23 +226,9 @@ class MultiCrystalAnalysis:
     def delta_cc_half_analysis(
         self,
     ) -> tuple[dict[str, dict[str, Any]], list[list[str]]]:
-        runner = CCHalfFromDials(
-            cchalf_phil_scope.extract(),
-            self._data_manager.experiments,
-            self._data_manager.reflections,
-        )
-        runner.algorithm.run()  # Runs the analysis but not any filtering
-        table = runner.get_table(html=True)
-        d = {}
-        # Calculate normalised values for generating the plots.
-        delta_cc_half = flex.double(list(runner.algorithm.cchalf_i.values()))
-        mav = flex.mean_and_variance(delta_cc_half)
-        normalised = (
-            mav.mean() - delta_cc_half
-        ) / mav.unweighted_sample_standard_deviation()
-        d.update(DeltaCcHalf.generate_histogram(normalised))
-        d.update(DeltaCcHalf.generate_normalised_scores_plot(normalised))
-        return d, table
+        deltacc = DeltaCCHalf()
+        deltacc.run(self._data_manager.experiments, self._data_manager.reflections)
+        return deltacc.delta_cc_half_graphs, deltacc.delta_cc_half_table
 
     @staticmethod
     def interesting_cluster_identification(
