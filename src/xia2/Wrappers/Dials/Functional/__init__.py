@@ -53,6 +53,8 @@ def diff_phil_from_params_and_scope(
         return diff_phil
 
     diff_phil = compare_params(params, original, diff_phil)
+    if not diff_phil:
+        return ""
     pretty = phil_scope.fetch_diff(
         source=phil_scope.fetch(sources=[iotbx.phil.parse(diff_phil)])
     ).as_str()

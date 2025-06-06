@@ -29,6 +29,8 @@ class DeltaCCHalf:
 
         self.params: libtbx.phil.scope_extract = phil_scope.extract()
         ## Set any defaults
+        self.params.mode = "dataset"
+        self.params.nbins = 10
 
         ## Define outputs which are not part of params
         self._delta_cc_half_graphs: dict[str, dict[str, Any]] = {}
@@ -57,8 +59,7 @@ class DeltaCCHalf:
             record_step("dials.compute_delta_cchalf"),
             log_to_file(logfile) as dials_logger,
         ):
-            diff_phil = diff_phil_from_params_and_scope(self.params, phil_scope)
-            dials_logger.info(diff_phil)
+            dials_logger.info(diff_phil_from_params_and_scope(self.params, phil_scope))
             runner = CCHalfFromDials(
                 self.params,
                 experiments,

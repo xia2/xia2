@@ -9,6 +9,7 @@ from collections.abc import Generator
 from pathlib import Path
 
 from dials.util.log import DialsLogfileFormatter, print_banner
+from dials.util.version import dials_version
 
 import xia2.Driver.timing
 
@@ -85,6 +86,7 @@ def log_to_file(filename: str) -> Generator[logging.Logger, None, None]:
     try:
         config_quiet(logfile=filename)
         dials_logger = logging.getLogger("dials")
+        dials_logger.info(dials_version())
         yield dials_logger
     finally:
         dials_logger = logging.getLogger("dials")
