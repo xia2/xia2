@@ -353,45 +353,35 @@ class MultiCrystalScale:
             profile_fitted_mask = reflections.get_flags(
                 reflections.flags.integrated_prf
             )
+            ids_used = set(reflections["id"].select(profile_fitted_mask))
+            id_map = reflections.experiment_identifiers()
             keep_expts = []
-            for i, expt in enumerate(self._data_manager.experiments):
-                refl_used = reflections.select(profile_fitted_mask)
-                if (
-                    expt.identifier in refl_used.experiment_identifiers().values()
-                    and refl_used.select_on_experiment_identifiers(
-                        [expt.identifier]
-                    ).size()
-                ):
-                    keep_expts.append(expt.identifier)
-            if len(keep_expts):
+            for id_ in ids_used:
+                keep_expts.append(id_map[id_])
+            if keep_expts:
                 logger.info(
-                    "Selecting %i experiments with profile-fitted reflections"
-                    % len(keep_expts)
+                    f"Selecting {len(keep_expts)} experiments with profile-fitted reflections"
                 )
-                self._data_manager.select(keep_expts)
+                # Only do the selection if we are not keeping all data.
+                if len(keep_expts) != len(self._data_manager.experiments):
+                    self._data_manager.select(keep_expts)
 
         reflections = self._data_manager.reflections
         used_in_refinement_mask = reflections.get_flags(
             reflections.flags.used_in_refinement
         )
+        ids_used = set(reflections["id"].select(used_in_refinement_mask))
+        id_map = reflections.experiment_identifiers()
         keep_expts = []
-        for i, expt in enumerate(self._data_manager.experiments):
-            refl_used = reflections.select(used_in_refinement_mask)
-            if (
-                expt.identifier in refl_used.experiment_identifiers().values()
-                and refl_used.select_on_experiment_identifiers([expt.identifier]).size()
-            ):
-                keep_expts.append(expt.identifier)
-            else:
-                logger.info(
-                    "Removing experiment %s (no refined reflections remaining)"
-                    % expt.identifier
-                )
-        if len(keep_expts):
+        for id_ in ids_used:
+            keep_expts.append(id_map[id_])
+        if keep_expts:
             logger.info(
-                "Selecting %i experiments with refined reflections" % len(keep_expts)
+                f"Selecting {len(keep_expts)} experiments with refined reflections"
             )
-            self._data_manager.select(keep_expts)
+            # Only do the selection if we are not keeping all data.
+            if len(keep_expts) != len(self._data_manager.experiments):
+                self._data_manager.select(keep_expts)
 
         self._individual_report_dicts: dict[str, dict[str, Any]] = OrderedDict()
         self._comparison_graphs: dict[str, dict[str, Any]] = OrderedDict()
