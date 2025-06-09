@@ -19,12 +19,16 @@ from dials.algorithms.symmetry.cosym import SymmetryAnalysis
 from dials.array_family import flex
 from dials.util import tabulate
 from dxtbx.model import ExperimentList
+from dxtbx.serialize import load
 from libtbx import phil
 
 from xia2.Modules.Analysis import batch_phil_scope
 from xia2.Modules.MultiCrystal.data_manager import DataManager
 from xia2.Wrappers.Dials.Functional.CorrelationMatrix import DialsCorrelationMatrix
 from xia2.Wrappers.Dials.Functional.DeltaCCHalf import DeltaCCHalf
+from xia2.Wrappers.Dials.Functional.StereographicProjection import (
+    StereographicProjection,
+)
 from xia2.XIA2Version import Version
 
 logger = logging.getLogger(__name__)
@@ -68,17 +72,16 @@ class MultiCrystalAnalysis:
     def stereographic_projections(
         experiments_filename: str, labels: list[int] | None = None
     ) -> dict[tuple[int, int, int], str]:
-        from xia2.Wrappers.Dials.StereographicProjection import StereographicProjection
-
         sp_json_files = {}
+        sp = StereographicProjection()
+        expts = load.experiment_list(experiments_filename, check_format=False)
         for hkl in ((1, 0, 0), (0, 1, 0), (0, 0, 1)):
-            sp = StereographicProjection()
-            sp.add_experiments(experiments_filename)
             sp.set_hkl(hkl)
             if labels:
                 sp.set_labels(labels)
-            sp.run()
-            sp_json_files[hkl] = sp.get_json_filename()
+            sp.run(expts)
+            sp_json_files[hkl] = sp.json_filename
+
         return sp_json_files
 
     @staticmethod
