@@ -49,7 +49,10 @@ def diff_phil_from_params_and_scope(
                     diff_phil = compare_params(v1, v2, diff_phil, k)
             else:
                 if (v1 or v2) and v1 != v2:
-                    diff_phil += f"{parent}.{k} = {v1}\n"
+                    if parent:
+                        diff_phil += f"{parent}.{k} = {v1}\n"
+                    else:
+                        diff_phil += f"{k} = {v1}\n"
         return diff_phil
 
     diff_phil = compare_params(params, original, diff_phil)
