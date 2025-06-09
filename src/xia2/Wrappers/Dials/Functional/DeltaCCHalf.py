@@ -49,7 +49,6 @@ class DeltaCCHalf:
         self,
         experiments: ExperimentList,
         reflections: flex.reflection_table,
-        log: bool = False,
     ) -> None:
         xia2_logger.debug("Running dials.compute_delta_cchalf")
         xpid = _get_number()
