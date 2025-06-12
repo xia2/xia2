@@ -19,14 +19,12 @@ from dials.algorithms.scaling.scale_and_filter import (
 from dials.algorithms.symmetry.cosym import SymmetryAnalysis
 from dials.array_family import flex
 from dials.util import tabulate
-from dials.util.filter_reflections import filtered_arrays_from_experiments_reflections
-from dials.util.multi_dataset_handling import parse_multiple_datasets
 from dxtbx.model import ExperimentList
 from libtbx import phil
 
 from xia2.Modules.Analysis import batch_phil_scope
-from xia2.Modules.DeltaCcHalf import DeltaCcHalf
 from xia2.Modules.MultiCrystal.data_manager import DataManager
+from xia2.Wrappers.Dials.Functional.DeltaCCHalf import DeltaCCHalf
 from xia2.XIA2Version import Version
 
 logger = logging.getLogger(__name__)
@@ -228,19 +226,9 @@ class MultiCrystalAnalysis:
     def delta_cc_half_analysis(
         self,
     ) -> tuple[dict[str, dict[str, Any]], list[list[str]]]:
-        # transform models into miller arrays
-        intensities, batches = filtered_arrays_from_experiments_reflections(
-            self._data_manager.experiments,
-            parse_multiple_datasets([self._data_manager.reflections]),
-            outlier_rejection_after_filter=False,
-            partiality_threshold=0.99,
-            return_batches=True,
-        )
-        result = DeltaCcHalf(intensities, batches)
-        d = {}
-        d.update(result.histogram())
-        d.update(result.normalised_scores())
-        return d, result.get_table(html=True)
+        deltacc = DeltaCCHalf()
+        deltacc.run(self._data_manager.experiments, self._data_manager.reflections)
+        return deltacc.delta_cc_half_graphs, deltacc.delta_cc_half_table
 
     @staticmethod
     def interesting_cluster_identification(
@@ -446,7 +434,6 @@ any systematic grouping of points may suggest a preferential crystal orientation
             [PackageLoader("xia2", "templates"), PackageLoader("dials", "templates")]
         )
         env = Environment(loader=loader)
-
         template = env.get_template("multiplex.html")
         html = template.render(
             page_title=self.params.title,
