@@ -133,6 +133,8 @@ def run(args=sys.argv[1:]):
         debugfile="xia2.multiplex.debug.log",
     )
 
+    dials_logger = logging.getLogger("dials")
+    dials_logger.handlers.clear()
     logger.info(dials_version())
 
     # Log the diff phil
