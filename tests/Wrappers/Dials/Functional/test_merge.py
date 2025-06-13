@@ -29,7 +29,7 @@ def test_merge(lcy_data, run_in_tmp_path):
 
     # Check output generated
     assert (run_in_tmp_path / "merged.mtz").is_file()
-    assert (run_in_tmp_path / "1_dials.merge.log").is_file()
+    assert (run_in_tmp_path / f"{merge._xpid}_dials.merge.log").is_file()
 
 
 def test_non_default_parameters(lcy_data, run_in_tmp_path):

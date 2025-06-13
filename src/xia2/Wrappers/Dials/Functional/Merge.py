@@ -64,8 +64,8 @@ class Merge:
     def run(self, expts: ExperimentList, refls: flex.reflection_table) -> None:
         xia2_logger.debug("Running dials.merge")
         if self._use_xpid:
-            xpid = _get_number()
-            logfile = f"{xpid}_dials.merge.log"
+            self._xpid = _get_number()
+            logfile = f"{self._xpid}_dials.merge.log"
         else:
             logfile = "dials.merge.log"
 
