@@ -39,7 +39,7 @@ def test_non_default_parameters(lcy_data, run_in_tmp_path):
     merge.set_wavelength_tolerance(0.002)
     merge.set_r_free_params(params.r_free_flags)
     merge.use_xpid = False
-    merge.set_assess_space_group = True
+    merge.set_assess_space_group(True)
     merge.output_filename = "test_merge.mtz"
     merge.run(expts, refls)
 
