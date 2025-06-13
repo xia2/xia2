@@ -4,10 +4,9 @@ import copy
 import logging
 import math
 
-import iotbx.phil
 from cctbx import miller, sgtbx
 from dials.array_family import flex
-from dials.command_line import export, merge
+from dials.command_line import export
 from dials.command_line.slice_sequence import slice_experiments, slice_reflections
 from dials.report.analysis import scaled_data_as_miller_array
 from dials.util.batch_handling import (
@@ -225,32 +224,6 @@ class DataManager:
         if data["expt"]:
             export.export_mmcif(params, expt_to_export, [data["refl"]])
 
-    def export_merged_wave_mtz(
-        self,
-        wl: float,
-        prefix: str,
-        d_min: float | None = None,
-        r_free_params: iotbx.phil.scope_extract | None = None,
-        wavelength_tolerance: float | None = None,
-    ):
-        data = self.data_split_by_wl[wl]
-        nn = len(self.wavelengths)
-        fmt = "%%0%dd" % (math.log10(nn) + 1)
-        index = sorted(self.wavelengths.keys()).index(wl)
-
-        params = merge.phil_scope.extract()
-        params.d_min = d_min
-        params.assess_space_group = False
-        params.wavelength_tolerance = wavelength_tolerance
-        if r_free_params:
-            params.r_free_flags = r_free_params
-        filename = f"{prefix}_WAVE{fmt % (index + 1)}.mtz"
-        if data["expt"]:
-            mtz_obj = merge.merge_data_to_mtz(params, data["expt"], [data["refl"]])
-            mtz_obj.write_to_file(filename)
-            return filename
-        return None
-
     def export_reflections(self, filename: str, d_min: float | None = None) -> str:
         reflections = self._reflections
         if d_min:
@@ -283,21 +256,3 @@ class DataManager:
         params.mmcif.hklout = filename
         params.intensity = ["scale"]
         export.export_mmcif(params, expt_to_export, [self._reflections])
-
-    def export_merged_mtz(
-        self,
-        filename: str,
-        d_min: float | None = None,
-        r_free_params: iotbx.phil.scope_extract | None = None,
-        wavelength_tolerance: float = 0.0001,
-    ) -> None:
-        params = merge.phil_scope.extract()
-        params.d_min = d_min
-        params.assess_space_group = False
-        params.wavelength_tolerance = wavelength_tolerance
-        if r_free_params:
-            params.r_free_flags = r_free_params
-        mtz_obj = merge.merge_data_to_mtz(
-            params, self._experiments, [self._reflections]
-        )
-        mtz_obj.write_to_file(filename)

@@ -155,10 +155,21 @@ class MultiCrystalAnalysis:
         matrices.convert_to_html_json()
         matrices.output_json()
 
+        data_in_clusters = 0
+        for i in matrices.significant_clusters:
+            data_in_clusters += len(i.labels)
+
+        outliers = len(self._data_manager.experiments) - data_in_clusters
+
         logger.info("\nIntensity correlation clustering summary:")
         logger.info(tabulate(matrices.cc_table, headers="firstrow", tablefmt="rst"))
         logger.info("\nCos(angle) clustering summary:")
         logger.info(tabulate(matrices.cos_table, headers="firstrow", tablefmt="rst"))
+        logger.info(
+            f"OPTICS identified {len(matrices.significant_clusters)} clusters and {outliers} outlier datasets."
+        )
+        for i in matrices.significant_clusters:
+            logger.info(i)
 
         self.cc_clusters = matrices.correlation_clusters
         self.cos_clusters = matrices.cos_angle_clusters
