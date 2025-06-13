@@ -1195,14 +1195,14 @@ class MultiCrystalScale:
     def export_merged_wave_mtz(
         self,
         data_manager: DataManager,
-        wl: float,
+        wavelength: float,
         output_name: str,
         d_min: float,
     ) -> str | None:
-        data = data_manager.data_split_by_wl[wl]
+        data = data_manager.data_split_by_wl[wavelength]
         if data["expt"]:
             fmt = "%%0%dd" % (math.log10(len(self._data_manager.wavelengths)) + 1)
-            index = sorted(data_manager.wavelengths.keys()).index(wl)
+            index = sorted(data_manager.wavelengths.keys()).index(wavelength)
             name = f"{output_name}_WAVE{fmt % (index + 1)}.mtz"
 
             self.export_merged_mtz(data["expt"], data["refl"], name, d_min)
