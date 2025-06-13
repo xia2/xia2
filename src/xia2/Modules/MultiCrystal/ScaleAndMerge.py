@@ -1183,7 +1183,7 @@ class MultiCrystalScale:
         expts: ExperimentList,
         refls: flex.reflection_table,
         file_name: str,
-        d_min: str,
+        d_min: float,
     ) -> None:
         merge = Merge()
         merge.output_filename = file_name
@@ -1197,7 +1197,7 @@ class MultiCrystalScale:
         data_manager: DataManager,
         wl: float,
         output_name: str,
-        d_min: str,
+        d_min: float,
     ) -> str | None:
         data = data_manager.data_split_by_wl[wl]
         if data["expt"]:

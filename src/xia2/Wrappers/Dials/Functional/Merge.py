@@ -32,7 +32,7 @@ class Merge:
         self._use_xpid = True
         self._params.assess_space_group = False
 
-    def set_d_min(self, d_min: str) -> None:
+    def set_d_min(self, d_min: float) -> None:
         self._params.d_min = d_min
 
     def set_wavelength_tolerance(self, wavelength_tolerance: float) -> None:

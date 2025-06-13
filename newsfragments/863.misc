@@ -1,1 +1,1 @@
-``xia2.multiplex``: Add functional wrapper for dials.merge
+``xia2.multiplex``: Move dials.merge log output from xia2.multiplex.log to a separate log file.
