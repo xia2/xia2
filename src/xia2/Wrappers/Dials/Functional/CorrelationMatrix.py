@@ -11,6 +11,7 @@ from dials.command_line.correlation_matrix import phil_scope
 from dxtbx.model import ExperimentList
 
 from xia2.Driver.timing import record_step
+from xia2.Handlers.Citations import Citations
 from xia2.lib.bits import _get_number
 from xia2.Modules.SSX.util import log_to_file, run_in_directory
 from xia2.Wrappers.Dials.Functional import diff_phil_from_params_and_scope, handle_fail
@@ -95,6 +96,7 @@ class DialsCorrelationMatrix:
     @handle_fail
     def run(self, expts: ExperimentList, refls: list[flex.reflection_table]) -> None:
         xia2_logger.debug("Running dials.correlation_matrix")
+        Citations.cite("dials.correlation_matrix")
         if self._use_xpid:
             self._xpid = _get_number()
             logfile = f"{self._xpid}_dials.correlation_matrix.log"
