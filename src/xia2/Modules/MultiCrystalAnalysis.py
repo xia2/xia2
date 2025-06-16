@@ -10,7 +10,6 @@ from typing import Any
 import iotbx.phil
 import pandas as pd
 from dials.algorithms.clustering.unit_cell import ClusteringResult, cluster_unit_cells
-from dials.algorithms.correlation.analysis import CorrelationMatrix
 from dials.algorithms.correlation.cluster import ClusterInfo
 from dials.algorithms.scaling.scale_and_filter import (
     AnalysisResults,
@@ -24,6 +23,7 @@ from libtbx import phil
 
 from xia2.Modules.Analysis import batch_phil_scope
 from xia2.Modules.MultiCrystal.data_manager import DataManager
+from xia2.Wrappers.Dials.Functional.CorrelationMatrix import DialsCorrelationMatrix
 from xia2.Wrappers.Dials.Functional.DeltaCCHalf import DeltaCCHalf
 from xia2.XIA2Version import Version
 
@@ -145,43 +145,45 @@ class MultiCrystalAnalysis:
         for i in to_delete:
             filtered_ids_to_identifiers_map.pop(i)
 
-        matrices = CorrelationMatrix(
-            self._data_manager.experiments,
-            reflections,
-            self.params,
-            filtered_ids_to_identifiers_map,
+        intensity_clustering = DialsCorrelationMatrix()
+        intensity_clustering.ids_to_identifiers_map = filtered_ids_to_identifiers_map
+        intensity_clustering.set_buffer(
+            self.params.significant_clusters.min_points_buffer
         )
-        matrices.calculate_matrices()
-        matrices.convert_to_html_json()
-        matrices.output_json()
+        intensity_clustering.set_xi(self.params.significant_clusters.xi)
+        intensity_clustering.run(self._data_manager.experiments, reflections)
+
+        self.cc_clusters = intensity_clustering.correlation_clusters
+        self.cos_clusters = intensity_clustering.cos_angle_clusters
+        self._cc_cluster_json = intensity_clustering.cc_json
+        self._cos_angle_cluster_json = intensity_clustering.cos_json
+        self._cc_cluster_table = intensity_clustering.cc_table
+        self._cos_angle_cluster_table = intensity_clustering.cos_table
+        self._cosym_graphs = intensity_clustering.rij_graphs
+        self.significant_coordinate_clusters: list[ClusterInfo] = (
+            intensity_clustering.significant_clusters
+        )
+        self._pca_plot = intensity_clustering.pca_plot
 
         data_in_clusters = 0
-        for i in matrices.significant_clusters:
+        for i in self.significant_coordinate_clusters:
             data_in_clusters += len(i.labels)
 
         outliers = len(self._data_manager.experiments) - data_in_clusters
 
         logger.info("\nIntensity correlation clustering summary:")
-        logger.info(tabulate(matrices.cc_table, headers="firstrow", tablefmt="rst"))
-        logger.info("\nCos(angle) clustering summary:")
-        logger.info(tabulate(matrices.cos_table, headers="firstrow", tablefmt="rst"))
         logger.info(
-            f"OPTICS identified {len(matrices.significant_clusters)} clusters and {outliers} outlier datasets."
+            tabulate(self._cc_cluster_table, headers="firstrow", tablefmt="rst")
         )
-        for i in matrices.significant_clusters:
+        logger.info("\nCos(angle) clustering summary:")
+        logger.info(
+            tabulate(self._cos_angle_cluster_table, headers="firstrow", tablefmt="rst")
+        )
+        logger.info(
+            f"OPTICS identified {len(self.significant_coordinate_clusters)} clusters and {outliers} outlier datasets."
+        )
+        for i in self.significant_coordinate_clusters:
             logger.info(i)
-
-        self.cc_clusters = matrices.correlation_clusters
-        self.cos_clusters = matrices.cos_angle_clusters
-        self._cc_cluster_json = matrices.cc_json
-        self._cos_angle_cluster_json = matrices.cos_json
-        self._cc_cluster_table = matrices.cc_table
-        self._cos_angle_cluster_table = matrices.cos_table
-        self._cosym_graphs = matrices.rij_graphs
-        self.significant_coordinate_clusters: list[ClusterInfo] = (
-            matrices.significant_clusters
-        )
-        self._pca_plot = matrices.pca_plot
 
         # Need this here or else cos-angle dendrogram does not replicate original multiplex output
         self._cluster_analysis_run = True
