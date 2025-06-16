@@ -1,9 +1,11 @@
 from __future__ import annotations
 
+import collections.OrderedDict
 import logging
-from pathlib import Path
+from typing import Any, List
 
 import libtbx.phil
+import Path
 from dials.algorithms.correlation.analysis import CorrelationMatrix
 from dials.algorithms.correlation.cluster import ClusterInfo
 from dials.array_family import flex
@@ -28,9 +30,23 @@ class DialsCorrelationMatrix:
 
         self._params: libtbx.phil.scope_extract = phil_scope.extract()
 
+        # Set defaults
         self._ids_to_identifiers_map = None
         self._use_xpid = True
         self._params.output.json = "dials.correlation_matrix.json"
+
+        # Initial Properties
+        self._correlation_clusters: list[ClusterInfo] = []
+        self._cos_angle_clusters: List[ClusterInfo] = []
+        self._significant_clusters: List[ClusterInfo] = []
+        self._cc_json: dict[str, Any] = {}
+        self._cos_json: dict[str, Any] = {}
+        self._cc_table: list[list[str]] = []
+        self._cos_table: list[list[str]] = []
+        self._rij_graphs: collections.OrderedDict[str, dict[str, Any]] = (
+            collections.OrderedDict()
+        )
+        self._pca_plot: dict[str, Any] = {}
 
     def set_buffer(self, buffer: float) -> None:
         self._params.significant_clusters.min_points_buffer = buffer
@@ -62,27 +78,27 @@ class DialsCorrelationMatrix:
         return self._significant_clusters
 
     @property
-    def cc_json(self) -> dict:
+    def cc_json(self) -> dict[str, Any]:
         return self._cc_json
 
     @property
-    def cos_json(self) -> dict:
+    def cos_json(self) -> dict[str, Any]:
         return self._cos_json
 
     @property
-    def cc_table(self) -> list:
+    def cc_table(self) -> list[list[str]]:
         return self._cc_table
 
     @property
-    def cos_table(self) -> list:
+    def cos_table(self) -> list[list[str]]:
         return self._cos_table
 
     @property
-    def rij_graphs(self) -> dict:
+    def rij_graphs(self) -> collections.OrderedDict[str, dict[str, Any]]:
         return self._rij_graphs
 
     @property
-    def pca_plot(self) -> dict:
+    def pca_plot(self) -> dict[str, Any]:
         return self._pca_plot
 
     @property

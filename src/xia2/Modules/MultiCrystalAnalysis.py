@@ -153,17 +153,19 @@ class MultiCrystalAnalysis:
         intensity_clustering.set_xi(self.params.significant_clusters.xi)
         intensity_clustering.run(self._data_manager.experiments, reflections)
 
-        self.cc_clusters = intensity_clustering.correlation_clusters
-        self.cos_clusters = intensity_clustering.cos_angle_clusters
-        self._cc_cluster_json = intensity_clustering.cc_json
-        self._cos_angle_cluster_json = intensity_clustering.cos_json
-        self._cc_cluster_table = intensity_clustering.cc_table
-        self._cos_angle_cluster_table = intensity_clustering.cos_table
-        self._cosym_graphs = intensity_clustering.rij_graphs
+        self.cc_clusters: list[ClusterInfo] = intensity_clustering.correlation_clusters
+        self.cos_clusters: list[ClusterInfo] = intensity_clustering.cos_angle_clusters
+        self._cc_cluster_json: dict[str, Any] = intensity_clustering.cc_json
+        self._cos_angle_cluster_json: dict[str, Any] = intensity_clustering.cos_json
+        self._cc_cluster_table: list[list[str]] = intensity_clustering.cc_table
+        self._cos_angle_cluster_table: list[list[str]] = intensity_clustering.cos_table
+        self._cosym_graphs: OrderedDict[str, dict[str, Any]] = (
+            intensity_clustering.rij_graphs
+        )
         self.significant_coordinate_clusters: list[ClusterInfo] = (
             intensity_clustering.significant_clusters
         )
-        self._pca_plot = intensity_clustering.pca_plot
+        self._pca_plot: dict[str, Any] = intensity_clustering.pca_plot
 
         data_in_clusters = 0
         for i in self.significant_coordinate_clusters:
