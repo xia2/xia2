@@ -503,3 +503,49 @@ def test_clean_exit_on_stills_data(dials_data, run_in_tmp_path):
                 f"{ssx / 'integrated.expt'}",
             ],
         )
+
+
+def test_on_import_xds_data(dials_data, run_in_tmp_path):
+    import shutil
+    import subprocess
+
+    result = subprocess.run(
+        [
+            shutil.which("dials.import_xds"),
+            dials_data("insulin_processed_xds_1", pathlib=True),
+            "output.reflections=integrate_hkl_1.refl",
+            "output.xds_experiments=xds_models_1.expt",
+        ],
+        cwd=run_in_tmp_path,
+        capture_output=True,
+    )
+    assert not result.returncode and not result.stderr
+    assert (run_in_tmp_path / "xds_models_1.expt").is_file()
+    assert (run_in_tmp_path / "integrate_hkl_1.refl").is_file()
+    result = subprocess.run(
+        [
+            shutil.which("dials.import_xds"),
+            dials_data("insulin_processed_xds_2", pathlib=True),
+            "output.reflections=integrate_hkl_2.refl",
+            "output.xds_experiments=xds_models_2.expt",
+        ],
+        cwd=run_in_tmp_path,
+        capture_output=True,
+    )
+    assert not result.returncode and not result.stderr
+    assert (run_in_tmp_path / "xds_models_2.expt").is_file()
+    assert (run_in_tmp_path / "integrate_hkl_2.refl").is_file()
+
+    command_line_args = [
+        "integrate_hkl_1.refl",
+        "integrate_hkl_2.refl",
+        "xds_models_1.expt",
+        "xds_models_2.expt",
+    ]
+    run_multiplex(command_line_args)
+
+    for f in expected_data_files:
+        assert pathlib.Path(f).is_file(), "expected file %s missing" % f
+
+    expts = load.experiment_list("scaled.expt", check_format=False)
+    assert len(expts) == 2
