@@ -1,11 +1,11 @@
 from __future__ import annotations
 
-import collections.OrderedDict
 import logging
+from collections import OrderedDict
+from pathlib import Path
 from typing import Any, List
 
 import libtbx.phil
-import Path
 from dials.algorithms.correlation.analysis import CorrelationMatrix
 from dials.algorithms.correlation.cluster import ClusterInfo
 from dials.array_family import flex
@@ -43,9 +43,7 @@ class DialsCorrelationMatrix:
         self._cos_json: dict[str, Any] = {}
         self._cc_table: list[list[str]] = []
         self._cos_table: list[list[str]] = []
-        self._rij_graphs: collections.OrderedDict[str, dict[str, Any]] = (
-            collections.OrderedDict()
-        )
+        self._rij_graphs: OrderedDict[str, dict[str, Any]] = OrderedDict()
         self._pca_plot: dict[str, Any] = {}
 
     def set_buffer(self, buffer: float) -> None:
@@ -94,7 +92,7 @@ class DialsCorrelationMatrix:
         return self._cos_table
 
     @property
-    def rij_graphs(self) -> collections.OrderedDict[str, dict[str, Any]]:
+    def rij_graphs(self) -> OrderedDict[str, dict[str, Any]]:
         return self._rij_graphs
 
     @property
