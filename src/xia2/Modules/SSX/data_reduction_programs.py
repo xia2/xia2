@@ -628,7 +628,9 @@ def scale_against_reference(
         # expts = load.experiment_list(files.expt, check_format=False)
         # table = flex.reflection_table.from_file(files.refl)
         expts, table = combined_files_for_batch(
-            batch, reduction_params.partiality_threshold
+            batch,
+            reduction_params.remove_filtered_reflections,
+            reduction_params.partiality_threshold,
         )
         params, diff_phil = _extract_scaling_params_for_scale_against_reference(
             reduction_params, name
@@ -739,18 +741,22 @@ def scale_on_batches(
                         table = table.select_on_experiment_identifiers(list(ids))
                         table.reset_ids()
                     # Do some filtering to reduce the table size (typically by over half)
-                    sel = table.get_flags(table.flags.integrated_sum)
-                    if "partiality" in table:
-                        sel &= (
-                            table["partiality"] > reduction_params.partiality_threshold
-                        )
-                    table = table.select(sel)
-                    if len(set(table["id"])) != len(ids):
-                        table.clean_experiment_identifiers_map()
-                        table.reset_ids()
-                        expts.select_on_experiment_identifiers(
-                            list(table.experiment_identifiers().values())
-                        )
+                    if reduction_params.remove_filtered_reflections:
+                        sel = table.get_flags(table.flags.integrated_sum)
+                        if (
+                            "partiality" in table
+                        ):  # Not the case for stills (not ellipsoid) integration algorithm
+                            sel &= (
+                                table["partiality"]
+                                > reduction_params.partiality_threshold
+                            )
+                        table = table.select(sel)
+                        if len(set(table["id"])) != len(ids):
+                            table.clean_experiment_identifiers_map()
+                            table.reset_ids()
+                            expts.select_on_experiment_identifiers(
+                                list(table.experiment_identifiers().values())
+                            )
                 all_expts.extend(expts)
                 tables.append(table)
         expts = all_expts
@@ -850,7 +856,9 @@ def _extract_cosym_params(reduction_params, index):
     return cosym_params, diff_phil
 
 
-def combined_files_for_batch(batch, partiality_threshold=0.25):
+def combined_files_for_batch(
+    batch, remove_filtered_reflections, partiality_threshold=0.25
+):
     all_expts = ExperimentList([])
     tables = []
     for fp in batch.filepairs:
@@ -863,16 +871,19 @@ def combined_files_for_batch(batch, partiality_threshold=0.25):
                 table = table.select_on_experiment_identifiers(list(ids))
                 table.reset_ids()
             # Do some filtering to reduce the table size (typically by over half)
-            sel = table.get_flags(table.flags.integrated_sum)
-            if "partiality" in table:
-                sel &= table["partiality"] > partiality_threshold
-            table = table.select(sel)
-            if len(set(table["id"])) != len(ids):
-                table.clean_experiment_identifiers_map()
-                table.reset_ids()
-                expts.select_on_experiment_identifiers(
-                    list(table.experiment_identifiers().values())
-                )
+            if remove_filtered_reflections:
+                sel = table.get_flags(table.flags.integrated_sum)
+                if (
+                    "partiality" in table
+                ):  # Not the case for stills (not ellipsoid) integration algorithm
+                    sel &= table["partiality"] > partiality_threshold
+                table = table.select(sel)
+                if len(set(table["id"])) != len(ids):
+                    table.clean_experiment_identifiers_map()
+                    table.reset_ids()
+                    expts.select_on_experiment_identifiers(
+                        list(table.experiment_identifiers().values())
+                    )
         all_expts.extend(expts)
         tables.append(table)
     if len(tables) > 1:
@@ -908,7 +919,9 @@ def individual_cosym(
         # cosym_params.cc_star_threshold = 0.1
         # cosym_params.angular_separation_threshold = 5
         expts, table = combined_files_for_batch(
-            batch, reduction_params.partiality_threshold
+            batch,
+            reduction_params.remove_filtered_reflections,
+            reduction_params.partiality_threshold,
         )
 
         tables = table.split_by_experiment_id()

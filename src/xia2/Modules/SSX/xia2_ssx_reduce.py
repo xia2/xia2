@@ -123,6 +123,15 @@ filtering {
     .type = float(allow_none=True)
     .help = "Apply a per-image mean I/sigma filter, calculated on reflections with"
             "partialities above the partiality_threshold."
+  remove_filtered_reflections = True
+    .type = bool
+    .help = "In the output DIALS reflection files, remove reflections that we not"
+            "successfully integrated, or that had partiality values below the"
+            "partiality threshold, which don't contribute to the final merged data."
+            "The actual filtering is controlled by the separate partiality_threshold"
+            "parameter. If False, these reflections are retained in the output files"
+            "even though they don't contribute to the final merged data, which may"
+            "be useful for debugging or further analysis."
 }
 symmetry {
   space_group = None
