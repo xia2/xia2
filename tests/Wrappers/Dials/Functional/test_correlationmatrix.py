@@ -41,7 +41,7 @@ def test_non_default_parameters(proteinase_k, run_in_tmp_path):
     expts, refls = proteinase_k
     intensity_clustering = DialsCorrelationMatrix()
     intensity_clustering.use_xpid = False
-    intensity_clustering.set_xi = 0.05
+    intensity_clustering.set_xi(0.05)
     intensity_clustering.set_buffer(0.7)
     intensity_clustering.set_output_json("test.correlation_matrix.json")
     intensity_clustering.run(expts, refls)
