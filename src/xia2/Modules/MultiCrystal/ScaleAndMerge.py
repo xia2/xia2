@@ -276,6 +276,15 @@ remove_profile_fitting_failures = True
 
 include scope dials.algorithms.merging.merge.r_free_flags_phil_scope
 
+significant_clusters {
+  min_points_buffer = 0.5
+    .type = float(value_min=0, value_max=1)
+    .help = "Buffer for minimum number of points required for a cluster in OPTICS algorithm: min_points=(number_of_datasets/number_of_dimensions)*buffer"
+  xi = 0.05
+    .type = float(value_min=0, value_max=1)
+    .help = "xi parameter to determine min steepness to define cluster boundary"
+}
+
 """,
     process_includes=True,
 )
@@ -1142,6 +1151,10 @@ class MultiCrystalScale:
         params = mca_phil.extract()
         params.prefix = "xia2.multiplex"
         params.title = "xia2.multiplex report"
+        params.significant_clusters.xi = self._params.significant_clusters.xi
+        params.significant_clusters.min_points_buffer = (
+            self._params.significant_clusters.min_points_buffer
+        )
         data_manager = copy.deepcopy(self._data_manager)
         refl = data_manager.reflections
         data_manager.reflections = refl.select(refl["d"] >= self._scaled.d_min)

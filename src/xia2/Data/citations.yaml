@@ -298,3 +298,26 @@ xia2.ssx:
   software_name: xia2.ssx
   software_type: program
   url: https://doi.org/10.1016/bs.mie.2024.10.004
+
+dials.correlation_matrix:
+- acta: Thompson, A. J. et al. (2025) Acta Cryst. D81, 278-290.
+  bibtex: |
+    @article{Thompson:rr5252,
+    author = "Thompson, Amy J. and Beilsten-Edmands, James and Tam, Cicely and Sanchez-Weatherby, Juan and Sandy, James and Mikolajek, Halina and Axford, Danny and Jaho, Sofia and Hough, Michael A. and Winter, Graeme",
+    title = "{Enhanced intensity-based clustering of isomorphous multi-crystal data sets in the presence of subtle variations}",
+    journal = "Acta Crystallographica Section D",
+    year = "2025",
+    volume = "81",
+    number = "6",
+    pages = "278--290",
+    month = "Jun",
+    doi = {10.1107/S2059798325004589},
+    url = {https://doi.org/10.1107/S2059798325004589},
+    abstract = {Multi-crystal processing of X-ray diffraction data has become highly automated to keep pace with the current high-throughput capabilities afforded by beamlines. A significant challenge, however, is the automated clustering of such data based on subtle differences such as ligand binding or conformational shifts. Intensity-based hierarchical clustering has been shown to be a viable method of identifying such subtle structural differences, but the interpretation of the resulting dendrograms is difficult to automate. Using isomorphous crystals of bovine, porcine and human insulin, the existing clustering methods in the multi-crystal processing software {\it xia}2.{\it multiplex} were validated and their limits were tested. It was determined that weighting the pairwise correlation coefficient calculations with the intensity uncertainties was required for accurate calculation of the pairwise correlation coefficient matrix (correlation clustering) and dimension optimization was required when expressing this matrix as a set of coordinates representing data sets (cosine-angle clustering). Finally, the introduction of the {\it OPTICS} spatial density-based clustering algorithm into {\it DIALS} allowed the automatic output of species-pure clusters of bovine, porcine and human insulin data sets.},
+    keywords = {multi-crystal data sets, data processing, clustering, automation},
+    }
+  software_classification: data processing
+  software_description: 'dials.correlation_matrix: intensity-based clustering of multi-crystal datasets'
+  software_name: dials.correlation_matrix
+  software_type: program
+  url: https://doi.org/10.1107/S2059798325004589
