@@ -1,3 +1,27 @@
+xia2 3.25.0 (2025-06-20)
+========================
+
+Features
+--------
+
+- ``xia2.multiplex``: Added new features to export unmerged reflections in mmcif format. (`#845 <https://github.com/xia2/xia2/issues/845>`_)
+- ``xia2.ssx``: Add ``d_max=`` parameter to apply low resolution cutoff. (`#851 <https://github.com/xia2/xia2/issues/851>`_)
+- ``xia2.multiplex``: Significantly speed up multiplex report generation by using dials 𝚫CC½ code. (`#860 <https://github.com/xia2/xia2/issues/860>`_)
+
+
+Bugfixes
+--------
+
+- ``xia2.ssx``: Fix crash on windows when using ``image=file.nxs:start:end`` syntax. (`#854 <https://github.com/xia2/xia2/issues/854>`_)
+- ``xia2.multiplex``: Fix crash in report generation if run with ``resolve_indexing_ambiguity=False``. (`#861 <https://github.com/xia2/xia2/issues/861>`_)
+
+
+Misc
+----
+
+- `#844 <https://github.com/xia2/xia2/issues/844>`_, `#846 <https://github.com/xia2/xia2/issues/846>`_, `#848 <https://github.com/xia2/xia2/issues/848>`_, `#849 <https://github.com/xia2/xia2/issues/849>`_, `#850 <https://github.com/xia2/xia2/issues/850>`_, `#855 <https://github.com/xia2/xia2/issues/855>`_, `#856 <https://github.com/xia2/xia2/issues/856>`_, `#857 <https://github.com/xia2/xia2/issues/857>`_, `#858 <https://github.com/xia2/xia2/issues/858>`_, `#859 <https://github.com/xia2/xia2/issues/859>`_, `#862 <https://github.com/xia2/xia2/issues/862>`_, `#863 <https://github.com/xia2/xia2/issues/863>`_, `#864 <https://github.com/xia2/xia2/issues/864>`_, `#866 <https://github.com/xia2/xia2/issues/866>`_, `#867 <https://github.com/xia2/xia2/issues/867>`_
+
+
 xia2 3.24.0 (2025-04-29)
 ========================
 
