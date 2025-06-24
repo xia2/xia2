@@ -4,7 +4,10 @@ Multi-crystal data reduction with xia2.multiplex
 
 xia2.multiplex is a DIALS-based data reduction pipeline for combining integrated data from hundreds of
 small-wedge rotation datasets. The input to the pipeline is DIALS integrated datafiles
-(i.e. ``integrated.expt`` and ``integrated.refl`` files). xia2.multiplex performs the following routine: unit cell filtering, laue group analysis, unit cell 
+(i.e. ``integrated.expt`` and ``integrated.refl`` files). As of DIALS version 3.25, XDS integrated data can also
+be processed if each ``INTEGRATE.HKL`` file is converted using ``dials.import_xds``.
+
+xia2.multiplex performs the following routine: unit cell filtering, laue group analysis, unit cell
 refinement, scaling, resolution analysis, space group analysis and merging. Additional non-isomorphism analysis is peformed and
 dataset statistics and clustering are presented in the ``xia2.multiplex.html`` report.
 For full details, see the publication at https://doi.org/10.1107/S2059798322004399 .
@@ -14,7 +17,7 @@ Although xia2.multiplex will automatically determine the resolution and space gr
 
 One feature of xia2.multiplex is the ability to optionally trigger further processing of subsets of the data. 
 This guide provides an updated description of the different clustering options, which have been updated to use more intuitively named
-options in xia2/DIALS versions greater than v3.22, as well as incorporating some additional features developed since this initial publication.
+options in xia2/DIALS versions greater than 3.22, as well as incorporating some additional features developed since this initial publication.
 
 ---------------------------------------
 Scaling and merging of dataset clusters
@@ -25,7 +28,8 @@ Note that the clustering options described here can also be run standalone with 
 data files (``scaled.expt``, ``scaled.refl``) as input, but each cluster will not be further scaled and merged.
 
 Dataset clustering can be performed based on a hierarchical dendrogram analysis (``clustering.method=hierarchical``)
-or on density-based analysis of the cosym coordinates (``clustering.method=coordinate``).
+or on density-based analysis of the cosym coordinates (``clustering.method=coordinate``). See the publication at https://doi.org/10.1107/S2059798325004589 for
+more details of the density-based analysis.
 
 Hierarchical clustering can be performed on one of two metrics; correlation coefficient clustering, based on pairwise
 correlations between datasets, and 'cos-angle' clustering, based on angular separation of datasets
