@@ -461,8 +461,6 @@ def template_to_xds(template):
         # Given (e.g.) XYZ_master.h5 and data files XYZ_data_00000[0-9].h5
         # XDS expects the template XYZ_??????.h5
 
-        # assert template.endswith("master.h5"), template
-
         # FIXME for #401 - should look into the master file for references
         # either explicitly to child data sets or via the VDS - meantimes,
         # remove the check
