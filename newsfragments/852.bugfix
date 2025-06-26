@@ -1,0 +1,4 @@
+Fix processing of Nexus Singla datasets with the XDS pipeline
+
+Fix passing of the xia2 Phil parameters to the XDS wrapper
+

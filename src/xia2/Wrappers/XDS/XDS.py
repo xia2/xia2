@@ -3,6 +3,7 @@ from __future__ import annotations
 import datetime
 import logging
 import os
+import re
 import subprocess
 import time
 
@@ -164,6 +165,7 @@ def imageset_to_xds(
         "rigaku saturn a200": True,
         "raxis IV": True,
         "NOIR1": True,
+        "singla": True,
     }
 
     sensor = converter.get_detector()[0].get_type()
@@ -458,7 +460,6 @@ def template_to_xds(template):
     if is_hdf5_name(template):
         # Given (e.g.) XYZ_master.h5 and data files XYZ_data_00000[0-9].h5
         # XDS expects the template XYZ_??????.h5
-        assert template.endswith("master.h5"), template
 
         # FIXME for #401 - should look into the master file for references
         # either explicitly to child data sets or via the VDS - meantimes,
@@ -472,7 +473,7 @@ def template_to_xds(template):
         # we don't know what is in the master file but we know at this point
         # that the word master is in there, so... otherwise can get complicated
         # side-effects when people have a folder named e.g. data_200.
-        return template.replace("master.h5", "??????.h5")
+        return re.sub(r"_master\.h5$|\.nxs$", "_??????.h5", template)
 
     return template.replace("#", "?")
 
