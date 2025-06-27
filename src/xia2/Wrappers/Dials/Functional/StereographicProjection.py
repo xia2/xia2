@@ -64,6 +64,10 @@ class StereographicProjection:
     @handle_fail
     def run(self, experiments):
         xia2_logger.debug("Running dials.stereographic_projection")
+        if not self._params.hkl:
+            raise ValueError(
+                "No hkl value set in dials.stereographic_projection wrapper"
+            )
         xpid = _get_number()
         self._logfile = (
             self._working_directory / f"{xpid}_dials.stereographic_projection.log"
