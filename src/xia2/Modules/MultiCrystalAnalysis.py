@@ -75,7 +75,7 @@ class MultiCrystalAnalysis:
         sp_json_files = {}
         sp = StereographicProjection()
         if labels:
-            sp.labels = labels
+            sp.labels = [str(i) for i in labels]
         expts = load.experiment_list(experiments_filename, check_format=False)
         for hkl in ((1, 0, 0), (0, 1, 0), (0, 0, 1)):
             sp.hkl = hkl

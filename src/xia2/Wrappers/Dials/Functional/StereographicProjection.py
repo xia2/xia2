@@ -54,8 +54,8 @@ class StereographicProjection:
         return self._labels
 
     @labels.setter
-    def labels(self, labels: list[int]) -> None:
-        self._labels = [str(i) for i in labels]
+    def labels(self, labels: list[str]) -> None:
+        self._labels = labels
 
     @property
     def json_filename(self) -> Path | None:
