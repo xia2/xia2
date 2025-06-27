@@ -74,13 +74,13 @@ class MultiCrystalAnalysis:
     ) -> dict[tuple[int, int, int], str]:
         sp_json_files = {}
         sp = StereographicProjection()
+        if labels:
+            sp.labels = labels
         expts = load.experiment_list(experiments_filename, check_format=False)
         for hkl in ((1, 0, 0), (0, 1, 0), (0, 0, 1)):
-            sp.set_hkl(hkl)
-            if labels:
-                sp.set_labels(labels)
+            sp.hkl = hkl
             sp.run(expts)
-            sp_json_files[hkl] = sp.json_filename
+            sp_json_files[hkl] = str(sp.json_filename)
 
         return sp_json_files
 

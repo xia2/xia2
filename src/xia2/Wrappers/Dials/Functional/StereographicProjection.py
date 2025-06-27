@@ -26,42 +26,58 @@ class StereographicProjection:
         else:
             self._working_directory = Path.cwd()
 
-        self.params: libtbx.phil.scope_extract = phil_scope.extract()
+        self._params: libtbx.phil.scope_extract = phil_scope.extract()
 
         # Don't set these on the params as not necessary - unless wanted in diff phil.
-        self._json_filename = None
-        self._labels = None
+        self._json_filename: Path | None = None
+        self._labels: list[int] | None = None
+        self._logfile: Path | None = None
 
-    def set_hkl(self, hkl: tuple[int, int, int]) -> None:
-        self.params.hkl = [hkl]
-        self._json_filename = "stereographic_projection_%i%i%i.json" % (
-            hkl[0],
-            hkl[1],
-            hkl[2],
+    @property
+    def logfile(self) -> Path | None:
+        return self._logfile
+
+    @property
+    def hkl(self) -> tuple[int, int, int] | None:
+        return self._params.hkl[0] if self._params.hkl else None
+
+    @hkl.setter
+    def hkl(self, hkl: tuple[int, int, int]) -> None:
+        self._params.hkl = [hkl]
+        self._json_filename = (
+            self._working_directory
+            / f"stereographic_projection_{hkl[0]}{hkl[1]}{hkl[2]}.json"
         )
 
-    def set_labels(self, labels):
+    @property
+    def labels(self) -> list[int] | None:
+        return self._labels
+
+    @labels.setter
+    def labels(self, labels: list[int]) -> None:
         self._labels = labels
 
     @property
-    def json_filename(self):
+    def json_filename(self) -> Path | None:
         return self._json_filename
 
     @handle_fail
     def run(self, experiments):
         xia2_logger.debug("Running dials.stereographic_projection")
         xpid = _get_number()
-        logfile = f"{xpid}_dials.stereographic_projection.log"
-        self._json_filename = self._working_directory / (
-            f"{xpid}_" + self._json_filename
+        self._logfile = (
+            self._working_directory / f"{xpid}_dials.stereographic_projection.log"
+        )
+        self._json_filename = self._json_filename.parent / (
+            f"{xpid}_" + self._json_filename.name
         )
         with (
             run_in_directory(self._working_directory),
             record_step("dials.stereographic_projection"),
-            log_to_file(logfile) as dials_logger,
+            log_to_file(self._logfile) as dials_logger,
         ):
-            dials_logger.info(diff_phil_from_params_and_scope(self.params, phil_scope))
-            projections_all, _ = calculate_projections(experiments, self.params)
+            dials_logger.info(diff_phil_from_params_and_scope(self._params, phil_scope))
+            projections_all, _ = calculate_projections(experiments, self._params)
             projections_as_json(
                 projections_all, filename=self._json_filename, labels=self._labels
             )
