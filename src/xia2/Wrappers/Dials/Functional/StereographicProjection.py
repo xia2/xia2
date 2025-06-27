@@ -30,7 +30,7 @@ class StereographicProjection:
 
         # Don't set these on the params as not necessary - unless wanted in diff phil.
         self._json_filename: Path | None = None
-        self._labels: list[int] | None = None
+        self._labels: list[str] | None = None
         self._logfile: Path | None = None
 
     @property
@@ -50,12 +50,12 @@ class StereographicProjection:
         )
 
     @property
-    def labels(self) -> list[int] | None:
+    def labels(self) -> list[str] | None:
         return self._labels
 
     @labels.setter
     def labels(self, labels: list[int]) -> None:
-        self._labels = labels
+        self._labels = [str(i) for i in labels]
 
     @property
     def json_filename(self) -> Path | None:
