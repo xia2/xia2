@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import concurrent.futures
 import copy
 import logging
 import math
@@ -23,6 +24,7 @@ from dxtbx.util import format_float_with_standard_uncertainty
 from libtbx import Auto
 from scitbx.math import five_number_summary
 
+from xia2.Driver.timing import record_step
 from xia2.Handlers.Phil import PhilIndex
 from xia2.Handlers.Streams import banner
 from xia2.lib.bits import auto_logfiler
@@ -35,6 +37,7 @@ from xia2.Modules.Scaler.DialsScaler import (
     convert_unmerged_mtz_to_sca,
     scaling_model_auto_rules,
 )
+from xia2.Modules.SSX.util import redirect_xia2_logger
 from xia2.Wrappers.Dials.Cosym import DialsCosym
 from xia2.Wrappers.Dials.EstimateResolution import EstimateResolution
 from xia2.Wrappers.Dials.Functional.Merge import Merge
@@ -530,22 +533,12 @@ class MultiCrystalScale:
                 self._cc_clusters,
             )
 
-            if not self._params.clustering.hierarchical.distinct_clusters:
-                for c, cluster_identifiers, cluster in subclusters:
-                    cluster_dir = f"{c}_cluster_{cluster.cluster_id}"
-                    self._scale_and_report_cluster(
-                        self._data_manager,
-                        cluster_dir,
-                        cluster_identifiers,
-                        cluster,
-                    )
-
             if self._params.clustering.hierarchical.distinct_clusters:
                 self.cos_clusters = []
                 self.cc_clusters = []
                 self.cos_cluster_ids = {}
                 self.cc_cluster_ids = {}
-                for c, cluster_identifiers, cluster in subclusters:
+                for cluster_dir, c, cluster_identifiers, cluster in subclusters:
                     if c == "cos":
                         self.cos_clusters.append(cluster)
                         self.cos_cluster_ids[cluster.cluster_id] = cluster_identifiers
@@ -563,10 +556,9 @@ class MultiCrystalScale:
                         )
                     )
 
-                    for item in list_of_clusters:
-                        cluster_no = item.split("_")[-1]
-                        cluster_dir = f"{cty}_cluster_{cluster_no}"
+                    subclusters = []
 
+                    for item in list_of_clusters:
                         for cluster in clusters:
                             if f"cluster_{cluster.cluster_id}" == item:
                                 ids = (
@@ -574,9 +566,7 @@ class MultiCrystalScale:
                                     if k
                                     else self.cos_cluster_ids[cluster.cluster_id]
                                 )
-                                self._scale_and_report_cluster(
-                                    self._data_manager, cluster_dir, ids, cluster
-                                )
+                                subclusters.append((cluster_dir, cty, ids, cluster))
                                 break
         if (
             self._params.clustering.output_clusters
@@ -587,6 +577,7 @@ class MultiCrystalScale:
                 self._mca.significant_coordinate_clusters
             )
             count = 0
+            subclusters = []
             for s_c in significant_clusters:
                 if s_c.completeness < self._params.clustering.min_completeness:
                     continue
@@ -602,10 +593,48 @@ class MultiCrystalScale:
                 cluster_identifiers = [
                     self._data_manager.ids_to_identifiers_map[l] for l in s_c.labels
                 ]
-                self._scale_and_report_cluster(
-                    self._data_manager, cluster_dir, cluster_identifiers, s_c
+                subclusters.append(
+                    (cluster_dir, "coordinate", cluster_identifiers, s_c)
                 )
                 count += 1
+
+        with (
+            record_step("dials.scale (parallel)"),
+            concurrent.futures.ProcessPoolExecutor(
+                max_workers=self._params.nproc
+            ) as pool,
+        ):
+            cluster_futures = {
+                pool.submit(
+                    self._scale_and_report_cluster,
+                    self._data_manager,
+                    cluster[0],
+                    cluster[2],
+                    cluster[3],
+                ): index
+                for index, cluster in enumerate(subclusters)
+            }
+            for future in concurrent.futures.as_completed(cluster_futures):
+                idx = cluster_futures[future]
+                try:
+                    stream = future.result()
+                except Exception as e:
+                    raise ValueError(f"FAILED BECAUSE {e}")
+                else:
+                    logger.info(stream)
+                    # logger.notice(banner(f"{subclusters[idx][0]}"))  # type: ignore
+                    # logger.info(subclusters[idx][3])
+                    # logger.info(f"Resolution limit: {dmin:.2f} ({reason})")
+                    # self._record_individual_report(
+                    # report,
+                    # subclusters[idx][0].replace("_", " "),
+                    # )
+                    print(idx)  # TMP4TESTING
+
+        # logger.info('TESTING')
+        # logger.info(s)
+
+        exit()
 
         if self._params.filtering.method:
             logger.notice(banner("Rescaling with extra filtering"))  # type: ignore
@@ -760,18 +789,23 @@ class MultiCrystalScale:
         cluster_dir: str,
         cluster_identifiers: list[str],
         cluster: ClusterInfo,
-    ) -> None:
-        cwd = pathlib.Path.cwd()
-        if not os.path.exists(cluster_dir):
-            os.mkdir(cluster_dir)
-        os.chdir(cluster_dir)
-        logger.notice(banner(f"{cluster_dir}"))  # type: ignore
-        logger.info(cluster)
-        scaled: Scale = self.scale_cluster(
-            data_manager, cluster_identifiers, True, f"{cluster_dir}_scaled"
-        )
-        self._record_individual_report(scaled.report(), cluster_dir.replace("_", " "))
-        os.chdir(cwd)
+    ) -> str:
+        with redirect_xia2_logger() as iostream:
+            cwd = pathlib.Path.cwd()
+            if not os.path.exists(cluster_dir):
+                os.mkdir(cluster_dir)
+            os.chdir(cluster_dir)
+            logger.notice(banner(f"{cluster_dir}"))  # type: ignore
+            logger.info(cluster)
+            scaled: Scale = self.scale_cluster(
+                data_manager, cluster_identifiers, True, f"{cluster_dir}_scaled"
+            )
+            self._record_individual_report(
+                scaled.report(), cluster_dir.replace("_", " ")
+            )
+            os.chdir(cwd)
+            s = iostream.getvalue()
+        return s
 
     def _record_individual_report(
         self, report: Report.Report, cluster_name: str
