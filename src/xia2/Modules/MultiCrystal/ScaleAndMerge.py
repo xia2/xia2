@@ -37,7 +37,7 @@ from xia2.Modules.Scaler.DialsScaler import (
     convert_unmerged_mtz_to_sca,
     scaling_model_auto_rules,
 )
-from xia2.Modules.SSX.util import redirect_xia2_logger
+from xia2.Modules.SSX.util import redirect_xia2_logger_mplx
 from xia2.Wrappers.Dials.Cosym import DialsCosym
 from xia2.Wrappers.Dials.EstimateResolution import EstimateResolution
 from xia2.Wrappers.Dials.Functional.Merge import Merge
@@ -615,26 +615,13 @@ class MultiCrystalScale:
                 for index, cluster in enumerate(subclusters)
             }
             for future in concurrent.futures.as_completed(cluster_futures):
-                idx = cluster_futures[future]
+                # idx = cluster_futures[future]
                 try:
-                    stream = future.result()
+                    info_stream, debug_stream = future.result()
                 except Exception as e:
                     raise ValueError(f"FAILED BECAUSE {e}")
                 else:
-                    logger.info(stream)
-                    # logger.notice(banner(f"{subclusters[idx][0]}"))  # type: ignore
-                    # logger.info(subclusters[idx][3])
-                    # logger.info(f"Resolution limit: {dmin:.2f} ({reason})")
-                    # self._record_individual_report(
-                    # report,
-                    # subclusters[idx][0].replace("_", " "),
-                    # )
-                    print(idx)  # TMP4TESTING
-
-        # logger.info('TESTING')
-        # logger.info(s)
-
-        exit()
+                    logger.info(info_stream)
 
         if self._params.filtering.method:
             logger.notice(banner("Rescaling with extra filtering"))  # type: ignore
@@ -789,8 +776,8 @@ class MultiCrystalScale:
         cluster_dir: str,
         cluster_identifiers: list[str],
         cluster: ClusterInfo,
-    ) -> str:
-        with redirect_xia2_logger() as iostream:
+    ) -> tuple[str, str]:
+        with redirect_xia2_logger_mplx() as iostream:
             cwd = pathlib.Path.cwd()
             if not os.path.exists(cluster_dir):
                 os.mkdir(cluster_dir)
@@ -804,8 +791,9 @@ class MultiCrystalScale:
                 scaled.report(), cluster_dir.replace("_", " ")
             )
             os.chdir(cwd)
-            s = iostream.getvalue()
-        return s
+            info = iostream[1].getvalue()
+            debug = iostream[0].getvalue()
+        return info, debug
 
     def _record_individual_report(
         self, report: Report.Report, cluster_name: str

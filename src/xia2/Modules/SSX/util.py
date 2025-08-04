@@ -72,6 +72,39 @@ def redirect_xia2_logger(verbosity: int = 0) -> Generator[io.StringIO, None, Non
 
 
 @contextlib.contextmanager
+def redirect_xia2_logger_mplx(
+    verbosity: int = 0,
+) -> Generator[list[io.StringIO], None, None]:  # Generator[io.StringIO, None, None]:
+    # we want the xia2 logging to redirect to an iostream
+    xia2_logger = logging.getLogger("xia2")
+    original_levels = [fh.level for fh in xia2_logger.handlers]
+    try:
+        for fh in xia2_logger.handlers:
+            fh.setLevel(logging.ERROR)
+        debug_iostream = io.StringIO()
+        info_iostream = io.StringIO()
+        # Debug
+        debug_sh = logging.StreamHandler(debug_iostream)
+        debug_sh.setLevel(logging.DEBUG)
+        debug_sh.setFormatter(DialsLogfileFormatter(timed=verbosity))
+        xia2_logger.addHandler(debug_sh)
+        # Info
+        info_sh = logging.StreamHandler(info_iostream)
+        info_sh.setLevel(logging.INFO)
+        info_sh.setFormatter(DialsLogfileFormatter(timed=verbosity))
+        xia2_logger.addHandler(info_sh)
+        yield [debug_iostream, info_iostream]
+    finally:
+        debug_iostream.close()
+        info_iostream.close()
+        debug_sh.close()
+        info_sh.close()
+        xia2_logger.handlers.pop()
+        for fh, oldlevel in zip(xia2_logger.handlers, original_levels):
+            fh.setLevel(oldlevel)
+
+
+@contextlib.contextmanager
 def run_in_directory(directory: Path) -> Generator[Path, None, None]:
     owd = os.getcwd()
     try:
