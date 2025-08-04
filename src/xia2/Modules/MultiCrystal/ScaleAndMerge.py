@@ -19,6 +19,7 @@ from dials.util.export_mtz import match_wavelengths
 from dials.util.system import CPU_COUNT
 from dxtbx.model import ExperimentList
 from dxtbx.serialize import load
+from dxtbx.util import format_float_with_standard_uncertainty
 from libtbx import Auto
 from scitbx.math import five_number_summary
 
@@ -1076,6 +1077,10 @@ class MultiCrystalScale:
             logger.info(
                 "Laue group determined by dials.cosym: %s" % best_space_group.info()
             )
+        elif self._params.symmetry.space_group:
+            logger.info(f"Using input space group: {self._params.symmetry.space_group}")
+        elif self._params.symmetry.laue_group:
+            logger.info(f"Using input Laue group: {self._params.symmetry.laue_group}")
 
     def reindex(self) -> None:
         logger.debug("Running reindexing")
@@ -1306,6 +1311,13 @@ class Scale:
         tt_refiner.set_reflection_files([reflections_filename])
         tt_refiner.set_combine_crystal_models(combine_crystal_models)
         tt_refiner.run()
+        uc = tt_refiner.get_unit_cell()
+        uc_sd = tt_refiner.get_unit_cell_esd()
+        cell_str = [
+            format_float_with_standard_uncertainty(v, e, minimum=1.0e-5)
+            for (v, e) in zip(uc, uc_sd)
+        ]
+        logger.info("Refined unit cell: " + ", ".join(cell_str))
         return tt_refiner.get_output_experiments()
 
     def scale(self, d_min: float | None = None, d_max: float | None = None) -> None:
