@@ -622,6 +622,7 @@ class MultiCrystalScale:
                     raise ValueError(f"FAILED BECAUSE {e}")
                 else:
                     logger.info(info_stream)
+                    logger.debug(debug_stream)
 
         if self._params.filtering.method:
             logger.notice(banner("Rescaling with extra filtering"))  # type: ignore
