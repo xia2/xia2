@@ -37,7 +37,7 @@ from xia2.Modules.Scaler.DialsScaler import (
     convert_unmerged_mtz_to_sca,
     scaling_model_auto_rules,
 )
-from xia2.Modules.SSX.util import redirect_xia2_logger_mplx
+from xia2.Modules.SSX.util import redirect_xia2_logger_split
 from xia2.Wrappers.Dials.Cosym import DialsCosym
 from xia2.Wrappers.Dials.EstimateResolution import EstimateResolution
 from xia2.Wrappers.Dials.Functional.Merge import Merge
@@ -599,7 +599,7 @@ class MultiCrystalScale:
                 count += 1
 
         with (
-            record_step("dials.scale (parallel)"),
+            record_step("dials.scale(parallel)"),
             concurrent.futures.ProcessPoolExecutor(
                 max_workers=self._params.nproc
             ) as pool,
@@ -615,11 +615,13 @@ class MultiCrystalScale:
                 for index, cluster in enumerate(subclusters)
             }
             for future in concurrent.futures.as_completed(cluster_futures):
-                # idx = cluster_futures[future]
+                idx = cluster_futures[future]
                 try:
                     info_stream, debug_stream = future.result()
                 except Exception as e:
-                    raise ValueError(f"FAILED BECAUSE {e}")
+                    raise ValueError(
+                        f"Cluster {idx} failed to scale and merge due to {e}"
+                    )
                 else:
                     logger.info(info_stream)
                     logger.debug(debug_stream)
@@ -778,7 +780,7 @@ class MultiCrystalScale:
         cluster_identifiers: list[str],
         cluster: ClusterInfo,
     ) -> tuple[str, str]:
-        with redirect_xia2_logger_mplx() as iostream:
+        with redirect_xia2_logger_split() as iostream:
             cwd = pathlib.Path.cwd()
             if not os.path.exists(cluster_dir):
                 os.mkdir(cluster_dir)

@@ -72,9 +72,9 @@ def redirect_xia2_logger(verbosity: int = 0) -> Generator[io.StringIO, None, Non
 
 
 @contextlib.contextmanager
-def redirect_xia2_logger_mplx(
+def redirect_xia2_logger_split(
     verbosity: int = 0,
-) -> Generator[list[io.StringIO], None, None]:  # Generator[io.StringIO, None, None]:
+) -> Generator[list[io.StringIO], None, None]:
     # we want the xia2 logging to redirect to an iostream
     xia2_logger = logging.getLogger("xia2")
     original_levels = [fh.level for fh in xia2_logger.handlers]
