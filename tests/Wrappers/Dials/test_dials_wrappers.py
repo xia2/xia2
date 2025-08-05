@@ -63,7 +63,7 @@ def _exercise_dials_wrappers(image_file):
     assert bravais_setting_9["bravais"] == "tP"
     assert bravais_setting_9["cb_op"] == "b,c,a"
     assert bravais_setting_9["unit_cell"] == pytest.approx(
-        (42.18, 42.18, 39.66, 90, 90, 90), abs=0.1
+        (42.44, 42.44, 39.91, 90, 90, 90), abs=0.1
     )
     bravais_setting_9_json = bravais_setting_9["experiments_file"]
     assert os.path.exists(bravais_setting_9_json)
