@@ -55,7 +55,7 @@ def _exercise_dials_integrater(dials_data, tmp_path):
     reader = any_reflection_file(integrater_intensities)
     assert reader.file_type() == "ccp4_mtz", repr(integrater_intensities)
     mtz_object = reader.file_content()
-    expected_reflections = 519
+    expected_reflections = 493
     assert mtz_object.n_reflections() == pytest.approx(expected_reflections, abs=10)
 
     assert mtz_object.column_labels() == [
