@@ -246,7 +246,10 @@ def clusters_from_experiments(
             space_group=expt.crystal.get_space_group(),
         )
         for expt in experiments
+        if expt.crystal
     ]
+    if not crystal_symmetries:
+        return {}, []
 
     if threshold == "auto":
         threshold = 5000
@@ -379,7 +382,7 @@ def ssx_index(
                 cluster_plots, large_clusters = ({}, [])
 
             summary_plots = {}
-            if indexed_experiments:
+            if any(indexed_experiments.crystals()):
                 summary_plots = generate_plots(summary_data)
             indexing_rate = f"{100 * n_images / n_hits:.2f}" if n_hits else "-"
             output_ = (
@@ -425,6 +428,11 @@ def run_refinement(
     ):
         indexed_refl = flex.reflection_table.from_file("indexed.refl")
         indexed_expts = load.experiment_list("indexed.expt", check_format=False)
+        indexed_expts = ExperimentList([e for e in indexed_expts if e.crystal])
+        indexed_refl = indexed_refl.select_on_experiment_identifiers(
+            indexed_expts.identifiers()
+        )
+        indexed_refl.reset_ids()
 
         extra_defaults = """
             refinement.parameterisation.beam.fix="all"
@@ -499,10 +507,34 @@ def ssx_integrate(
         logfile = "dials.ssx_integrate.log"
         with log_to_file(logfile) as dials_logger, record_step("dials.ssx_integrate"):
             # Set up the input and log it to the dials log file
-            indexed_refl = flex.reflection_table.from_file(
-                "indexed.refl"
-            ).split_by_experiment_id()
+            indexed_refl = flex.reflection_table.from_file("indexed.refl")
+            split_reflections = indexed_refl.split_by_experiment_id()
             indexed_expts = load.experiment_list("indexed.expt", check_format=True)
+            if len(split_reflections) != len(indexed_expts):
+                # spots may not have been found on every image. In this case, the length
+                # of the list of reflection tables will be less than the length of experiments.
+                # Add in empty items to the list, so that this can be reported on
+                obs = set(indexed_refl["id"])
+                no_refls = set(range(len(indexed_expts))).difference(obs)
+                # need to handle both cases where lots have no refls, or only a few do
+                for id_ in sorted(no_refls, reverse=True):
+                    del indexed_expts[id_]
+                reflections = split_reflections
+                if len(indexed_expts) != len(reflections):
+                    raise ValueError(
+                        f"Unequal number of reflection tables {len(reflections)} and experiments {len(indexed_expts)}"
+                    )
+            else:
+                reflections = split_reflections
+
+            indexed_reflections = []
+            indexed_experiments = []
+            for expt, table in zip(indexed_expts, reflections):
+                if expt.crystal:
+                    indexed_experiments.append(expt)
+                    indexed_reflections.append(table)
+            indexed_refl = indexed_reflections
+            indexed_expts = ExperimentList(indexed_experiments)
 
             xia2_phil = f"""
                 nproc={integration_params.nproc}
