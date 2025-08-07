@@ -96,7 +96,7 @@ def get_subclusters(
     ids_to_identifiers_map: dict[int, str],
     cos_angle_clusters: list[ClusterInfo],
     cc_clusters: list[ClusterInfo],
-) -> list[tuple[str, list[str], ClusterInfo]]:
+) -> list[tuple[str, str, list[str], ClusterInfo]]:
     subclusters = []
 
     min_completeness = params.min_completeness
@@ -147,7 +147,8 @@ def get_subclusters(
             continue
 
         cluster_identifiers = [ids_to_identifiers_map[l] for l in cluster.labels]
-        subclusters.append((c, cluster_identifiers, cluster))
+        cluster_dir = f"{c}_cluster_{cluster.cluster_id}"
+        subclusters.append((cluster_dir, c, cluster_identifiers, cluster))
         if (
             not params.hierarchical.distinct_clusters
         ):  # increment so that we only get up to N clusters
@@ -204,8 +205,8 @@ def output_hierarchical_clusters(
 
     # if not doing distinct cluster analysis, can now output clusters
     if not params.clustering.hierarchical.distinct_clusters:
-        for c, cluster_identifiers, cluster in subclusters:
-            output_dir = cwd / f"{c}_clusters/cluster_{cluster.cluster_id}"
+        for folder_name, c, cluster_identifiers, cluster in subclusters:
+            output_dir = cwd / f"{c}_clusters/f{folder_name}"
             logger.info(f"Outputting {c} cluster {cluster.cluster_id}:")
             logger.info(cluster)
             output_cluster(
@@ -221,7 +222,7 @@ def output_hierarchical_clusters(
         cc_clusters = []
         cos_cluster_ids = {}
         cc_cluster_ids = {}
-        for c, cluster_identifiers, cluster in subclusters:
+        for cluster_dir, c, cluster_identifiers, cluster in subclusters:
             if c == "cos":
                 cos_clusters.append(cluster)
                 cos_cluster_ids[cluster.cluster_id] = cluster_identifiers
@@ -239,7 +240,6 @@ def output_hierarchical_clusters(
                 )
             )
             for item in list_of_clusters:
-                cluster_dir = f"{cty}_clusters/{item}"
                 logger.info(f"Outputting: {cluster_dir}")
                 output_dir = cwd / cluster_dir
 
