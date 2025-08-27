@@ -3,6 +3,7 @@ from __future__ import annotations
 import copy
 import logging
 import pathlib
+import sys
 
 import iotbx.phil
 from dials.algorithms.correlation.analysis import CorrelationMatrix
@@ -72,22 +73,30 @@ clustering
 def clusters_and_types(
     cos_angle_clusters: list[ClusterInfo],
     cc_clusters: list[ClusterInfo],
+    coordinate_clusters: list[ClusterInfo],
     methods: list[str],
+    analysis: str,
 ) -> tuple[list[ClusterInfo], list[str]]:
-    if "cos_angle" in methods and "correlation" not in methods:
-        clusters = cos_angle_clusters
-        ctype = ["cos"] * len(clusters)
-    elif "correlation" in methods and "cos_angle" not in methods:
-        clusters = cc_clusters
-        ctype = ["cc"] * len(clusters)
-    elif "cos_angle" in methods and "correlation" in methods:
-        clusters = cos_angle_clusters + cc_clusters
-        ctype = ["cos"] * len(cos_angle_clusters) + ["cc"] * len(cc_clusters)
-    else:
-        raise ValueError("Invalid cluster method: %s" % methods)
+    if analysis == "hca":
+        if "cos_angle" in methods and "correlation" not in methods:
+            clusters = cos_angle_clusters
+            ctype = ["cos"] * len(clusters)
+        elif "correlation" in methods and "cos_angle" not in methods:
+            clusters = cc_clusters
+            ctype = ["cc"] * len(clusters)
+        elif "cos_angle" in methods and "correlation" in methods:
+            clusters = cos_angle_clusters + cc_clusters
+            ctype = ["cos"] * len(cos_angle_clusters) + ["cc"] * len(cc_clusters)
+        else:
+            raise ValueError("Invalid cluster method: %s" % methods)
 
-    clusters.reverse()
-    ctype.reverse()
+        clusters.reverse()
+        ctype.reverse()
+
+    elif analysis == "optics":
+        clusters = coordinate_clusters
+        ctype = ["coordinate"] * len(clusters)
+
     return clusters, ctype
 
 
@@ -96,6 +105,7 @@ def get_subclusters(
     ids_to_identifiers_map: dict[int, str],
     cos_angle_clusters: list[ClusterInfo],
     cc_clusters: list[ClusterInfo],
+    coordinate_clusters: list[ClusterInfo] = [],
 ) -> list[tuple[str, str, list[str], ClusterInfo]]:
     subclusters = []
 
@@ -107,12 +117,24 @@ def get_subclusters(
     max_cluster_height_cc = params.hierarchical.max_cluster_height_cc
     max_cluster_height = params.hierarchical.max_cluster_height
 
+    if params.method == "hierarchical":
+        analysis_type = "hca"
+    elif params.method == "coordinate" and len(coordinate_clusters) > 0:
+        analysis_type = "optics"
+    else:
+        raise sys.exit("Chosen method = coordinate, but no coordinate clusters given.")
+
     clusters, ctype = clusters_and_types(
-        cos_angle_clusters, cc_clusters, params.hierarchical.method
+        cos_angle_clusters,
+        cc_clusters,
+        coordinate_clusters,
+        params.hierarchical.method,
+        analysis_type,
     )
 
     n_processed_cos = 0
     n_processed_cc = 0
+    n_processed_coordinate = 0
 
     for c, cluster in zip(ctype, clusters):
         # This simplifies max_cluster_height into cc and cos angle versions
@@ -124,10 +146,11 @@ def get_subclusters(
             # will still default to max_cluster_height_cc as intended
         if c == "cos" and max_cluster_height != 100 and max_cluster_height_cos == 100:
             max_cluster_height_cos = max_cluster_height
-
         if n_processed_cos == max_clusters and c == "cos":
             continue
         if n_processed_cc == max_clusters and c == "cc":
+            continue
+        if n_processed_coordinate == max_clusters and c == "coordinate":
             continue
         if cluster.completeness < min_completeness:
             continue
@@ -156,8 +179,53 @@ def get_subclusters(
                 n_processed_cos += 1
             elif c == "cc":
                 n_processed_cc += 1
+            elif c == "coordinate":
+                n_processed_coordinate += 1
+
+        if params.hierarchical.distinct_clusters:
+            # Above found all cosine + correlation clusters that passed the criteria
+            # From the remaining clusters, perform distinct_cluster_analysis
+            subclusters = distinct_cluster_analysis(subclusters, params)
 
     return subclusters
+
+
+def distinct_cluster_analysis(subclusters, params):
+    cos_clusters = []
+    cc_clusters = []
+    cos_cluster_ids = {}
+    cc_cluster_ids = {}
+    for cluster_dir, c, cluster_identifiers, cluster in subclusters:
+        if c == "cos":
+            cos_clusters.append(cluster)
+            cos_cluster_ids[cluster.cluster_id] = cluster_identifiers
+        elif c == "cc":
+            cc_clusters.append(cluster)
+            cc_cluster_ids[cluster.cluster_id] = cluster_identifiers
+
+    for k, clusters in enumerate([cos_clusters, cc_clusters]):
+        cty = "cc" if k == 1 else "cos"  # cluster type as a string
+        logger.info("-" * 22 + f"\n{cty} cluster analysis\n" + "-" * 22)
+
+        _, list_of_clusters = MultiCrystalAnalysis.interesting_cluster_identification(
+            clusters, params
+        )
+
+        for item in list_of_clusters:
+            # logger.info(f"Outputting: {cluster_dir}")
+            # ]output_dir = cwd / cluster_dir
+
+            for cluster in clusters:
+                if f"cluster_{cluster.cluster_id}" == item:
+                    ids = (
+                        cc_cluster_ids[cluster.cluster_id]
+                        if k
+                        else cos_cluster_ids[cluster.cluster_id]
+                    )
+                    cluster_dir = f"{c}_cluster_{cluster.cluster_id}"
+                    subclusters.append((cluster_dir, cty, ids, cluster))
+                    break
+    return list_of_clusters
 
 
 def output_cluster(
@@ -203,60 +271,20 @@ def output_hierarchical_clusters(
         MCA.correlation_clusters,
     )
 
-    # if not doing distinct cluster analysis, can now output clusters
-    if not params.clustering.hierarchical.distinct_clusters:
-        for folder_name, c, cluster_identifiers, cluster in subclusters:
-            output_dir = cwd / f"{c}_clusters/f{folder_name}"
-            logger.info(f"Outputting {c} cluster {cluster.cluster_id}:")
-            logger.info(cluster)
-            output_cluster(
-                output_dir,
-                experiments,
-                reflections,
-                cluster_identifiers,
-            )
-
     # if doing distinct cluster analysis, do the analysis and output clusters
     if params.clustering.hierarchical.distinct_clusters:
-        cos_clusters = []
-        cc_clusters = []
-        cos_cluster_ids = {}
-        cc_cluster_ids = {}
-        for cluster_dir, c, cluster_identifiers, cluster in subclusters:
-            if c == "cos":
-                cos_clusters.append(cluster)
-                cos_cluster_ids[cluster.cluster_id] = cluster_identifiers
-            elif c == "cc":
-                cc_clusters.append(cluster)
-                cc_cluster_ids[cluster.cluster_id] = cluster_identifiers
+        subclusters = distinct_cluster_analysis(subclusters, params)
 
-        for k, clusters in enumerate([cos_clusters, cc_clusters]):
-            cty = "cc" if k == 1 else "cos"  # cluster type as a string
-            logger.info("-" * 22 + f"\n{cty} cluster analysis\n" + "-" * 22)
-
-            _, list_of_clusters = (
-                MultiCrystalAnalysis.interesting_cluster_identification(
-                    clusters, params
-                )
-            )
-            for item in list_of_clusters:
-                logger.info(f"Outputting: {cluster_dir}")
-                output_dir = cwd / cluster_dir
-
-                for cluster in clusters:
-                    if f"cluster_{cluster.cluster_id}" == item:
-                        ids = (
-                            cc_cluster_ids[cluster.cluster_id]
-                            if k
-                            else cos_cluster_ids[cluster.cluster_id]
-                        )
-                        output_cluster(
-                            output_dir,
-                            experiments,
-                            reflections,
-                            ids,
-                        )
-                        break
+    for folder_name, c, cluster_identifiers, cluster in subclusters:
+        output_dir = cwd / f"{c}_clusters/f{folder_name}"
+        logger.info(f"Outputting {c} cluster {cluster.cluster_id}:")
+        logger.info(cluster)
+        output_cluster(
+            output_dir,
+            experiments,
+            reflections,
+            cluster_identifiers,
+        )
 
     if params.clustering.hierarchical.distinct_clusters:
         logger.info(f"Clusters recommended for comparison in {params.output.log}")

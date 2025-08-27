@@ -520,89 +520,100 @@ class MultiCrystalScale:
         # Same code structure as MultiCrystalAnalysis/cluster_analysis.py but changes the call
         # from output_cluster to self._scale_and_report_cluster
 
-        if (
-            self._params.clustering.output_clusters
-            and "hierarchical" in self._params.clustering.method
-        ):
-            logger.notice(banner("Scaling and merging hierarchical clusters"))  # type: ignore
-            self._data_manager_original = self._data_manager
-            subclusters = get_subclusters(
-                self._params.clustering,
-                self._data_manager.ids_to_identifiers_map,
-                self._cos_angle_clusters,
-                self._cc_clusters,
-            )
+        logger.notice(  # type: ignore
+            banner(f"Scaling and merging {self._params.clustering.method} clusters")
+        )
 
-            if self._params.clustering.hierarchical.distinct_clusters:
-                self.cos_clusters = []
-                self.cc_clusters = []
-                self.cos_cluster_ids = {}
-                self.cc_cluster_ids = {}
-                for cluster_dir, c, cluster_identifiers, cluster in subclusters:
-                    if c == "cos":
-                        self.cos_clusters.append(cluster)
-                        self.cos_cluster_ids[cluster.cluster_id] = cluster_identifiers
-                    elif c == "cc":
-                        self.cc_clusters.append(cluster)
-                        self.cc_cluster_ids[cluster.cluster_id] = cluster_identifiers
+        # if (
+        # self._params.clustering.output_clusters
+        # and "hierarchical" in self._params.clustering.method
+        # ):
+        # self._data_manager_original = self._data_manager
+        subclusters = get_subclusters(
+            self._params.clustering,
+            self._data_manager.ids_to_identifiers_map,
+            self._cos_angle_clusters,
+            self._cc_clusters,
+            self._coordinate_clusters,
+        )
 
-                for k, clusters in enumerate([self.cos_clusters, self.cc_clusters]):
-                    cty = "cc" if k == 1 else "cos"  # cluster type as a string
-                    logger.info("-" * 22 + f"\n{cty} cluster analysis\n" + "-" * 22)
+        # if self._params.clustering.hierarchical.distinct_clusters:
+        # self.cos_clusters = []
+        # self.cc_clusters = []
+        # self.cos_cluster_ids = {}
+        # self.cc_cluster_ids = {}
+        # for cluster_dir, c, cluster_identifiers, cluster in subclusters:
+        # if c == "cos":
+        # self.cos_clusters.append(cluster)
+        # self.cos_cluster_ids[cluster.cluster_id] = cluster_identifiers
+        # elif c == "cc":
+        # self.cc_clusters.append(cluster)
+        # self.cc_cluster_ids[cluster.cluster_id] = cluster_identifiers
 
-                    _, list_of_clusters = (
-                        MultiCrystalAnalysis.interesting_cluster_identification(
-                            clusters, self._params
-                        )
-                    )
+        # for k, clusters in enumerate([self.cos_clusters, self.cc_clusters]):
+        # cty = "cc" if k == 1 else "cos"  # cluster type as a string
+        # logger.info("-" * 22 + f"\n{cty} cluster analysis\n" + "-" * 22)
 
-                    subclusters = []
+        # _, list_of_clusters = (
+        # MultiCrystalAnalysis.interesting_cluster_identification(
+        # clusters, self._params
+        # )
+        # )
 
-                    for item in list_of_clusters:
-                        for cluster in clusters:
-                            if f"cluster_{cluster.cluster_id}" == item:
-                                ids = (
-                                    self.cc_cluster_ids[cluster.cluster_id]
-                                    if k
-                                    else self.cos_cluster_ids[cluster.cluster_id]
-                                )
-                                subclusters.append((cluster_dir, cty, ids, cluster))
-                                break
-        if (
-            self._params.clustering.output_clusters
-            and "coordinate" in self._params.clustering.method
-        ):
-            logger.notice(banner("Scaling and merging coordinate clusters"))  # type: ignore
-            significant_clusters: list[ClusterInfo] = (
-                self._mca.significant_coordinate_clusters
-            )
-            count = 0
-            subclusters = []
-            for s_c in significant_clusters:
-                if s_c.completeness < self._params.clustering.min_completeness:
-                    continue
-                if s_c.multiplicity < self._params.clustering.min_multiplicity:
-                    continue
-                if len(s_c.labels) < self._params.clustering.min_cluster_size:
-                    continue
-                if count >= self._params.clustering.max_output_clusters:
-                    continue
-                if len(s_c.labels) == len(self._data_manager.experiments):
-                    continue
-                cluster_dir = f"coordinate_cluster_{s_c.cluster_id}"
-                cluster_identifiers = [
-                    self._data_manager.ids_to_identifiers_map[l] for l in s_c.labels
-                ]
-                subclusters.append(
-                    (cluster_dir, "coordinate", cluster_identifiers, s_c)
-                )
-                count += 1
+        # subclusters = []
+
+        # for item in list_of_clusters:
+        # for cluster in clusters:
+        # if f"cluster_{cluster.cluster_id}" == item:
+        # ids = (
+        # self.cc_cluster_ids[cluster.cluster_id]
+        # if k
+        # else self.cos_cluster_ids[cluster.cluster_id]
+        # )
+        # subclusters.append((cluster_dir, cty, ids, cluster))
+        # break
+        # if (
+        # self._params.clustering.output_clusters
+        # and "coordinate" in self._params.clustering.method
+        # ):
+        # logger.notice(banner("Scaling and merging coordinate clusters"))  # type: ignore
+        # significant_clusters: list[ClusterInfo] = (
+        # self._mca.significant_coordinate_clusters
+        # )
+        # count = 0
+        # subclusters = []
+        # for s_c in significant_clusters:
+        # if s_c.completeness < self._params.clustering.min_completeness:
+        # continue
+        # if s_c.multiplicity < self._params.clustering.min_multiplicity:
+        # continue
+        # if len(s_c.labels) < self._params.clustering.min_cluster_size:
+        # continue
+        # if count >= self._params.clustering.max_output_clusters:
+        # continue
+        # if len(s_c.labels) == len(self._data_manager.experiments):
+        # continue
+        # cluster_dir = f"coordinate_cluster_{s_c.cluster_id}"
+        # cluster_identifiers = [
+        # self._data_manager.ids_to_identifiers_map[l] for l in s_c.labels
+        # ]
+        # subclusters.append(
+        # (cluster_dir, "coordinate", cluster_identifiers, s_c)
+        # )
+        # count += 1
+
+        # To ensure that pools within pools aren't created
+
+        parallel_nproc = copy.deepcopy(self._params.nproc)
+        self._params.nproc = 1
+
+        logger.debug(
+            f"Using {parallel_nproc} for parallel scaling, PHIL nproc set to {self._params.nproc}"
+        )
 
         with (
             record_step("dials.scale(parallel)"),
-            concurrent.futures.ProcessPoolExecutor(
-                max_workers=self._params.nproc
-            ) as pool,
+            concurrent.futures.ProcessPoolExecutor(max_workers=parallel_nproc) as pool,
         ):
             cluster_futures = {
                 pool.submit(
@@ -625,6 +636,11 @@ class MultiCrystalScale:
                 else:
                     logger.info(info_stream)
                     logger.debug(debug_stream)
+
+        # Reset nproc
+        self._params.nproc = parallel_nproc
+
+        logger.debug(f"Reset PHIL nproc to {self._params.nproc}")
 
         if self._params.filtering.method:
             logger.notice(banner("Rescaling with extra filtering"))  # type: ignore
@@ -1220,6 +1236,7 @@ class MultiCrystalScale:
         self._mca.cluster_analysis()
         self._cos_angle_clusters = self._mca.cos_clusters
         self._cc_clusters = self._mca.cc_clusters
+        self._coordinate_clusters = self._mca.significant_coordinate_clusters
 
     def export_merged_mtz(
         self,
