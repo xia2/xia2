@@ -38,6 +38,7 @@ from xia2.Modules.Scaler.DialsScaler import (
 )
 from xia2.Wrappers.Dials.Cosym import DialsCosym
 from xia2.Wrappers.Dials.EstimateResolution import EstimateResolution
+from xia2.Wrappers.Dials.Functional.Export import Export
 from xia2.Wrappers.Dials.Functional.Merge import Merge
 from xia2.Wrappers.Dials.Refine import Refine
 from xia2.Wrappers.Dials.Reindex import Reindex
@@ -287,6 +288,15 @@ significant_clusters {
     .help = "xi parameter to determine min steepness to define cluster boundary"
 }
 
+small_molecule {
+  shelx_output = False
+    .type = bool
+    .help = "Set to True for output of files for SHELX."
+  composition = CH
+    .type = str
+    .help = "The chemical composition of the asymmetric unit"
+}
+
 """,
     process_includes=True,
 )
@@ -434,6 +444,13 @@ class MultiCrystalScale:
         if self._params.r_free_flags.reference:
             free_flags_in_full_set = (
                 True  # will be after this first export if extend=True.
+            )
+
+        if self._params.small_molecule.shelx_output:
+            self.export_shelx(
+                self._data_manager._experiments,
+                self._data_manager._reflections,
+                "scaled",
             )
 
         self.export_merged_mtz(
@@ -622,6 +639,13 @@ class MultiCrystalScale:
 
             logger.notice(banner("Merging (Filtered)"))  # type: ignore
 
+            if self._params.small_molecule.shelx_output:
+                self.export_shelx(
+                    data_manager._experiments,
+                    data_manager._reflections,
+                    "filtered",
+                )
+
             self.export_merged_mtz(
                 params,
                 data_manager._experiments,
@@ -707,6 +731,16 @@ class MultiCrystalScale:
         scaled = Scale(data_manager, params)
         data_manager.export_experiments(f"{output_name}.expt")
         data_manager.export_reflections(f"{output_name}.refl", d_min=scaled.d_min)
+
+        # if we didn't have an external reference for the free_flags set, we need to make
+        # and record one here.
+
+        if self._params.small_molecule.shelx_output:
+            self.export_shelx(
+                data_manager._experiments,
+                data_manager._reflections,
+                output_name,
+            )
 
         MultiCrystalScale.export_merged_mtz(
             params,
@@ -1255,6 +1289,17 @@ class MultiCrystalScale:
 
             return name
         return None
+
+    def export_shelx(
+        self,
+        expts: ExperimentList,
+        refls: flex.reflection_table,
+        output_name: str,
+    ) -> None:
+        export = Export()
+        export.set_output_names(output_name)
+        export.set_composition(self._params.small_molecule.composition)
+        export.run(expts, refls)
 
 
 class Scale:
