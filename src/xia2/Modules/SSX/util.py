@@ -82,9 +82,7 @@ def redirect_xia2_logger(
         info_sh.addFilter(LevelFilter(logging.INFO))
         info_sh.setFormatter(DialsLogfileFormatter(timed=verbosity))
         xia2_logger.addHandler(info_sh)
-        yield [debug_iostream, info_iostream]
-        # debug_iostream seems to be just info
-        # info_iostream seems to be debug + info
+        yield [info_iostream, debug_iostream]
     finally:
         debug_iostream.close()
         info_iostream.close()
