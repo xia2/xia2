@@ -117,11 +117,14 @@ def get_subclusters(
     max_cluster_height_cc = params.hierarchical.max_cluster_height_cc
     max_cluster_height = params.hierarchical.max_cluster_height
 
-    if params.method == "hierarchical":
+    if params.method == ["hierarchical"]:
         analysis_type = "hca"
-    elif params.method == "coordinate" and len(coordinate_clusters) > 0:
+    elif params.method == ["coordinate"] and len(coordinate_clusters) > 0:
         analysis_type = "optics"
     else:
+        print(coordinate_clusters)
+        print(params.method)
+        print(len(coordinate_clusters))
         raise sys.exit("Chosen method = coordinate, but no coordinate clusters given.")
 
     clusters, ctype = clusters_and_types(
@@ -162,10 +165,11 @@ def get_subclusters(
             and not params.hierarchical.distinct_clusters
         ):
             continue
-        if cluster.height > max_cluster_height_cc and c == "cc":
-            continue
-        if cluster.height > max_cluster_height_cos and c == "cos":
-            continue
+        if cluster.height:  # coordinate clusters don't have this!
+            if cluster.height > max_cluster_height_cc and c == "cc":
+                continue
+            if cluster.height > max_cluster_height_cos and c == "cos":
+                continue
         if len(cluster.labels) < min_cluster_size:
             continue
 

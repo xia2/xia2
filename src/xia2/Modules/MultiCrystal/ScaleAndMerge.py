@@ -37,7 +37,7 @@ from xia2.Modules.Scaler.DialsScaler import (
     convert_unmerged_mtz_to_sca,
     scaling_model_auto_rules,
 )
-from xia2.Modules.SSX.util import redirect_xia2_logger_split
+from xia2.Modules.SSX.util import redirect_xia2_logger
 from xia2.Wrappers.Dials.Cosym import DialsCosym
 from xia2.Wrappers.Dials.EstimateResolution import EstimateResolution
 from xia2.Wrappers.Dials.Functional.Merge import Merge
@@ -521,7 +521,7 @@ class MultiCrystalScale:
         # from output_cluster to self._scale_and_report_cluster
 
         logger.notice(  # type: ignore
-            banner(f"Scaling and merging {self._params.clustering.method} clusters")
+            banner(f"Scaling and merging {self._params.clustering.method[0]} clusters")
         )
 
         # if (
@@ -608,7 +608,7 @@ class MultiCrystalScale:
         self._params.nproc = 1
 
         logger.debug(
-            f"Using {parallel_nproc} for parallel scaling, PHIL nproc set to {self._params.nproc}"
+            f"Using nproc = {parallel_nproc} for parallel scaling, PHIL nproc set to {self._params.nproc}"
         )
 
         with (
@@ -796,7 +796,7 @@ class MultiCrystalScale:
         cluster_identifiers: list[str],
         cluster: ClusterInfo,
     ) -> tuple[str, str]:
-        with redirect_xia2_logger_split() as iostream:
+        with redirect_xia2_logger() as iostream:
             cwd = pathlib.Path.cwd()
             if not os.path.exists(cluster_dir):
                 os.mkdir(cluster_dir)
