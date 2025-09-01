@@ -222,7 +222,7 @@ def distinct_cluster_analysis(subclusters, params):
                         if k
                         else cos_cluster_ids[cluster.cluster_id]
                     )
-                    cluster_dir = f"{c}_cluster_{cluster.cluster_id}"
+                    cluster_dir = f"{cty}_cluster_{cluster.cluster_id}"
                     new_subclusters.append((cluster_dir, cty, ids, cluster))
                     break
 
@@ -271,10 +271,6 @@ def output_hierarchical_clusters(
         MCA.cos_angle_clusters,
         MCA.correlation_clusters,
     )
-
-    ## if doing distinct cluster analysis, do the analysis and output clusters
-    # if params.clustering.hierarchical.distinct_clusters:
-    # subclusters = distinct_cluster_analysis(subclusters, params.clustering)
 
     for folder_name, c, cluster_identifiers, cluster in subclusters:
         output_dir = cwd / f"{c}_clusters/{folder_name}"

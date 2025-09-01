@@ -90,7 +90,12 @@ params_3.clustering.min_cluster_size = 2
         (True, False, None, None),
         (True, True, None, None),
         (True, False, 1, None),
-        (True, False, None, 1),
+        (
+            True,
+            False,
+            1,
+            1,
+        ),  # do this to check that the excluded cluster is actually different to cluster 1
     ],
 )
 def test_serial_data(
@@ -166,7 +171,7 @@ def test_rotation_data(dials_data, run_in_tmp_path):
     assert (run_in_tmp_path / "xia2.cluster_analysis.json").is_file()
     assert (run_in_tmp_path / "xia2.cluster_analysis.log").is_file()
     assert (run_in_tmp_path / "xia2.cluster_analysis.html").is_file()
-    assert (run_in_tmp_path / "cc_clusters" / "cluster_2").exists()
+    assert (run_in_tmp_path / "cc_clusters" / "cc_cluster_2").exists()
     assert not (run_in_tmp_path / "coordinate_clusters").exists()
     # now run coordinate clustering
     args_clustering = [
@@ -196,12 +201,18 @@ def check_output(
     output_correlation_cluster_number=None,
     exclude_correlation_cluster_number=None,
 ):
-    if output_clusters and not interesting_clusters:
-        assert (main_dir / "cc_clusters" / "cluster_2").exists()
-        assert (main_dir / "cos_clusters" / "cluster_2").exists()
+    if output_clusters and not any(
+        [
+            interesting_clusters,
+            output_correlation_cluster_number,
+            exclude_correlation_cluster_number,
+        ]
+    ):
+        assert (main_dir / "cc_clusters" / "cc_cluster_2").exists()
+        assert (main_dir / "cos_clusters" / "cos_cluster_2").exists()
     if output_clusters and interesting_clusters:
-        assert (main_dir / "cc_clusters" / "cluster_2").exists()
-        assert (main_dir / "cos_clusters" / "cluster_2").exists()
+        assert (main_dir / "cc_clusters" / "cc_cluster_2").exists()
+        assert (main_dir / "cos_clusters" / "cos_cluster_2").exists()
     assert (main_dir / "xia2.cluster_analysis.json").is_file()
     assert (main_dir / "xia2.cluster_analysis.log").is_file()
     assert (main_dir / "xia2.cluster_analysis.html").is_file()
