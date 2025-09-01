@@ -112,7 +112,7 @@ def test_serial_data(
         "clustering.min_cluster_size=2",
         expt_scaled,
         refl_scaled,
-        f"distinct_clusters={interesting_clusters}",
+        f"clustering.hierarchical.distinct_clusters={interesting_clusters}",
         "clustering.hierarchical.method=cos_angle+correlation",
         f"clustering.output_clusters={output_clusters}",
         f"output_correlation_cluster_number={output_correlation_cluster_number}",
@@ -153,7 +153,7 @@ def test_rotation_data(dials_data, run_in_tmp_path):
 
     args_clustering = [
         shutil.which("xia2.cluster_analysis"),
-        "distinct_clusters=True",
+        "clustering.hierarchical.distinct_clusters=True",
         "clustering.min_cluster_size=2",
         "clustering.hierarchical.method=cos_angle+correlation",
         "clustering.output_clusters=True",
@@ -262,6 +262,8 @@ def test_interesting_cluster_algorithm(clusters, params, expected):
     (
         file_data,
         list_of_clusters,
-    ) = MultiCrystalAnalysis.interesting_cluster_identification(clusters, params)
+    ) = MultiCrystalAnalysis.interesting_cluster_identification(
+        clusters, params.clustering
+    )
 
     assert list_of_clusters == expected

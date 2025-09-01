@@ -13,7 +13,7 @@ from dxtbx.model import ExperimentList
 
 from xia2.Modules.MultiCrystalAnalysis import MultiCrystalAnalysis
 
-logger = logging.getLogger("")
+logger = logging.getLogger(__name__)
 
 
 cluster_phil_scope = """\
@@ -122,9 +122,6 @@ def get_subclusters(
     elif params.method == ["coordinate"] and len(coordinate_clusters) > 0:
         analysis_type = "optics"
     else:
-        print(coordinate_clusters)
-        print(params.method)
-        print(len(coordinate_clusters))
         raise sys.exit("Chosen method = coordinate, but no coordinate clusters given.")
 
     clusters, ctype = clusters_and_types(
@@ -186,10 +183,10 @@ def get_subclusters(
             elif c == "coordinate":
                 n_processed_coordinate += 1
 
-        if params.hierarchical.distinct_clusters:
-            # Above found all cosine + correlation clusters that passed the criteria
-            # From the remaining clusters, perform distinct_cluster_analysis
-            subclusters = distinct_cluster_analysis(subclusters, params)
+    if params.hierarchical.distinct_clusters:
+        # Above found all cosine + correlation clusters that passed the criteria
+        # From the remaining clusters, perform distinct_cluster_analysis
+        subclusters = distinct_cluster_analysis(subclusters, params)
 
     return subclusters
 
@@ -207,6 +204,8 @@ def distinct_cluster_analysis(subclusters, params):
             cc_clusters.append(cluster)
             cc_cluster_ids[cluster.cluster_id] = cluster_identifiers
 
+    new_subclusters = []
+
     for k, clusters in enumerate([cos_clusters, cc_clusters]):
         cty = "cc" if k == 1 else "cos"  # cluster type as a string
         logger.info("-" * 22 + f"\n{cty} cluster analysis\n" + "-" * 22)
@@ -216,9 +215,6 @@ def distinct_cluster_analysis(subclusters, params):
         )
 
         for item in list_of_clusters:
-            # logger.info(f"Outputting: {cluster_dir}")
-            # ]output_dir = cwd / cluster_dir
-
             for cluster in clusters:
                 if f"cluster_{cluster.cluster_id}" == item:
                     ids = (
@@ -227,9 +223,10 @@ def distinct_cluster_analysis(subclusters, params):
                         else cos_cluster_ids[cluster.cluster_id]
                     )
                     cluster_dir = f"{c}_cluster_{cluster.cluster_id}"
-                    subclusters.append((cluster_dir, cty, ids, cluster))
+                    new_subclusters.append((cluster_dir, cty, ids, cluster))
                     break
-    return list_of_clusters
+
+    return new_subclusters
 
 
 def output_cluster(
@@ -275,12 +272,12 @@ def output_hierarchical_clusters(
         MCA.correlation_clusters,
     )
 
-    # if doing distinct cluster analysis, do the analysis and output clusters
-    if params.clustering.hierarchical.distinct_clusters:
-        subclusters = distinct_cluster_analysis(subclusters, params)
+    ## if doing distinct cluster analysis, do the analysis and output clusters
+    # if params.clustering.hierarchical.distinct_clusters:
+    # subclusters = distinct_cluster_analysis(subclusters, params.clustering)
 
     for folder_name, c, cluster_identifiers, cluster in subclusters:
-        output_dir = cwd / f"{c}_clusters/f{folder_name}"
+        output_dir = cwd / f"{c}_clusters/{folder_name}"
         logger.info(f"Outputting {c} cluster {cluster.cluster_id}:")
         logger.info(cluster)
         output_cluster(

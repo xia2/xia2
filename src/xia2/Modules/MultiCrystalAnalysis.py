@@ -259,7 +259,7 @@ class MultiCrystalAnalysis:
         for cluster in clusters:
             # Because analysing each possible pair of clusters, to cut down computation time do initial filtering here
 
-            if len(cluster.labels) >= params.clustering.min_cluster_size:
+            if len(cluster.labels) >= params.min_cluster_size:
                 cluster_numbers.append("cluster_" + str(cluster.cluster_id))
                 heights.append(cluster.height)
                 labels.append(cluster.labels)
@@ -325,11 +325,11 @@ class MultiCrystalAnalysis:
 
             if c_data["Length"][0] > c_data["Length"][-1]:
                 final_clusters_to_compare = clusters_to_compare_unfiltered[
-                    : params.clustering.max_output_clusters
+                    : params.max_output_clusters
                 ]
             else:
                 final_clusters_to_compare = clusters_to_compare_unfiltered[
-                    -params.clustering.max_output_clusters :
+                    -params.max_output_clusters :
                 ]
 
             if len(final_clusters_to_compare) > 0:
@@ -347,7 +347,7 @@ class MultiCrystalAnalysis:
         else:
             logger.info(
                 "Min cluster size of "
-                + str(params.clustering.min_cluster_size)
+                + str(params.min_cluster_size)
                 + " excludes all clusters. Please re-run using a smaller minimum size."
             )
             clusters_for_analysis = []
@@ -364,7 +364,7 @@ class MultiCrystalAnalysis:
         file_data.extend(
             [
                 "Selected with a maximum number of cluster pairs set at:"
-                + str(params.clustering.max_output_clusters),
+                + str(params.max_output_clusters),
                 "Total Number of Clusters for Analysis:"
                 + str(len(clusters_for_analysis)),
                 "Discrete list of clusters saved: ",
