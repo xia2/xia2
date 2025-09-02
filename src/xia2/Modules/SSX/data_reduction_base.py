@@ -2,6 +2,8 @@ from __future__ import annotations
 
 import concurrent.futures
 import logging
+import re
+import shutil
 from pathlib import Path
 
 import numpy as np
@@ -400,6 +402,7 @@ class BaseDataReduction:
 
         future_list = []
         summaries = dict.fromkeys(name_to_expts_arr.keys(), "")
+        resolution_limits = {}
         with (
             record_step("dials.merge (parallel)"),
             concurrent.futures.ProcessPoolExecutor(
@@ -424,19 +427,110 @@ class BaseDataReduction:
             mergeresult: MergeResult = mergefuture.result()
             if len(future_list) > 1:
                 xia2_logger.info(f"Merged {mergeresult.name}")
-            summaries[mergeresult.name] = mergeresult.summary
-            FileHandler.record_data_file(mergeresult.merge_file)
-            FileHandler.record_log_file(
-                mergeresult.logfile.name.rstrip(".log"), mergeresult.logfile
-            )
-            if mergeresult.jsonfile:
-                FileHandler.record_more_log_file(
-                    mergeresult.jsonfile.name.rstrip(".json"), mergeresult.jsonfile
+            name = mergeresult.name
+            summaries[name] = mergeresult.summary
+            recorded = False
+            if mergeresult.table_1_stats:
+                if "Suggested" in mergeresult.table_1_stats:
+                    res_limits = mergeresult.table_1_stats.split("\n")[1]
+                    match = re.search(
+                        r"High resolution limit\s+(\d+(?:\.\d+)?)", res_limits
+                    )
+                    if match:
+                        # Rename the files to _full, as we will rerun with a resolution limit.
+                        resolution_limits[name] = float(match.group(1))
+                        new_mtzname = (
+                            mergeresult.merge_file.name.rstrip(".mtz") + "_full.mtz"
+                        )
+                        new_logname = (
+                            mergeresult.logfile.name.rstrip(".log") + "_full.log"
+                        )
+                        shutil.move(
+                            mergeresult.merge_file, merge_wds[name] / new_mtzname
+                        )
+                        shutil.move(mergeresult.logfile, merge_wds[name] / new_logname)
+                        FileHandler.record_data_file(merge_wds[name] / new_mtzname)
+                        FileHandler.record_log_file(
+                            new_logname[:-4], merge_wds[name] / new_logname
+                        )
+                        if mergeresult.jsonfile:
+                            new_json = (
+                                mergeresult.jsonfile.name.rstrip(".json") + "_full.json"
+                            )
+                            shutil.move(
+                                mergeresult.jsonfile, merge_wds[name] / new_json
+                            )
+                            FileHandler.record_more_log_file(
+                                new_json[:-5], merge_wds[name] / new_json
+                            )
+                        if mergeresult.htmlfile:
+                            new_html = (
+                                mergeresult.htmlfile.name.rstrip(".html") + "_full.html"
+                            )
+                            shutil.move(
+                                mergeresult.htmlfile, merge_wds[name] / new_html
+                            )
+                            FileHandler.record_html_file(
+                                new_html[:-5], merge_wds[name] / new_html
+                            )
+                        recorded = True
+            if not recorded:
+                FileHandler.record_data_file(mergeresult.merge_file)
+                FileHandler.record_log_file(
+                    mergeresult.logfile.name.rstrip(".log"), mergeresult.logfile
                 )
-            if mergeresult.htmlfile:
-                FileHandler.record_html_file(
-                    mergeresult.htmlfile.name.rstrip(".html"), mergeresult.htmlfile
-                )
+                if mergeresult.jsonfile:
+                    FileHandler.record_more_log_file(
+                        mergeresult.jsonfile.name.rstrip(".json"), mergeresult.jsonfile
+                    )
+                if mergeresult.htmlfile:
+                    FileHandler.record_html_file(
+                        mergeresult.htmlfile.name.rstrip(".html"), mergeresult.htmlfile
+                    )
+
         for result in summaries.values():  # always print stats in same order
             if result:
                 xia2_logger.info(result)
+        # Now rerun merging where there was a suggested resolution limit within the data range.
+        if resolution_limits:
+            future_list = []
+            with (
+                record_step("dials.merge (parallel)"),
+                concurrent.futures.ProcessPoolExecutor(
+                    max_workers=self._reduction_params.nproc
+                ) as pool,
+            ):
+                for name, (scaled_array, elist) in name_to_expts_arr.items():
+                    if name in resolution_limits:
+                        data = scaled_array.select(
+                            scaled_array.d_spacings().data() >= resolution_limits[name]
+                        )
+                        future_list.append(
+                            pool.submit(
+                                merge,
+                                merge_wds[name],
+                                data,
+                                elist,
+                                resolution_limits[name],
+                                best_unit_cell,
+                                self._reduction_params.partiality_threshold,
+                                name,
+                            )
+                        )
+            for mergefuture in concurrent.futures.as_completed(future_list):
+                mergeresult_limited: MergeResult = mergefuture.result()
+                FileHandler.record_data_file(mergeresult_limited.merge_file)
+                FileHandler.record_log_file(
+                    mergeresult_limited.logfile.name.rstrip(".log"),
+                    mergeresult_limited.logfile,
+                )
+                if mergeresult_limited.jsonfile:
+                    FileHandler.record_more_log_file(
+                        mergeresult_limited.jsonfile.name.rstrip(".json"),
+                        mergeresult_limited.jsonfile,
+                    )
+                if mergeresult_limited.htmlfile:
+                    FileHandler.record_html_file(
+                        mergeresult_limited.htmlfile.name.rstrip(".html"),
+                        mergeresult_limited.htmlfile,
+                    )

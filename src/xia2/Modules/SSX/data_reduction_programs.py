@@ -425,6 +425,7 @@ def merge(
             + f"Merged mtz file: {filename}\n"
             + f"{table_1_stats}"
         )
+        result.table_1_stats = table_1_stats
 
     return result
 
