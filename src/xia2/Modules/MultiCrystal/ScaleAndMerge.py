@@ -540,36 +540,50 @@ class MultiCrystalScale:
             f"Using nproc = {parallel_nproc} for parallel scaling, PHIL nproc set to {self._params.nproc}"
         )
 
-        with (
-            record_step("dials.scale(parallel)"),
-            concurrent.futures.ProcessPoolExecutor(max_workers=parallel_nproc) as pool,
-        ):
-            cluster_futures = {
-                pool.submit(
-                    self._scale_and_report_cluster,
-                    self._data_manager,
-                    cluster[0],
-                    cluster[2],
-                    cluster[3],
-                ): index
-                for index, cluster in enumerate(subclusters)
-            }
-            for future in concurrent.futures.as_completed(cluster_futures):
-                idx = cluster_futures[future]
-                try:
-                    info_stream, debug_stream = future.result()
-                except Exception as e:
-                    raise ValueError(
-                        f"Cluster {idx} failed to scale and merge due to {e}"
-                    )
-                else:
-                    logger.info(info_stream)
-                    logger.debug(debug_stream)
+        if self._params.clustering.output_clusters:
+            with (
+                record_step("dials.scale(parallel)"),
+                concurrent.futures.ProcessPoolExecutor(
+                    max_workers=parallel_nproc
+                ) as pool,
+            ):
+                cluster_futures = {
+                    pool.submit(
+                        self._scale_and_report_cluster,
+                        self._data_manager,
+                        cluster[0],
+                        cluster[2],
+                        cluster[3],
+                    ): index
+                    for index, cluster in enumerate(subclusters)
+                }
+                for future in concurrent.futures.as_completed(cluster_futures):
+                    idx = cluster_futures[future]
+                    try:
+                        (
+                            info_stream,
+                            debug_stream,
+                            individual_report,
+                            report,
+                            dict_report,
+                            cluster_name,
+                        ) = future.result()
+                    except Exception as e:
+                        raise ValueError(
+                            f"Cluster {idx} failed to scale and merge due to {e}"
+                        )
+                    else:
+                        logger.info(info_stream)
+                        logger.debug(debug_stream)
+                        self._individual_report_dicts[cluster_name] = individual_report
+                        self._update_comparison_graphs(
+                            report, dict_report, cluster_name
+                        )
 
-        # Reset nproc
-        self._params.nproc = parallel_nproc
+            # Reset nproc
+            self._params.nproc = parallel_nproc
 
-        logger.debug(f"Reset PHIL nproc to {self._params.nproc}")
+            logger.debug(f"Reset PHIL nproc to {self._params.nproc}")
 
         if self._params.filtering.method:
             logger.notice(banner("Rescaling with extra filtering"))  # type: ignore
@@ -724,7 +738,7 @@ class MultiCrystalScale:
         cluster_dir: str,
         cluster_identifiers: list[str],
         cluster: ClusterInfo,
-    ) -> tuple[str, str]:
+    ) -> tuple[str, str, dict[str, Any], Report.Report, dict[str, Any], str]:
         with redirect_xia2_logger() as iostream:
             cwd = pathlib.Path.cwd()
             if not os.path.exists(cluster_dir):
@@ -735,23 +749,26 @@ class MultiCrystalScale:
             scaled: Scale = self.scale_cluster(
                 data_manager, cluster_identifiers, True, f"{cluster_dir}_scaled"
             )
-            self._record_individual_report(
-                scaled.report(), cluster_dir.replace("_", " ")
+
+            rep = scaled.report()
+
+            d = self._report_as_dict(rep)
+
+            # need this otherwise rep will not have merging_stats
+            rep.resolution_plots_and_stats()
+
+            individual_report = self._individual_report_dict(
+                d, cluster_dir.replace("_", " ")
             )
+
             os.chdir(cwd)
             info = iostream[0].getvalue()
             debug = iostream[1].getvalue()
-        return info, debug
+        return info, debug, individual_report, rep, d, cluster_dir.replace("_", " ")
 
-    def _record_individual_report(
-        self, report: Report.Report, cluster_name: str
+    def _update_comparison_graphs(
+        self, report: Report.Report, dict_report: dict[str, Any], cluster_name: str
     ) -> None:
-        d = self._report_as_dict(report)
-
-        self._individual_report_dicts[cluster_name] = self._individual_report_dict(
-            d, cluster_name
-        )
-
         self._comparison_graphs.setdefault(
             "radar",
             {
@@ -802,12 +819,23 @@ class MultiCrystalScale:
             "r_pim",
         ):
             self._comparison_graphs.setdefault(
-                graph, {"layout": d[graph]["layout"], "data": []}
+                graph, {"layout": dict_report[graph]["layout"], "data": []}
             )
-            data = copy.deepcopy(d[graph]["data"][0])
+            data = copy.deepcopy(dict_report[graph]["data"][0])
             data["name"] = cluster_name
             data.pop("line", None)  # remove default color override
             self._comparison_graphs[graph]["data"].append(data)
+
+    def _record_individual_report(
+        self, report: Report.Report, cluster_name: str
+    ) -> None:
+        d = self._report_as_dict(report)
+
+        self._individual_report_dicts[cluster_name] = self._individual_report_dict(
+            d, cluster_name
+        )
+
+        self._update_comparison_graphs(report, d, cluster_name)
 
         def remove_html_tags(table):
             return [
