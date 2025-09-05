@@ -520,27 +520,29 @@ class MultiCrystalScale:
         # Same code structure as MultiCrystalAnalysis/cluster_analysis.py but changes the call
         # from output_cluster to self._scale_and_report_cluster
 
-        logger.notice(  # type: ignore
-            banner(f"Scaling and merging {self._params.clustering.method[0]} clusters")
-        )
-        subclusters = get_subclusters(
-            self._params.clustering,
-            self._data_manager.ids_to_identifiers_map,
-            self._cos_angle_clusters,
-            self._cc_clusters,
-            self._coordinate_clusters,
-        )
-
-        # To ensure that pools within pools aren't created
-
-        parallel_nproc = copy.deepcopy(self._params.nproc)
-        self._params.nproc = 1
-
-        logger.debug(
-            f"Using nproc = {parallel_nproc} for parallel scaling, PHIL nproc set to {self._params.nproc}"
-        )
-
         if self._params.clustering.output_clusters:
+            logger.notice(  # type: ignore
+                banner(
+                    f"Scaling and merging {self._params.clustering.method[0]} clusters"
+                )
+            )
+            subclusters = get_subclusters(
+                self._params.clustering,
+                self._data_manager.ids_to_identifiers_map,
+                self._cos_angle_clusters,
+                self._cc_clusters,
+                self._coordinate_clusters,
+            )
+
+            # To ensure that pools within pools aren't created
+
+            parallel_nproc = copy.deepcopy(self._params.nproc)
+            self._params.nproc = 1
+
+            logger.debug(
+                f"Using nproc = {parallel_nproc} for parallel scaling, PHIL nproc set to {self._params.nproc}"
+            )
+
             with (
                 record_step("dials.scale(parallel)"),
                 concurrent.futures.ProcessPoolExecutor(
@@ -551,11 +553,11 @@ class MultiCrystalScale:
                     pool.submit(
                         self._scale_and_report_cluster,
                         self._data_manager,
-                        cluster[0],
-                        cluster[2],
-                        cluster[3],
+                        item.directory,
+                        item.identifiers,
+                        item.cluster,
                     ): index
-                    for index, cluster in enumerate(subclusters)
+                    for index, item in enumerate(subclusters)
                 }
                 for future in concurrent.futures.as_completed(cluster_futures):
                     idx = cluster_futures[future]

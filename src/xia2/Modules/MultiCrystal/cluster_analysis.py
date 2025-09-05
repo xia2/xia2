@@ -70,6 +70,20 @@ clustering
 """
 
 
+class SubCluster:
+    def __init__(
+        self,
+        directory,
+        type,
+        identifiers,
+        cluster,
+    ):
+        self.directory = directory
+        self.type = type
+        self.identifiers = identifiers
+        self.cluster = cluster
+
+
 def clusters_and_types(
     cos_angle_clusters: list[ClusterInfo],
     cc_clusters: list[ClusterInfo],
@@ -106,7 +120,7 @@ def get_subclusters(
     cos_angle_clusters: list[ClusterInfo],
     cc_clusters: list[ClusterInfo],
     coordinate_clusters: list[ClusterInfo] = [],
-) -> list[tuple[str, str, list[str], ClusterInfo]]:
+) -> list[SubCluster]:
     subclusters = []
 
     min_completeness = params.min_completeness
@@ -172,7 +186,7 @@ def get_subclusters(
 
         cluster_identifiers = [ids_to_identifiers_map[l] for l in cluster.labels]
         cluster_dir = f"{c}_cluster_{cluster.cluster_id}"
-        subclusters.append((cluster_dir, c, cluster_identifiers, cluster))
+        subclusters.append(SubCluster(cluster_dir, c, cluster_identifiers, cluster))
         if (
             not params.hierarchical.distinct_clusters
         ):  # increment so that we only get up to N clusters
@@ -196,13 +210,14 @@ def distinct_cluster_analysis(subclusters, params):
     cc_clusters = []
     cos_cluster_ids = {}
     cc_cluster_ids = {}
-    for cluster_dir, c, cluster_identifiers, cluster in subclusters:
-        if c == "cos":
-            cos_clusters.append(cluster)
-            cos_cluster_ids[cluster.cluster_id] = cluster_identifiers
-        elif c == "cc":
-            cc_clusters.append(cluster)
-            cc_cluster_ids[cluster.cluster_id] = cluster_identifiers
+    # for cluster_dir, c, cluster_identifiers, cluster in subclusters:
+    for item in subclusters:
+        if item.type == "cos":
+            cos_clusters.append(item.cluster)
+            cos_cluster_ids[item.cluster.cluster_id] = item.identifiers
+        elif item.type == "cc":
+            cc_clusters.append(item.cluster)
+            cc_cluster_ids[item.cluster.cluster_id] = item.identifiers
 
     new_subclusters = []
 
@@ -223,7 +238,7 @@ def distinct_cluster_analysis(subclusters, params):
                         else cos_cluster_ids[cluster.cluster_id]
                     )
                     cluster_dir = f"{cty}_cluster_{cluster.cluster_id}"
-                    new_subclusters.append((cluster_dir, cty, ids, cluster))
+                    new_subclusters.append(SubCluster(cluster_dir, cty, ids, cluster))
                     break
 
     return new_subclusters
@@ -272,15 +287,16 @@ def output_hierarchical_clusters(
         MCA.correlation_clusters,
     )
 
-    for folder_name, c, cluster_identifiers, cluster in subclusters:
-        output_dir = cwd / f"{c}_clusters/{folder_name}"
-        logger.info(f"Outputting {c} cluster {cluster.cluster_id}:")
-        logger.info(cluster)
+    # for folder_name, c, cluster_identifiers, cluster in subclusters:
+    for item in subclusters:
+        output_dir = cwd / f"{item.type}_clusters/{item.directory}"
+        logger.info(f"Outputting {item.type} cluster {item.cluster.cluster_id}:")
+        logger.info(item.cluster)
         output_cluster(
             output_dir,
             experiments,
             reflections,
-            cluster_identifiers,
+            item.identifiers,
         )
 
     if params.clustering.hierarchical.distinct_clusters:

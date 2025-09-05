@@ -850,7 +850,7 @@ class ProcessBatch:
         self.function = process_batch
 
     def __call__(self, directory: pathlib.Path) -> dict:
-        with redirect_xia2_logger() as iostream:
+        with redirect_xia2_logger() as iostreams:
             summary_data = self.function(
                 directory,
                 self.spotfinding_params,
@@ -858,7 +858,7 @@ class ProcessBatch:
                 self.integration_params,
                 self.options,
             )
-            s = iostream.getvalue()
+            s = iostreams[0].getvalue()
         xia2_logger.info(s)
         return summary_data
 
