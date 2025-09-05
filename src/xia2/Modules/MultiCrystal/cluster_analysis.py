@@ -210,7 +210,6 @@ def distinct_cluster_analysis(subclusters, params):
     cc_clusters = []
     cos_cluster_ids = {}
     cc_cluster_ids = {}
-    # for cluster_dir, c, cluster_identifiers, cluster in subclusters:
     for item in subclusters:
         if item.type == "cos":
             cos_clusters.append(item.cluster)
@@ -287,7 +286,6 @@ def output_hierarchical_clusters(
         MCA.correlation_clusters,
     )
 
-    # for folder_name, c, cluster_identifiers, cluster in subclusters:
     for item in subclusters:
         output_dir = cwd / f"{item.type}_clusters/{item.directory}"
         logger.info(f"Outputting {item.type} cluster {item.cluster.cluster_id}:")
