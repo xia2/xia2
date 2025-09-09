@@ -4,6 +4,7 @@ import copy
 import logging
 import pathlib
 import sys
+from dataclasses import dataclass
 
 import iotbx.phil
 from dials.algorithms.correlation.analysis import CorrelationMatrix
@@ -70,18 +71,12 @@ clustering
 """
 
 
+@dataclass
 class SubCluster:
-    def __init__(
-        self,
-        directory,
-        type,
-        identifiers,
-        cluster,
-    ):
-        self.directory = directory
-        self.type = type
-        self.identifiers = identifiers
-        self.cluster = cluster
+    directory: str
+    type: str
+    identifiers: list
+    cluster: ClusterInfo
 
 
 def clusters_and_types(

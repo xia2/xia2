@@ -581,6 +581,7 @@ class MultiCrystalScale:
                         self._update_comparison_graphs(
                             report, dict_report, cluster_name
                         )
+                        self._log_report_info(dict_report)
 
             # Reset nproc
             self._params.nproc = parallel_nproc
@@ -828,17 +829,7 @@ class MultiCrystalScale:
             data.pop("line", None)  # remove default color override
             self._comparison_graphs[graph]["data"].append(data)
 
-    def _record_individual_report(
-        self, report: Report.Report, cluster_name: str
-    ) -> None:
-        d = self._report_as_dict(report)
-
-        self._individual_report_dicts[cluster_name] = self._individual_report_dict(
-            d, cluster_name
-        )
-
-        self._update_comparison_graphs(report, d, cluster_name)
-
+    def _log_report_info(self, d: dict[str, Any]) -> None:
         def remove_html_tags(table):
             return [
                 [
@@ -867,6 +858,19 @@ class MultiCrystalScale:
                 remove_html_tags(d["merging_statistics_table"]), headers="firstrow"
             ),
         )
+
+    def _record_individual_report(
+        self, report: Report.Report, cluster_name: str
+    ) -> None:
+        d = self._report_as_dict(report)
+
+        self._individual_report_dicts[cluster_name] = self._individual_report_dict(
+            d, cluster_name
+        )
+
+        self._update_comparison_graphs(report, d, cluster_name)
+
+        self._log_report_info(d)
 
     @staticmethod
     def _report_as_dict(report: Report.Report) -> dict[str, Any]:
