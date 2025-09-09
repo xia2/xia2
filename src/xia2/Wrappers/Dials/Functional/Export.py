@@ -7,6 +7,7 @@ import libtbx.phil
 from dials.array_family import flex
 from dials.command_line.export import export_shelx, phil_scope
 from dxtbx.model import ExperimentList
+from libtbx import Auto
 
 from xia2.Driver.timing import record_step
 from xia2.lib.bits import _get_number
@@ -31,7 +32,7 @@ class Export:
         self._params.shelx.ins = "dials.ins"
         self._params.shelx.composition = "CH"
         self._params.format = "shelx"
-        self._params.intensity = ["scale"]
+        self._params.intensity = ["auto"]
         self._use_xpid = True
 
     def set_output_names(self, output_name: str) -> None:
@@ -67,5 +68,26 @@ class Export:
             record_step("dials.export"),
         ):
             dials_logger.info(diff_phil_from_params_and_scope(self._params, phil_scope))
+            # do auto interpreting of intensity choice:
+            # note that this may still fail certain checks further down the processing,
+            # but these are the defaults to try
+            if self._params.intensity in ([None], [Auto], ["auto"], Auto) and [refls]:
+                if ("intensity.scale.value" in [refls][0]) and (
+                    "intensity.scale.variance" in [refls][0]
+                ):
+                    self._params.intensity = ["scale"]
+                    dials_logger.info(
+                        "Data appears to be scaled, setting intensity = scale"
+                    )
+                else:
+                    self._params.intensity = []
+                    if "intensity.sum.value" in [refls][0]:
+                        self._params.intensity.append("sum")
+                    if "intensity.prf.value" in [refls][0]:
+                        self._params.intensity.append("profile")
+                    dials_logger.info(
+                        "Data appears to be unscaled, setting intensity = "
+                        + "+".join(self._params.intensity)
+                    )
 
             export_shelx(self._params, expts, [refls])
