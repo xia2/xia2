@@ -421,6 +421,10 @@ def check_data_reduction_files(
             assert flex.max(refls["d"]) < d_max
         if d_min:
             assert flex.min(refls["d"]) > d_min
+    else:
+        assert (
+            tmp_path / "data_reduction" / "merge" / "all" / "merged_full.mtz"
+        ).is_file()
 
 
 def check_data_reduction_files_on_scaled_only(tmp_path, reference=False):
@@ -431,9 +435,14 @@ def check_data_reduction_files_on_scaled_only(tmp_path, reference=False):
     assert (tmp_path / "data_reduction" / "merge").is_dir()
     assert (tmp_path / "data_reduction" / "merge" / "all" / "merged.mtz").is_file()
     assert (tmp_path / "DataFiles" / "merged.mtz").is_file()
+    assert (tmp_path / "data_reduction" / "merge" / "all" / "merged_full.mtz").is_file()
+    assert (tmp_path / "DataFiles" / "merged_full.mtz").is_file()
     assert (tmp_path / "LogFiles" / "dials.merge.html").is_file()
     assert (tmp_path / "LogFiles" / "dials.merge.log").is_file()
     assert (tmp_path / "LogFiles" / "dials.merge.json").is_file()
+    assert (tmp_path / "LogFiles" / "dials.merge_full.html").is_file()
+    assert (tmp_path / "LogFiles" / "dials.merge_full.log").is_file()
+    assert (tmp_path / "LogFiles" / "dials.merge_full.json").is_file()
 
 
 # For testing data reduction, there are a few different paths.
@@ -559,11 +568,11 @@ grouping:
         assert (tmp_path / "LogFiles" / f"dials.merge.{n}.html").is_file()
 
     g1_mtz = mtz.object(
-        file_name=os.fspath(tmp_path / "DataFiles" / f"{output_names[0]}.mtz")
+        file_name=os.fspath(tmp_path / "DataFiles" / f"{output_names[0]}_full.mtz")
     )
     assert abs(g1_mtz.n_reflections() - 6791) < 10
     g2_mtz = mtz.object(
-        file_name=os.fspath(tmp_path / "DataFiles" / f"{output_names[1]}.mtz")
+        file_name=os.fspath(tmp_path / "DataFiles" / f"{output_names[1]}_full.mtz")
     )
     assert abs(g2_mtz.n_reflections() - 10276) < 10
 
@@ -709,7 +718,7 @@ def test_ssx_reduce_filter_options(
 
     result = subprocess.run(args, cwd=tmp_path, capture_output=True)
     assert not result.returncode and not result.stderr
-    check_data_reduction_files(tmp_path)
+    check_data_reduction_files(tmp_path, d_min=0.01)  # no _full files expected
 
     expts = load.experiment_list(tmp_path / "DataFiles" / "scaled.expt")
     assert len(expts) == expected_results["n_cryst"]
