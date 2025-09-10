@@ -50,22 +50,44 @@ def config_quiet(logfile: str, verbosity: int = 0) -> None:
     print_banner(use_logging=True)
 
 
+class LevelFilter(logging.Filter):
+    def __init__(self, level):
+        self.__level = level
+
+    def filter(self, record):
+        return record.levelno == self.__level
+
+
 @contextlib.contextmanager
-def redirect_xia2_logger(verbosity: int = 0) -> Generator[io.StringIO, None, None]:
+def redirect_xia2_logger(
+    verbosity: int = 0,
+) -> Generator[list[io.StringIO], None, None]:
     # we want the xia2 logging to redirect to an iostream
     xia2_logger = logging.getLogger("xia2")
     original_levels = [fh.level for fh in xia2_logger.handlers]
     try:
         for fh in xia2_logger.handlers:
             fh.setLevel(logging.ERROR)
-        iostream = io.StringIO()
-        sh = logging.StreamHandler(iostream)
-        sh.setFormatter(DialsLogfileFormatter(timed=verbosity))
-        xia2_logger.addHandler(sh)
-        yield iostream
+        debug_iostream = io.StringIO()
+        info_iostream = io.StringIO()
+        # Debug
+        debug_sh = logging.StreamHandler(debug_iostream)
+        debug_sh.setLevel(logging.DEBUG)
+        debug_sh.addFilter(LevelFilter(logging.DEBUG))
+        debug_sh.setFormatter(DialsLogfileFormatter(timed=verbosity))
+        xia2_logger.addHandler(debug_sh)
+        # Info
+        info_sh = logging.StreamHandler(info_iostream)
+        info_sh.setLevel(logging.INFO)
+        info_sh.addFilter(LevelFilter(logging.INFO))
+        info_sh.setFormatter(DialsLogfileFormatter(timed=verbosity))
+        xia2_logger.addHandler(info_sh)
+        yield [info_iostream, debug_iostream]
     finally:
-        iostream.close()
-        sh.close()
+        debug_iostream.close()
+        info_iostream.close()
+        debug_sh.close()
+        info_sh.close()
         xia2_logger.handlers.pop()
         for fh, oldlevel in zip(xia2_logger.handlers, original_levels):
             fh.setLevel(oldlevel)

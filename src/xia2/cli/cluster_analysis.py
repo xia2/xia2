@@ -240,8 +240,15 @@ def run(args=sys.argv[1:]):
                     )
         # End of include/exclude options that are only available to xia2.cluster_analysis
 
-        # all under if params.clustering.output_clusters:?
-        if params.clustering.output_clusters:
+        # only do further cluster analysis if specific clusters aren't specified
+        if params.clustering.output_clusters and not any(
+            [
+                params.clustering.output_cos_cluster_number,
+                params.clustering.output_correlation_cluster_number,
+                params.clustering.exclude_cos_cluster_number,
+                params.clustering.exclude_correlation_cluster_number,
+            ]
+        ):
             if "hierarchical" in params.clustering.method:
                 output_hierarchical_clusters(params, MCA, experiments, reflections)
             if "coordinate" in params.clustering.method:
@@ -256,6 +263,7 @@ def run(args=sys.argv[1:]):
                         continue
                     if count >= params.clustering.max_output_clusters:
                         continue
+                    # N.B. differs to multiplex where if largest cluster = all data will still be output here
                     # for the first cluster, make the directory if not exists
                     if not count and not pathlib.Path.exists(
                         cwd / "coordinate_clusters"

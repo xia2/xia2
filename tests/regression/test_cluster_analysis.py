@@ -90,7 +90,12 @@ params_3.clustering.min_cluster_size = 2
         (True, False, None, None),
         (True, True, None, None),
         (True, False, 1, None),
-        (True, False, None, 1),
+        (
+            True,
+            False,
+            1,
+            1,
+        ),  # do this to check that the excluded cluster is actually different to cluster 1
     ],
 )
 def test_serial_data(
@@ -112,7 +117,7 @@ def test_serial_data(
         "clustering.min_cluster_size=2",
         expt_scaled,
         refl_scaled,
-        f"distinct_clusters={interesting_clusters}",
+        f"clustering.hierarchical.distinct_clusters={interesting_clusters}",
         "clustering.hierarchical.method=cos_angle+correlation",
         f"clustering.output_clusters={output_clusters}",
         f"output_correlation_cluster_number={output_correlation_cluster_number}",
@@ -153,7 +158,7 @@ def test_rotation_data(dials_data, run_in_tmp_path):
 
     args_clustering = [
         shutil.which("xia2.cluster_analysis"),
-        "distinct_clusters=True",
+        "clustering.hierarchical.distinct_clusters=True",
         "clustering.min_cluster_size=2",
         "clustering.hierarchical.method=cos_angle+correlation",
         "clustering.output_clusters=True",
@@ -166,7 +171,7 @@ def test_rotation_data(dials_data, run_in_tmp_path):
     assert (run_in_tmp_path / "xia2.cluster_analysis.json").is_file()
     assert (run_in_tmp_path / "xia2.cluster_analysis.log").is_file()
     assert (run_in_tmp_path / "xia2.cluster_analysis.html").is_file()
-    assert (run_in_tmp_path / "cc_clusters" / "cluster_2").exists()
+    assert (run_in_tmp_path / "cc_clusters" / "cc_cluster_2").exists()
     assert not (run_in_tmp_path / "coordinate_clusters").exists()
     # now run coordinate clustering
     args_clustering = [
@@ -196,12 +201,18 @@ def check_output(
     output_correlation_cluster_number=None,
     exclude_correlation_cluster_number=None,
 ):
-    if output_clusters and not interesting_clusters:
-        assert (main_dir / "cc_clusters" / "cluster_2").exists()
-        assert (main_dir / "cos_clusters" / "cluster_2").exists()
+    if output_clusters and not any(
+        [
+            interesting_clusters,
+            output_correlation_cluster_number,
+            exclude_correlation_cluster_number,
+        ]
+    ):
+        assert (main_dir / "cc_clusters" / "cc_cluster_2").exists()
+        assert (main_dir / "cos_clusters" / "cos_cluster_2").exists()
     if output_clusters and interesting_clusters:
-        assert (main_dir / "cc_clusters" / "cluster_2").exists()
-        assert (main_dir / "cos_clusters" / "cluster_2").exists()
+        assert (main_dir / "cc_clusters" / "cc_cluster_2").exists()
+        assert (main_dir / "cos_clusters" / "cos_cluster_2").exists()
     assert (main_dir / "xia2.cluster_analysis.json").is_file()
     assert (main_dir / "xia2.cluster_analysis.log").is_file()
     assert (main_dir / "xia2.cluster_analysis.html").is_file()
@@ -262,6 +273,8 @@ def test_interesting_cluster_algorithm(clusters, params, expected):
     (
         file_data,
         list_of_clusters,
-    ) = MultiCrystalAnalysis.interesting_cluster_identification(clusters, params)
+    ) = MultiCrystalAnalysis.interesting_cluster_identification(
+        clusters, params.clustering
+    )
 
     assert list_of_clusters == expected

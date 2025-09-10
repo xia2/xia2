@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import concurrent.futures
 import copy
 import logging
 import math
@@ -23,6 +24,7 @@ from dxtbx.util import format_float_with_standard_uncertainty
 from libtbx import Auto
 from scitbx.math import five_number_summary
 
+from xia2.Driver.timing import record_step
 from xia2.Handlers.Phil import PhilIndex
 from xia2.Handlers.Streams import banner
 from xia2.lib.bits import auto_logfiler
@@ -35,6 +37,7 @@ from xia2.Modules.Scaler.DialsScaler import (
     convert_unmerged_mtz_to_sca,
     scaling_model_auto_rules,
 )
+from xia2.Modules.SSX.util import redirect_xia2_logger
 from xia2.Wrappers.Dials.Cosym import DialsCosym
 from xia2.Wrappers.Dials.EstimateResolution import EstimateResolution
 from xia2.Wrappers.Dials.Functional.Merge import Merge
@@ -517,95 +520,73 @@ class MultiCrystalScale:
         # Same code structure as MultiCrystalAnalysis/cluster_analysis.py but changes the call
         # from output_cluster to self._scale_and_report_cluster
 
-        if (
-            self._params.clustering.output_clusters
-            and "hierarchical" in self._params.clustering.method
-        ):
-            logger.notice(banner("Scaling and merging hierarchical clusters"))  # type: ignore
-            self._data_manager_original = self._data_manager
+        if self._params.clustering.output_clusters:
+            logger.notice(  # type: ignore
+                banner(
+                    f"Scaling and merging {self._params.clustering.method[0]} clusters"
+                )
+            )
             subclusters = get_subclusters(
                 self._params.clustering,
                 self._data_manager.ids_to_identifiers_map,
                 self._cos_angle_clusters,
                 self._cc_clusters,
+                self._coordinate_clusters,
             )
 
-            if not self._params.clustering.hierarchical.distinct_clusters:
-                for c, cluster_identifiers, cluster in subclusters:
-                    cluster_dir = f"{c}_cluster_{cluster.cluster_id}"
-                    self._scale_and_report_cluster(
+            # To ensure that pools within pools aren't created
+
+            parallel_nproc = copy.deepcopy(self._params.nproc)
+            self._params.nproc = 1
+
+            logger.debug(
+                f"Using nproc = {parallel_nproc} for parallel scaling, PHIL nproc set to {self._params.nproc}"
+            )
+
+            with (
+                record_step("dials.scale(parallel)"),
+                concurrent.futures.ProcessPoolExecutor(
+                    max_workers=parallel_nproc
+                ) as pool,
+            ):
+                cluster_futures = {
+                    pool.submit(
+                        self._scale_and_report_cluster,
                         self._data_manager,
-                        cluster_dir,
-                        cluster_identifiers,
-                        cluster,
-                    )
-
-            if self._params.clustering.hierarchical.distinct_clusters:
-                self.cos_clusters = []
-                self.cc_clusters = []
-                self.cos_cluster_ids = {}
-                self.cc_cluster_ids = {}
-                for c, cluster_identifiers, cluster in subclusters:
-                    if c == "cos":
-                        self.cos_clusters.append(cluster)
-                        self.cos_cluster_ids[cluster.cluster_id] = cluster_identifiers
-                    elif c == "cc":
-                        self.cc_clusters.append(cluster)
-                        self.cc_cluster_ids[cluster.cluster_id] = cluster_identifiers
-
-                for k, clusters in enumerate([self.cos_clusters, self.cc_clusters]):
-                    cty = "cc" if k == 1 else "cos"  # cluster type as a string
-                    logger.info("-" * 22 + f"\n{cty} cluster analysis\n" + "-" * 22)
-
-                    _, list_of_clusters = (
-                        MultiCrystalAnalysis.interesting_cluster_identification(
-                            clusters, self._params
+                        item.directory,
+                        item.identifiers,
+                        item.cluster,
+                    ): index
+                    for index, item in enumerate(subclusters)
+                }
+                for future in concurrent.futures.as_completed(cluster_futures):
+                    idx = cluster_futures[future]
+                    try:
+                        (
+                            info_stream,
+                            debug_stream,
+                            individual_report,
+                            report,
+                            dict_report,
+                            cluster_name,
+                        ) = future.result()
+                    except Exception as e:
+                        raise ValueError(
+                            f"Cluster {idx} failed to scale and merge due to {e}"
                         )
-                    )
+                    else:
+                        logger.info(info_stream)
+                        logger.debug(debug_stream)
+                        self._individual_report_dicts[cluster_name] = individual_report
+                        self._update_comparison_graphs(
+                            report, dict_report, cluster_name
+                        )
+                        self._log_report_info(dict_report)
 
-                    for item in list_of_clusters:
-                        cluster_no = item.split("_")[-1]
-                        cluster_dir = f"{cty}_cluster_{cluster_no}"
+            # Reset nproc
+            self._params.nproc = parallel_nproc
 
-                        for cluster in clusters:
-                            if f"cluster_{cluster.cluster_id}" == item:
-                                ids = (
-                                    self.cc_cluster_ids[cluster.cluster_id]
-                                    if k
-                                    else self.cos_cluster_ids[cluster.cluster_id]
-                                )
-                                self._scale_and_report_cluster(
-                                    self._data_manager, cluster_dir, ids, cluster
-                                )
-                                break
-        if (
-            self._params.clustering.output_clusters
-            and "coordinate" in self._params.clustering.method
-        ):
-            logger.notice(banner("Scaling and merging coordinate clusters"))  # type: ignore
-            significant_clusters: list[ClusterInfo] = (
-                self._mca.significant_coordinate_clusters
-            )
-            count = 0
-            for s_c in significant_clusters:
-                if s_c.completeness < self._params.clustering.min_completeness:
-                    continue
-                if s_c.multiplicity < self._params.clustering.min_multiplicity:
-                    continue
-                if len(s_c.labels) < self._params.clustering.min_cluster_size:
-                    continue
-                if count >= self._params.clustering.max_output_clusters:
-                    continue
-                if len(s_c.labels) == len(self._data_manager.experiments):
-                    continue
-                cluster_dir = f"coordinate_cluster_{s_c.cluster_id}"
-                cluster_identifiers = [
-                    self._data_manager.ids_to_identifiers_map[l] for l in s_c.labels
-                ]
-                self._scale_and_report_cluster(
-                    self._data_manager, cluster_dir, cluster_identifiers, s_c
-                )
-                count += 1
+            logger.debug(f"Reset PHIL nproc to {self._params.nproc}")
 
         if self._params.filtering.method:
             logger.notice(banner("Rescaling with extra filtering"))  # type: ignore
@@ -760,28 +741,37 @@ class MultiCrystalScale:
         cluster_dir: str,
         cluster_identifiers: list[str],
         cluster: ClusterInfo,
+    ) -> tuple[str, str, dict[str, Any], Report.Report, dict[str, Any], str]:
+        with redirect_xia2_logger() as iostream:
+            cwd = pathlib.Path.cwd()
+            if not os.path.exists(cluster_dir):
+                os.mkdir(cluster_dir)
+            os.chdir(cluster_dir)
+            logger.notice(banner(f"{cluster_dir}"))  # type: ignore
+            logger.info(cluster)
+            scaled: Scale = self.scale_cluster(
+                data_manager, cluster_identifiers, True, f"{cluster_dir}_scaled"
+            )
+
+            rep = scaled.report()
+
+            d = self._report_as_dict(rep)
+
+            # need this otherwise rep will not have merging_stats
+            rep.resolution_plots_and_stats()
+
+            individual_report = self._individual_report_dict(
+                d, cluster_dir.replace("_", " ")
+            )
+
+            os.chdir(cwd)
+            info = iostream[0].getvalue()
+            debug = iostream[1].getvalue()
+        return info, debug, individual_report, rep, d, cluster_dir.replace("_", " ")
+
+    def _update_comparison_graphs(
+        self, report: Report.Report, dict_report: dict[str, Any], cluster_name: str
     ) -> None:
-        cwd = pathlib.Path.cwd()
-        if not os.path.exists(cluster_dir):
-            os.mkdir(cluster_dir)
-        os.chdir(cluster_dir)
-        logger.notice(banner(f"{cluster_dir}"))  # type: ignore
-        logger.info(cluster)
-        scaled: Scale = self.scale_cluster(
-            data_manager, cluster_identifiers, True, f"{cluster_dir}_scaled"
-        )
-        self._record_individual_report(scaled.report(), cluster_dir.replace("_", " "))
-        os.chdir(cwd)
-
-    def _record_individual_report(
-        self, report: Report.Report, cluster_name: str
-    ) -> None:
-        d = self._report_as_dict(report)
-
-        self._individual_report_dicts[cluster_name] = self._individual_report_dict(
-            d, cluster_name
-        )
-
         self._comparison_graphs.setdefault(
             "radar",
             {
@@ -832,13 +822,14 @@ class MultiCrystalScale:
             "r_pim",
         ):
             self._comparison_graphs.setdefault(
-                graph, {"layout": d[graph]["layout"], "data": []}
+                graph, {"layout": dict_report[graph]["layout"], "data": []}
             )
-            data = copy.deepcopy(d[graph]["data"][0])
+            data = copy.deepcopy(dict_report[graph]["data"][0])
             data["name"] = cluster_name
             data.pop("line", None)  # remove default color override
             self._comparison_graphs[graph]["data"].append(data)
 
+    def _log_report_info(self, d: dict[str, Any]) -> None:
         def remove_html_tags(table):
             return [
                 [
@@ -867,6 +858,19 @@ class MultiCrystalScale:
                 remove_html_tags(d["merging_statistics_table"]), headers="firstrow"
             ),
         )
+
+    def _record_individual_report(
+        self, report: Report.Report, cluster_name: str
+    ) -> None:
+        d = self._report_as_dict(report)
+
+        self._individual_report_dicts[cluster_name] = self._individual_report_dict(
+            d, cluster_name
+        )
+
+        self._update_comparison_graphs(report, d, cluster_name)
+
+        self._log_report_info(d)
 
     @staticmethod
     def _report_as_dict(report: Report.Report) -> dict[str, Any]:
@@ -1195,6 +1199,7 @@ class MultiCrystalScale:
         self._mca.cluster_analysis()
         self._cos_angle_clusters = self._mca.cos_clusters
         self._cc_clusters = self._mca.cc_clusters
+        self._coordinate_clusters = self._mca.significant_coordinate_clusters
 
     def export_merged_mtz(
         self,
