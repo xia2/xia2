@@ -124,11 +124,21 @@ def record_merge_files(
     if mergeresult.table_1_stats:
         if "Suggested" in mergeresult.table_1_stats:
             res_limits = mergeresult.table_1_stats.split("\n")[1]
-            match = re.search(r"High resolution limit\s+(\d+(?:\.\d+)?)", res_limits)
+            match = re.search(
+                r"High resolution limit\s+(\d+(?:\.\d+)?)", res_limits
+            )  # match first number
+            full_limit_match = re.search(
+                r"High resolution limit\s+(?:\d+(?:\.\d+)?\s+){3}(\d+(?:\.\d+)?)",
+                res_limits,
+            )  # match fourth number
             if match:
                 # Rename the files to _full, as we will rerun with a resolution limit.
                 resolution_limit = float(match.group(1))
-                new_mtzname = mergeresult.merge_file.name.rstrip(".mtz") + "_full.mtz"
+                full_limit = (
+                    float(full_limit_match.group(1)) if full_limit_match else ""
+                )
+                old_mtzname = mergeresult.merge_file.name
+                new_mtzname = old_mtzname.rstrip(".mtz") + "_full.mtz"
                 new_logname = mergeresult.logfile.name.rstrip(".log") + "_full.log"
                 shutil.move(mergeresult.merge_file, merge_wds[name] / new_mtzname)
                 shutil.move(mergeresult.logfile, merge_wds[name] / new_logname)
@@ -149,6 +159,8 @@ def record_merge_files(
                         new_html[:-5], merge_wds[name] / new_html
                     )
                 recorded = True
+                mergeresult.summary += f"Merged mtz file at limit of the data range ({full_limit}Å): {new_mtzname}\n"
+                mergeresult.summary += f"Merged mtz file at suggested resolution limit ({resolution_limit}Å): {old_mtzname}\n"
     if not recorded:
         FileHandler.record_data_file(mergeresult.merge_file)
         FileHandler.record_log_file(
@@ -162,6 +174,16 @@ def record_merge_files(
             FileHandler.record_html_file(
                 mergeresult.htmlfile.name.rstrip(".html"), mergeresult.htmlfile
             )
+        res_limits = mergeresult.table_1_stats.split("\n")[1]
+        match = re.search(r"High resolution limit\s+(\d+(?:\.\d+)?)", res_limits)
+        full_limit = ""
+        if match:
+            full_limit = "(" + match.group(1) + "Å)"
+        mergeresult.summary += (
+            "Single merged mtz file at limit of the data range "
+            + f"{full_limit}"
+            + f": {mergeresult.merge_file.name}\n"
+        )
     return resolution_limit
 
 
@@ -483,8 +505,8 @@ class BaseDataReduction:
             mergeresult: MergeResult = mergefuture.result()
             if len(future_list) > 1:
                 xia2_logger.info(f"Merged {mergeresult.name}")
-            summaries[mergeresult.name] = mergeresult.summary
             resolution_limit = record_merge_files(mergeresult, merge_wds)
+            summaries[mergeresult.name] = mergeresult.summary
             if resolution_limit:
                 resolution_limits[mergeresult.name] = resolution_limit
 
