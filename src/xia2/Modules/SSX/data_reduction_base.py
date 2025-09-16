@@ -2,6 +2,8 @@ from __future__ import annotations
 
 import concurrent.futures
 import logging
+import re
+import shutil
 from pathlib import Path
 
 import numpy as np
@@ -105,6 +107,84 @@ def inspect_files(
                 )
         new_data.append(fp)
     return new_data
+
+
+def record_merge_files(
+    mergeresult: MergeResult, merge_wds: dict[str, Path]
+) -> float | None:
+    """
+    Records the merge output files with the FileHandler, after checking if there was a
+    resolution limit suggested and renaming the files to append _full.
+
+    Returns: The suggested resolution limit.
+    """
+    recorded = False
+    name = mergeresult.name
+    resolution_limit = None
+    if mergeresult.table_1_stats:
+        if "Suggested" in mergeresult.table_1_stats:
+            res_limits = mergeresult.table_1_stats.split("\n")[1]
+            match = re.search(
+                r"High resolution limit\s+(\d+(?:\.\d+)?)", res_limits
+            )  # match first number
+            full_limit_match = re.search(
+                r"High resolution limit\s+(?:\d+(?:\.\d+)?\s+){3}(\d+(?:\.\d+)?)",
+                res_limits,
+            )  # match fourth number
+            if match:
+                # Rename the files to _full, as we will rerun with a resolution limit.
+                resolution_limit = float(match.group(1))
+                full_limit = (
+                    float(full_limit_match.group(1)) if full_limit_match else ""
+                )
+                old_mtzname = mergeresult.merge_file.name
+                new_mtzname = old_mtzname.rstrip(".mtz") + "_full.mtz"
+                new_logname = mergeresult.logfile.name.rstrip(".log") + "_full.log"
+                shutil.move(mergeresult.merge_file, merge_wds[name] / new_mtzname)
+                shutil.move(mergeresult.logfile, merge_wds[name] / new_logname)
+                FileHandler.record_data_file(merge_wds[name] / new_mtzname)
+                FileHandler.record_log_file(
+                    new_logname[:-4], merge_wds[name] / new_logname
+                )
+                if mergeresult.jsonfile:
+                    new_json = mergeresult.jsonfile.name.rstrip(".json") + "_full.json"
+                    shutil.move(mergeresult.jsonfile, merge_wds[name] / new_json)
+                    FileHandler.record_more_log_file(
+                        new_json[:-5], merge_wds[name] / new_json
+                    )
+                if mergeresult.htmlfile:
+                    new_html = mergeresult.htmlfile.name.rstrip(".html") + "_full.html"
+                    shutil.move(mergeresult.htmlfile, merge_wds[name] / new_html)
+                    FileHandler.record_html_file(
+                        new_html[:-5], merge_wds[name] / new_html
+                    )
+                recorded = True
+                mergeresult.summary += f"Merged mtz file at limit of the data range ({full_limit}Å): {new_mtzname}\n"
+                mergeresult.summary += f"Merged mtz file at suggested resolution limit ({resolution_limit}Å): {old_mtzname}\n"
+    if not recorded:
+        FileHandler.record_data_file(mergeresult.merge_file)
+        FileHandler.record_log_file(
+            mergeresult.logfile.name.rstrip(".log"), mergeresult.logfile
+        )
+        if mergeresult.jsonfile:
+            FileHandler.record_more_log_file(
+                mergeresult.jsonfile.name.rstrip(".json"), mergeresult.jsonfile
+            )
+        if mergeresult.htmlfile:
+            FileHandler.record_html_file(
+                mergeresult.htmlfile.name.rstrip(".html"), mergeresult.htmlfile
+            )
+        res_limits = mergeresult.table_1_stats.split("\n")[1]
+        match = re.search(r"High resolution limit\s+(\d+(?:\.\d+)?)", res_limits)
+        full_limit = ""
+        if match:
+            full_limit = "(" + match.group(1) + "Å)"
+        mergeresult.summary += (
+            "Single merged mtz file at limit of the data range "
+            + f"{full_limit}"
+            + f": {mergeresult.merge_file.name}\n"
+        )
+    return resolution_limit
 
 
 class BaseDataReduction:
@@ -400,6 +480,7 @@ class BaseDataReduction:
 
         future_list = []
         summaries = dict.fromkeys(name_to_expts_arr.keys(), "")
+        resolution_limits = {}
         with (
             record_step("dials.merge (parallel)"),
             concurrent.futures.ProcessPoolExecutor(
@@ -424,19 +505,39 @@ class BaseDataReduction:
             mergeresult: MergeResult = mergefuture.result()
             if len(future_list) > 1:
                 xia2_logger.info(f"Merged {mergeresult.name}")
+            resolution_limit = record_merge_files(mergeresult, merge_wds)
             summaries[mergeresult.name] = mergeresult.summary
-            FileHandler.record_data_file(mergeresult.merge_file)
-            FileHandler.record_log_file(
-                mergeresult.logfile.name.rstrip(".log"), mergeresult.logfile
-            )
-            if mergeresult.jsonfile:
-                FileHandler.record_more_log_file(
-                    mergeresult.jsonfile.name.rstrip(".json"), mergeresult.jsonfile
-                )
-            if mergeresult.htmlfile:
-                FileHandler.record_html_file(
-                    mergeresult.htmlfile.name.rstrip(".html"), mergeresult.htmlfile
-                )
+            if resolution_limit:
+                resolution_limits[mergeresult.name] = resolution_limit
+
         for result in summaries.values():  # always print stats in same order
             if result:
                 xia2_logger.info(result)
+        # Now rerun merging where there was a suggested resolution limit within the data range.
+        if resolution_limits:
+            future_list = []
+            with (
+                record_step("dials.merge (parallel)"),
+                concurrent.futures.ProcessPoolExecutor(
+                    max_workers=self._reduction_params.nproc
+                ) as pool,
+            ):
+                for name, (scaled_array, elist) in name_to_expts_arr.items():
+                    if name in resolution_limits:
+                        data = scaled_array.select(
+                            scaled_array.d_spacings().data() >= resolution_limits[name]
+                        )
+                        future_list.append(
+                            pool.submit(
+                                merge,
+                                merge_wds[name],
+                                data,
+                                elist,
+                                resolution_limits[name],
+                                best_unit_cell,
+                                self._reduction_params.partiality_threshold,
+                                name,
+                            )
+                        )
+            for mergefuture in concurrent.futures.as_completed(future_list):
+                record_merge_files(mergefuture.result(), merge_wds)

@@ -417,14 +417,11 @@ def merge(
         except KeyError:
             table_1_stats = ""
         result.summary = (
-            (
-                f"Merged {len(experiments)} crystals in {', '.join(name.split('.'))}\n"
-                if name != "merged"
-                else ""
-            )
-            + f"Merged mtz file: {filename}\n"
-            + f"{table_1_stats}"
-        )
+            f"Merged {len(experiments)} crystals in {', '.join(name.split('.'))}\n"
+            if name != "merged"
+            else ""
+        ) + f"{table_1_stats}"
+        result.table_1_stats = table_1_stats
 
     return result
 
