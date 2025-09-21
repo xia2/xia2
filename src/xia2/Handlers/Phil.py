@@ -1054,7 +1054,7 @@ xia2.settings
       .expert_level = 1
   }
   report
-    .expert_level = 1
+    .expert_level = 2
   {
     include scope xia2.Modules.Analysis.phil_scope
   }
