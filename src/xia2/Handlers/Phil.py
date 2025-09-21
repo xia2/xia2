@@ -499,7 +499,9 @@ dials
         .help = "If True, one absorption correction model is refined for all sweeps"
                 "Therefore it should only be used when scaling data from a single crystal"
     }
-    dose_decay_model {
+    dose_decay_model
+      .expert_level = 2
+    {
       share.decay = True
         .type = bool
         .help = "Share the decay model between sweeps."
@@ -512,7 +514,9 @@ dials
         .type = int(value_min=2)
         .help = "Order of spherical harmonics to use for absorption surface"
     }
-    array_model {
+    array_model
+      .expert_level = 2
+    {
       resolution_bins = 10
         .type = int(value_min=1)
         .help = "Number of bins to parameterise decay component"
