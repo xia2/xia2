@@ -161,8 +161,10 @@ xds
       .expert_level = 1
     max_wedge_size = 5
       .type = int(value_min=1)
+      .short_caption = "Maximum wedge size (images)"
     max_wedge_size_degrees = None
       .type = float(value_min=0)
+      .short_caption = "Maximum wedge size (degrees)"
   }
   colspot {
     minimum_pixels_per_spot = 2
@@ -679,7 +681,7 @@ xia2.settings
   .short_caption = "xia2 settings"
 {
   pipeline = 3d 3dd 3di 3dii *dials dials-aimless
-    .short_caption = "main processing pipeline"
+    .short_caption = "Main processing pipeline"
     .help = "Select the xia2 main processing pipeline\n" \
             "   3d: XDS, XSCALE\n" \
             "  3di: as 3d, but use 3 wedges for indexing\n" \
@@ -716,9 +718,11 @@ xia2.settings
   project = 'AUTOMATIC'
     .type = str
     .help = "A name for the data processing project"
+    .short_caption = "Project name"
   crystal = 'DEFAULT'
     .type = str
     .help = "A name for the crystal"
+    .short_caption = "Crystal name"
   input
     .short_caption = "xia2 input settings"
   {
