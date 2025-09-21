@@ -238,19 +238,25 @@ dials
                      "reflections in refinement"
     .expert_level = 2
 
-  detect_blanks {
+  detect_blanks
+    .short_caption = "Detect blank images"
+    .expert_level = 1
+  {
     phi_step = 2
       .help = "Width of bins in degrees."
       .type = float(value_min=0, allow_none=True)
+      .short_caption = "Bin width (degrees)"
     counts_fractional_loss = 0.1
       .help = "Fractional loss (relative to the bin with the most counts) after " \
               "which a bin is flagged as potentially containing blank images."
       .type = float(value_min=0, value_max=1, allow_none=True)
+      .short_caption = "Fractional loss (counts)"
     misigma_fractional_loss = 0.1
       .help = "Fractional loss (relative to the bin with the highest misigma) " \
               "after  which a bin is flagged as potentially containing blank " \
               "images."
       .type = float(value_min=0, value_max=1, allow_none=True)
+      .short_caption = "Fractional loss (misigma)"
   }
 
   masking
