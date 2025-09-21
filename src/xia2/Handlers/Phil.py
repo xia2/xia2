@@ -530,6 +530,7 @@ dials
       .type = choice
       .help = "Choose from profile fitted or summation intensities, or " \
               "an optimised combination of profile/sum."
+      .short_caption = "Intensity type"
     error_model = *basic None
       .type = choice
       .help = "Choice of whether to refine an error model to adjust the" \
@@ -806,18 +807,23 @@ xia2.settings
     free_fraction = 0.05
       .type = float(value_min=0.0, value_max=1.0)
       .help = "Fraction of free reflections"
+      .short_caption = "Free fraction"
     free_total = None
       .type = int(value_min=0)
       .help = "Total number of free reflections"
+      .short_caption = "Total free reflections"
     freer_file = None
       .type = path
       .help = "Copy freer flags from this file"
+      .short_caption = "Free R flags from file"
     reference_reflection_file = None
       .type = path
       .help = "Reference file for testing of alternative indexing schemes"
+      .short_caption = "Reference reflections"
     reference_experiment_file = None
       .type = path
       .help = "Reference models.expt for testing of alternative indexing schemes"
+      .short_caption = "Reference experiments"
     model = *decay *modulation *absorption partiality
       .type = choice(multi=True)
       .short_caption = "Scaling models to apply"
