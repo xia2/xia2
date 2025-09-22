@@ -15,6 +15,7 @@ from dials.util.batch_handling import (
 )
 from dials.util.export_mtz import WavelengthGroup, match_wavelengths
 from dxtbx.model import ExperimentList
+from xia2.Driver.timing import record_step
 
 logger = logging.getLogger(__name__)
 
@@ -196,33 +197,35 @@ class DataManager:
     def export_unmerged_wave_mtz(
         self, wl: float, prefix: str, d_min: float, wavelength_tolerance: float
     ) -> str | None:
-        data = self.data_split_by_wl[wl]
-        nn = len(self.wavelengths)
-        fmt = "%%0%dd" % (math.log10(nn) + 1)
-        index = sorted(self.wavelengths.keys()).index(wl)
-        params = export.phil_scope.extract()
-        params.mtz.d_min = d_min
-        params.mtz.hklout = f"{prefix}_WAVE{fmt % (index + 1)}.mtz"
-        params.mtz.wavelength_tolerance = wavelength_tolerance
-        expt_to_export = copy.deepcopy(data["expt"])
-        params.intensity = ["scale"]
-        if data["expt"]:  # When is this not the case?
-            export.export_mtz(params, expt_to_export, [data["refl"]])
-            return params.mtz.hklout
-        return None
+        with record_step("dials.export(unmerged-mtz)"):
+            data = self.data_split_by_wl[wl]
+            nn = len(self.wavelengths)
+            fmt = "%%0%dd" % (math.log10(nn) + 1)
+            index = sorted(self.wavelengths.keys()).index(wl)
+            params = export.phil_scope.extract()
+            params.mtz.d_min = d_min
+            params.mtz.hklout = f"{prefix}_WAVE{fmt % (index + 1)}.mtz"
+            params.mtz.wavelength_tolerance = wavelength_tolerance
+            expt_to_export = copy.deepcopy(data["expt"])
+            params.intensity = ["scale"]
+            if data["expt"]:  # When is this not the case?
+                export.export_mtz(params, expt_to_export, [data["refl"]])
+                return params.mtz.hklout
+            return None
 
     def export_unmerged_wave_mmcif(self, wl: float, prefix: str, d_min: float) -> None:
-        data = self.data_split_by_wl[wl]
-        nn = len(self.wavelengths)
-        fmt = "%%0%dd" % (math.log10(nn) + 1)
-        index = sorted(self.wavelengths.keys()).index(wl)
-        params = export.phil_scope.extract()
-        params.mtz.d_min = d_min
-        params.mmcif.hklout = f"{prefix}_WAVE{fmt % (index + 1)}.mmcif"
-        expt_to_export = copy.deepcopy(data["expt"])
-        params.intensity = ["scale"]
-        if data["expt"]:
-            export.export_mmcif(params, expt_to_export, [data["refl"]])
+        with record_step("dials.export(unmerged-mmcif)"):
+            data = self.data_split_by_wl[wl]
+            nn = len(self.wavelengths)
+            fmt = "%%0%dd" % (math.log10(nn) + 1)
+            index = sorted(self.wavelengths.keys()).index(wl)
+            params = export.phil_scope.extract()
+            params.mtz.d_min = d_min
+            params.mmcif.hklout = f"{prefix}_WAVE{fmt % (index + 1)}.mmcif"
+            expt_to_export = copy.deepcopy(data["expt"])
+            params.intensity = ["scale"]
+            if data["expt"]:
+                export.export_mmcif(params, expt_to_export, [data["refl"]])
 
     def export_reflections(self, filename: str, d_min: float | None = None) -> str:
         reflections = self._reflections
@@ -241,18 +244,20 @@ class DataManager:
         d_min: float | None = None,
         wavelength_tolerance: float = 0.0001,
     ) -> None:
-        params = export.phil_scope.extract()
-        expt_to_export = copy.deepcopy(self._experiments)
-        params.mtz.d_min = d_min
-        params.mtz.hklout = filename
-        params.mtz.wavelength_tolerance = wavelength_tolerance
-        params.intensity = ["scale"]
-        export.export_mtz(params, expt_to_export, [self._reflections])
+        with record_step("dials.export(unmerged-mtz)"):
+            params = export.phil_scope.extract()
+            expt_to_export = copy.deepcopy(self._experiments)
+            params.mtz.d_min = d_min
+            params.mtz.hklout = filename
+            params.mtz.wavelength_tolerance = wavelength_tolerance
+            params.intensity = ["scale"]
+            export.export_mtz(params, expt_to_export, [self._reflections])
 
     def export_unmerged_mmcif(self, filename: str, d_min: float | None = None) -> None:
-        params = export.phil_scope.extract()
-        expt_to_export = copy.deepcopy(self._experiments)
-        params.mtz.d_min = d_min
-        params.mmcif.hklout = filename
-        params.intensity = ["scale"]
-        export.export_mmcif(params, expt_to_export, [self._reflections])
+        with record_step("dials.export(unmerged-mmcif)"):
+            params = export.phil_scope.extract()
+            expt_to_export = copy.deepcopy(self._experiments)
+            params.mtz.d_min = d_min
+            params.mmcif.hklout = filename
+            params.intensity = ["scale"]
+            export.export_mmcif(params, expt_to_export, [self._reflections])
