@@ -15,6 +15,7 @@ from dials.util.batch_handling import (
 )
 from dials.util.export_mtz import WavelengthGroup, match_wavelengths
 from dxtbx.model import ExperimentList
+
 from xia2.Driver.timing import record_step
 
 logger = logging.getLogger(__name__)
