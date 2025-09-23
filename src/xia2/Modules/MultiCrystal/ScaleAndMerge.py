@@ -507,7 +507,8 @@ class MultiCrystalScale:
                 "scaled_unmerged.mmcif", d_min=self._scaled.d_min
             )
 
-        self._record_individual_report(self._scaled.report(), "All data")
+        with record_step("xia2.report(all-data)"):
+            self._record_individual_report(self._scaled.report(), "All data")
 
         logger.notice(banner("Identifying intensity-based clusters"))  # type: ignore
 
@@ -657,8 +658,8 @@ class MultiCrystalScale:
                 )
 
             data_manager._set_batches()
-
-            self._record_individual_report(scaled.report(), "Filtered")
+            with record_step("xia2.report(filtered)"):
+                self._record_individual_report(scaled.report(), "Filtered")
             data_manager.export_experiments("filtered.expt")
             data_manager.export_reflections("filtered.refl", d_min=scaled.d_min)
 
