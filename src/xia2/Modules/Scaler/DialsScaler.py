@@ -23,6 +23,7 @@ from iotbx.scalepack import no_merge_original_index
 from iotbx.scalepack.merge import write as merge_scalepack_write
 from ordered_set import OrderedSet
 
+from xia2.Driver.timing import record_step
 from xia2.Handlers.CIF import CIF, mmCIF
 from xia2.Handlers.Citations import Citations
 from xia2.Handlers.Files import FileHandler
@@ -1427,15 +1428,16 @@ def decide_correct_lattice_using_refiner(possible_lattices, refiner):
 
 def convert_unmerged_mtz_to_sca(mtz_filename):
     """Convert an mtz files to .sca format and write."""
-    sca_filename = os.path.splitext(mtz_filename)[0] + ".sca"
-    m = mtz.object(mtz_filename)
-    for ma in m.as_miller_arrays(merge_equivalents=False, anomalous=False):
-        if ma.info().labels == ["I", "SIGI"]:
-            no_merge_original_index.writer(ma, file_name=sca_filename)
-            FileHandler.record_data_file(sca_filename)
-            break
-    else:
-        raise KeyError("Intensity column labels not found in MTZ file")
+    with record_step("convert-mtz-sca"):
+        sca_filename = os.path.splitext(mtz_filename)[0] + ".sca"
+        m = mtz.object(mtz_filename)
+        for ma in m.as_miller_arrays(merge_equivalents=False, anomalous=False):
+            if ma.info().labels == ["I", "SIGI"]:
+                no_merge_original_index.writer(ma, file_name=sca_filename)
+                FileHandler.record_data_file(sca_filename)
+                break
+        else:
+            raise KeyError("Intensity column labels not found in MTZ file")
 
 
 def convert_merged_mtz_to_sca(mtz_filename):
@@ -1443,15 +1445,16 @@ def convert_merged_mtz_to_sca(mtz_filename):
     # merged sca format contains 7 columns: h,k,l, I+, sigI+, I-, sigI-. We
     # always run dials.merge with anomalous=True (whether or not anomalous is
     # set in xia2), so data is always separated into I+/I- in the merged mtz.
-    sca_filename = os.path.splitext(mtz_filename)[0] + ".sca"
-    m = mtz.object(mtz_filename)
-    for ma in m.as_miller_arrays(merge_equivalents=False, anomalous=True):
-        if ma.info().labels == ["I(+)", "SIGI(+)", "I(-)", "SIGI(-)"]:
-            merge_scalepack_write(miller_array=ma, file_name=sca_filename)
-            FileHandler.record_data_file(sca_filename)
-            break
-    else:
-        raise KeyError("Intensity column labels not found in MTZ file")
+    with record_step("convert-mtz-sca"):
+        sca_filename = os.path.splitext(mtz_filename)[0] + ".sca"
+        m = mtz.object(mtz_filename)
+        for ma in m.as_miller_arrays(merge_equivalents=False, anomalous=True):
+            if ma.info().labels == ["I(+)", "SIGI(+)", "I(-)", "SIGI(-)"]:
+                merge_scalepack_write(miller_array=ma, file_name=sca_filename)
+                FileHandler.record_data_file(sca_filename)
+                break
+        else:
+            raise KeyError("Intensity column labels not found in MTZ file")
 
 
 def scaling_model_auto_rules(experiment):
