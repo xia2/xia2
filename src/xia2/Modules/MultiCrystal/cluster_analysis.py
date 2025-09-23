@@ -12,6 +12,7 @@ from dials.algorithms.correlation.cluster import ClusterInfo
 from dials.array_family import flex
 from dxtbx.model import ExperimentList
 
+from xia2.Modules.MultiCrystal.data_manager import DataManager
 from xia2.Modules.MultiCrystalAnalysis import MultiCrystalAnalysis
 
 logger = logging.getLogger(__name__)
@@ -77,6 +78,17 @@ class SubCluster:
     type: str
     identifiers: list
     cluster: ClusterInfo
+
+    def __post_init__(self):
+        self.data_manager = None
+
+    @property
+    def data_manager(self) -> DataManager:
+        return self._data_manager
+
+    @data_manager.setter
+    def data_manager(self, data_manager) -> None:
+        self._data_manager = data_manager
 
 
 def clusters_and_types(
