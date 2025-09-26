@@ -22,7 +22,12 @@ logger = logging.getLogger(__name__)
 
 
 class DataManager:
-    def __init__(self, experiments: ExperimentList, reflections: flex.reflection_table):
+    def __init__(
+        self,
+        experiments: ExperimentList,
+        reflections: flex.reflection_table,
+        batch_offset_list: list[int] = [],
+    ):
         self._experiments = experiments
         self._reflections = reflections
         self.ids_to_identifiers_map = dict(self._reflections.experiment_identifiers())
@@ -32,7 +37,8 @@ class DataManager:
         self.wavelengths: dict[
             float, WavelengthGroup
         ] = {}  # map of wl to wavelength group.
-        self.batch_offset_list: list[int] = []
+        # self.batch_offset_list: list[int] = []
+        self.batch_offset_list = batch_offset_list
 
         if all(e.scan is None for e in self._experiments):
             self.all_stills = True
@@ -43,7 +49,8 @@ class DataManager:
                 "cannot mix stills and rotation data for multi crystal analysis"
             )
 
-        self._set_batches()
+        if self.batch_offset_list == []:
+            self._set_batches()
 
     def _set_batches(self) -> None:
         if not self.all_stills:
@@ -85,6 +92,28 @@ class DataManager:
         )
         self.reflections.reset_ids()
         self.reflections.assert_experiment_identifiers_are_consistent(self.experiments)
+
+    def select_and_create(self, experiment_identifiers: list[str]) -> DataManager:
+        batch_offset_list = [
+            i
+            for (i, expt) in zip(self.batch_offset_list, self._experiments)
+            if expt.identifier in experiment_identifiers
+        ]
+        experiments = ExperimentList(
+            [
+                expt
+                for expt in self._experiments
+                if expt.identifier in experiment_identifiers
+            ]
+        )
+        reflections = self.reflections.select_on_experiment_identifiers(
+            experiment_identifiers
+        )
+        reflections.reset_ids()
+        reflections.assert_experiment_identifiers_are_consistent(experiments)
+        new_data_manager = DataManager(experiments, reflections, batch_offset_list)
+
+        return new_data_manager
 
     def filter_dose(self, dose_min: float, dose_max: float) -> None:
         keep_expts = []

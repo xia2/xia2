@@ -78,17 +78,7 @@ class SubCluster:
     type: str
     identifiers: list
     cluster: ClusterInfo
-
-    def __post_init__(self):
-        self.data_manager = None
-
-    @property
-    def data_manager(self) -> DataManager:
-        return self._data_manager
-
-    @data_manager.setter
-    def data_manager(self, data_manager) -> None:
-        self._data_manager = data_manager
+    data_manager: DataManager | None = None
 
 
 def clusters_and_types(
