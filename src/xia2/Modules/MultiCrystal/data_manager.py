@@ -49,7 +49,7 @@ class DataManager:
                 "cannot mix stills and rotation data for multi crystal analysis"
             )
 
-        if self.batch_offset_list == []:
+        if not self.batch_offset_list:
             self._set_batches()
 
     def _set_batches(self) -> None:
