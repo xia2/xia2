@@ -15,6 +15,7 @@ from dials.algorithms.scaling.scale_and_filter import (
     AnalysisResults,
     make_scaling_filtering_plots,
 )
+from dials.algorithms.scaling.scaling_library import determine_best_unit_cell
 from dials.algorithms.symmetry.cosym import SymmetryAnalysis
 from dials.array_family import flex
 from dials.util import tabulate
@@ -50,12 +51,7 @@ class MultiCrystalAnalysis:
             assert experiments is not None and reflections is not None
             self._data_manager = DataManager(experiments, reflections)
 
-        self._intensities_separate = self._data_manager.reflections_as_miller_arrays()
-        (
-            self.intensities,
-            self.batches,
-            self.scales,
-        ) = self._data_manager.reflections_as_miller_arrays(combined=True)
+        self.unit_cell = determine_best_unit_cell(self._data_manager.experiments)
         self.params.batch = []
         scope = phil.parse(batch_phil_scope)
         for expt in self._data_manager.experiments:
@@ -66,7 +62,12 @@ class MultiCrystalAnalysis:
                 batch_params.range = expt.scan.get_batch_range()
                 self.params.batch.append(batch_params)
 
-        self.intensities.set_observation_type_xray_intensity()
+        self.space_group = (
+            self._data_manager.experiments[0]
+            .crystal.get_space_group()
+            .info()
+            .symbol_and_number()
+        )
 
     @staticmethod
     def stereographic_projections(
@@ -455,8 +456,8 @@ any systematic grouping of points may suggest a preferential crystal orientation
         template = env.get_template("multiplex.html")
         html = template.render(
             page_title=self.params.title,
-            space_group=self.intensities.space_group_info().symbol_and_number(),
-            unit_cell=str(self.intensities.unit_cell()),
+            space_group=self.space_group,
+            unit_cell=str(self.unit_cell),
             cc_half_significance_level=self.params.cc_half_significance_level,
             unit_cell_graphs=unit_cell_graphs,
             cosym_graphs=cosym_analysis["cosym_graphs"],
