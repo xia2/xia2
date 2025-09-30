@@ -23,6 +23,7 @@ from dxtbx.util import format_float_with_standard_uncertainty
 from libtbx import Auto
 from scitbx.math import five_number_summary
 
+from xia2.Driver.timing import record_step
 from xia2.Handlers.Phil import PhilIndex
 from xia2.Handlers.Streams import banner
 from xia2.lib.bits import auto_logfiler
