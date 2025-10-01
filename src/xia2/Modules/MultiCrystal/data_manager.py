@@ -26,7 +26,7 @@ class DataManager:
         self,
         experiments: ExperimentList,
         reflections: flex.reflection_table,
-        batch_offset_list: list[int] = [],
+        batch_offset_list: list[int] | None = None,
     ):
         self._experiments = experiments
         self._reflections = reflections
@@ -37,8 +37,10 @@ class DataManager:
         self.wavelengths: dict[
             float, WavelengthGroup
         ] = {}  # map of wl to wavelength group.
-        # self.batch_offset_list: list[int] = []
-        self.batch_offset_list = batch_offset_list
+
+        self.batch_offset_list: list[int] = (
+            batch_offset_list if batch_offset_list is not None else []
+        )
 
         if all(e.scan is None for e in self._experiments):
             self.all_stills = True
