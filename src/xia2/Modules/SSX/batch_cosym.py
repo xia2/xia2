@@ -11,17 +11,17 @@ from dials.algorithms.scaling.scaling_library import (
     determine_best_unit_cell,
     scaled_data_as_miller_array,
 )
-from dials.algorithms.symmetry import symmetry_base
+from dials.algorithms.symmetry import (
+    apply_change_of_basis_ops,
+    change_of_basis_ops_to_minimum_cell,
+    eliminate_sys_absent,
+    symmetry_base,
+)
 from dials.algorithms.symmetry.cosym import CosymAnalysis
 from dials.algorithms.symmetry.reindex_to_reference import (
     determine_reindex_operator_against_reference,
 )
 from dials.array_family import flex
-from dials.command_line.symmetry import (
-    apply_change_of_basis_ops,
-    change_of_basis_ops_to_minimum_cell,
-    eliminate_sys_absent,
-)
 from dials.util.filter_reflections import filtered_arrays_from_experiments_reflections
 from dials.util.observer import Subject
 from dials.util.reference import intensities_from_reference_file
