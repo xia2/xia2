@@ -34,6 +34,7 @@ class Export:
         self._params.format = "shelx"
         self._params.intensity = ["auto"]
         self._use_xpid = True
+        self._unscaled_behaviour = ["profile"]
 
     def set_output_names(self, output_name: str) -> None:
         self._params.shelx.hklout = output_name + ".hkl"
@@ -53,6 +54,14 @@ class Export:
     def use_xpid(self, xpid: bool) -> None:
         self._use_xpid = xpid
 
+    @property
+    def unscaled_behaviour(self) -> list[str]:
+        return self._unscaled_behaviour
+
+    @unscaled_behaviour.setter
+    def unscaled_behaviour(self, intensity: str) -> None:
+        self._unscaled_behaviour = [intensity]
+
     @handle_fail
     def run(self, expts: ExperimentList, refls: flex.reflection_table) -> None:
         xia2_logger.debug("Running dials.export")
@@ -71,6 +80,9 @@ class Export:
             # do auto interpreting of intensity choice:
             # note that this may still fail certain checks further down the processing,
             # but these are the defaults to try
+
+            # Note that for shelx output, can only have ONE option - therefore slightly alter this logic from dials.command_line.export
+
             if self._params.intensity in ([None], [Auto], ["auto"], Auto) and [refls]:
                 if ("intensity.scale.value" in [refls][0]) and (
                     "intensity.scale.variance" in [refls][0]
@@ -81,13 +93,16 @@ class Export:
                     )
                 else:
                     self._params.intensity = []
-                    if "intensity.sum.value" in [refls][0]:
+                    if (
+                        "intensity.sum.value" in [refls][0]
+                        and "intensity.prf.value" in [refls][0]
+                    ):
+                        self._params.intensity = self.unscaled_behaviour
+                    elif "intensity.sum.value" in [refls][0]:
                         self._params.intensity.append("sum")
-                    if "intensity.prf.value" in [refls][0]:
+                    elif "intensity.prf.value" in [refls][0]:
                         self._params.intensity.append("profile")
                     dials_logger.info(
-                        "Data appears to be unscaled, setting intensity = "
-                        + "+".join(self._params.intensity)
+                        f"Data appears to be unscaled, setting intensity = {self._params.intensity[0]}"
                     )
-
             export_shelx(self._params, expts, [refls])

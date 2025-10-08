@@ -448,6 +448,7 @@ class MultiCrystalScale:
 
         if self._params.small_molecule.shelx_output:
             self.export_shelx(
+                self._params,
                 self._data_manager._experiments,
                 self._data_manager._reflections,
                 "scaled",
@@ -641,6 +642,7 @@ class MultiCrystalScale:
 
             if self._params.small_molecule.shelx_output:
                 self.export_shelx(
+                    params,
                     data_manager._experiments,
                     data_manager._reflections,
                     "filtered",
@@ -735,8 +737,9 @@ class MultiCrystalScale:
         # if we didn't have an external reference for the free_flags set, we need to make
         # and record one here.
 
-        if self._params.small_molecule.shelx_output:
-            self.export_shelx(
+        if params.small_molecule.shelx_output:
+            MultiCrystalScale.export_shelx(
+                params,
                 data_manager._experiments,
                 data_manager._reflections,
                 output_name,
@@ -1290,15 +1293,16 @@ class MultiCrystalScale:
             return name
         return None
 
+    @staticmethod
     def export_shelx(
-        self,
+        params: libtbx.phil.scope_extract,
         expts: ExperimentList,
         refls: flex.reflection_table,
         output_name: str,
     ) -> None:
         export = Export()
         export.set_output_names(output_name)
-        export.set_composition(self._params.small_molecule.composition)
+        export.set_composition(params.small_molecule.composition)
         export.run(expts, refls)
 
 
