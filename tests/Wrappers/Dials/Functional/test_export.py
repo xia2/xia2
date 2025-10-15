@@ -1,8 +1,5 @@
 from __future__ import annotations
 
-import shutil
-import subprocess
-
 import pytest
 from dials.array_family import flex
 from dxtbx.serialize import load
@@ -11,52 +8,25 @@ from xia2.Wrappers.Dials.Functional.Export import Export
 
 
 @pytest.fixture()
-def sm_data(dials_data, tmp_path, ccp4):
-    command_line = [
-        shutil.which("xia2"),
-        "pipeline=dials",
-        "nproc=2",
-        "small_molecule=True",
-        "read_all_image_headers=False",
-        "trust_beam_centre=True",
-        dials_data("small_molecule_example", pathlib=True),
-    ]
-    subprocess.run(command_line, cwd=tmp_path, capture_output=True)
-
-    expts = load.experiment_list(
-        tmp_path / "DataFiles" / "AUTOMATIC_DEFAULT_scaled.expt", check_format=False
-    )
-    refls = flex.reflection_table.from_file(
-        tmp_path / "DataFiles" / "AUTOMATIC_DEFAULT_scaled.refl"
-    )
+def lcy_data(dials_data):
+    lcy = dials_data("l_cysteine_4_sweeps_scaled", pathlib=True)
+    expts = load.experiment_list(lcy / "scaled_20_25.expt", check_format=False)
+    refls = flex.reflection_table.from_file(lcy / "scaled_20_25.refl")
     yield expts, refls
 
 
 @pytest.fixture()
-def sm_data_unscaled(dials_data, tmp_path, ccp4):
-    command_line = [
-        shutil.which("xia2"),
-        "pipeline=dials",
-        "nproc=2",
-        "small_molecule=True",
-        "read_all_image_headers=False",
-        "trust_beam_centre=True",
-        dials_data("small_molecule_example", pathlib=True),
-    ]
-    subprocess.run(command_line, cwd=tmp_path, capture_output=True)
-
+def lcy_data_unscaled(dials_data):
+    lcy_unscaled = dials_data("l_cysteine_dials_output", pathlib=True)
     expts = load.experiment_list(
-        tmp_path / "DataFiles" / "AUTOMATIC_DEFAULT_NATIVE_SWEEP1.expt",
-        check_format=False,
+        lcy_unscaled / "23_integrated.expt", check_format=False
     )
-    refls = flex.reflection_table.from_file(
-        tmp_path / "DataFiles" / "AUTOMATIC_DEFAULT_NATIVE_SWEEP1.refl"
-    )
+    refls = flex.reflection_table.from_file(lcy_unscaled / "23_integrated.refl")
     yield expts, refls
 
 
-def test_merge(sm_data, run_in_tmp_path):
-    expts, refls = sm_data
+def test_merge(lcy_data, run_in_tmp_path):
+    expts, refls = lcy_data
     export = Export()
     export.run(expts, refls)
 
@@ -66,8 +36,8 @@ def test_merge(sm_data, run_in_tmp_path):
     assert (run_in_tmp_path / f"{export._xpid}_dials.export.log").is_file()
 
 
-def test_non_default_parameters(sm_data, run_in_tmp_path):
-    expts, refls = sm_data
+def test_non_default_parameters(lcy_data, run_in_tmp_path):
+    expts, refls = lcy_data
     export = Export()
     export.use_xpid = False
     export.set_composition("C26NiP2Cl2")
@@ -80,8 +50,8 @@ def test_non_default_parameters(sm_data, run_in_tmp_path):
     assert (run_in_tmp_path / "dials.export.log").is_file()
 
 
-def test_unscaled(sm_data_unscaled, run_in_tmp_path):
-    expts, refls = sm_data_unscaled
+def test_unscaled(lcy_data_unscaled, run_in_tmp_path):
+    expts, refls = lcy_data_unscaled
     export = Export()
     export.run(expts, refls)
     # Check output generated
