@@ -114,3 +114,11 @@ Plots of changes in statistics during the scaling and filtering cycles can be fo
 - Turn on cycles of :math:`{\Delta}CC1/2` filtering + scaling with the option ``filtering.method=deltacchalf``.
 - The ``deltacchalf.stdcutoff`` parameter is the main way to control the amount of data that is filtered out. Setting this to a lower number means that more data is filtered at each step.
 - In the case of radiation damage towards the end of sweeps, it may be better to just exclude the end of sweeps rather than full sweeps; this is an ideal use case for the ``deltacchalf.mode=image_group`` option.
+
+------------------------------------------
+Chemical Crystallography
+------------------------------------------
+Data from small molecule (or chemical crystallography) experiments can also be processed using xia2.multiplex. Full-featured compatibility is still a work in progress, with future plans to integrate full 
+space group determination planned. In the interim, however, this can be done manually on the output .ins / .hkl files. To output SHELX-compatible files, set the option ``small_molecule.composition``
+using your known chemical formula (ie ``small_molecule.composition=C10H14O4Cu``). If your chemical formula is unknown, enter in a dummy formula (ie ``small_molecule.composition=CH``). 
+Running SHELXT on your output files will provide an estimation of the number of atoms, from which you can assign chemical identity later using your preferred refinement program. 
