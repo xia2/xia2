@@ -1,1 +1,0 @@
-Add windows build to github CI. Avoid running redundant GitHub actions in PRs.
