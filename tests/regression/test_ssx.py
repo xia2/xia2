@@ -746,7 +746,7 @@ def test_on_sacla_data(dials_data, tmp_path):
         f"image={image}",
         f"reference_geometry={geometry}",
         "space_group = P43212",
-        "unit_cell=78.9,78.9,38.1,90,90,90",
+        "unit_cell=77,77,37,90,90,90",
         "min_spot_size=2",
         "integration.algorithm=stills",
         f"spotfinding.phil={fp}",
@@ -779,7 +779,7 @@ def test_on_sacla_data_slice(dials_data, tmp_path):
         f"image={image}",
         f"reference_geometry={geometry}",
         "space_group = P43212",
-        "unit_cell=78.9,78.9,38.1,90,90,90",
+        "unit_cell=77,77,37,90,90,90",
         "min_spot_size=2",
         "steps=find_spots+index",
         f"spotfinding.phil={fp}",
@@ -793,9 +793,11 @@ def test_on_sacla_data_slice(dials_data, tmp_path):
     )
     assert len(imported) == 2
     assert len(imported.imagesets()) == 1
+    assert imported.scans()[0].get_image_range() == (3, 3)
+    assert imported.scans()[1].get_image_range() == (4, 4)
 
     indexed = load.experiment_list(
         tmp_path / "batch_1" / "indexed.expt", check_format=False
     )
 
-    assert indexed[0].scan.get_image_range() == (3, 3)  # i.e. the third image
+    assert indexed[0].scan.get_image_range() == (4, 4)  # i.e. the fourth image
