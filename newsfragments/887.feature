@@ -1,1 +1,1 @@
-``xia2.multiplex``: Included option to export SHELX files for small molecule crystallography
+``xia2.multiplex``: Added option (small_molecule.composition=) to export SHELX files for small molecule crystallography
