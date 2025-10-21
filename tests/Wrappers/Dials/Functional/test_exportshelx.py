@@ -4,7 +4,7 @@ import pytest
 from dials.array_family import flex
 from dxtbx.serialize import load
 
-from xia2.Wrappers.Dials.Functional.Export import Export
+from xia2.Wrappers.Dials.Functional.ExportShelx import ExportShelx
 
 
 @pytest.fixture()
@@ -27,7 +27,7 @@ def lcy_data_unscaled(dials_data):
 
 def test_merge(lcy_data, run_in_tmp_path):
     expts, refls = lcy_data
-    export = Export()
+    export = ExportShelx()
     export.run(expts, refls)
 
     # Check output generated
@@ -38,7 +38,7 @@ def test_merge(lcy_data, run_in_tmp_path):
 
 def test_non_default_parameters(lcy_data, run_in_tmp_path):
     expts, refls = lcy_data
-    export = Export()
+    export = ExportShelx()
     export.use_xpid = False
     export.set_composition("C26NiP2Cl2")
     export.set_output_names("test_export")
@@ -52,7 +52,8 @@ def test_non_default_parameters(lcy_data, run_in_tmp_path):
 
 def test_unscaled(lcy_data_unscaled, run_in_tmp_path):
     expts, refls = lcy_data_unscaled
-    export = Export()
+    export = ExportShelx()
+    export.set_intensity("profile")
     export.run(expts, refls)
     # Check output generated
     assert (run_in_tmp_path / "dials.hkl").is_file()

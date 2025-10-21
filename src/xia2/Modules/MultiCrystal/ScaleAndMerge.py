@@ -38,7 +38,7 @@ from xia2.Modules.Scaler.DialsScaler import (
 )
 from xia2.Wrappers.Dials.Cosym import DialsCosym
 from xia2.Wrappers.Dials.EstimateResolution import EstimateResolution
-from xia2.Wrappers.Dials.Functional.Export import Export
+from xia2.Wrappers.Dials.Functional.ExportShelx import ExportShelx
 from xia2.Wrappers.Dials.Functional.Merge import Merge
 from xia2.Wrappers.Dials.Refine import Refine
 from xia2.Wrappers.Dials.Reindex import Reindex
@@ -289,12 +289,9 @@ significant_clusters {
 }
 
 small_molecule {
-  shelx_output = False
-    .type = bool
-    .help = "Set to True for output of files for SHELX."
-  composition = CH
+  composition = None
     .type = str
-    .help = "The chemical composition of the asymmetric unit"
+    .help = "The chemical composition of the asymmetric unit. Set this to trigger export to shelx format."
 }
 
 """,
@@ -446,7 +443,7 @@ class MultiCrystalScale:
                 True  # will be after this first export if extend=True.
             )
 
-        if self._params.small_molecule.shelx_output:
+        if self._params.small_molecule.composition:
             self.export_shelx(
                 self._params,
                 self._data_manager._experiments,
@@ -640,7 +637,7 @@ class MultiCrystalScale:
 
             logger.notice(banner("Merging (Filtered)"))  # type: ignore
 
-            if self._params.small_molecule.shelx_output:
+            if self._params.small_molecule.composition:
                 self.export_shelx(
                     params,
                     data_manager._experiments,
@@ -737,7 +734,7 @@ class MultiCrystalScale:
         # if we didn't have an external reference for the free_flags set, we need to make
         # and record one here.
 
-        if params.small_molecule.shelx_output:
+        if params.small_molecule.composition:
             MultiCrystalScale.export_shelx(
                 params,
                 data_manager._experiments,
@@ -1300,7 +1297,7 @@ class MultiCrystalScale:
         refls: flex.reflection_table,
         output_name: str,
     ) -> None:
-        export = Export()
+        export = ExportShelx()
         export.set_output_names(output_name)
         export.set_composition(params.small_molecule.composition)
         export.run(expts, refls)

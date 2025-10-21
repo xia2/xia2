@@ -554,7 +554,7 @@ def test_on_import_xds_data(dials_data, run_in_tmp_path):
 def test_shelx_output(proteinase_k, run_in_tmp_path):
     expts, refls = proteinase_k
     parameters = [
-        "small_molecule.shelx_output=True",
+        "small_molecule.composition=CHSNO",
     ]
     command_line_args = parameters + expts[:-1] + refls[:-1]
     run_multiplex(command_line_args)
