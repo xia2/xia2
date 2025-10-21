@@ -488,7 +488,10 @@ pipeline=dials (supported for pipeline=dials-aimless).
                 self.brehm_diederichs_reindexing()
             # If not using Brehm-deidrichs reindexing, set reference as first
             # sweep, unless using external reference.
-            elif not using_external_references:
+            elif (
+                not using_external_references
+                and not PhilIndex.params.xia2.settings.multi_sweep_indexing
+            ):
                 logger.debug("First sweep will be used as reference for reindexing")
                 first = self._sweep_handler.get_epochs()[0]
                 si = self._sweep_handler.get_sweep_information(first)
