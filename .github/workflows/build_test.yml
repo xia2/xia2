@@ -34,6 +34,7 @@ jobs:
         python bootstrap.py update base --python "${{ env.PYTHON_MINIMUM_VERSION }}"
         micromamba/micromamba install -p ./conda_base -c conda-forge -y \
           ninja dials-data pytest-azurepipelines pytest-cov pytest-timeout pytest-md scikit-learn=1.7.1
+        micromamba remove -p ./conda_base -y llvm-openmp
         echo "$(pwd)/conda_base/bin" >> $GITHUB_PATH
         # These needed by windows
         echo "$(pwd)/conda_base/Scripts" >> $GITHUB_PATH
