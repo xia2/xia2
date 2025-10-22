@@ -131,9 +131,13 @@ def test_serial_data(
     )
     assert not result_generate_scaled.returncode and not result_generate_scaled.stderr
     result = subprocess.run(args_test_clustering, cwd=tmp_path, capture_output=True)
-    assert (
-        not result.returncode
-    )  # stderr can have warnings about openmp version on windows.
+    assert not result.returncode
+
+    # Filter out RuntimeWarnings from stderr (can have warnings about openmp versions on windows)
+    stderr_lines = result.stderr.decode("utf-8", errors="ignore").splitlines()
+    non_warning_lines = [line for line in stderr_lines if "RuntimeWarning" not in line]
+    assert not non_warning_lines
+
     check_output(
         tmp_path,
         output_clusters,
@@ -181,9 +185,13 @@ def test_rotation_data_hierarchical(scaled_data, run_in_tmp_path):
         "output.json=xia2.cluster_analysis.json",
     ]
     result = subprocess.run(args_clustering, capture_output=True)
-    assert (
-        not result.returncode
-    )  # stderr can have warnings about openmp version on windows.
+    assert not result.returncode
+
+    # Filter out RuntimeWarnings from stderr (can have warnings about openmp versions on windows)
+    stderr_lines = result.stderr.decode("utf-8", errors="ignore").splitlines()
+    non_warning_lines = [line for line in stderr_lines if "RuntimeWarning" not in line]
+    assert not non_warning_lines
+
     assert (run_in_tmp_path / "xia2.cluster_analysis.json").is_file()
     assert (run_in_tmp_path / "xia2.cluster_analysis.log").is_file()
     assert (run_in_tmp_path / "xia2.cluster_analysis.html").is_file()
