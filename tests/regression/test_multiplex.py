@@ -549,3 +549,18 @@ def test_on_import_xds_data(dials_data, run_in_tmp_path):
 
     expts = load.experiment_list("scaled.expt", check_format=False)
     assert len(expts) == 2
+
+
+def test_shelx_output(proteinase_k, run_in_tmp_path):
+    expts, refls = proteinase_k
+    parameters = [
+        "small_molecule.composition=CHSNO",
+    ]
+    command_line_args = parameters + expts[:-1] + refls[:-1]
+    run_multiplex(command_line_args)
+
+    for f in expected_data_files:
+        assert pathlib.Path(f).is_file(), "expected file %s missing" % f
+
+    assert pathlib.Path("scaled.hkl").is_file(), "expected file %s missing" % f
+    assert pathlib.Path("scaled.ins").is_file(), "expected file %s missing" % f
