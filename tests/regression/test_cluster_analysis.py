@@ -131,7 +131,9 @@ def test_serial_data(
     )
     assert not result_generate_scaled.returncode and not result_generate_scaled.stderr
     result = subprocess.run(args_test_clustering, cwd=tmp_path, capture_output=True)
-    assert not result.returncode and not result.stderr
+    assert (
+        not result.returncode
+    )  # stderr can have warnings about openmp version on windows.
     check_output(
         tmp_path,
         output_clusters,
@@ -179,7 +181,9 @@ def test_rotation_data_hierarchical(scaled_data, run_in_tmp_path):
         "output.json=xia2.cluster_analysis.json",
     ]
     result = subprocess.run(args_clustering, capture_output=True)
-    assert not result.returncode and not result.stderr
+    assert (
+        not result.returncode
+    )  # stderr can have warnings about openmp version on windows.
     assert (run_in_tmp_path / "xia2.cluster_analysis.json").is_file()
     assert (run_in_tmp_path / "xia2.cluster_analysis.log").is_file()
     assert (run_in_tmp_path / "xia2.cluster_analysis.html").is_file()
@@ -202,7 +206,9 @@ def test_rotation_data_coordinate(scaled_data, run_in_tmp_path):
         "output.json=xia2.cluster_analysis.json",
     ]
     result = subprocess.run(args_clustering, capture_output=True)
-    assert not result.returncode and not result.stderr
+    assert (
+        not result.returncode
+    )  # stderr can have warnings about openmp version on windows.
     assert (run_in_tmp_path / "coordinate_clusters" / "cluster_0").exists()
     assert (
         run_in_tmp_path / "coordinate_clusters" / "cluster_0" / "cluster.refl"
