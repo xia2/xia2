@@ -6,8 +6,10 @@ import subprocess
 
 import pytest
 from dials.algorithms.correlation.cluster import ClusterInfo
+from dials.array_family import flex
 from dials.util.options import ArgumentParser
 from dxtbx.model import ExperimentList
+from dxtbx.serialize import load
 from libtbx import phil
 
 from xia2.Modules.MultiCrystalAnalysis import MultiCrystalAnalysis
@@ -139,7 +141,8 @@ def test_serial_data(
     )
 
 
-def test_rotation_data(dials_data, run_in_tmp_path):
+@pytest.fixture()
+def scaled_data(dials_data, run_in_tmp_path):
     rot = dials_data("vmxi_proteinase_k_sweeps", pathlib=True)
 
     # First scale the data to get suitable input
@@ -155,6 +158,15 @@ def test_rotation_data(dials_data, run_in_tmp_path):
         capture_output=True,
     )
     assert not result.returncode
+    refls = flex.reflection_table.from_file(run_in_tmp_path / "scaled.refl")
+    expts = load.experiment_list(run_in_tmp_path / "scaled.expt", check_format=False)
+    return refls, expts
+
+
+def test_rotation_data_hierarchical(scaled_data, run_in_tmp_path):
+    refls, expts = scaled_data
+    refls.as_file(run_in_tmp_path / "scaled.refl")
+    expts.as_file(run_in_tmp_path / "scaled.expt")
 
     args_clustering = [
         shutil.which("xia2.cluster_analysis"),
@@ -173,6 +185,12 @@ def test_rotation_data(dials_data, run_in_tmp_path):
     assert (run_in_tmp_path / "xia2.cluster_analysis.html").is_file()
     assert (run_in_tmp_path / "cc_clusters" / "cc_cluster_2").exists()
     assert not (run_in_tmp_path / "coordinate_clusters").exists()
+
+
+def test_rotation_data_coordinate(scaled_data, run_in_tmp_path):
+    refls, expts = scaled_data
+    refls.as_file(run_in_tmp_path / "scaled.refl")
+    expts.as_file(run_in_tmp_path / "scaled.expt")
     # now run coordinate clustering
     args_clustering = [
         shutil.which("xia2.cluster_analysis"),
