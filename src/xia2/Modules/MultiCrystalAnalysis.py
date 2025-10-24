@@ -155,6 +155,14 @@ class MultiCrystalAnalysis:
             self.params.significant_clusters.min_points_buffer
         )
         intensity_clustering.set_xi(self.params.significant_clusters.xi)
+        intensity_clustering.set_noise_tolerance(
+            self.params.significant_clusters.noise_tolerance
+        )
+        intensity_clustering.set_max_distance(
+            self.params.significant_clusters.max_distance
+        )
+        intensity_clustering.set_max_score(self.params.significant_clusters.max_score)
+
         intensity_clustering.run(self._data_manager.experiments, reflections)
 
         self.cc_clusters: list[ClusterInfo] = intensity_clustering.correlation_clusters

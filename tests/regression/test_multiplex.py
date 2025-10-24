@@ -234,6 +234,7 @@ def test_proteinase_k_coordinate_clusters(proteinase_k, run_in_tmp_path):
         "clustering.output_clusters=True",
         "clustering.method=coordinate",
         "symmetry.space_group=P422",
+        "clustering.min_cluster_size=2",
     ]
     command_line_args = parameters + expts[:-1] + refls[:-1]
     run_multiplex(command_line_args)
@@ -243,9 +244,15 @@ def test_proteinase_k_coordinate_clusters(proteinase_k, run_in_tmp_path):
 
     multiplex_expts = load.experiment_list("scaled.expt", check_format=False)
     assert len(multiplex_expts) == 7
-    clusters = list(pathlib.Path().glob("coordinate_cluster_[0-9]*"))
-    # Only coordinate cluster = all datasets, thus we don't output it
-    assert len(clusters) == 0
+    assert (
+        pathlib.Path("coordinate_cluster_0/coordinate_cluster_0_scaled.mtz")
+    ).is_file()
+    assert (
+        pathlib.Path("coordinate_cluster_0/coordinate_cluster_0_scaled_unmerged.mtz")
+    ).is_file()
+    assert (
+        pathlib.Path("coordinate_cluster_0/coordinate_cluster_0_scaled_unmerged.mmcif")
+    ).is_file()
 
 
 def test_proteinase_k_hierarchical_clusters(proteinase_k, run_in_tmp_path):
