@@ -161,8 +161,10 @@ xds
       .expert_level = 1
     max_wedge_size = 5
       .type = int(value_min=1)
+      .short_caption = "Maximum wedge size (images)"
     max_wedge_size_degrees = None
       .type = float(value_min=0)
+      .short_caption = "Maximum wedge size (degrees)"
   }
   colspot {
     minimum_pixels_per_spot = 2
@@ -238,19 +240,25 @@ dials
                      "reflections in refinement"
     .expert_level = 2
 
-  detect_blanks {
+  detect_blanks
+    .short_caption = "Detect blank images"
+    .expert_level = 1
+  {
     phi_step = 2
       .help = "Width of bins in degrees."
       .type = float(value_min=0, allow_none=True)
+      .short_caption = "Bin width (degrees)"
     counts_fractional_loss = 0.1
       .help = "Fractional loss (relative to the bin with the most counts) after " \
               "which a bin is flagged as potentially containing blank images."
       .type = float(value_min=0, value_max=1, allow_none=True)
+      .short_caption = "Fractional loss (counts)"
     misigma_fractional_loss = 0.1
       .help = "Fractional loss (relative to the bin with the highest misigma) " \
               "after  which a bin is flagged as potentially containing blank " \
               "images."
       .type = float(value_min=0, value_max=1, allow_none=True)
+      .short_caption = "Fractional loss (misigma)"
   }
 
   masking
@@ -301,6 +309,7 @@ dials
       .type = int
       .help = "The size of the local area around the spot in which to " \
               "calculate the mean and variance. The kernel is given as a box"
+      .short_caption = "Kernel size"
       .expert_level = 1
     global_threshold = None
       .type = float
@@ -387,9 +396,11 @@ dials
     combine_partials = True
       .type = bool
       .help = "Combine partial reflections for output"
+      .short_caption = "Combine partials"
     partiality_threshold = 0.99
       .type = float
       .help = "Minimum combined partiality for output"
+      .short_caption = "Partiality threshold"
     mosaic = *old new
       .type = choice
       .help = "Mosaicity determination method to use"
@@ -420,6 +431,7 @@ dials
         .optional = True
         .help = "Minimum number of reflections per degree of sweep required to perform "
                 "profile modelling."
+        .short_caption = "Minimum reflections per degree"
     }
   }
 
@@ -454,6 +466,7 @@ dials
       Bfactor_spacing = None
         .type = float
         .help = "Parameter spacing for B-factor correction"
+        .short_caption = "B-factor parameter spacing"
       absorption_level = low medium high
         .type = choice
         .help = "Expected degree of relative absorption for different scattering"
@@ -471,10 +484,12 @@ dials
                 "medium: ~5%% relative absorption"
                 "high:   >25%% relative absorption, e.g. for measurements at long"
                 "        wavelength or crystals with high absorption from heavy atoms."
+        .short_caption = "Absorption level"
       lmax = auto
         .type = int(value_min=2)
         .help = "Order of spherical harmonics to use for absorption surface,"
                 "defaults to 4 if no absorption_level is chosen."
+        .short_caption = "Spherical harmonics order (lmax)"
       surface_weight = auto
         .type = float
         .help = "Restraint weight applied to spherical harmonic terms in the"
@@ -486,7 +501,9 @@ dials
         .help = "If True, one absorption correction model is refined for all sweeps"
                 "Therefore it should only be used when scaling data from a single crystal"
     }
-    dose_decay_model {
+    dose_decay_model
+      .expert_level = 2
+    {
       share.decay = True
         .type = bool
         .help = "Share the decay model between sweeps."
@@ -499,7 +516,9 @@ dials
         .type = int(value_min=2)
         .help = "Order of spherical harmonics to use for absorption surface"
     }
-    array_model {
+    array_model
+      .expert_level = 2
+    {
       resolution_bins = 10
         .type = int(value_min=1)
         .help = "Number of bins to parameterise decay component"
@@ -513,38 +532,46 @@ dials
       .type = choice
       .help = "Choose from profile fitted or summation intensities, or " \
               "an optimised combination of profile/sum."
+      .short_caption = "Intensity type"
     error_model = *basic None
       .type = choice
       .help = "Choice of whether to refine an error model to adjust the" \
               "intensity sigmas using a two-parameter model."
+      .short_caption = "Error model"
     error_model_grouping = *combined individual grouped
       .type = choice
       .help = "Choice of how the error models should be optimised in scaling," \
               "either a combined more for all sweeps, an individual error model" \
               "per sweep or in custom user-defined groups."
+      .short_caption = "Error model grouping"
     error_model_group = None
       .type = ints
       .multiple = True
       .help = "Specify a subset of sweeps which should share an error model,"\
               "for the option error_model_grouping=grouped."
+      .short_caption = "Error model group"
     full_matrix = auto
       .type = bool
       .help = "Option to turn on/off Levenberg-Marquardt refinement round used " \
               "to determine error estimates on scale factors. auto will set " \
               "full_matrix=True if 4 sweeps or less."
+      .short_caption = "Final full matrix refinement"
     outlier_rejection = *standard simple
       .type = choice
       .help = "Choice of outlier rejection routine. Standard may take a " \
               "significant amount of time to run for large datasets or high " \
               "multiplicities, whereas simple should be quick for these datasets."
+      .short_caption = "Outlier rejection method"
     outlier_zmax = 6.0
       .type = float(value_min=3.0)
       .help = "Cutoff z-score value for identifying outliers based on their " \
               "normalised deviation within the group of equivalent reflections"
+      .short_caption = "Outlier rejection z-score max"
     partiality_threshold = 0.4
       .type = float
       .help = "Minimum partiality to use for scaling and for post-scaling " \
               "exported output."
+      .short_caption = "Partiality threshold"
   }
 }
 ccp4
@@ -654,7 +681,7 @@ xia2.settings
   .short_caption = "xia2 settings"
 {
   pipeline = 3d 3dd 3di 3dii *dials dials-aimless
-    .short_caption = "main processing pipeline"
+    .short_caption = "Main processing pipeline"
     .help = "Select the xia2 main processing pipeline\n" \
             "   3d: XDS, XSCALE\n" \
             "  3di: as 3d, but use 3 wedges for indexing\n" \
@@ -691,9 +718,11 @@ xia2.settings
   project = 'AUTOMATIC'
     .type = str
     .help = "A name for the data processing project"
+    .short_caption = "Project name"
   crystal = 'DEFAULT'
     .type = str
     .help = "A name for the crystal"
+    .short_caption = "Crystal name"
   input
     .short_caption = "xia2 input settings"
   {
@@ -782,18 +811,23 @@ xia2.settings
     free_fraction = 0.05
       .type = float(value_min=0.0, value_max=1.0)
       .help = "Fraction of free reflections"
+      .short_caption = "Free fraction"
     free_total = None
       .type = int(value_min=0)
       .help = "Total number of free reflections"
+      .short_caption = "Total free reflections"
     freer_file = None
       .type = path
       .help = "Copy freer flags from this file"
+      .short_caption = "Free R flags from file"
     reference_reflection_file = None
       .type = path
       .help = "Reference file for testing of alternative indexing schemes"
+      .short_caption = "Reference reflections"
     reference_experiment_file = None
       .type = path
       .help = "Reference models.expt for testing of alternative indexing schemes"
+      .short_caption = "Reference experiments"
     model = *decay *modulation *absorption partiality
       .type = choice(multi=True)
       .short_caption = "Scaling models to apply"
@@ -1024,7 +1058,7 @@ xia2.settings
       .expert_level = 1
   }
   report
-    .expert_level = 1
+    .expert_level = 2
   {
     include scope xia2.Modules.Analysis.phil_scope
   }

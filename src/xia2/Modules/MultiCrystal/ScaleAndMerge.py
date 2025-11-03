@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import concurrent.futures
 import copy
 import logging
 import math
@@ -10,8 +9,8 @@ from collections import OrderedDict
 from typing import Any
 
 import iotbx.phil
+import libtbx.phil
 from cctbx import sgtbx, uctbx
-from dials.algorithms.correlation.cluster import ClusterInfo
 from dials.algorithms.scaling import scale_and_filter
 from dials.array_family import flex
 from dials.command_line.unit_cell_histogram import plot_uc_histograms
@@ -29,7 +28,7 @@ from xia2.Handlers.Phil import PhilIndex
 from xia2.Handlers.Streams import banner
 from xia2.lib.bits import auto_logfiler
 from xia2.Modules import Report
-from xia2.Modules.MultiCrystal.cluster_analysis import get_subclusters
+from xia2.Modules.MultiCrystal.cluster_analysis import SubCluster, get_subclusters
 from xia2.Modules.MultiCrystal.data_manager import DataManager
 from xia2.Modules.MultiCrystalAnalysis import MultiCrystalAnalysis, MultiCrystalReport
 from xia2.Modules.Scaler.DialsScaler import (
@@ -37,7 +36,6 @@ from xia2.Modules.Scaler.DialsScaler import (
     convert_unmerged_mtz_to_sca,
     scaling_model_auto_rules,
 )
-from xia2.Modules.SSX.util import redirect_xia2_logger
 from xia2.Wrappers.Dials.Cosym import DialsCosym
 from xia2.Wrappers.Dials.EstimateResolution import EstimateResolution
 from xia2.Wrappers.Dials.Functional.Merge import Merge
@@ -439,6 +437,7 @@ class MultiCrystalScale:
             )
 
         self.export_merged_mtz(
+            self._params,
             self._data_manager._experiments,
             self._data_manager._reflections,
             "scaled.mtz",
@@ -486,6 +485,7 @@ class MultiCrystalScale:
             # now export merged of each
             for wl in self.wavelengths:
                 name = self.export_merged_wave_mtz(
+                    self._params,
                     self._data_manager,
                     wl,
                     "scaled",
@@ -535,6 +535,25 @@ class MultiCrystalScale:
                 self._coordinate_clusters,
             )
 
+            # revert to sequential cluster scaling while reducing memory requirements elsewhere :(
+            # move back to below code for pool later once other memory requirements reduced
+
+            for cluster in subclusters:
+                (
+                    individual_report,
+                    report,
+                    dict_report,
+                    cluster_name,
+                ) = self._scale_and_report_cluster(
+                    self._params,
+                    self._data_manager.select_and_create(cluster.identifiers),
+                    cluster,
+                )
+                self._individual_report_dicts[cluster_name] = individual_report
+                self._update_comparison_graphs(report, dict_report, cluster_name)
+                self._log_report_info(dict_report)
+
+            """
             # To ensure that pools within pools aren't created
 
             parallel_nproc = copy.deepcopy(self._params.nproc)
@@ -547,16 +566,15 @@ class MultiCrystalScale:
             with (
                 record_step("dials.scale(parallel)"),
                 concurrent.futures.ProcessPoolExecutor(
-                    max_workers=parallel_nproc
+                    max_workers=min(parallel_nproc, len(subclusters))
                 ) as pool,
             ):
                 cluster_futures = {
                     pool.submit(
                         self._scale_and_report_cluster,
-                        self._data_manager,
-                        item.directory,
-                        item.identifiers,
-                        item.cluster,
+                        self._params,
+                        self._data_manager.select_and_create(item.identifiers),
+                        item,
                     ): index
                     for index, item in enumerate(subclusters)
                 }
@@ -589,6 +607,8 @@ class MultiCrystalScale:
 
             logger.debug(f"Reset PHIL nproc to {self._params.nproc}")
 
+            """
+
         if self._params.filtering.method:
             logger.notice(banner("Rescaling with extra filtering"))  # type: ignore
             # Final round of scaling, this time filtering out any bad datasets
@@ -603,6 +623,7 @@ class MultiCrystalScale:
             logger.notice(banner("Merging (Filtered)"))  # type: ignore
 
             self.export_merged_mtz(
+                params,
                 data_manager._experiments,
                 data_manager._reflections,
                 "filtered.mtz",
@@ -637,6 +658,7 @@ class MultiCrystalScale:
                 # now export merged of each
                 for wl in self.wavelengths:
                     name = self.export_merged_wave_mtz(
+                        params,
                         data_manager,
                         wl,
                         "filtered",
@@ -665,44 +687,53 @@ class MultiCrystalScale:
 
         self.report()
 
-    def scale_cluster(
-        self,
-        data_manager_input: DataManager,
-        identifiers: list[str],
-        free_flags_in_full_set: bool,
-        output_name: str = "scaled",
-    ) -> Scale:
-        data_manager = copy.deepcopy(data_manager_input)
-        data_manager.select(identifiers)
-
-        scaled = Scale(data_manager, self._params)
+    @staticmethod
+    def _scale_and_report_cluster(
+        params: libtbx.phil.scope_extract,
+        data_manager: DataManager,
+        cluster_data: SubCluster,
+    ) -> tuple[
+        dict[str, Any], Report.Report, dict[str, Any], str
+    ]:  # tuple[str, str, dict[str, Any], Report.Report, dict[str, Any], str]:
+        # with redirect_xia2_logger() as iostream:
+        cwd = pathlib.Path.cwd()
+        if not os.path.exists(cluster_data.directory):
+            os.mkdir(cluster_data.directory)
+        os.chdir(cluster_data.directory)
+        logger.notice(banner(f"{cluster_data.directory}"))  # type: ignore
+        logger.info(cluster_data.cluster)
+        output_name = f"{cluster_data.directory}_scaled"
+        free_flags_in_full_set = True
+        scaled = Scale(data_manager, params)
         data_manager.export_experiments(f"{output_name}.expt")
         data_manager.export_reflections(f"{output_name}.refl", d_min=scaled.d_min)
 
-        # if we didn't have an external reference for the free_flags set, we need to make
-        # and record one here.
-
-        self.export_merged_mtz(
+        MultiCrystalScale.export_merged_mtz(
+            params,
             data_manager._experiments,
             data_manager._reflections,
             f"{output_name}.mtz",
             scaled.d_min,
         )
 
-        if (not free_flags_in_full_set) and (self._params.r_free_flags.extend is True):
-            self._params.r_free_flags.reference = os.path.join(
+        if (not free_flags_in_full_set) and (params.r_free_flags.extend is True):
+            params.r_free_flags.reference = os.path.join(
                 os.getcwd(), f"{output_name}.mtz"
             )
             free_flags_in_full_set = True
 
-        if len(self.wavelengths) > 1:
-            data_manager.split_by_wavelength(self._params.wavelength_tolerance)
-            for wl in self.wavelengths:
+        wavelengths = match_wavelengths(
+            data_manager.experiments, params.wavelength_tolerance
+        )  # in experiments order
+
+        if len(wavelengths) > 1:
+            data_manager.split_by_wavelength(params.wavelength_tolerance)
+            for wl in wavelengths:
                 name = data_manager.export_unmerged_wave_mtz(
                     wl,
                     f"{output_name}_unmerged",
                     d_min=scaled.d_min,
-                    wavelength_tolerance=self._params.wavelength_tolerance,
+                    wavelength_tolerance=params.wavelength_tolerance,
                 )
                 if name:
                     convert_unmerged_mtz_to_sca(name)
@@ -712,8 +743,9 @@ class MultiCrystalScale:
                     wl, f"{output_name}_unmerged", d_min=scaled.d_min
                 )
 
-            for wl in self.wavelengths:
-                name = self.export_merged_wave_mtz(
+            for wl in wavelengths:
+                name = MultiCrystalScale.export_merged_wave_mtz(
+                    params,
                     data_manager,
                     wl,
                     f"{output_name}",
@@ -725,7 +757,7 @@ class MultiCrystalScale:
             data_manager.export_unmerged_mtz(
                 f"{output_name}_unmerged.mtz",
                 d_min=scaled.d_min,
-                wavelength_tolerance=self._params.wavelength_tolerance,
+                wavelength_tolerance=params.wavelength_tolerance,
             )
             convert_merged_mtz_to_sca(f"{output_name}.mtz")
             convert_unmerged_mtz_to_sca(f"{output_name}_unmerged.mtz")
@@ -733,42 +765,28 @@ class MultiCrystalScale:
             data_manager.export_unmerged_mmcif(
                 f"{output_name}_unmerged.mmcif", d_min=scaled.d_min
             )
+        rep = scaled.report()
 
-        return scaled
+        d = MultiCrystalScale._report_as_dict(rep)
 
-    def _scale_and_report_cluster(
-        self,
-        data_manager: DataManager,
-        cluster_dir: str,
-        cluster_identifiers: list[str],
-        cluster: ClusterInfo,
-    ) -> tuple[str, str, dict[str, Any], Report.Report, dict[str, Any], str]:
-        with redirect_xia2_logger() as iostream:
-            cwd = pathlib.Path.cwd()
-            if not os.path.exists(cluster_dir):
-                os.mkdir(cluster_dir)
-            os.chdir(cluster_dir)
-            logger.notice(banner(f"{cluster_dir}"))  # type: ignore
-            logger.info(cluster)
-            scaled: Scale = self.scale_cluster(
-                data_manager, cluster_identifiers, True, f"{cluster_dir}_scaled"
-            )
+        # need this otherwise rep will not have merging_stats
+        rep.resolution_plots_and_stats()
 
-            rep = scaled.report()
+        individual_report = MultiCrystalScale._individual_report_dict(
+            d, cluster_data.directory.replace("_", " ")
+        )
 
-            d = self._report_as_dict(rep)
-
-            # need this otherwise rep will not have merging_stats
-            rep.resolution_plots_and_stats()
-
-            individual_report = self._individual_report_dict(
-                d, cluster_dir.replace("_", " ")
-            )
-
-            os.chdir(cwd)
-            info = iostream[0].getvalue()
-            debug = iostream[1].getvalue()
-        return info, debug, individual_report, rep, d, cluster_dir.replace("_", " ")
+        os.chdir(cwd)
+        # info = iostream[0].getvalue()
+        # debug = iostream[1].getvalue()
+        return (
+            # info,
+            # debug,
+            individual_report,
+            rep,
+            d,
+            cluster_data.directory.replace("_", " "),
+        )
 
     def _update_comparison_graphs(
         self, report: Report.Report, dict_report: dict[str, Any], cluster_name: str
@@ -1202,8 +1220,9 @@ class MultiCrystalScale:
         self._cc_clusters = self._mca.cc_clusters
         self._coordinate_clusters = self._mca.significant_coordinate_clusters
 
+    @staticmethod
     def export_merged_mtz(
-        self,
+        params: libtbx.phil.scope_extract,
         expts: ExperimentList,
         refls: flex.reflection_table,
         file_name: str,
@@ -1212,12 +1231,13 @@ class MultiCrystalScale:
         merge = Merge()
         merge.output_filename = file_name
         merge.set_d_min(d_min)
-        merge.set_wavelength_tolerance(self._params.wavelength_tolerance)
-        merge.set_r_free_params(self._params.r_free_flags)
+        merge.set_wavelength_tolerance(params.wavelength_tolerance)
+        merge.set_r_free_params(params.r_free_flags)
         merge.run(expts, refls)
 
+    @staticmethod
     def export_merged_wave_mtz(
-        self,
+        params: libtbx.phil.scope_extract,
         data_manager: DataManager,
         wavelength: float,
         output_name: str,
@@ -1225,11 +1245,13 @@ class MultiCrystalScale:
     ) -> str | None:
         data = data_manager.data_split_by_wl[wavelength]
         if data["expt"]:
-            fmt = "%%0%dd" % (math.log10(len(self._data_manager.wavelengths)) + 1)
+            fmt = "%%0%dd" % (math.log10(len(data_manager.wavelengths)) + 1)
             index = sorted(data_manager.wavelengths.keys()).index(wavelength)
             name = f"{output_name}_WAVE{fmt % (index + 1)}.mtz"
 
-            self.export_merged_mtz(data["expt"], data["refl"], name, d_min)
+            MultiCrystalScale.export_merged_mtz(
+                params, data["expt"], data["refl"], name, d_min
+            )
 
             return name
         return None
