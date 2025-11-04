@@ -286,15 +286,15 @@ significant_clusters {
   xi = 0.05
     .type = float(value_min=0, value_max=1)
     .help = "xi parameter to determine min steepness to define cluster boundary"
-  noise_tolerance = 1.0
-    .type = float
-    .help = "multiplier to down-weight clustering results which contain lots of noise"
   max_distance = 0.5
     .type = float
     .help = "maximum distance away from cluster centre for a data point to be considered (max_eps)"
-  max_score = 2.0
-    .type = float
-    .help = "maximum allowed score for multiple clusters to be a valid solution (Davies-Bouldin + noise_tolerance * noise_ratio)"
+  min_points = 5
+    .type = int
+    .help = "Set minimum number of points required for a cluster in OPTICS. Only used when optimise_input=False."
+  optimise_input = True
+    .type = bool
+    .help = "Turn to false to use custom clustering parameters."
 }
 
 small_molecule {
@@ -1226,14 +1226,14 @@ class MultiCrystalScale:
         params.significant_clusters.min_points_buffer = (
             self._params.significant_clusters.min_points_buffer
         )
-        params.significant_clusters.noise_tolerance = (
-            self._params.significant_clusters.noise_tolerance
+        params.significant_clusters.min_points = (
+            self._params.significant_clusters.min_points
         )
         params.significant_clusters.max_distance = (
             self._params.significant_clusters.max_distance
         )
-        params.significant_clusters.max_score = (
-            self._params.significant_clusters.max_score
+        params.significant_clusters.optimise_input = (
+            self._params.significant_clusters.optimise_input
         )
         data_manager = copy.deepcopy(self._data_manager)
         refl = data_manager.reflections

@@ -55,14 +55,14 @@ class DialsCorrelationMatrix:
     def set_output_json(self, json: str) -> None:
         self._params.output.json = json
 
-    def set_noise_tolerance(self, tol: float) -> None:
-        self._params.significant_clusters.noise_tolerance = tol
+    def set_optimise_input(self, optimise: bool) -> None:
+        self._params.significant_clusters.optimise_input = optimise
 
     def set_max_distance(self, dist: float) -> None:
         self._params.significant_clusters.max_distance = dist
 
-    def set_max_score(self, score: float) -> None:
-        self._params.significant_clusters.max_score = score
+    def set_min_points(self, pts: int) -> None:
+        self._params.significant_clusters.min_points = pts
 
     @property
     def ids_to_identifiers_map(self) -> dict | None:
