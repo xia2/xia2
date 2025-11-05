@@ -1,1 +1,1 @@
-``xia2.ssx``: Output a merged.mtz and merged_full.mtz in the case where the suggested resoltion is lower than the resolution of the dataset.
+``xia2.ssx``: Output both a ``merged.mtz`` and ``merged_full.mtz`` in cases where the suggested resolution is lower than the resolution of the dataset.

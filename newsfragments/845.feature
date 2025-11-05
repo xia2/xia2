@@ -1,1 +1,1 @@
-``xia2.multiplex``: Added new features to export unmerged reflections in mmcif format
+``xia2.multiplex`` new feature: Export unmerged reflections in mmcif format.
