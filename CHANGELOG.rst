@@ -1,3 +1,33 @@
+xia2 3.26.0 (2025-11-06)
+========================
+
+Features
+--------
+
+- ``xia2.multiplex`` new feature: Export unmerged reflections in mmcif format. (`#845 <https://github.com/xia2/xia2/issues/845>`_)
+- ``xia2.ssx``: Add ``d_max=`` parameter to apply low resolution cutoff. (`#851 <https://github.com/xia2/xia2/issues/851>`_)
+- ``xia2.multiplex``: Significantly speed up multiplex report generation by using dials delta-cc½ code. (`#860 <https://github.com/xia2/xia2/issues/860>`_)
+- ``xia2.ssx``: Output both a ``merged.mtz`` and ``merged_full.mtz`` in cases where the suggested resolution is lower than the resolution of the dataset. (`#881 <https://github.com/xia2/xia2/issues/881>`_)
+- ``xia2.multiplex``: Added option (``small_molecule.composition=``) to export SHELX files, for small molecule crystallography. (`#887 <https://github.com/xia2/xia2/issues/887>`_)
+
+
+Bugfixes
+--------
+
+- Fix processing of Nexus Singla datasets with the XDS pipeline, and fix passing of the xia2 Phil parameters to the XDS wrapper. (`#852 <https://github.com/xia2/xia2/issues/852>`_)
+- ``xia2.ssx``: Fix crash on windows when using ``image=file.nxs:start:end`` syntax (`#854 <https://github.com/xia2/xia2/issues/854>`_)
+- ``xia2.multiplex``: Fix crash in report generation if run with ``resolve_indexing_ambiguity=False``. (`#861 <https://github.com/xia2/xia2/issues/861>`_)
+- Updated expected regression test values following changes to ``dials.refine_bravais_settings`` (`#878 <https://github.com/xia2/xia2/issues/878>`_)
+- Improvements for the auto-generated ccp4i2 GUI. (`#882 <https://github.com/xia2/xia2/issues/882>`_)
+- Don't attempt common reindexing for multi-sweep-indexing data. (`#890 <https://github.com/xia2/xia2/issues/890>`_)
+
+
+Misc
+----
+
+- `#844 <https://github.com/xia2/xia2/issues/844>`_, `#846 <https://github.com/xia2/xia2/issues/846>`_, `#848 <https://github.com/xia2/xia2/issues/848>`_, `#849 <https://github.com/xia2/xia2/issues/849>`_, `#850 <https://github.com/xia2/xia2/issues/850>`_, `#855 <https://github.com/xia2/xia2/issues/855>`_, `#856 <https://github.com/xia2/xia2/issues/856>`_, `#857 <https://github.com/xia2/xia2/issues/857>`_, `#858 <https://github.com/xia2/xia2/issues/858>`_, `#859 <https://github.com/xia2/xia2/issues/859>`_, `#862 <https://github.com/xia2/xia2/issues/862>`_, `#863 <https://github.com/xia2/xia2/issues/863>`_, `#864 <https://github.com/xia2/xia2/issues/864>`_, `#865 <https://github.com/xia2/xia2/issues/865>`_, `#866 <https://github.com/xia2/xia2/issues/866>`_, `#867 <https://github.com/xia2/xia2/issues/867>`_, `#871 <https://github.com/xia2/xia2/issues/871>`_, `#872 <https://github.com/xia2/xia2/issues/872>`_, `#877 <https://github.com/xia2/xia2/issues/877>`_, `#879 <https://github.com/xia2/xia2/issues/879>`_, `#883 <https://github.com/xia2/xia2/issues/883>`_, `#884 <https://github.com/xia2/xia2/issues/884>`_, `#885 <https://github.com/xia2/xia2/issues/885>`_, `#886 <https://github.com/xia2/xia2/issues/886>`_, `#888 <https://github.com/xia2/xia2/issues/888>`_, `#891 <https://github.com/xia2/xia2/issues/891>`_, `#892 <https://github.com/xia2/xia2/issues/892>`_
+
+
 xia2 3.24.0 (2025-04-29)
 ========================
 
