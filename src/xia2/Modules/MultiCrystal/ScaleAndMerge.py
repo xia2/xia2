@@ -451,6 +451,8 @@ class MultiCrystalScale:
             free_flags_in_full_set = (
                 True  # will be after this first export if extend=True.
             )
+
+        # Exporting to mtz alters the reflection table without a copy here
         temp_refls = copy.deepcopy(self._data_manager._reflections)
 
         if self._params.small_molecule.composition:

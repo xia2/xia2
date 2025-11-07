@@ -241,6 +241,7 @@ class DataManager:
             expt_to_export = copy.deepcopy(data["expt"])
             params.intensity = ["scale"]
             if data["expt"]:  # When is this not the case?
+                # Exporting to mtz alters the reflection table without a copy here
                 temp_refls = copy.deepcopy(data["refl"])
                 export.export_mtz(params, expt_to_export, [temp_refls])
                 return params.mtz.hklout
