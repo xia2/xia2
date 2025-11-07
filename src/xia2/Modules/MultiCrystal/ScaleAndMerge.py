@@ -451,6 +451,7 @@ class MultiCrystalScale:
             free_flags_in_full_set = (
                 True  # will be after this first export if extend=True.
             )
+        temp_refls = copy.deepcopy(self._data_manager._reflections)
 
         if self._params.small_molecule.composition:
             self.export_shelx(
@@ -463,7 +464,7 @@ class MultiCrystalScale:
         self.export_merged_mtz(
             self._params,
             self._data_manager._experiments,
-            self._data_manager._reflections,
+            temp_refls,
             "scaled.mtz",
             self._scaled.d_min,
         )
