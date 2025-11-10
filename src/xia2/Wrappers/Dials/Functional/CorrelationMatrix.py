@@ -64,6 +64,9 @@ class DialsCorrelationMatrix:
     def set_min_points(self, pts: int) -> None:
         self._params.significant_clusters.min_points = pts
 
+    def set_noise_penalty(self, penalty: float) -> None:
+        self._params.significant_clusters.noise_penalty = penalty
+
     @property
     def ids_to_identifiers_map(self) -> dict | None:
         return self._ids_to_identifiers_map

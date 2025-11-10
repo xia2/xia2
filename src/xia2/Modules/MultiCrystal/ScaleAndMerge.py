@@ -295,6 +295,10 @@ significant_clusters {
   optimise_input = True
     .type = bool
     .help = "Turn to false to use custom clustering parameters."
+  noise_penalty = 1.5
+    .type = float
+    .help = "Used in applying a noise penalty. Increase for more noise tolerance, decrease for harsher treatment."
+
 }
 
 small_molecule {
@@ -1234,6 +1238,9 @@ class MultiCrystalScale:
         )
         params.significant_clusters.optimise_input = (
             self._params.significant_clusters.optimise_input
+        )
+        params.significant_clusters.noise_penalty = (
+            self._params.significant_clusters.noise_penalty
         )
         data_manager = copy.deepcopy(self._data_manager)
         refl = data_manager.reflections
