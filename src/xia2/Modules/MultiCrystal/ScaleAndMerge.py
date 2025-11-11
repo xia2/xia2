@@ -452,6 +452,9 @@ class MultiCrystalScale:
                 True  # will be after this first export if extend=True.
             )
 
+        # Exporting to mtz alters the reflection table without a copy here
+        temp_refls = copy.deepcopy(self._data_manager._reflections)
+
         if self._params.small_molecule.composition:
             self.export_shelx(
                 self._params,
@@ -463,7 +466,7 @@ class MultiCrystalScale:
         self.export_merged_mtz(
             self._params,
             self._data_manager._experiments,
-            self._data_manager._reflections,
+            temp_refls,
             "scaled.mtz",
             self._scaled.d_min,
         )

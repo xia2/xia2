@@ -241,7 +241,9 @@ class DataManager:
             expt_to_export = copy.deepcopy(data["expt"])
             params.intensity = ["scale"]
             if data["expt"]:  # When is this not the case?
-                export.export_mtz(params, expt_to_export, [data["refl"]])
+                # Exporting to mtz alters the reflection table without a copy here
+                temp_refls = copy.deepcopy(data["refl"])
+                export.export_mtz(params, expt_to_export, [temp_refls])
                 return params.mtz.hklout
             return None
 
@@ -283,7 +285,9 @@ class DataManager:
             params.mtz.hklout = filename
             params.mtz.wavelength_tolerance = wavelength_tolerance
             params.intensity = ["scale"]
-            export.export_mtz(params, expt_to_export, [self._reflections])
+            # Exporting to mtz alters the reflection table without a copy here
+            temp_refls = copy.deepcopy(self._reflections)
+            export.export_mtz(params, expt_to_export, [temp_refls])
 
     def export_unmerged_mmcif(self, filename: str, d_min: float | None = None) -> None:
         with record_step("dials.export(unmerged-mmcif)"):
