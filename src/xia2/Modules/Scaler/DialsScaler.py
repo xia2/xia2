@@ -1004,7 +1004,7 @@ Scaling & analysis of unmerged intensities, absorption correction using spherica
                     "_pdbx_diffrn_unmerged_refln"
                 ):
                     del reduced_block[k]
-            blocks_for_mtz_appendix[dname] = reduced_block
+            blocks_for_mtz_appendix[blockname] = reduced_block
         return blocks_for_mtz_appendix
 
     def _update_scaled_unit_cell_from_scaled_data(self):
