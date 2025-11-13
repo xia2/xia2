@@ -135,8 +135,10 @@ def Index(DriverType=None):
                 self.add_command_line(f)
             if len(self._sweep_filenames) > 1:
                 self.add_command_line("auto_reduction.action=fix")
+                self.add_command_line(
+                    "indexing.joint_indexing=%s" % self._joint_indexing
+                )
             self.add_command_line("indexing.method=%s" % method)
-            self.add_command_line("indexing.joint_indexing=%s" % self._joint_indexing)
             nproc = PhilIndex.params.xia2.settings.multiprocessing.nproc
             self.set_cpu_threads(nproc)
             self.add_command_line("indexing.nproc=%i" % nproc)
