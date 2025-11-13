@@ -39,6 +39,7 @@ def Index(DriverType=None):
             self._fft3d_n_points = None
             self._histogram_binning = None
             self._nearest_neighbor_percentile = None
+            self._joint_indexing = True
 
             self._experiment_filename = None
             self._indexed_filename = None
@@ -121,6 +122,9 @@ def Index(DriverType=None):
         def set_close_to_spindle_cutoff(self, close_to_spindle_cutoff):
             self._close_to_spindle_cutoff = close_to_spindle_cutoff
 
+        def set_joint_indexing(self, joint_index):
+            self._joint_indexing = joint_index
+
         def run(self, method):
             logger.debug("Running dials.index")
 
@@ -132,6 +136,7 @@ def Index(DriverType=None):
             if len(self._sweep_filenames) > 1:
                 self.add_command_line("auto_reduction.action=fix")
             self.add_command_line("indexing.method=%s" % method)
+            self.add_command_line("indexing.joint_indexing=%s" % self._joint_indexing)
             nproc = PhilIndex.params.xia2.settings.multiprocessing.nproc
             self.set_cpu_threads(nproc)
             self.add_command_line("indexing.nproc=%i" % nproc)
