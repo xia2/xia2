@@ -53,12 +53,42 @@ delta_cc_half:
     doi={10.1107/S1600576716005471},
     publisher={International Union of Crystallography}
     }
-  software_classification: data reduction
+  software_classification: data processing
   software_description: Assessment of data nonisomorphism using an implementation of the delta-CC-Half algorithm
   software_name: xia2.delta_cc_half
   software_type: program
 
-dials:
+dials-reduction: # Specific unique citation for DIALS integration, to give a unique 'data reduction' item for mmcif
+- acta: Winter, G. et al. (2018) Acta Cryst. D74, 85-97.
+  bibtex: |
+    @article{Winter:di5011,
+    author = "Winter, G., Waterman, D. G., Parkhurst, J. M., Brewster, A. S., Gildea,
+    R. J., Gerstel, M., Fuentes-Montero, L., Vollmar, M., Michels-Clark, T., Young,
+    I. D., Sauter, N. K. and Evans, G.",
+    title = "{DIALS: implementation and evaluation of a new integration package}",
+    journal = "Acta Crystallographica Section D",
+    year = "2018",
+    volume = "74",
+    number = "2",
+    pages = "85--97",
+    month = "Feb",
+    doi = {10.1107/S2059798317017235},
+    url = {https://doi.org/10.1107/S2059798317017235},
+    abstract = {The {\it DIALS} project is a collaboration between Diamond Light Source,
+    Lawrence Berkeley National Laboratory and CCP4 to develop a new software suite
+    for the analysis of crystallographic X-ray diffraction data, initially encompassing
+    spot finding, indexing, refinement and integration. The design, core algorithms
+    and structure of the software are introduced, alongside results from the analysis
+    of data from biological and chemical crystallography experiments.},
+    keywords = {X-ray diffraction, data processing, methods development, DIALS},
+    }
+  software_classification: data reduction
+  software_description: Data processing and integration within the DIALS software package
+  software_name: DIALS
+  software_type: package
+  url: https://doi.org/10.1107/S2059798317017235
+
+dials: # General citation for anything that is not integration or a citable program (cosym, scale)
 - acta: Winter, G. et al. (2018) Acta Cryst. D74, 85-97.
   bibtex: |
     @article{Winter:di5011,
@@ -113,7 +143,7 @@ dials.cosym:
     data sets.},
     keywords = {Patterson group symmetry, partial data sets, indexing ambiguity},
     }
-  software_classification: data scaling
+  software_classification: data processing
   software_description: Determination of Patterson group symmetry from sparse multi-crystal data sets in the presence of an indexing ambiguity
   software_name: dials.cosym
   software_type: program
@@ -195,7 +225,7 @@ xds:
     doi = {10.1107/S0907444909047337},
     url = {https://doi.org/10.1107/S0907444909047337},
     }
-  software_classification: data processing
+  software_classification: data reduction
   software_description: Data processing, scaling and merging
   software_name: XDS
   software_type: package

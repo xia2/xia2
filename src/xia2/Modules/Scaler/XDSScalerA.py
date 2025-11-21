@@ -208,7 +208,6 @@ class XDSScalerA(Scaler):
         reflections to the correct pointgroup and setting, for instance,
         and move the reflection files to the scale directory."""
 
-        Citations.cite("xds")
         Citations.cite("ccp4")
         Citations.cite("pointless")
         Citations.cite("xscale")
