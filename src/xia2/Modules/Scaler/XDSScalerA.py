@@ -211,6 +211,7 @@ class XDSScalerA(Scaler):
         Citations.cite("xds")
         Citations.cite("ccp4")
         Citations.cite("pointless")
+        Citations.cite("xscale")
 
         # GATHER phase - get the reflection files together... note that
         # it is not necessary in here to keep the batch information as we

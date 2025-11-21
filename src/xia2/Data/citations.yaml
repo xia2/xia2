@@ -173,7 +173,7 @@ pointless:
     doi = {10.1107/S0907444905036693},
     url = {https://doi.org/10.1107/S0907444905036693},
     }
-  software_classification: data scaling
+  software_classification: data processing
   software_description: Symmetry assessment program
   software_name: pointless
   software_type: program
@@ -198,6 +198,27 @@ xds:
   software_description: Data processing, scaling and merging
   software_name: XDS
   software_type: package
+  url: https://doi.org/10.1107/S0907444909047337
+
+xscale:
+- acta: Kabsch, W. (2010) Acta Cryst. D66, 125-132.
+  bibtex: |
+    @article{Kabsch:dz5179,
+    author = "Kabsch, Wolfgang",
+    title = "{{\it XDS}}",
+    journal = "Acta Crystallographica Section D",
+    year = "2010",
+    volume = "66",
+    number = "2",
+    pages = "125--132",
+    month = "Feb",
+    doi = {10.1107/S0907444909047337},
+    url = {https://doi.org/10.1107/S0907444909047337},
+    }
+  software_classification: data scaling
+  software_description: Data scaling with XSCALE/XDS
+  software_name: XSCALE
+  software_type: program
   url: https://doi.org/10.1107/S0907444909047337
 
 xia2:
