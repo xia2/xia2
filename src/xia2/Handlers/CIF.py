@@ -18,6 +18,7 @@ mmcif_software_header = (
     "_software.type",
     "_software.classification",
     "_software.description",
+    "_software.pdbx_reference_DOI",
 )
 
 mmcif_citations_header = (
@@ -163,6 +164,9 @@ class _CIFHandler:
             count = 1
             for citation in xia2.Handlers.Citations.Citations.get_citations_dicts():
                 if "software_type" in citation:
+                    bibtex_data = xia2.Handlers.Citations.Citations._parse_bibtex(
+                        citation["bibtex"]
+                    )
                     software_loop.add_row(
                         (
                             count,
@@ -172,10 +176,8 @@ class _CIFHandler:
                             citation["software_type"],
                             citation["software_classification"],
                             citation["software_description"],
+                            bibtex_data["doi"],
                         )
-                    )
-                    bibtex_data = xia2.Handlers.Citations.Citations._parse_bibtex(
-                        citation["bibtex"]
                     )
                     citations_loop.add_row(
                         (
