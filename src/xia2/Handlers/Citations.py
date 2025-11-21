@@ -34,9 +34,11 @@ class _Citations:
 
     def cite(self, program):
         """Cite a given program."""
-
         if program not in self._cited:
             self._cited.append(program)
+
+    def remove_citation(self, program):
+        del self._cited[self._cited.index(program)]
 
     def get_programs(self):
         """Get a list of all of the programs which have been cited."""
