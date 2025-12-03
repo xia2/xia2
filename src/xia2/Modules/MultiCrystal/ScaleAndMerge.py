@@ -282,23 +282,27 @@ include scope dials.algorithms.merging.merge.r_free_flags_phil_scope
 significant_clusters {
   min_points_buffer = 0.5
     .type = float(value_min=0, value_max=1)
-    .help = "Buffer for minimum number of points required for a cluster in OPTICS algorithm: min_points=(number_of_datasets/number_of_dimensions)*buffer"
+    .help = "Buffer for minimum number of points required for a cluster in OPTICS algorithm: min_points=(number_of_datasets/number_of_dimensions)*buffer - INITIAL GUESS ONLY"
+  min_points = 5
+    .type = int
+    .help = "Set minimum number of points required for a cluster in OPTICS for custom clustering."
   xi = 0.05
     .type = float(value_min=0, value_max=1)
     .help = "xi parameter to determine min steepness to define cluster boundary"
   max_distance = 0.5
     .type = float
     .help = "maximum distance away from cluster centre for a data point to be considered (max_eps)"
-  min_points = 5
-    .type = int
-    .help = "Set minimum number of points required for a cluster in OPTICS. Only used when optimise_input=False."
   optimise_input = True
     .type = bool
     .help = "Turn to false to use custom clustering parameters."
-  noise_penalty = 1.5
-    .type = float
-    .help = "Used in applying a noise penalty. Increase for more noise tolerance, decrease for harsher treatment."
-
+  noise_penalty {
+    alpha = 1.0
+      .type = float(value_max=1)
+      .help = "Linear scale for noise penalty."
+    gamma = 1.5
+      .type = float(value_min=0)
+      .help = "Exponential scale for noise penalty."
+  }
 }
 
 small_molecule {
@@ -1239,8 +1243,11 @@ class MultiCrystalScale:
         params.significant_clusters.optimise_input = (
             self._params.significant_clusters.optimise_input
         )
-        params.significant_clusters.noise_penalty = (
-            self._params.significant_clusters.noise_penalty
+        params.significant_clusters.noise_penalty.alpha = (
+            self._params.significant_clusters.noise_penalty.alpha
+        )
+        params.significant_clusters.noise_penalty.gamma = (
+            self._params.significant_clusters.noise_penalty.gamma
         )
         data_manager = copy.deepcopy(self._data_manager)
         refl = data_manager.reflections

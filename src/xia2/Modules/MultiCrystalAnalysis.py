@@ -162,8 +162,11 @@ class MultiCrystalAnalysis:
             self.params.significant_clusters.max_distance
         )
         intensity_clustering.set_min_points(self.params.significant_clusters.min_points)
-        intensity_clustering.set_noise_penalty(
-            self.params.significant_clusters.noise_penalty
+        intensity_clustering.set_noise_penalty_alpha(
+            self.params.significant_clusters.noise_penalty.alpha
+        )
+        intensity_clustering.set_noise_penalty_gamma(
+            self.params.significant_clusters.noise_penalty.gamma
         )
 
         intensity_clustering.run(self._data_manager.experiments, reflections)
