@@ -195,7 +195,9 @@ class XSweep:
                 imagesets
             )
             if imagesets[0].get_scan().is_still():
-                raise RuntimeError("only sweeps, not stills, can be processed")
+                raise RuntimeError(
+                    "only sweeps, not stills, can be processed. Perhaps try xia2.ssx?"
+                )
 
             self._imageset = copy.deepcopy(imagesets[0])
             start, end = self._imageset.get_array_range()
