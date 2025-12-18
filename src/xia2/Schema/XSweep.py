@@ -194,6 +194,9 @@ class XSweep:
             assert len(imagesets) == 1, "one imageset expected, %d found" % len(
                 imagesets
             )
+            if imagesets[0].get_scan().is_still():
+                raise RuntimeError("only sweeps, not stills, can be processed")
+
             self._imageset = copy.deepcopy(imagesets[0])
             start, end = self._imageset.get_array_range()
             self._images = list(range(start + 1, end + 1))
