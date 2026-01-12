@@ -447,6 +447,7 @@ class MultiCrystalScale:
             self.decide_space_group()
 
         logger.notice(banner("Merging (All data)"))  # type: ignore
+        logger.info(f"Datasets merged: {len(self._data_manager._experiments)}")
 
         d_spacings: flex.double = self._scaled.data_manager._reflections["d"]
         self._params.r_free_flags.d_min = flex.min(d_spacings.select(d_spacings > 0))
@@ -543,7 +544,9 @@ class MultiCrystalScale:
             )
 
         with record_step("xia2.report(all-data)"):
-            self._record_individual_report(self._scaled.report(), "All data")
+            self._record_individual_report(
+                self._scaled.report(), "All data", len(self._data_manager.experiments)
+            )
 
         logger.notice(banner("Identifying intensity-based clusters"))  # type: ignore
 
@@ -657,6 +660,10 @@ class MultiCrystalScale:
 
             logger.notice(banner("Merging (Filtered)"))  # type: ignore
 
+            logger.info(
+                f"Datasets merged after filtering: {len(data_manager._experiments)}"
+            )
+
             if self._params.small_molecule.composition:
                 self.export_shelx(
                     params,
@@ -724,7 +731,9 @@ class MultiCrystalScale:
 
             data_manager._set_batches()
             with record_step("xia2.report(filtered)"):
-                self._record_individual_report(scaled.report(), "Filtered")
+                self._record_individual_report(
+                    scaled.report(), "Filtered", len(data_manager._experiments)
+                )
             data_manager.export_experiments("filtered.expt")
             data_manager.export_reflections("filtered.refl", d_min=scaled.d_min)
 
@@ -748,6 +757,10 @@ class MultiCrystalScale:
         output_name = f"{cluster_data.directory}_scaled"
         free_flags_in_full_set = True
         scaled = Scale(data_manager, params)
+
+        logger.info(
+            f"Datasets merged for {cluster_data.directory}: {len(data_manager._experiments)}"
+        )
         data_manager.export_experiments(f"{output_name}.expt")
         data_manager.export_reflections(f"{output_name}.refl", d_min=scaled.d_min)
 
@@ -821,7 +834,7 @@ class MultiCrystalScale:
             )
         rep = scaled.report()
 
-        d = MultiCrystalScale._report_as_dict(rep)
+        d = MultiCrystalScale._report_as_dict(rep, len(data_manager._experiments))
 
         # need this otherwise rep will not have merging_stats
         rep.resolution_plots_and_stats()
@@ -933,9 +946,12 @@ class MultiCrystalScale:
         )
 
     def _record_individual_report(
-        self, report: Report.Report, cluster_name: str
+        self,
+        report: Report.Report,
+        cluster_name: str,
+        number_datasets: int,
     ) -> None:
-        d = self._report_as_dict(report)
+        d = self._report_as_dict(report, number_datasets)
 
         self._individual_report_dicts[cluster_name] = self._individual_report_dict(
             d, cluster_name
@@ -946,7 +962,7 @@ class MultiCrystalScale:
         self._log_report_info(d)
 
     @staticmethod
-    def _report_as_dict(report: Report.Report) -> dict[str, Any]:
+    def _report_as_dict(report: Report.Report, number_datasets: int) -> dict[str, Any]:
         (
             overall_stats_table,
             merging_stats_table,
@@ -958,6 +974,7 @@ class MultiCrystalScale:
         d = {
             "merging_statistics_table": merging_stats_table,
             "overall_statistics_table": overall_stats_table,
+            "number_of_datasets": number_datasets,
         }
 
         d.update(stats_plots)
@@ -1003,6 +1020,7 @@ class MultiCrystalScale:
         d = {
             "merging_statistics_table": report_d["merging_statistics_table"],
             "overall_statistics_table": report_d["overall_statistics_table"],
+            "number_of_datasets": report_d["number_of_datasets"],
             "image_range_table": report_d["image_range_table"],
         }
 
