@@ -447,6 +447,7 @@ class MultiCrystalScale:
             self.decide_space_group()
 
         logger.notice(banner("Merging (All data)"))  # type: ignore
+        logger.info(f"Datasets merged: {len(self._data_manager._experiments)}")
 
         d_spacings: flex.double = self._scaled.data_manager._reflections["d"]
         self._params.r_free_flags.d_min = flex.min(d_spacings.select(d_spacings > 0))
@@ -658,6 +659,10 @@ class MultiCrystalScale:
             logger.info("Scale and filtering:\n%s", self.scale_and_filter_results)
 
             logger.notice(banner("Merging (Filtered)"))  # type: ignore
+
+            logger.info(
+                f"Datasets merged after filtering: {len(data_manager._experiments)}"
+            )
 
             if self._params.small_molecule.composition:
                 self.export_shelx(
