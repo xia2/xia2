@@ -965,8 +965,6 @@ class MultiCrystalScale:
             stats_plots,
         ) = report.resolution_plots_and_stats()
 
-        # overall_stats_table = [['Number of Datasets',number_datasets,'','']] + overall_stats_table
-
         if report.params.anomalous:
             stats_plots.update(report.dano_plots())
         d = {
