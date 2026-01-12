@@ -757,6 +757,10 @@ class MultiCrystalScale:
         output_name = f"{cluster_data.directory}_scaled"
         free_flags_in_full_set = True
         scaled = Scale(data_manager, params)
+
+        logger.info(
+            f"Datasets merged for {cluster_data.directory}: {len(data_manager._experiments)}"
+        )
         data_manager.export_experiments(f"{output_name}.expt")
         data_manager.export_reflections(f"{output_name}.refl", d_min=scaled.d_min)
 
