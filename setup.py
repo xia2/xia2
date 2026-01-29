@@ -47,6 +47,7 @@ console_scripts = [
     "xia2.to_shelxcde=xia2.cli.to_shelxcde:run",
     "xia2=xia2.cli.xia2_main:run",
     "xia2.cluster_analysis=xia2.cli.cluster_analysis:run",
+    "xia2.multiplex_filtering=xia2.cli.multiplex_filtering:run",
 ]
 
 
