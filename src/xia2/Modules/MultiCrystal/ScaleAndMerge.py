@@ -915,7 +915,8 @@ class MultiCrystalScale:
             data.pop("line", None)  # remove default color override
             self._comparison_graphs[graph]["data"].append(data)
 
-    def _log_report_info(self, d: dict[str, Any]) -> None:
+    @staticmethod
+    def _log_report_info(d: dict[str, Any]) -> None:
         def remove_html_tags(table):
             return [
                 [

@@ -143,6 +143,12 @@ def run(args=sys.argv[1:]):
         logger.info("The following parameters have been modified:\n")
         logger.info(diff_phil)
 
+    with open("xia2-multiplex-working.phil", "w") as f:
+        remove_input = parser.phil.extract()
+        remove_input.input = ""
+        working_phil = parser.phil.format(python_object=remove_input).as_str()
+        f.write(working_phil)
+
     # Try to load the models and data
     if len(params.input.experiments) == 0:
         logger.info("No Experiments found in the input")
