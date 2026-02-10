@@ -131,7 +131,17 @@
                                                             has_column_header=true,
                                                             has_row_header=true) }}
                                         </div>
-
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="panel panel-default">
+                                <div class="panel-heading" data-toggle="collapse" data-target="#collapse_cosym_cluster_plots">
+                                    <h4 class="panel-title">
+                                        <a>Cosym cluster plots</a>
+                                    </h4>
+                                </div>
+                                <div id="collapse_cosym_cluster_plots" class="panel-collapse collapse">
+                                    <div class="panel-body">
                                         {% for div_id, json_data in cos_angle_cosym_graphs.items() %}
                                             {% if styles != None %}
                                                 {{ macros.plotly_graph(div_id, json_data, style=styles.get(div_id)) }}
@@ -139,8 +149,8 @@
                                                 {{ macros.plotly_graph(div_id, json_data) }}
                                             {% endif %}
                                         {% endfor %}
-
                                     </div>
+
                                 </div>
                             </div>
 
