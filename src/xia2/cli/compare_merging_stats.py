@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import concurrent.futures
 import functools
+import json
 import math
 import os
 import sys
@@ -117,6 +118,10 @@ def run(args=sys.argv[1:]):
 
     plots = calculate_plot_data(results, labels=params.plot_labels)
     generate_html_report(plots)
+
+    if params.output.json:
+        with open(params.output.json, "w") as f:
+            json.dump(plots, f, indent=2)
 
 
 def get_merging_stats(
