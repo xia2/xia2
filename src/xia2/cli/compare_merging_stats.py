@@ -11,8 +11,10 @@ import iotbx.phil
 import libtbx
 from cctbx import uctbx
 from cycler import cycler
+from dials.report.plots import d_star_sq_to_d_ticks
 from dials.util.options import ArgumentParser
 from dials.util.system import CPU_COUNT
+from jinja2 import ChoiceLoader, Environment, PackageLoader
 
 help_message = """
 """
@@ -53,6 +55,11 @@ alpha = 0.3
   .type = float(value_min=0, value_max=1)
   .help = "The alpha value for the background line plots in conjunction with"
           "small_multiples=True."
+output {
+  json = None
+    .type = path
+    .help = "Path to output JSON file containing the merging statistics plot data."
+}
 """,
     process_includes=True,
 )
@@ -95,10 +102,10 @@ def run(args=sys.argv[1:]):
         d_max=params.d_max,
     )
     with concurrent.futures.ProcessPoolExecutor(max_workers=params.nproc) as pool:
-        results = pool.map(get_merging_stats_partial, mtz_files)
+        results = list(pool.map(get_merging_stats_partial, mtz_files))
 
     plot_merging_stats(
-        list(results),
+        results,
         labels=params.plot_labels,
         size_inches=params.size_inches,
         image_dir=params.image_dir,
@@ -107,6 +114,9 @@ def run(args=sys.argv[1:]):
         small_multiples=params.small_multiples,
         alpha=params.alpha,
     )
+
+    plots = calculate_plot_data(results)
+    generate_html_report(plots)
 
 
 def get_merging_stats(
@@ -324,3 +334,55 @@ def plot_data(
             else:
                 ax.set_ylim(0)
             ax.xaxis.set_major_formatter(resolution_formatter)
+
+
+def calculate_plot_data(results: list) -> dict:
+    d_star_sq_bins = [
+        0.5 * (uctbx.d_as_d_star_sq(b.d_max) + uctbx.d_as_d_star_sq(b.d_min))
+        for b in results[0].bins
+    ]
+    d_star_sq_tickvals, d_star_sq_ticktext = d_star_sq_to_d_ticks(
+        d_star_sq_bins, nticks=5
+    )
+
+    r_merge_bins = [b.r_merge for b in results[0].bins]
+    plots = {
+        "r_merge": {
+            "data": [
+                {
+                    "x": d_star_sq_bins,
+                    "y": r_merge_bins,
+                    "type": "scatter",
+                    "name": "R<sub>merge</sub> vs resolution",
+                }
+            ],
+            "layout": {
+                "title": "R<sub>merge</sub> vs resolution",
+                "xaxis": {
+                    "title": "Resolution (Å)",
+                    "tickvals": d_star_sq_tickvals,
+                    "ticktext": d_star_sq_ticktext,
+                },
+                "yaxis": {"title": "R<sub>merge</sub>", "rangemode": "tozero"},
+            },
+        }
+    }
+    return plots
+
+
+def generate_html_report(plots: dict) -> None:
+    loader = ChoiceLoader(
+        [
+            PackageLoader("dials", "templates"),
+            PackageLoader("dials", "static", encoding="utf-8"),
+        ]
+    )
+    env = Environment(loader=loader)
+    template = env.get_template("simple_report.html")
+    html = template.render(
+        page_title="Compare merging stats report",
+        panel_title="Merging stats plots",
+        graphs=plots,
+    )
+    with open("xia2.compare_merging_stats.html", "wb") as f:
+        f.write(html.encode("utf-8", "xmlcharrefreplace"))
