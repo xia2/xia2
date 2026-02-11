@@ -391,6 +391,146 @@ def calculate_plot_data(results: list, labels: list) -> dict:
                 "yaxis": {"title": "R<sub>meas</sub>", "rangemode": "tozero"},
             },
         },
+        "r_pim": {
+            "data": [
+                {
+                    "x": d_star_sq_bins,
+                    "y": [b.r_pim for b in r.bins],
+                    "type": "scatter",
+                    "name": l,
+                }
+                for r, l in zip(results, labels)
+            ],
+            "layout": {
+                "title": "R<sub>pim</sub> vs resolution",
+                "xaxis": {
+                    "title": "Resolution (Å)",
+                    "tickvals": d_star_sq_tickvals,
+                    "ticktext": d_star_sq_ticktext,
+                },
+                "yaxis": {"title": "R<sub>pim</sub>", "rangemode": "tozero"},
+            },
+        },
+        "cc_one_half": {
+            "data": [
+                {
+                    "x": d_star_sq_bins,
+                    "y": [b.cc_one_half for b in r.bins],
+                    "type": "scatter",
+                    "name": l,
+                }
+                for r, l in zip(results, labels)
+            ],
+            "layout": {
+                "title": "CC<sub>½</sub> vs resolution",
+                "xaxis": {
+                    "title": "Resolution (Å)",
+                    "tickvals": d_star_sq_tickvals,
+                    "ticktext": d_star_sq_ticktext,
+                },
+                "yaxis": {"title": "CC<sub>½</sub>", "rangemode": "tozero"},
+            },
+        },
+        "cc_one_half_sigma_tau": {
+            "data": [
+                {
+                    "x": d_star_sq_bins,
+                    "y": [b.cc_one_half_sigma_tau for b in r.bins],
+                    "type": "scatter",
+                    "name": l,
+                }
+                for r, l in zip(results, labels)
+            ],
+            "layout": {
+                "title": "CC<sub>½</sub> (σ-τ) vs resolution",
+                "xaxis": {
+                    "title": "Resolution (Å)",
+                    "tickvals": d_star_sq_tickvals,
+                    "ticktext": d_star_sq_ticktext,
+                },
+                "yaxis": {"title": "CC<sub>½</sub> (σ-τ)", "rangemode": "tozero"},
+            },
+        },
+        "cc_anom": {
+            "data": [
+                {
+                    "x": d_star_sq_bins,
+                    "y": [b.cc_anom for b in r.bins],
+                    "type": "scatter",
+                    "name": l,
+                }
+                for r, l in zip(results, labels)
+            ],
+            "layout": {
+                "title": "CC<sub>ano</sub> vs resolution",
+                "xaxis": {
+                    "title": "Resolution (Å)",
+                    "tickvals": d_star_sq_tickvals,
+                    "ticktext": d_star_sq_ticktext,
+                },
+                "yaxis": {"title": "CC<sub>ano</sub>", "rangemode": "tozero"},
+            },
+        },
+        "i_over_sigma_mean": {
+            "data": [
+                {
+                    "x": d_star_sq_bins,
+                    "y": [b.i_over_sigma_mean for b in r.bins],
+                    "type": "scatter",
+                    "name": l,
+                }
+                for r, l in zip(results, labels)
+            ],
+            "layout": {
+                "title": "<I/σ(I)> vs resolution",
+                "xaxis": {
+                    "title": "Resolution (Å)",
+                    "tickvals": d_star_sq_tickvals,
+                    "ticktext": d_star_sq_ticktext,
+                },
+                "yaxis": {"title": "<I/σ(I)>", "rangemode": "tozero"},
+            },
+        },
+        "completeness": {
+            "data": [
+                {
+                    "x": d_star_sq_bins,
+                    "y": [b.completeness for b in r.bins],
+                    "type": "scatter",
+                    "name": l,
+                }
+                for r, l in zip(results, labels)
+            ],
+            "layout": {
+                "title": "Completeness vs resolution",
+                "xaxis": {
+                    "title": "Resolution (Å)",
+                    "tickvals": d_star_sq_tickvals,
+                    "ticktext": d_star_sq_ticktext,
+                },
+                "yaxis": {"title": "Completeness", "rangemode": "tozero"},
+            },
+        },
+        "mean_redundancy": {
+            "data": [
+                {
+                    "x": d_star_sq_bins,
+                    "y": [b.mean_redundancy for b in r.bins],
+                    "type": "scatter",
+                    "name": l,
+                }
+                for r, l in zip(results, labels)
+            ],
+            "layout": {
+                "title": "Multiplicity vs resolution",
+                "xaxis": {
+                    "title": "Resolution (Å)",
+                    "tickvals": d_star_sq_tickvals,
+                    "ticktext": d_star_sq_ticktext,
+                },
+                "yaxis": {"title": "Multiplicity", "rangemode": "tozero"},
+            },
+        },
     }
     return plots
 
