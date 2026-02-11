@@ -115,7 +115,6 @@ def run(args=sys.argv[1:]):
         small_multiples=params.small_multiples,
         alpha=params.alpha,
     )
-
     plots = calculate_plot_data(results, labels=params.plot_labels)
     generate_html_report(plots)
 
@@ -342,6 +341,8 @@ def plot_data(
 
 
 def calculate_plot_data(results: list, labels: list) -> dict:
+    if not results:
+        return {}
     d_star_sq_bins = [
         0.5 * (uctbx.d_as_d_star_sq(b.d_max) + uctbx.d_as_d_star_sq(b.d_min))
         for b in results[0].bins

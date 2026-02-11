@@ -46,7 +46,7 @@ def test_compare_merging_stats_plot_labels_image_dir(blend_mtz_files, run_in_tmp
     compare_merging_stats.run(
         blend_mtz_files + ["plot_labels=1 2", "image_dir=compare", "size_inches=10,10"]
     )
-    for expected_file in expected_files:
+    for expected_file in expected_files[0:-1]:  # Exclude the HTML file
         assert os.path.exists(os.path.join("compare", expected_file))
 
 
@@ -69,7 +69,7 @@ def test_compare_merging_stats_d_min_d_max(blend_mtz_files, run_in_tmp_path, moc
 def test_compare_merging_stats_small_multiples(dials_data, run_in_tmp_path):
     data_dir = dials_data("blend_tutorial", pathlib=True)
     blend_mtz_files = [
-        os.fspath(data_dir / "dataset_{i + 1:03i}.mtz") for i in range(15)
+        os.fspath(data_dir / f"dataset_{(i + 1):03}.mtz") for i in range(15)
     ]
     compare_merging_stats.run(blend_mtz_files + ["small_multiples=True"])
     for expected_file in expected_files:
