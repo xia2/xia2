@@ -16,6 +16,7 @@ expected_files = [
     "r_meas.png",
     "r_merge.png",
     "r_pim.png",
+    "xia2.compare_merging_stats.html",
 ]
 
 
