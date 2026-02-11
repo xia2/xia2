@@ -115,7 +115,7 @@ def run(args=sys.argv[1:]):
         alpha=params.alpha,
     )
 
-    plots = calculate_plot_data(results)
+    plots = calculate_plot_data(results, labels=params.plot_labels)
     generate_html_report(plots)
 
 
@@ -336,7 +336,7 @@ def plot_data(
             ax.xaxis.set_major_formatter(resolution_formatter)
 
 
-def calculate_plot_data(results: list) -> dict:
+def calculate_plot_data(results: list, labels: list) -> dict:
     d_star_sq_bins = [
         0.5 * (uctbx.d_as_d_star_sq(b.d_max) + uctbx.d_as_d_star_sq(b.d_min))
         for b in results[0].bins
@@ -345,16 +345,21 @@ def calculate_plot_data(results: list) -> dict:
         d_star_sq_bins, nticks=5
     )
 
-    r_merge_bins = [b.r_merge for b in results[0].bins]
+    if labels is not None:
+        assert len(results) == len(labels)
+    else:
+        labels = [str(e) for e in range(len(results))]
+
     plots = {
         "r_merge": {
             "data": [
                 {
                     "x": d_star_sq_bins,
-                    "y": r_merge_bins,
+                    "y": [b.r_merge for b in r.bins],
                     "type": "scatter",
-                    "name": "R<sub>merge</sub> vs resolution",
+                    "name": l,
                 }
+                for r, l in zip(results, labels)
             ],
             "layout": {
                 "title": "R<sub>merge</sub> vs resolution",
@@ -365,7 +370,27 @@ def calculate_plot_data(results: list) -> dict:
                 },
                 "yaxis": {"title": "R<sub>merge</sub>", "rangemode": "tozero"},
             },
-        }
+        },
+        "r_meas": {
+            "data": [
+                {
+                    "x": d_star_sq_bins,
+                    "y": [b.r_meas for b in r.bins],
+                    "type": "scatter",
+                    "name": l,
+                }
+                for r, l in zip(results, labels)
+            ],
+            "layout": {
+                "title": "R<sub>meas</sub> vs resolution",
+                "xaxis": {
+                    "title": "Resolution (Å)",
+                    "tickvals": d_star_sq_tickvals,
+                    "ticktext": d_star_sq_ticktext,
+                },
+                "yaxis": {"title": "R<sub>meas</sub>", "rangemode": "tozero"},
+            },
+        },
     }
     return plots
 
