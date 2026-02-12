@@ -948,11 +948,60 @@ class CommonScaler(Scaler):
             umtz = mtz.object(file_name=unmerged_mtz)
             result = self._iotbx_merging_statistics(unmerged_mtz, anomalous=False)
 
+            stats_formats = {
+                "_reflns.d_resolution_high": "{:.3f}",
+                "_reflns.d_resolution_low": "{:.3f}",
+                "_reflns.pdbx_CC_half": "{:.4f}",
+                "_reflns.pdbx_Rmerge_I_obs": "{:.4f}",
+                "_reflns.pdbx_Rpim_I_all": "{:.4f}",
+                "_reflns.pdbx_Rrim_I_all": "{:.4f}",
+                "_reflns.pdbx_netI_over_sigmaI": "{:.3f}",
+                "_reflns.pdbx_netI_over_av_sigmaI": "{:.3f}",
+                "_reflns.pdbx_redundancy": "{:.3f}",
+                "_reflns.percent_possible_obs": "{:.3f}",
+            }
+
+            stats_array_formats = {
+                "_reflns_shell.d_res_high": "{:.3f}",
+                "_reflns_shell.d_res_low": "{:.3f}",
+                "_reflns_shell.pdbx_CC_half": "{:.4f}",
+                "_reflns_shell.Rmerge_I_obs": "{:.4f}",
+                "_reflns_shell.pdbx_Rpim_I_all": "{:.4f}",
+                "_reflns_shell.pdbx_Rrim_I_all": "{:.4f}",
+                "_reflns_shell.pdbx_netI_over_sigmaI_obs": "{:.3f}",
+                "_reflns_shell.meanI_over_sigI_obs": "{:.3f}",
+                "_reflns_shell.pdbx_redundancy": "{:.3f}",
+                "_reflns_shell.percent_possible_obs": "{:.3f}",
+            }
+
             merged_block = iotbx.cif.model.block()
             merged_block["_reflns.pdbx_ordinal"] = 1
             merged_block["_reflns.pdbx_diffrn_id"] = 1
             merged_block["_reflns.entry_id"] = key
-            merged_block.update(result.as_cif_block())
+            merged_data = result.as_cif_block()
+            # Apply custom formatting.
+            for k in list(merged_data.keys()):
+                if k in stats_formats:
+                    merged_data[k] = stats_formats[k].format(float(merged_data[k]))
+                elif k in stats_array_formats:
+                    merged_data[k] = flex.std_string(
+                        [
+                            stats_array_formats[k].format(float(i))
+                            for i in merged_data[k]
+                        ]
+                    )
+            if (
+                "Wilson B factor"
+                in self._scalr_statistics[(self._scalr_pname, self._scalr_xname, wname)]
+            ):
+                wilson_B_iso = self._scalr_statistics[
+                    (self._scalr_pname, self._scalr_xname, wname)
+                ]["Wilson B factor"][0]
+                if wilson_B_iso:
+                    merged_block["_reflns.B_iso_Wilson_estimate"] = (
+                        f"{wilson_B_iso:.3f}"
+                    )
+            merged_block.update(merged_data)
             mmblock.update(merged_block)
 
             scans = scan_info_from_batch_headers(umtz)
