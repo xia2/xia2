@@ -3,11 +3,13 @@
 
 from __future__ import annotations
 
+import copy
 import logging
 import math
 import os
 import time
 from collections import OrderedDict
+from io import StringIO
 
 import iotbx.merging_statistics
 from cctbx import sgtbx
@@ -535,7 +537,7 @@ class CommonScaler(Scaler):
         if not PhilIndex.params.xia2.settings.small_molecule:
             self._scale_finish_chunk_3_truncate()
 
-        self._write_mmcif_output()
+        mtz_appendix_blocks = self._write_mmcif_output()
 
         self._scale_finish_chunk_4_mad_mangling()
 
@@ -566,6 +568,19 @@ class CommonScaler(Scaler):
             date_str = time.strftime("%d/%m/%Y at %H:%M:%S", time.gmtime())
             mtz_object.add_history(f"From {Version}, run on {date_str}")
             mtz_object.write(mtz_file)
+
+        # add mmcif block to mtz appendix
+        for mtz_file in mtz_files:
+            with open(mtz_file, "a") as f:
+                f.write("#MTZAPPENDIX-START\n")
+                for wave, block in mtz_appendix_blocks.items():
+                    f.write(f"#MTZAPPENDIX-ITEM CIF DatasetID={wave}\n")
+                    buffer = StringIO()
+                    block.show(buffer)
+                    f.write(buffer.getvalue())
+                    buffer.close()
+                    f.write("\n")
+                f.write("#MTZAPPENDIX-END\n")
 
     def _scale_finish_chunk_3_truncate(self):
         for wavelength in self._scalr_scaled_refl_files:
@@ -926,6 +941,7 @@ class CommonScaler(Scaler):
         cname = self._scalr_xname
 
         reflection_files = self._scalr_scaled_reflection_files["mtz_unmerged"]
+        blocks_for_mtz_appendix = {}
 
         for wname, unmerged_mtz in reflection_files.items():
             xwav = xcryst.get_xwavelength(wname).get_wavelength()
@@ -1037,6 +1053,9 @@ class CommonScaler(Scaler):
             assert scan_no.count(0) == 0
             assert image_no.count(0) == 0
 
+            ## add here, before we start adding reflection data
+            blocks_for_mtz_appendix[key] = copy.deepcopy(mmblock)
+
             h, k, l = (
                 hkl.iround() for hkl in intensities.indices().as_vec3_double().parts()
             )
@@ -1078,6 +1097,7 @@ class CommonScaler(Scaler):
                 )
 
             mmblock.add_loop(cif_loop)
+        return blocks_for_mtz_appendix
 
     def _estimate_resolution_limit(
         self, hklin, batch_range=None, reflections=None, experiments=None
