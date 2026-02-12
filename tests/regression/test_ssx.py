@@ -254,12 +254,9 @@ def test_slice_cbfs(dials_data, tmp_path, refined_expt):
     check_output(tmp_path, find_spots=True, index=True, integrate=False)
 
     indexed = load.experiment_list(tmp_path / "batch_1" / "indexed.expt")
-    images = []
-    iset = indexed.imagesets()[0]
-    for i, expt in enumerate(indexed):
-        images.append(iset.get_image_identifier(i).split("_")[-1].rstrip(".cbf"))
+    images = [str(expt.scan.get_image_range()[0]) for expt in indexed]
 
-    assert images == ["17002", "17003", "17004"]
+    assert images == ["2", "2", "3", "3", "4", "4"]
     # Also check the correct images were reported in the indexing report.
     images = []
     with open(tmp_path / "batch_1" / "dials.ssx_index.log") as f:
