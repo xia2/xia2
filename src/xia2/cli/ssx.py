@@ -44,7 +44,7 @@ def run(args=sys.argv[1:]):
     """
     Parse the command line input, setup logging and run the ssx processing script.
     """
-    Citations.cite("dials")
+    Citations.cite("dials-reduction")
     Citations.cite("xia2.ssx")
     parser = ArgumentParser(
         usage="xia2.ssx template=images_####.cbf unit_cell=x space_group=y",

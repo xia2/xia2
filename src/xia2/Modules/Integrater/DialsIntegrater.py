@@ -167,7 +167,7 @@ class DialsIntegrater(Integrater):
         IDXREF to get the XPARM etc. DEFPIX is considered part of the full
         integration as it is resolution dependent."""
 
-        Citations.cite("dials")
+        Citations.cite("dials-reduction")
 
         # decide what images we are going to process, if not already
         # specified

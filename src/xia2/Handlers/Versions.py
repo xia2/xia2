@@ -89,5 +89,6 @@ versions = _Versions(
         "xds": get_xds_version,
         "aimless": get_aimless_version,
         "pointless": get_pointless_version,
+        "xscale": get_xds_version,
     }
 )
