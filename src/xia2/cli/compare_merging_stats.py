@@ -351,14 +351,16 @@ def calculate_plot_data(results: list, labels: list) -> dict:
 
     # Repackage results for each data set to extract data required for plotting
     plot_data = []
+    max_d_star_sq = 0
+    best_d_star_sq_bins = None
     for r, l in zip(results, labels):
         d_star_sq_bins = [
             0.5 * (uctbx.d_as_d_star_sq(b.d_max) + uctbx.d_as_d_star_sq(b.d_min))
             for b in r.bins
         ]
-        d_star_sq_tickvals, d_star_sq_ticktext = d_star_sq_to_d_ticks(
-            d_star_sq_bins, nticks=5
-        )
+        if max(d_star_sq_bins) > max_d_star_sq:
+            max_d_star_sq = max(d_star_sq_bins)
+            best_d_star_sq_bins = d_star_sq_bins
         plot_data.append(
             {
                 "label": l,
@@ -372,10 +374,14 @@ def calculate_plot_data(results: list, labels: list) -> dict:
                 "completeness": [b.completeness for b in r.bins],
                 "mean_redundancy": [b.mean_redundancy for b in r.bins],
                 "d_star_sq_bins": d_star_sq_bins,
-                "d_star_sq_tickvals": d_star_sq_tickvals,
-                "d_star_sq_ticktext": d_star_sq_ticktext,
             }
         )
+    if not best_d_star_sq_bins:
+        best_d_star_sq_bins = d_star_sq_bins
+
+    d_star_sq_tickvals, d_star_sq_ticktext = d_star_sq_to_d_ticks(
+        best_d_star_sq_bins, nticks=8
+    )
 
     plots = {
         "r_merge": {
