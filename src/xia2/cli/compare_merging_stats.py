@@ -343,29 +343,50 @@ def plot_data(
 def calculate_plot_data(results: list, labels: list) -> dict:
     if not results:
         return {}
-    d_star_sq_bins = [
-        0.5 * (uctbx.d_as_d_star_sq(b.d_max) + uctbx.d_as_d_star_sq(b.d_min))
-        for b in results[0].bins
-    ]
-    d_star_sq_tickvals, d_star_sq_ticktext = d_star_sq_to_d_ticks(
-        d_star_sq_bins, nticks=5
-    )
 
     if labels is not None:
         assert len(results) == len(labels)
     else:
         labels = [str(e) for e in range(len(results))]
 
+    # Repackage results for each data set to extract data required for plotting
+    plot_data = []
+    for r, l in zip(results, labels):
+        d_star_sq_bins = [
+            0.5 * (uctbx.d_as_d_star_sq(b.d_max) + uctbx.d_as_d_star_sq(b.d_min))
+            for b in r.bins
+        ]
+        d_star_sq_tickvals, d_star_sq_ticktext = d_star_sq_to_d_ticks(
+            d_star_sq_bins, nticks=5
+        )
+        plot_data.append(
+            {
+                "label": l,
+                "r_merge": [b.r_merge for b in r.bins],
+                "r_meas": [b.r_meas for b in r.bins],
+                "r_pim": [b.r_pim for b in r.bins],
+                "cc_one_half": [b.cc_one_half for b in r.bins],
+                "cc_one_half_sigma_tau": [b.cc_one_half_sigma_tau for b in r.bins],
+                "cc_anom": [b.cc_anom for b in r.bins],
+                "i_over_sigma_mean": [b.i_over_sigma_mean for b in r.bins],
+                "completeness": [b.completeness for b in r.bins],
+                "mean_redundancy": [b.mean_redundancy for b in r.bins],
+                "d_star_sq_bins": d_star_sq_bins,
+                "d_star_sq_tickvals": d_star_sq_tickvals,
+                "d_star_sq_ticktext": d_star_sq_ticktext,
+            }
+        )
+
     plots = {
         "r_merge": {
             "data": [
                 {
-                    "x": d_star_sq_bins,
-                    "y": [b.r_merge for b in r.bins],
+                    "x": p["d_star_sq_bins"],
+                    "y": p["r_merge"],
                     "type": "scatter",
-                    "name": l,
+                    "name": p["label"],
                 }
-                for r, l in zip(results, labels)
+                for p in plot_data
             ],
             "layout": {
                 "title": "R<sub>merge</sub> vs resolution",
@@ -380,12 +401,12 @@ def calculate_plot_data(results: list, labels: list) -> dict:
         "r_meas": {
             "data": [
                 {
-                    "x": d_star_sq_bins,
-                    "y": [b.r_meas for b in r.bins],
+                    "x": p["d_star_sq_bins"],
+                    "y": p["r_meas"],
                     "type": "scatter",
-                    "name": l,
+                    "name": p["label"],
                 }
-                for r, l in zip(results, labels)
+                for p in plot_data
             ],
             "layout": {
                 "title": "R<sub>meas</sub> vs resolution",
@@ -400,12 +421,12 @@ def calculate_plot_data(results: list, labels: list) -> dict:
         "r_pim": {
             "data": [
                 {
-                    "x": d_star_sq_bins,
-                    "y": [b.r_pim for b in r.bins],
+                    "x": p["d_star_sq_bins"],
+                    "y": p["r_pim"],
                     "type": "scatter",
-                    "name": l,
+                    "name": p["label"],
                 }
-                for r, l in zip(results, labels)
+                for p in plot_data
             ],
             "layout": {
                 "title": "R<sub>pim</sub> vs resolution",
@@ -420,12 +441,12 @@ def calculate_plot_data(results: list, labels: list) -> dict:
         "cc_one_half": {
             "data": [
                 {
-                    "x": d_star_sq_bins,
-                    "y": [b.cc_one_half for b in r.bins],
+                    "x": p["d_star_sq_bins"],
+                    "y": p["cc_one_half"],
                     "type": "scatter",
-                    "name": l,
+                    "name": p["label"],
                 }
-                for r, l in zip(results, labels)
+                for p in plot_data
             ],
             "layout": {
                 "title": "CC<sub>½</sub> vs resolution",
@@ -440,12 +461,12 @@ def calculate_plot_data(results: list, labels: list) -> dict:
         "cc_one_half_sigma_tau": {
             "data": [
                 {
-                    "x": d_star_sq_bins,
-                    "y": [b.cc_one_half_sigma_tau for b in r.bins],
+                    "x": p["d_star_sq_bins"],
+                    "y": p["cc_one_half_sigma_tau"],
                     "type": "scatter",
-                    "name": l,
+                    "name": p["label"],
                 }
-                for r, l in zip(results, labels)
+                for p in plot_data
             ],
             "layout": {
                 "title": "CC<sub>½</sub> (σ-τ) vs resolution",
@@ -460,12 +481,12 @@ def calculate_plot_data(results: list, labels: list) -> dict:
         "cc_anom": {
             "data": [
                 {
-                    "x": d_star_sq_bins,
-                    "y": [b.cc_anom for b in r.bins],
+                    "x": p["d_star_sq_bins"],
+                    "y": p["cc_anom"],
                     "type": "scatter",
-                    "name": l,
+                    "name": p["label"],
                 }
-                for r, l in zip(results, labels)
+                for p in plot_data
             ],
             "layout": {
                 "title": "CC<sub>ano</sub> vs resolution",
@@ -480,12 +501,12 @@ def calculate_plot_data(results: list, labels: list) -> dict:
         "i_over_sigma_mean": {
             "data": [
                 {
-                    "x": d_star_sq_bins,
-                    "y": [b.i_over_sigma_mean for b in r.bins],
+                    "x": p["d_star_sq_bins"],
+                    "y": p["i_over_sigma_mean"],
                     "type": "scatter",
-                    "name": l,
+                    "name": p["label"],
                 }
-                for r, l in zip(results, labels)
+                for p in plot_data
             ],
             "layout": {
                 "title": "<I/σ(I)> vs resolution",
@@ -500,12 +521,12 @@ def calculate_plot_data(results: list, labels: list) -> dict:
         "completeness": {
             "data": [
                 {
-                    "x": d_star_sq_bins,
-                    "y": [b.completeness for b in r.bins],
+                    "x": p["d_star_sq_bins"],
+                    "y": p["completeness"],
                     "type": "scatter",
-                    "name": l,
+                    "name": p["label"],
                 }
-                for r, l in zip(results, labels)
+                for p in plot_data
             ],
             "layout": {
                 "title": "Completeness vs resolution",
@@ -520,12 +541,12 @@ def calculate_plot_data(results: list, labels: list) -> dict:
         "mean_redundancy": {
             "data": [
                 {
-                    "x": d_star_sq_bins,
-                    "y": [b.mean_redundancy for b in r.bins],
+                    "x": p["d_star_sq_bins"],
+                    "y": p["mean_redundancy"],
                     "type": "scatter",
-                    "name": l,
+                    "name": p["label"],
                 }
-                for r, l in zip(results, labels)
+                for p in plot_data
             ],
             "layout": {
                 "title": "Multiplicity vs resolution",
