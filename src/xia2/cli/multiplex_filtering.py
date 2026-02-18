@@ -12,18 +12,10 @@ import iotbx.phil
 import numpy as np
 from dials.algorithms.scaling.scaling_library import determine_best_unit_cell
 from dials.array_family import flex
-from dials.util.exclude_images import (
-    exclude_image_ranges_for_scaling,
-    get_valid_image_ranges,
-)
 from dials.util.export_mtz import match_wavelengths
-from dials.util.multi_dataset_handling import (
-    assign_unique_identifiers,
-    parse_multiple_datasets,
-)
-from dials.util.options import ArgumentParser, flatten_experiments, flatten_reflections
-from dials.util.reference import intensities_from_reference_file
+from dials.util.options import ArgumentParser
 from dials.util.version import dials_version
+from dxtbx.model.experiment_list import ExperimentList
 
 import xia2.Handlers.Streams
 from xia2.Applications.xia2_main import write_citations
@@ -92,6 +84,10 @@ phil_scope = iotbx.phil.parse(
 include scope xia2.Modules.MultiCrystal.ScaleAndMerge.phil_scope
 
 include scope dials.util.exclude_images.phil_scope
+
+multiplex_directory = None
+  .type = str
+  .help = "Path to the finished multiplex directory"
 
 wavelength_tolerance = 0.0001
   .type = float
@@ -267,20 +263,25 @@ def filter_existing_multiplex(expts, refls, params):
 def run(args=sys.argv[1:]):
     Citations.cite("xia2.multiplex")
 
-    usage = "xia2.multiplex_filtering [options] [param.phil] scaled.expt scaled.refl"
+    usage = "xia2.multiplex_filtering [options] [param.phil] multiplex_directory"
 
     # Create the parser
     parser = ArgumentParser(
         usage=usage,
         phil=phil_scope,
-        read_reflections=True,
-        read_experiments=True,
+        read_reflections=False,
+        read_experiments=False,
         check_format=False,
         epilog=help_message,
     )
 
     # Parse the command line
     params, options = parser.parse_args(args=args, show_diff_phil=False)
+
+    if not params.multiplex_directory:
+        raise sys.exit(
+            "Please provide path to the directory you ran the initial multiplex job using 'multiplex_directory=/path/to/directory'."
+        )
 
     # Configure the logging
     xia2.Handlers.Streams.setup_logging(
@@ -293,101 +294,48 @@ def run(args=sys.argv[1:]):
     dials_logger.handlers.clear()
     logger.info(dials_version())
 
+    # Check multiplex directory has all the files this module needs
+
+    mplx_directory = pathlib.Path(params.multiplex_directory).resolve()
+    required_files = [
+        mplx_directory / "models.expt",
+        mplx_directory / "observations.refl",
+        mplx_directory / "scaled.mtz",
+        mplx_directory / "xia2-multiplex-working.phil",
+        mplx_directory / "xia2.multiplex.json",
+    ]
+    for file in required_files:
+        try:
+            assert file.is_file()
+        except AssertionError:
+            raise sys.exit(
+                "Make sure xia2.multiplex has finished running and the following files are present: scaled.expt, scaled.refl, scaled.mtz, xia2-multiplex-working.phil, xia2.multiplex.json."
+            )
+
+    params.__inject__("multiplex_json", str(mplx_directory / "xia2.multiplex.json"))
+
+    ### NEED TO FIGURE OUT HOW TO LOAD XIA2-MULTIPLEX-WORKING.PHIL
+
+    ##### would be nice to automatically load xia2-multiplex-working.phil but hard....
+
     # Log the diff phil
     diff_phil = parser.diff_phil.as_str()
     if diff_phil != "":
         logger.info("The following parameters have been modified:\n")
         logger.info(diff_phil)
 
-    # Try to load the models and data
-    if len(params.input.experiments) == 0:
-        logger.info("No Experiments found in the input")
-        parser.print_help()
-        return
-    if len(params.input.reflections) == 0:
-        logger.info("No reflection data found in the input")
-        parser.print_help()
-        return
-    try:
-        assert len(params.input.reflections) == len(params.input.experiments)
-    except AssertionError:
-        raise sys.exit(
-            "The number of input reflections files does not match the "
-            "number of input experiments"
-        )
-
-    try:
-        assert len(params.input.reflections) == 1
-    except AssertionError:
-        raise sys.exit(
-            "Provide only the path to the models.expt and observations.refl file from a previous xia2.multiplex run."
-        )
-
     if params.seed is not None:
         flex.set_random_seed(params.seed)
         np.random.seed(params.seed)
         random.seed(params.seed)
 
-    experiments = flatten_experiments(params.input.experiments)
-    reflections = flatten_reflections(params.input.reflections)
-    if len(experiments) < 2:
-        sys.exit("xia2.multiplex requires a minimum of two experiments")
-    reflections = parse_multiple_datasets(reflections)
-    experiments, reflections = assign_unique_identifiers(experiments, reflections)
-
-    reflections, experiments = exclude_image_ranges_for_scaling(
-        reflections, experiments, params.exclude_images
+    experiments = ExperimentList.from_file(
+        mplx_directory / "models.expt", check_format=False
     )
-
-    image_ranges = get_valid_image_ranges(experiments)
-    for i in image_ranges:
-        if i is None:
-            raise sys.exit(
-                "Still images detected. Multiplex is only designed for merging multi-crystal rotation datasets. Please re-run with rotation data only."
-            )
-
-    reflections_all = flex.reflection_table()
-    assert len(reflections) == 1 or len(reflections) == len(experiments)
-    for i, (expt, refl) in enumerate(zip(experiments, reflections)):
-        reflections_all.extend(refl)
-    reflections_all.assert_experiment_identifiers_are_consistent(experiments)
-
-    if params.identifiers is not None:
-        identifiers = []
-        for identifier in params.identifiers:
-            identifiers.extend(identifier.split(","))
-        params.identifiers = identifiers
-
-    # If a reference file is defined, will make sure that multiplex output is consistent space group
-    # dials.reindex is later used on the scaled and merged result to retain consistent setting
-
-    if params.reference is not None:
-        intensity_array = intensities_from_reference_file(params.reference)
-        if params.symmetry.space_group is not None:
-            intensity_sg_no = intensity_array.space_group().type().number()
-            params_sg_no = params.symmetry.space_group.type().number()
-            if intensity_sg_no != params_sg_no:
-                raise sys.exit(
-                    f"The input space group (#{params_sg_no}) does not match the reference file (#{intensity_sg_no})"
-                )
-        else:
-            params.symmetry.space_group = intensity_array.space_group_info()
-            logger.info(
-                f"symmetry.space_group has been set to: {params.symmetry.space_group}"
-            )
+    reflections = flex.reflection_table.from_file(mplx_directory / "observations.refl")
 
     if not params.r_free_flags.reference:
-        mplx_directory = (
-            pathlib.Path(params.input.experiments[0].filename).resolve().parent
-        )
-        reference_mtz = mplx_directory / "scaled.mtz"
-        try:
-            assert reference_mtz.is_file()
-        except AssertionError:
-            raise sys.exit(
-                "Provide the path to the scaled.mtz file from multiplex using the commandline input r_free_flags.reference."
-            )
-        params.r_free_flags.reference = reference_mtz
+        params.r_free_flags.reference = str(mplx_directory / "scaled.mtz")
 
     if not params.filtering.method:
         # Since whole point is filtering, set this as defailt
@@ -397,16 +345,7 @@ def run(args=sys.argv[1:]):
         )
 
     try:
-        multiplex_json = mplx_directory / "xia2.multiplex.json"
-        assert multiplex_json.is_file()
-    except AssertionError:
-        logger.info("Can't find existing json. Comparisons not available in HTML")
-        params.__inject__("multiplex_json", None)
-    else:
-        params.__inject__("multiplex_json", multiplex_json)
-
-    try:
-        filter_existing_multiplex(experiments, reflections_all, params)
+        filter_existing_multiplex(experiments, reflections, params)
     except ValueError as e:
         sys.exit(str(e))
 
