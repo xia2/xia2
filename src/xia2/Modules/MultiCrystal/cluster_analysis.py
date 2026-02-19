@@ -3,7 +3,6 @@ from __future__ import annotations
 import copy
 import logging
 import pathlib
-import sys
 from dataclasses import dataclass
 
 import iotbx.phil
@@ -116,7 +115,7 @@ def get_subclusters(
     cc_clusters: list[ClusterInfo],
     coordinate_clusters: list[ClusterInfo] = [],
 ) -> list[SubCluster]:
-    subclusters = []
+    subclusters: list[SubCluster] = []
 
     min_completeness = params.min_completeness
     min_multiplicity = params.min_multiplicity
@@ -131,7 +130,8 @@ def get_subclusters(
     elif params.method == ["coordinate"] and len(coordinate_clusters) > 0:
         analysis_type = "optics"
     else:
-        raise sys.exit("Chosen method = coordinate, but no coordinate clusters given.")
+        logger.info("Chosen method = coordinate, but no coordinate clusters given.")
+        return subclusters
 
     clusters, ctype = clusters_and_types(
         cos_angle_clusters,
