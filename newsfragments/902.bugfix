@@ -1,1 +1,1 @@
-Exit with a suitable error message if stills, not sweeps, are passed to xia2
+Exit with a more informative error message if still images are passed to xia2.

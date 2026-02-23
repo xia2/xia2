@@ -1,1 +1,1 @@
-``xia2.compare_merging_stats``: fix error in the resolution axis of HTML plots
+``xia2.compare_merging_stats``: Fix error with the resolution axis of HTML plots.
