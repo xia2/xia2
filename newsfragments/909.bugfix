@@ -1,1 +1,0 @@
-``xia2.multiplex``: fix bug where multiplex would crash if trying to output coordinate clusters but no coordinate clusters found.
