@@ -1,0 +1,1 @@
+``xia2.multiplex``: fix bug where clusters equal to the overall dataset would be output as 'clusters' if cosym filtered datasets. 

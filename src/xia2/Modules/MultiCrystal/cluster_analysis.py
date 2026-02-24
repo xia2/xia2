@@ -156,27 +156,56 @@ def get_subclusters(
         if c == "cos" and max_cluster_height != 100 and max_cluster_height_cos == 100:
             max_cluster_height_cos = max_cluster_height
         if n_processed_cos == max_clusters and c == "cos":
+            logger.debug(
+                f"{c} cluster {cluster.cluster_id} not output because maximum number output ({max_clusters}) has been reached"
+            )
             continue
         if n_processed_cc == max_clusters and c == "cc":
+            logger.debug(
+                f"{c} cluster {cluster.cluster_id} not output because maximum number output ({max_clusters}) has been reached"
+            )
             continue
         if n_processed_coordinate == max_clusters and c == "coordinate":
+            logger.debug(
+                f"{c} cluster {cluster.cluster_id} not output because maximum number output ({max_clusters}) has been reached"
+            )
             continue
         if cluster.completeness < min_completeness:
+            logger.debug(
+                f"{c} cluster {cluster.cluster_id} not output because does not satisfy minimum completeness ({cluster.completeness} < {min_completeness})."
+            )
             continue
         if cluster.multiplicity < min_multiplicity:
+            logger.debug(
+                f"{c} cluster {cluster.cluster_id} not output because does not satisfy minimum multiplicity ({cluster.completeness} < {min_multiplicity})."
+            )
             continue
         if (
             len(cluster.labels)
-            == len(ids_to_identifiers_map)  # was len(data_manager_original.experiments)
+            == len(
+                cc_clusters[-1].labels
+            )  # was len(ids_to_identifiers_map) but this doesn't account for datasets filtered by cosym - note that last cc_cluster always contains all datasets
             and not params.hierarchical.distinct_clusters
         ):
+            logger.debug(
+                f"{c} cluster {cluster.cluster_id} not output because it contains all valid datasets and is not a subset of the allowed data."
+            )
             continue
         if cluster.height:  # coordinate clusters don't have this!
             if cluster.height > max_cluster_height_cc and c == "cc":
+                logger.debug(
+                    f"{c} cluster {cluster.cluster_id} not output because it has exceeded the maximum height ({cluster.height} > {max_cluster_height_cc})."
+                )
                 continue
             if cluster.height > max_cluster_height_cos and c == "cos":
+                logger.debug(
+                    f"{c} cluster {cluster.cluster_id} not output because it has exceeded the maximum height ({cluster.height} > {max_cluster_height_cos})."
+                )
                 continue
         if len(cluster.labels) < min_cluster_size:
+            logger.debug(
+                f"{c} cluster {cluster.cluster_id} not output because it does not have the minimum number of datasets({cluster.labels} < {min_cluster_size})."
+            )
             continue
 
         cluster_identifiers = [ids_to_identifiers_map[l] for l in cluster.labels]
