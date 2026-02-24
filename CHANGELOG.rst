@@ -1,3 +1,27 @@
+xia2 3.27.0 (2026-02-23)
+========================
+
+Features
+--------
+
+- ``xia2.compare_merging_stats``: Produce HTML output with interactive plots, and optionally JSON format plot data. (`#906 <https://github.com/xia2/xia2/issues/906>`_)
+
+
+Bugfixes
+--------
+
+- ``xia2.multiplex``: Ensure clustering behaviour is consistent between ``xia2.multiplex`` and ``dials.correlation_matrix`` on ``scaled.{expt,refl}`` files. (`#894 <https://github.com/xia2/xia2/issues/894>`_)
+- Exit with a more informative error message if still images are passed to xia2. (`#902 <https://github.com/xia2/xia2/issues/902>`_)
+- ``xia2.compare_merging_stats``: Fix error with the resolution axis of HTML plots. (`#908 <https://github.com/xia2/xia2/issues/908>`_)
+- ``xia2.multiplex``: Fix bug causing multiplex to crash if trying to output coordinate clusters, but no coordinate clusters were found. (`#909 <https://github.com/xia2/xia2/issues/909>`_)
+
+
+Misc
+----
+
+- `#895 <https://github.com/xia2/xia2/issues/895>`_, `#901 <https://github.com/xia2/xia2/issues/901>`_, `#904 <https://github.com/xia2/xia2/issues/904>`_, `#905 <https://github.com/xia2/xia2/issues/905>`_
+
+
 xia2 3.26.0 (2025-11-06)
 ========================
 
