@@ -206,9 +206,11 @@ def test_proteinase_k_dose(
     if threshold is not None:
         # one experiment should have been rejected after unit cell clustering
         assert len(multiplex_expts) == 7
+        # also means the cluster numbers change to avoid outputting a cluster identical to the full dataset
+        expected_clusters = ("cos_cluster_4", "cos_cluster_5")
     else:
         assert len(multiplex_expts) == 8
-    expected_clusters = ("cos_cluster_5", "cos_cluster_6")
+        expected_clusters = ("cos_cluster_5", "cos_cluster_6")
 
     # Check that expected clusters have been scaled
     for cluster in expected_clusters:
