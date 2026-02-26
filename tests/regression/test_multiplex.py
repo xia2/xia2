@@ -21,15 +21,15 @@ from xia2.Modules.MultiCrystal.data_manager import DataManager
 from xia2.Modules.Report import Report
 
 expected_data_files = [
-    "scaled.expt",
-    "scaled.refl",
-    "scaled.mtz",
-    "scaled_unmerged.mtz",
-    "scaled_unmerged.mmcif",
-    "scaled.sca",
-    "scaled_unmerged.sca",
-    "xia2.multiplex.html",
-    "xia2.multiplex.json",
+    "Processing/scaled.expt",
+    "Processing/scaled.refl",
+    "DataFiles/scaled.mtz",
+    "DataFiles/scaled_unmerged.mtz",
+    "DataFiles/scaled_unmerged.mmcif",
+    "DataFiles/scaled.sca",
+    "DataFiles/scaled_unmerged.sca",
+    "LogFiles/xia2.multiplex.html",
+    "Processing/xia2.multiplex.json",
 ]
 
 
@@ -61,14 +61,14 @@ def test_proteinase_k(mocker, proteinase_k, run_in_tmp_path):
             assert Report.pychef_plots.spy_return[k]["data"][0]["x"] == list(range(26))
     for f in expected_data_files:
         assert os.path.isfile(f), f"expected file {f} missing"
-    multiplex_expts = load.experiment_list("scaled.expt", check_format=False)
+    multiplex_expts = load.experiment_list("Processing/scaled.expt", check_format=False)
     for i, expt in enumerate(multiplex_expts):
         valid_image_ranges = expt.scan.get_valid_image_ranges(expt.identifier)
         if i == 0:
             assert valid_image_ranges == [(11, 25)]
         else:
             assert valid_image_ranges == [(1, 25)]
-    with open("xia2.multiplex.json") as fh:
+    with open("Processing/xia2.multiplex.json") as fh:
         d = json.load(fh)
     for hkl in ("100", "010", "001"):
         k = f"stereographic_projection_{hkl}"
@@ -102,11 +102,11 @@ def test_proteinase_k(mocker, proteinase_k, run_in_tmp_path):
 def test_proteinase_k_anomalous(proteinase_k, run_in_tmp_path):
     expts, refls = proteinase_k
     run_multiplex(expts + refls + ["anomalous=True"])
-    with open("xia2.multiplex.json") as fh:
+    with open("Processing/xia2.multiplex.json") as fh:
         d = json.load(fh)
     assert "dano_All_data" in d["datasets"]["All data"]["resolution_graphs"]
 
-    mtz_scaled = iotbx.mtz.object("scaled.mtz").as_miller_arrays()
+    mtz_scaled = iotbx.mtz.object("DataFiles/scaled.mtz").as_miller_arrays()
     labels = [ma.info().labels for ma in mtz_scaled]
     assert ["F(+)", "SIGF(+)", "F(-)", "SIGF(-)"] in labels
     assert ["I(+)", "SIGI(+)", "I(-)", "SIGI(-)"] in labels
@@ -131,29 +131,29 @@ def test_proteinase_k_filter_deltacchalf(proteinase_k, run_in_tmp_path):
     )
     run_multiplex(command_line_args)
     for f in expected_data_files + [
-        "filtered.expt",
-        "filtered.refl",
-        "filtered.mtz",
-        "filtered_unmerged.mtz",
-        "filtered_unmerged.mmcif",
-        "filtered.sca",
-        "filtered_unmerged.sca",
+        "Processing/filtered.expt",
+        "Processing/filtered.refl",
+        "DataFiles/filtered.mtz",
+        "DataFiles/filtered_unmerged.mtz",
+        "DataFiles/filtered_unmerged.mmcif",
+        "DataFiles/filtered.sca",
+        "DataFiles/filtered_unmerged.sca",
     ]:
         assert os.path.isfile(f), "expected file %s missing" % f
-    assert len(load.experiment_list("scaled.expt", check_format=False)) == 8
-    assert len(load.experiment_list("filtered.expt", check_format=False)) < 8
+    assert len(load.experiment_list("Processing/scaled.expt", check_format=False)) == 8
+    assert len(load.experiment_list("Processing/filtered.expt", check_format=False)) < 8
 
     # assert that the reflection files are different - the filtered reflections
     # should have fewer reflections as one data set has been removed
-    mtz_scaled = iotbx.mtz.object("scaled_unmerged.mtz")
-    mtz_filtered = iotbx.mtz.object("filtered_unmerged.mtz")
+    mtz_scaled = iotbx.mtz.object("DataFiles/scaled_unmerged.mtz")
+    mtz_filtered = iotbx.mtz.object("DataFiles/filtered_unmerged.mtz")
     # assert that the input d_min has carried through to the output files
     for mtz in (mtz_scaled, mtz_filtered):
         assert mtz.as_miller_arrays()[0].d_min() == pytest.approx(2.0, abs=1e-4)
 
     assert mtz_filtered.n_reflections() != mtz_scaled.n_reflections()
 
-    with open("xia2.multiplex.json") as fh:
+    with open("Processing/xia2.multiplex.json") as fh:
         d = json.load(fh)
     print(list(d["datasets"].keys()))
     assert list(d["datasets"].keys()) == ["All data", "cos cluster 6", "Filtered"]
@@ -168,11 +168,12 @@ def test_proteinase_k_filter_deltacchalf(proteinase_k, run_in_tmp_path):
     )
 
     # Check that cluster 6 has been scaled
-    cluster = pathlib.Path("cos_cluster_6")
-    assert cluster.is_dir()
-    assert (cluster / f"{cluster}_scaled.mtz").is_file()
-    assert (cluster / f"{cluster}_scaled_unmerged.mtz").is_file()
-    assert (cluster / f"{cluster}_scaled_unmerged.mmcif").is_file()
+    cluster = "cos_cluster_6"
+    cluster_dir = pathlib.Path(f"Processing/{cluster}")
+    assert cluster_dir.is_dir()
+    assert (pathlib.Path(f"DataFiles/{cluster}_scaled.mtz")).is_file()
+    assert (pathlib.Path(f"DataFiles/{cluster}_scaled_unmerged.mtz")).is_file()
+    assert (pathlib.Path(f"DataFiles/{cluster}_scaled_unmerged.mmcif")).is_file()
 
 
 @pytest.mark.parametrize(
@@ -202,7 +203,7 @@ def test_proteinase_k_dose(
     for f in expected_data_files:
         assert os.path.isfile, f"expected file {f} missing"
 
-    multiplex_expts = load.experiment_list("scaled.expt", check_format=False)
+    multiplex_expts = load.experiment_list("Processing/scaled.expt", check_format=False)
     if threshold is not None:
         # one experiment should have been rejected after unit cell clustering
         assert len(multiplex_expts) == 7
@@ -214,11 +215,11 @@ def test_proteinase_k_dose(
 
     # Check that expected clusters have been scaled
     for cluster in expected_clusters:
-        cluster = pathlib.Path(cluster)
-        assert cluster.is_dir()
-        assert (cluster / f"{cluster}_scaled.mtz").is_file()
-        assert (cluster / f"{cluster}_scaled_unmerged.mtz").is_file()
-        assert (cluster / f"{cluster}_scaled_unmerged.mmcif").is_file()
+        cluster_dir = pathlib.Path(f"Processing/{cluster}")
+        assert cluster_dir.is_dir()
+        assert (pathlib.Path(f"DataFiles/{cluster}_scaled.mtz")).is_file()
+        assert (pathlib.Path(f"DataFiles/{cluster}_scaled_unmerged.mtz")).is_file()
+        assert (pathlib.Path(f"DataFiles/{cluster}_scaled_unmerged.mmcif")).is_file()
 
     for expt in multiplex_expts:
         if space_group is None:
@@ -244,16 +245,14 @@ def test_proteinase_k_coordinate_clusters(proteinase_k, run_in_tmp_path):
     for f in expected_data_files:
         assert pathlib.Path(f).is_file(), "expected file %s missing" % f
 
-    multiplex_expts = load.experiment_list("scaled.expt", check_format=False)
+    multiplex_expts = load.experiment_list("Processing/scaled.expt", check_format=False)
     assert len(multiplex_expts) == 7
+    assert (pathlib.Path("DataFiles/coordinate_cluster_0_scaled.mtz")).is_file()
     assert (
-        pathlib.Path("coordinate_cluster_0/coordinate_cluster_0_scaled.mtz")
+        pathlib.Path("DataFiles/coordinate_cluster_0_scaled_unmerged.mtz")
     ).is_file()
     assert (
-        pathlib.Path("coordinate_cluster_0/coordinate_cluster_0_scaled_unmerged.mtz")
-    ).is_file()
-    assert (
-        pathlib.Path("coordinate_cluster_0/coordinate_cluster_0_scaled_unmerged.mmcif")
+        pathlib.Path("DataFiles/coordinate_cluster_0_scaled_unmerged.mmcif")
     ).is_file()
 
 
@@ -271,15 +270,19 @@ def test_proteinase_k_hierarchical_clusters(proteinase_k, run_in_tmp_path):
     for f in expected_data_files:
         assert pathlib.Path(f).is_file(), "expected file %s missing" % f
 
-    multiplex_expts = load.experiment_list("scaled.expt", check_format=False)
+    multiplex_expts = load.experiment_list("Processing/scaled.expt", check_format=False)
     assert len(multiplex_expts) == 7
     for ctype in ["cc", "cos"]:
-        clusters = list(pathlib.Path().glob(ctype + "_cluster_[0-9]*"))
+        clusters = list(pathlib.Path("Processing").glob(ctype + "_cluster_[0-9]*"))
         assert len(clusters)
         for cluster in clusters:
-            assert (cluster / f"{cluster}_scaled.mtz").is_file()
-            assert (cluster / f"{cluster}_scaled_unmerged.mtz").is_file()
-            assert (cluster / f"{cluster}_scaled_unmerged.mmcif").is_file()
+            assert (pathlib.Path(f"DataFiles/{cluster.name}_scaled.mtz")).is_file()
+            assert (
+                pathlib.Path(f"DataFiles/{cluster.name}_scaled_unmerged.mtz")
+            ).is_file()
+            assert (
+                pathlib.Path(f"DataFiles/{cluster.name}_scaled_unmerged.mmcif")
+            ).is_file()
 
 
 def test_proteinase_k_hierarchical_clusters_distinct(proteinase_k, run_in_tmp_path):
@@ -298,15 +301,19 @@ def test_proteinase_k_hierarchical_clusters_distinct(proteinase_k, run_in_tmp_pa
     for f in expected_data_files:
         assert pathlib.Path(f).is_file(), "expected file %s missing" % f
 
-    multiplex_expts = load.experiment_list("scaled.expt", check_format=False)
+    multiplex_expts = load.experiment_list("Processing/scaled.expt", check_format=False)
     assert len(multiplex_expts) == 7
     clusters = list(pathlib.Path().glob("cc_cluster_[0-9]*"))
     # Has shown to be unstable if it finds clusters or not: just need to make sure code runs to completion
     if len(clusters):
         for cluster in clusters:
-            assert (cluster / f"{cluster}_scaled.mtz").is_file()
-            assert (cluster / f"{cluster}_scaled_unmerged.mtz").is_file()
-            assert (cluster / f"{cluster}_scaled_unmerged.mmcif").is_file()
+            assert (pathlib.Path(f"DataFiles/{cluster.name}_scaled.mtz")).is_file()
+            assert (
+                pathlib.Path(f"DataFiles/{cluster.name}_scaled_unmerged.mtz")
+            ).is_file()
+            assert (
+                pathlib.Path(f"DataFiles/{cluster.name}_scaled_unmerged.mmcif")
+            ).is_file()
 
 
 def test_proteinase_k_single_dataset_raises_error(proteinase_k, run_in_tmp_path):
@@ -405,44 +412,45 @@ def test_prot_k_multiwave_double(run_in_tmp_path, protk_experiments_and_reflecti
     )
 
     expected_multi_data_files = [
-        "scaled.expt",
-        "scaled.refl",
-        "scaled_unmerged_WAVE1.mtz",
-        "scaled_unmerged_WAVE2.mtz",
-        "scaled_unmerged_WAVE1.mmcif",
-        "scaled_unmerged_WAVE2.mmcif",
-        "scaled_unmerged_WAVE1.sca",
-        "scaled_unmerged_WAVE2.sca",
-        "scaled_WAVE1.mtz",
-        "scaled_WAVE2.mtz",
-        "scaled_WAVE1.sca",
-        "scaled_WAVE2.sca",
-        "xia2.multiplex.html",
-        "xia2.multiplex.json",
+        "Processing/scaled.expt",
+        "Processing/scaled.refl",
+        "DataFiles/scaled_unmerged_WAVE1.mtz",
+        "DataFiles/scaled_unmerged_WAVE2.mtz",
+        "DataFiles/scaled_unmerged_WAVE1.mmcif",
+        "DataFiles/scaled_unmerged_WAVE2.mmcif",
+        "DataFiles/scaled_unmerged_WAVE1.sca",
+        "DataFiles/scaled_unmerged_WAVE2.sca",
+        "DataFiles/scaled_WAVE1.mtz",
+        "DataFiles/scaled_WAVE2.mtz",
+        "DataFiles/scaled_WAVE1.sca",
+        "DataFiles/scaled_WAVE2.sca",
+        "LogFiles/xia2.multiplex.html",
+        "Processing/xia2.multiplex.json",
     ]
 
     expected_filtered = [
-        "filtered.expt",
-        "filtered.refl",
-        "filtered_unmerged_WAVE1.mtz",
-        "filtered_unmerged_WAVE2.mtz",
-        "filtered_unmerged_WAVE1.mmcif",
-        "filtered_unmerged_WAVE2.mmcif",
-        "filtered_unmerged_WAVE1.sca",
-        "filtered_unmerged_WAVE2.sca",
-        "filtered_WAVE1.mtz",
-        "filtered_WAVE2.mtz",
-        "filtered_WAVE1.sca",
-        "filtered_WAVE2.sca",
+        "Processing/filtered.expt",
+        "Processing/filtered.refl",
+        "DataFiles/filtered_unmerged_WAVE1.mtz",
+        "DataFiles/filtered_unmerged_WAVE2.mtz",
+        "DataFiles/filtered_unmerged_WAVE1.mmcif",
+        "DataFiles/filtered_unmerged_WAVE2.mmcif",
+        "DataFiles/filtered_unmerged_WAVE1.sca",
+        "DataFiles/filtered_unmerged_WAVE2.sca",
+        "DataFiles/filtered_WAVE1.mtz",
+        "DataFiles/filtered_WAVE2.mtz",
+        "DataFiles/filtered_WAVE1.sca",
+        "DataFiles/filtered_WAVE2.sca",
     ]
 
-    for f in expected_multi_data_files + ["scaled.mtz"]:
+    for f in expected_multi_data_files + ["DataFiles/scaled.mtz"]:
         assert (run_in_tmp_path / f).is_file(), f"expected file {f} missing"
-    for f in expected_multi_data_files[:-2]:
-        file = "cos_cluster_5_" + f
-        assert (run_in_tmp_path / "cos_cluster_5" / file).is_file(), (
-            f"expected file {f} missing"
-        )
+    for f in expected_multi_data_files[:2]:
+        file = f.replace("/", "/cos_cluster_5/cos_cluster_5_")
+        assert (run_in_tmp_path / file).is_file(), f"expected file {f} missing"
+    for f in expected_multi_data_files[2:-2]:
+        file = f.replace("/", "/cos_cluster_5_")  # "cos_cluster_5_" + f
+        assert (run_in_tmp_path / file).is_file(), f"expected file {f} missing"
     for f in expected_filtered:
         assert (run_in_tmp_path / f).is_file(), f"expected file {f} missing"
 
@@ -486,9 +494,9 @@ def test_run_with_reference_pdb(run_in_tmp_path, dials_data):
     )
     run_multiplex(command_line_args)
 
-    assert (run_in_tmp_path / "dials.reindex.log").is_file()
-    assert (run_in_tmp_path / "scaled.expt").is_file()
-    multiplex_expts = load.experiment_list("scaled.expt", check_format=False)
+    assert (run_in_tmp_path / "Processing/5_dials.reindex.log").is_file()
+    assert (run_in_tmp_path / "Processing/scaled.expt").is_file()
+    multiplex_expts = load.experiment_list("Processing/scaled.expt", check_format=False)
     for expt in multiplex_expts:
         assert expt.crystal.get_space_group().type().lookup_symbol() == "P 43 21 2"
 
@@ -556,7 +564,7 @@ def test_on_import_xds_data(dials_data, run_in_tmp_path):
     for f in expected_data_files:
         assert pathlib.Path(f).is_file(), "expected file %s missing" % f
 
-    expts = load.experiment_list("scaled.expt", check_format=False)
+    expts = load.experiment_list("Processing/scaled.expt", check_format=False)
     assert len(expts) == 2
 
 
@@ -571,5 +579,9 @@ def test_shelx_output(proteinase_k, run_in_tmp_path):
     for f in expected_data_files:
         assert pathlib.Path(f).is_file(), "expected file %s missing" % f
 
-    assert pathlib.Path("scaled.hkl").is_file(), "expected file %s missing" % f
-    assert pathlib.Path("scaled.ins").is_file(), "expected file %s missing" % f
+    assert pathlib.Path("DataFiles/scaled.hkl").is_file(), (
+        "expected file %s missing" % f
+    )
+    assert pathlib.Path("DataFiles/scaled.ins").is_file(), (
+        "expected file %s missing" % f
+    )
