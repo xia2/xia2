@@ -12,7 +12,6 @@ class _MultiplexFileHandler:
         self._temporary_files = []
         self._data_files = []
         self._log_files = []
-        # self._admin_files = []
 
     def cleanup(self, base_path):
         base_path = pathlib.Path(base_path).resolve()
@@ -36,31 +35,6 @@ class _MultiplexFileHandler:
         for f in self._data_files:
             target = data_path / f.name
             f.rename(target)
-
-        # for f in self._admin_files:
-        # target = base_path / f.name
-        # f.rename(target)
-
-        """
-
-        for f in self._log_files:
-            link = log_path / f.name
-            relative_target = os.path.relpath(f, log_path)
-            if link.exists():
-                logger.debug(f"Link for {f} already exists from previous job.")
-            else:
-                link.symlink_to(relative_target)
-                logger.debug(f"Linked {f} to {link}")
-
-        for f in self._data_files:
-            link = data_path / f.name
-            relative_target = os.path.relpath(f, data_path)
-            if link.exists():
-                logger.debug(f"Link for {f} already exists from previous job.")
-            else:
-                link.symlink_to(relative_target)
-                logger.debug(f"Linked {f} to {link}")
-        """
 
     def record_data_file(self, filename):
         data_file = pathlib.Path(filename).resolve()
