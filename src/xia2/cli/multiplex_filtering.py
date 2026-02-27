@@ -265,6 +265,18 @@ def run(args=sys.argv[1:]):
 
     usage = "xia2.multiplex_filtering [options] [param.phil] multiplex_directory"
 
+    for i in args:
+        if "multiplex_directory=" in i:
+            location = i.split("=")[1]
+            phil_file = pathlib.Path(location) / "xia2-multiplex-working.phil"
+
+    if phil_file:
+        args.append(str(phil_file))
+    else:
+        raise sys.exit(
+            "Please provide path to the directory you ran the initial multiplex job using 'multiplex_directory=/path/to/directory'."
+        )
+
     # Create the parser
     parser = ArgumentParser(
         usage=usage,
@@ -313,10 +325,6 @@ def run(args=sys.argv[1:]):
             )
 
     params.__inject__("multiplex_json", str(mplx_directory / "xia2.multiplex.json"))
-
-    ### NEED TO FIGURE OUT HOW TO LOAD XIA2-MULTIPLEX-WORKING.PHIL
-
-    ##### would be nice to automatically load xia2-multiplex-working.phil but hard....
 
     # Log the diff phil
     diff_phil = parser.diff_phil.as_str()
