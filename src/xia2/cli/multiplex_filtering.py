@@ -33,18 +33,17 @@ xia2.multiplex performs symmetry analysis, scaling and merging of multi-crystal 
 sets, as well as analysis of various pathologies that typically affect multi-crystal
 data sets, including non-isomorphism, radiation damage and preferred orientation.
 
-It uses a number of DIALS programs internally, including dials.cosym,
-dials.two_theta_refine, dials.scale and dials.symmetry:
+xia2.multiplex_filtering applies the filtering algorithms to an existing directory
+containing a finished multiplex job. This means that the entire program does not need
+to be re-run if you decide later you want filtering applied to your dataset.
 
-- Preliminary filtering of datasets using hierarchical unit cell clustering
-- Laue group determination and resolution of indexing ambiguities with dials.cosym
-- Determination of "best" overall unit cell with dials.two_theta_refine
-- Initial round of scaling with dials.scale
-- Estimation of resolution limit with dials.estimate_resolution
-- Final round of scaling after application of the resolution limit
-- Analysis of systematic absences with dials.symmetry
-- Optional ΔCC½ filtering to remove outlier data sets
-- Analysis of non-isomorphism, radiation damage and preferred orientation
+There are two modes possible (both using changes in CCHalf to include/exclude)
+
+- filtering.mode=dataset
+    This will filter out entire datasets based on changes in CCHalf.
+- filtering.mode=image_group
+    This will filter out ranges of images instead of datasets.
+    Tailor size with filtering.group_size
 
 For further details, and to cite usage, please see:
 `Gildea, R. J. et al. (2022) Acta Cryst. D78, 752-769 <https://doi.org/10.1107/S2059798322004399>`_.
@@ -52,30 +51,56 @@ For further details, and to cite usage, please see:
 Examples use cases
 ------------------
 
-Multiple integrated experiments and reflections in combined files::
+Run this module on an existing multiplex_folder::
 
-  xia2.multiplex integrated.expt integrated.refl
+  xia2.multiplex_filtering multiplex_folder
 
-Integrated experiments and reflections in separate input files::
+Customise filtering parameters::
 
-  xia2.multiplex integrated_1.expt integrated_1.refl \\
-    integrated_2.expt integrated_2.refl
-
-Override the automatic space group determination and resolution estimation::
-
-  xia2.multiplex space_group=C2 resolution.d_min=2.5 \\
-    integrated_1.expt integrated_1.refl \\
-    integrated_2.expt integrated_2.refl
-
-Filter potential outlier data sets using the ΔCC½ method::
-
-  xia2.multiplex filtering.method=deltacchalf \\
-    integrated.expt integrated.refl
+  xia2.multiplex_filtering multiplex_folder \\
+    filtering.mode=image_group \\
+    filtering.group_size=50
 
 """
-
-phil_scope = iotbx.phil.parse(
+filtering_scope = iotbx.phil.parse(
     """
+filtering
+  .short_caption = "Filtering"
+{
+  max_cycles = None
+    .type = int(value_min=1)
+    .short_caption = "Maximum number of cycles"
+  max_percent_removed = None
+    .type = float
+    .short_caption = "Maximum percentage removed"
+  min_completeness = None
+    .type = float(value_min=0, value_max=100)
+    .help = "Desired minimum completeness, as a percentage (0 - 100)."
+    .short_caption = "Minimum completeness"
+  mode = dataset image_group
+    .type = choice
+    .help = "Perform analysis on whole datasets or batch groups"
+  group_size = None
+    .type = int(value_min=1)
+    .help = "The number of images to group together when calculating delta"
+            "cchalf in image_group mode"
+    .short_caption = "Group size"
+  stdcutoff = None
+    .type = float
+    .help = "Datasets with a ΔCC½ below (mean - stdcutoff*std) are removed"
+    .short_caption = "Standard deviation cutoff"
+}
+output {
+  log = xia2.multiplex_filtering.log
+    .type = str
+}
+""",
+    process_includes=True,
+)
+
+mplx_scope = iotbx.phil.parse(
+    """
+
 include scope xia2.Modules.MultiCrystal.ScaleAndMerge.phil_scope
 
 include scope dials.util.exclude_images.phil_scope
@@ -88,9 +113,8 @@ wavelength_tolerance = 0.0001
 
 seed = 42
   .type = int(value_min=0)
-
 output {
-  log = xia2.multiplex_filtering.log
+  log = xia2.multiplex.log
     .type = str
 }
 """,
@@ -98,7 +122,7 @@ output {
 )
 
 # override default parameters
-phil_scope = phil_scope.fetch(
+mplx_scope = mplx_scope.fetch(
     source=iotbx.phil.parse(
         """\
 r_free_flags.extend = True
@@ -195,12 +219,10 @@ def run(args=sys.argv[1:]):
     mplx_directory = None
 
     for i in args:
-        try:
-            mplx_directory = pathlib.Path(i).resolve()
-        except FileNotFoundError:  # FIX THIS TO CORRECT ERROR THIS IS TEMP
-            pass
-        else:
+        input_directory = pathlib.Path(i).resolve()
+        if input_directory.is_dir():
             args.remove(i)
+            mplx_directory = input_directory
 
     try:
         assert mplx_directory
@@ -229,7 +251,16 @@ def run(args=sys.argv[1:]):
     # Create the parser
     parser = ArgumentParser(
         usage=usage,
-        phil=phil_scope,
+        phil=filtering_scope,
+        read_reflections=False,
+        read_experiments=False,
+        check_format=False,
+        epilog=help_message,
+    )
+
+    fake_parser = ArgumentParser(
+        usage=usage,
+        phil=mplx_scope,
         read_reflections=False,
         read_experiments=False,
         check_format=False,
@@ -237,14 +268,32 @@ def run(args=sys.argv[1:]):
     )
 
     # Parse the command line
-    params, options = parser.parse_args(args=args, show_diff_phil=False)
+    filter_params, filter_options = parser.parse_args(args=args, show_diff_phil=False)
 
-    params.__inject__("multiplex_json", str(mplx_directory / "xia2.multiplex.json"))
+    full_params, full_options = fake_parser.parse_args(
+        args=[f"{mplx_directory / 'xia2-multiplex-working.phil'}"], show_diff_phil=False
+    )
+
+    full_params.filtering.method = "deltacchalf"
+    full_params.filtering.deltacchalf.max_cycles = filter_params.filtering.max_cycles
+    full_params.filtering.deltacchalf.max_percent_removed = (
+        filter_params.filtering.max_percent_removed
+    )
+    full_params.filtering.deltacchalf.min_completeness = (
+        filter_params.filtering.min_completeness
+    )
+    full_params.filtering.deltacchalf.mode = filter_params.filtering.mode
+    full_params.filtering.deltacchalf.group_size = filter_params.filtering.group_size
+    full_params.filtering.deltacchalf.stdcutoff = filter_params.filtering.stdcutoff
+
+    full_params.__inject__(
+        "multiplex_json", str(mplx_directory / "xia2.multiplex.json")
+    )
 
     # Configure the logging
     xia2.Handlers.Streams.setup_logging(
-        logfile=params.output.log,
-        verbose=options.verbose,
+        logfile=filter_params.output.log,
+        verbose=filter_options.verbose,
         debugfile="xia2.multiplex_filtering.debug.log",
     )
 
@@ -260,28 +309,21 @@ def run(args=sys.argv[1:]):
         logger.info("The following parameters have been modified:\n")
         logger.info(diff_phil)
 
-    if params.seed is not None:
-        flex.set_random_seed(params.seed)
-        np.random.seed(params.seed)
-        random.seed(params.seed)
+    if full_params.seed is not None:
+        flex.set_random_seed(full_params.seed)
+        np.random.seed(full_params.seed)
+        random.seed(full_params.seed)
 
     experiments = ExperimentList.from_file(
         mplx_directory / "models.expt", check_format=False
     )
     reflections = flex.reflection_table.from_file(mplx_directory / "observations.refl")
 
-    if not params.r_free_flags.reference:
-        params.r_free_flags.reference = str(mplx_directory / "scaled.mtz")
-
-    if not params.filtering.method:
-        # Since whole point is filtering, set this as defailt
-        params.filtering.method = "deltacchalf"
-        logger.info(
-            "No filtering options specified, defaulting to filtering.method=deltacchalf"
-        )
+    if not full_params.r_free_flags.reference:
+        full_params.r_free_flags.reference = str(mplx_directory / "scaled.mtz")
 
     try:
-        filter_existing_multiplex(experiments, reflections, params)
+        filter_existing_multiplex(experiments, reflections, full_params)
     except ValueError as e:
         sys.exit(str(e))
 
