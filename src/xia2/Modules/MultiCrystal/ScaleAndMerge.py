@@ -648,96 +648,111 @@ class MultiCrystalScale:
             """
 
         if self._params.filtering.method:
-            logger.notice(banner("Rescaling with extra filtering"))  # type: ignore
-            # Final round of scaling, this time filtering out any bad datasets
             data_manager = copy.deepcopy(self._data_manager)
             params = copy.deepcopy(self._params)
-            params.unit_cell.refine = []
             params.resolution.d_min = self._params.resolution.d_min
-            scaled = Scale(data_manager, params, filtering=True)
-            self.scale_and_filter_results = scaled.scale_and_filter_results
-            logger.info("Scale and filtering:\n%s", self.scale_and_filter_results)
-
-            logger.notice(banner("Merging (Filtered)"))  # type: ignore
-
-            logger.info(
-                f"Datasets merged after filtering: {len(data_manager._experiments)}"
+            (
+                self.scale_and_filter_results,
+                free_flags_in_full_set,
+                filtered,
+                data_manager,
+            ) = self.filter(
+                data_manager, params, free_flags_in_full_set, self.wavelengths
             )
 
-            if self._params.small_molecule.composition:
-                self.export_shelx(
-                    params,
-                    data_manager._experiments,
-                    data_manager._reflections,
-                    "filtered",
+            with record_step("xia2.report(filtered)"):
+                self._record_individual_report(
+                    filtered.report(), "Filtered", len(data_manager._experiments)
                 )
 
-            self.export_merged_mtz(
+        self.report()
+
+    @staticmethod
+    def filter(
+        data_manager,
+        params,
+        free_flags_in_full_set,
+        wavelengths,
+    ):
+        logger.notice(banner("Rescaling with extra filtering"))  # type: ignore
+        # Final round of scaling, this time filtering out any bad datasets
+        params.unit_cell.refine = []
+        scaled = Scale(data_manager, params, filtering=True)
+        scale_and_filter_results = scaled.scale_and_filter_results
+        logger.info("Scale and filtering:\n%s", scale_and_filter_results)
+
+        logger.notice(banner("Merging (Filtered)"))  # type: ignore
+
+        logger.info(
+            f"Datasets merged after filtering: {len(data_manager._experiments)}"
+        )
+
+        if params.small_molecule.composition:
+            MultiCrystalScale.export_shelx(
                 params,
                 data_manager._experiments,
                 data_manager._reflections,
-                "filtered.mtz",
-                scaled.d_min,
+                "filtered",
             )
 
-            if (not free_flags_in_full_set) and (
-                self._params.r_free_flags.extend is True
-            ):
-                self._params.r_free_flags.reference = os.path.join(
-                    os.getcwd(), "filtered.mtz"
-                )
-                free_flags_in_full_set = True
+        MultiCrystalScale.export_merged_mtz(
+            params,
+            data_manager._experiments,
+            data_manager._reflections,
+            "filtered.mtz",
+            scaled.d_min,
+        )
 
-            if len(self.wavelengths) > 1:
-                data_manager.split_by_wavelength(self._params.wavelength_tolerance)
-                for wl in self.wavelengths:
-                    name = data_manager.export_unmerged_wave_mtz(
-                        wl,
-                        "filtered_unmerged",
-                        d_min=scaled.d_min,
-                        wavelength_tolerance=self._params.wavelength_tolerance,
-                    )
-                    if name:
-                        convert_unmerged_mtz_to_sca(name)
+        if (not free_flags_in_full_set) and (params.r_free_flags.extend is True):
+            params.r_free_flags.reference = os.path.join(os.getcwd(), "filtered.mtz")
+            free_flags_in_full_set = True
 
-                    # unmerged mmcif for multiple wavelength
-                    data_manager.export_unmerged_wave_mmcif(
-                        wl, "filtered_unmerged", d_min=scaled.d_min
-                    )
-
-                # now export merged of each
-                for wl in self.wavelengths:
-                    name = self.export_merged_wave_mtz(
-                        params,
-                        data_manager,
-                        wl,
-                        "filtered",
-                        scaled.d_min,
-                    )
-                    if name:
-                        convert_merged_mtz_to_sca(name)
-            else:
-                data_manager.export_unmerged_mtz(
-                    "filtered_unmerged.mtz",
+        if len(wavelengths) > 1:
+            data_manager.split_by_wavelength(params.wavelength_tolerance)
+            for wl in wavelengths:
+                name = data_manager.export_unmerged_wave_mtz(
+                    wl,
+                    "filtered_unmerged",
                     d_min=scaled.d_min,
-                    wavelength_tolerance=self._params.wavelength_tolerance,
+                    wavelength_tolerance=params.wavelength_tolerance,
                 )
-                convert_merged_mtz_to_sca("filtered.mtz")
-                convert_unmerged_mtz_to_sca("filtered_unmerged.mtz")
+                if name:
+                    convert_unmerged_mtz_to_sca(name)
 
-                data_manager.export_unmerged_mmcif(
-                    "filtered_unmerged.mmcif", d_min=scaled.d_min
+                # unmerged mmcif for multiple wavelength
+                data_manager.export_unmerged_wave_mmcif(
+                    wl, "filtered_unmerged", d_min=scaled.d_min
                 )
 
-            data_manager._set_batches()
-            with record_step("xia2.report(filtered)"):
-                self._record_individual_report(
-                    scaled.report(), "Filtered", len(data_manager._experiments)
+            # now export merged of each
+            for wl in wavelengths:
+                name = MultiCrystalAnalysis.export_merged_wave_mtz(
+                    params,
+                    data_manager,
+                    wl,
+                    "filtered",
+                    scaled.d_min,
                 )
-            data_manager.export_experiments("filtered.expt")
-            data_manager.export_reflections("filtered.refl", d_min=scaled.d_min)
+                if name:
+                    convert_merged_mtz_to_sca(name)
+        else:
+            data_manager.export_unmerged_mtz(
+                "filtered_unmerged.mtz",
+                d_min=scaled.d_min,
+                wavelength_tolerance=params.wavelength_tolerance,
+            )
+            convert_merged_mtz_to_sca("filtered.mtz")
+            convert_unmerged_mtz_to_sca("filtered_unmerged.mtz")
 
-        self.report()
+            data_manager.export_unmerged_mmcif(
+                "filtered_unmerged.mmcif", d_min=scaled.d_min
+            )
+
+        data_manager._set_batches()
+        data_manager.export_experiments("filtered.expt")
+        data_manager.export_reflections("filtered.refl", d_min=scaled.d_min)
+
+        return scale_and_filter_results, free_flags_in_full_set, scaled, data_manager
 
     @staticmethod
     def _scale_and_report_cluster(

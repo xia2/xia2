@@ -21,13 +21,8 @@ import xia2.Handlers.Streams
 from xia2.Applications.xia2_main import write_citations
 from xia2.Driver.timing import record_step
 from xia2.Handlers.Citations import Citations
-from xia2.Handlers.Streams import banner
 from xia2.Modules.MultiCrystal.data_manager import DataManager
-from xia2.Modules.MultiCrystal.ScaleAndMerge import MultiCrystalScale, Scale
-from xia2.Modules.Scaler.DialsScaler import (
-    convert_merged_mtz_to_sca,
-    convert_unmerged_mtz_to_sca,
-)
+from xia2.Modules.MultiCrystal.ScaleAndMerge import MultiCrystalScale
 from xia2.Modules.SSX.util import report_timing
 from xia2.XIA2Version import Version
 
@@ -85,10 +80,6 @@ include scope xia2.Modules.MultiCrystal.ScaleAndMerge.phil_scope
 
 include scope dials.util.exclude_images.phil_scope
 
-multiplex_directory = None
-  .type = str
-  .help = "Path to the finished multiplex directory"
-
 wavelength_tolerance = 0.0001
   .type = float
   .help = "Absolute tolerance, in Angstroms, for determining whether to merge data from different"
@@ -121,77 +112,13 @@ def filter_existing_multiplex(expts, refls, params):
     d_spacings: flex.double = data_manager._reflections["d"]
     params.r_free_flags.d_min = flex.min(d_spacings.select(d_spacings > 0))
     params.r_free_flags.d_max = flex.max(d_spacings)
-    params.unit_cell.refine = []
-    logger.notice(banner("Rescaling with extra filtering"))  # type: ignore
-    filtered = Scale(data_manager, params, filtering=True)
-    results = filtered.scale_and_filter_results
-    logger.info("Scale and filtering:\n%s", results)
-    logger.notice(banner("Merging (Filtered)"))  # type: ignore
-    logger.info(f"Datasets merged after filtering: {len(data_manager._experiments)}")
-
-    if params.small_molecule.composition:
-        MultiCrystalScale.export_shelx(
-            params,
-            data_manager._experiments,
-            data_manager._reflections,
-            "filtered",
-        )
-    MultiCrystalScale.export_merged_mtz(
-        params,
-        data_manager._experiments,
-        data_manager._reflections,
-        "filtered.mtz",
-        filtered.d_min,
-    )
-
     wavelengths = match_wavelengths(
         data_manager.experiments, params.wavelength_tolerance
-    )  # in experiments order
-
-    if len(wavelengths) > 1:
-        data_manager.split_by_wavelength(params.wavelength_tolerance)
-        for wl in wavelengths:
-            name = data_manager.export_unmerged_wave_mtz(
-                wl,
-                "filtered_unmerged",
-                d_min=filtered.d_min,
-                wavelength_tolerance=params.wavelength_tolerance,
-            )
-            if name:
-                convert_unmerged_mtz_to_sca(name)
-
-            # unmerged mmcif for multiple wavelength
-            data_manager.export_unmerged_wave_mmcif(
-                wl, "filtered_unmerged", d_min=filtered.d_min
-            )
-
-        # now export merged of each
-        for wl in wavelengths:
-            name = MultiCrystalScale.export_merged_wave_mtz(
-                params,
-                data_manager,
-                wl,
-                "filtered",
-                filtered.d_min,
-            )
-            if name:
-                convert_merged_mtz_to_sca(name)
-    else:
-        data_manager.export_unmerged_mtz(
-            "filtered_unmerged.mtz",
-            d_min=filtered.d_min,
-            wavelength_tolerance=params.wavelength_tolerance,
-        )
-        convert_merged_mtz_to_sca("filtered.mtz")
-        convert_unmerged_mtz_to_sca("filtered_unmerged.mtz")
-
-        data_manager.export_unmerged_mmcif(
-            "filtered_unmerged.mmcif", d_min=filtered.d_min
-        )
-
-    data_manager._set_batches()
-    data_manager.export_experiments("filtered.expt")
-    data_manager.export_reflections("filtered.refl", d_min=filtered.d_min)
+    )
+    free_flags_in_full_set = True  # ???
+    results, _, filtered, data_manager = MultiCrystalScale.filter(
+        data_manager, params, free_flags_in_full_set, wavelengths
+    )
 
     with record_step("xia2.report(filtered)"):
         individual_report_dicts = OrderedDict()
@@ -265,50 +192,25 @@ def run(args=sys.argv[1:]):
 
     usage = "xia2.multiplex_filtering [options] [param.phil] multiplex_directory"
 
+    mplx_directory = None
+
     for i in args:
-        if "multiplex_directory=" in i:
-            location = i.split("=")[1]
-            phil_file = pathlib.Path(location) / "xia2-multiplex-working.phil"
+        try:
+            mplx_directory = pathlib.Path(i).resolve()
+        except FileNotFoundError:  # FIX THIS TO CORRECT ERROR THIS IS TEMP
+            pass
+        else:
+            args.remove(i)
 
-    if phil_file:
-        args.append(str(phil_file))
-    else:
+    try:
+        assert mplx_directory
+    except AssertionError:
         raise sys.exit(
-            "Please provide path to the directory you ran the initial multiplex job using 'multiplex_directory=/path/to/directory'."
+            "Please provide a path to a directory containing a completed multiplex job."
         )
-
-    # Create the parser
-    parser = ArgumentParser(
-        usage=usage,
-        phil=phil_scope,
-        read_reflections=False,
-        read_experiments=False,
-        check_format=False,
-        epilog=help_message,
-    )
-
-    # Parse the command line
-    params, options = parser.parse_args(args=args, show_diff_phil=False)
-
-    if not params.multiplex_directory:
-        raise sys.exit(
-            "Please provide path to the directory you ran the initial multiplex job using 'multiplex_directory=/path/to/directory'."
-        )
-
-    # Configure the logging
-    xia2.Handlers.Streams.setup_logging(
-        logfile=params.output.log,
-        verbose=options.verbose,
-        debugfile="xia2.multiplex_filtering.debug.log",
-    )
-
-    dials_logger = logging.getLogger("dials")
-    dials_logger.handlers.clear()
-    logger.info(dials_version())
 
     # Check multiplex directory has all the files this module needs
 
-    mplx_directory = pathlib.Path(params.multiplex_directory).resolve()
     required_files = [
         mplx_directory / "models.expt",
         mplx_directory / "observations.refl",
@@ -324,7 +226,33 @@ def run(args=sys.argv[1:]):
                 "Make sure xia2.multiplex has finished running and the following files are present: scaled.expt, scaled.refl, scaled.mtz, xia2-multiplex-working.phil, xia2.multiplex.json."
             )
 
+    # Create the parser
+    parser = ArgumentParser(
+        usage=usage,
+        phil=phil_scope,
+        read_reflections=False,
+        read_experiments=False,
+        check_format=False,
+        epilog=help_message,
+    )
+
+    # Parse the command line
+    params, options = parser.parse_args(args=args, show_diff_phil=False)
+
     params.__inject__("multiplex_json", str(mplx_directory / "xia2.multiplex.json"))
+
+    # Configure the logging
+    xia2.Handlers.Streams.setup_logging(
+        logfile=params.output.log,
+        verbose=options.verbose,
+        debugfile="xia2.multiplex_filtering.debug.log",
+    )
+
+    dials_logger = logging.getLogger("dials")
+    dials_logger.handlers.clear()
+    logger.info(dials_version())
+
+    logger.info(f"Using {mplx_directory} as previous multiplex job.")
 
     # Log the diff phil
     diff_phil = parser.diff_phil.as_str()
