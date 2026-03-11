@@ -26,7 +26,7 @@ class FilterExistingMultiplex:
         self.wavelengths = match_wavelengths(
             self.data_manager.experiments, params.wavelength_tolerance
         )
-        self.free_flags_in_full_set = True  # ???
+        self.free_flags_in_full_set = True
 
     def filter_and_record(self):
         _, _, filtered, self.data_manager = MultiCrystalScale.filter(
