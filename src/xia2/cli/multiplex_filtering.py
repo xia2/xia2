@@ -59,6 +59,13 @@ filtering_scope = iotbx.phil.parse(
     """
 include scope xia2.Modules.MultiCrystal.filter_phil.filtering_scope
 
+resolution {
+  d_min = None
+    .type = float(value_min=0.0)
+    .help = "High resolution cutoff."
+    .short_caption = "High resolution cutoff"
+}
+
 output {
   log = xia2.multiplex_filtering.log
     .type = str
@@ -183,6 +190,9 @@ def run(args=sys.argv[1:]):
     full_params.filtering.deltacchalf.stdcutoff = (
         filter_params.filtering.deltacchalf.stdcutoff
     )
+
+    if filter_params.resolution.d_min:
+        full_params.resolution.d_min = filter_params.resolution.d_min
 
     full_params.__inject__(
         "multiplex_json", str(mplx_directory / "xia2.multiplex.json")

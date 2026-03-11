@@ -50,7 +50,8 @@ class FilterExistingMultiplex:
                 parent_data = json.load(f)
 
             for i in parent_data["datasets"]:
-                individual_report_dicts[i] = parent_data["datasets"][i]
+                if "Filtered" not in i:
+                    individual_report_dicts[i] = parent_data["datasets"][i]
 
         from jinja2 import ChoiceLoader, Environment, PackageLoader
 
