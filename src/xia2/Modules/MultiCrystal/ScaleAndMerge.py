@@ -187,41 +187,7 @@ rescale_after_resolution_cutoff = False
   .type = bool
   .short_caption = "Rescale after resolution cutoff"
 
-filtering
-  .short_caption = "Filtering"
-{
 
-  method = None deltacchalf
-    .type = choice
-    .help = "Choice of whether to do any filtering cycles, default None."
-
-  deltacchalf
-    .short_caption = "ΔCC½"
-  {
-    max_cycles = None
-      .type = int(value_min=1)
-      .short_caption = "Maximum number of cycles"
-    max_percent_removed = None
-      .type = float
-      .short_caption = "Maximum percentage removed"
-    min_completeness = None
-      .type = float(value_min=0, value_max=100)
-      .help = "Desired minimum completeness, as a percentage (0 - 100)."
-      .short_caption = "Minimum completeness"
-    mode = dataset image_group
-      .type = choice
-      .help = "Perform analysis on whole datasets or batch groups"
-    group_size = None
-      .type = int(value_min=1)
-      .help = "The number of images to group together when calculating delta"
-              "cchalf in image_group mode"
-      .short_caption = "Group size"
-    stdcutoff = None
-      .type = float
-      .help = "Datasets with a ΔCC½ below (mean - stdcutoff*std) are removed"
-      .short_caption = "Standard deviation cutoff"
-  }
-}
 
 multi_crystal_analysis {
   unit_cell = None
@@ -259,6 +225,7 @@ two_theta_refine
 }
 
 include scope xia2.cli.cluster_analysis.cluster_phil_scope
+include scope xia2.Modules.MultiCrystal.filter_phil.filtering_scope
 
 identifiers = None
   .type = strings
