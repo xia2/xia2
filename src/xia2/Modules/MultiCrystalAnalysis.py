@@ -529,9 +529,8 @@ any systematic grouping of points may suggest a preferential crystal orientation
         with open("%s.html" % self.params.prefix, "wb") as f:
             f.write(html.encode("utf-8", "xmlcharrefreplace"))
 
-    @staticmethod
     def make_scale_and_filter_plots(
-        filtering_results: AnalysisResults, mode: str | None
+        self, filtering_results: AnalysisResults, mode: str | None
     ) -> dict[str, dict]:
         data = {
             "merging_stats": filtering_results.get_merging_stats(),
