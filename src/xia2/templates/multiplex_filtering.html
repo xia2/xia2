@@ -12,8 +12,9 @@
 
     <ul class="nav nav-tabs">
 
+
         {% for cluster_name, item in individual_dataset_reports.items() %}
-            <li><a data-toggle="tab" data-target="#dataset_{{ cluster_name | replace(" ", "_") }}">{{ cluster_name }}</a></li>
+            <li class="{% if loop.first %}active{% endif %}"><a data-toggle="tab" data-target="#dataset_{{ cluster_name.replace(' ', '_') }}">{{ cluster_name }}</a></li>
         {% endfor %}
     </ul>
 
@@ -21,7 +22,9 @@
 
         {% for cluster_name, item in individual_dataset_reports.items() %}
 
-            <div id="dataset_{{ cluster_name | replace(" ", "_") }}" class="tab-pane">
+
+            <div id="dataset_{{ cluster_name.replace(' ', '_') }}"class="tab-pane {% if loop.first %}active{% endif %}">
+
 
                 <div>
                     <h2>Detailed statistics for dataset {{ cluster_name }}</h2>
