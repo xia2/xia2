@@ -95,7 +95,7 @@ class FilterExistingMultiplex:
                 )
             }
 
-        with open("xia2.multiplex-filtering.json", "w") as f:
+        with open("xia2.multiplex_filtering.json", "w") as f:
             json.dump(json_data, f)
 
         with open("xia2.multiplex-filtering.html", "wb") as f:
