@@ -134,11 +134,6 @@ def run(args=sys.argv[1:]):
         args=args, show_diff_phil=False, return_unhandled=True
     )
 
-    if not unhandled and not filter_params.input.directory:
-        raise sys.exit(
-            "Please provide a path to a directory containing a completed multiplex job."
-        )
-
     if unhandled and filter_params.input.directory:
         raise sys.exit(
             "Please provide only one path, either directly to the commandline or using directory=/path/to/multiplex."
@@ -150,16 +145,19 @@ def run(args=sys.argv[1:]):
             if input_directory.is_dir():
                 filter_params.input.directory = input_directory
 
-    mplx_directory = pathlib.Path(filter_params.input.directory).resolve()
+    if not filter_params.input.directory:
+        raise sys.exit(
+            "Please provide a path to a directory containing a completed multiplex job."
+        )
 
     # Check multiplex directory has all the files this module needs
 
     required_files = [
-        mplx_directory / "models.expt",
-        mplx_directory / "observations.refl",
-        mplx_directory / "scaled.mtz",
-        mplx_directory / "xia2-multiplex-working.phil",
-        mplx_directory / "xia2.multiplex.json",
+        filter_params.input.directory / "models.expt",
+        filter_params.input.directory / "observations.refl",
+        filter_params.input.directory / "scaled.mtz",
+        filter_params.input.directory / "xia2-multiplex-working.phil",
+        filter_params.input.directory / "xia2.multiplex.json",
     ]
     for file in required_files:
         if not file.is_file():
@@ -177,7 +175,8 @@ def run(args=sys.argv[1:]):
     )
 
     full_params, _ = mplx_parser.parse_args(
-        args=[f"{mplx_directory / 'xia2-multiplex-working.phil'}"], show_diff_phil=False
+        args=[f"{filter_params.input.directory / 'xia2-multiplex-working.phil'}"],
+        show_diff_phil=False,
     )
 
     full_params.filtering.deltacchalf = filter_params.filtering.deltacchalf
@@ -188,7 +187,7 @@ def run(args=sys.argv[1:]):
         full_params.resolution.d_min = filter_params.resolution.d_min
 
     full_params.__inject__(
-        "multiplex_json", str(mplx_directory / "xia2.multiplex.json")
+        "multiplex_json", str(filter_params.input.directory / "xia2.multiplex.json")
     )
 
     # Configure the logging
@@ -202,7 +201,7 @@ def run(args=sys.argv[1:]):
     dials_logger.handlers.clear()
     logger.info(dials_version())
 
-    logger.info(f"Using {mplx_directory} as previous multiplex job.")
+    logger.info(f"Using {filter_params.input.directory} as previous multiplex job.")
 
     # Log the diff phil
     diff_phil = filter_parser.diff_phil.as_str()
@@ -216,12 +215,16 @@ def run(args=sys.argv[1:]):
         random.seed(full_params.seed)
 
     experiments = ExperimentList.from_file(
-        mplx_directory / "models.expt", check_format=False
+        filter_params.input.directory / "models.expt", check_format=False
     )
-    reflections = flex.reflection_table.from_file(mplx_directory / "observations.refl")
+    reflections = flex.reflection_table.from_file(
+        filter_params.input.directory / "observations.refl"
+    )
 
     if not full_params.r_free_flags.reference:
-        full_params.r_free_flags.reference = str(mplx_directory / "scaled.mtz")
+        full_params.r_free_flags.reference = str(
+            filter_params.input.directory / "scaled.mtz"
+        )
 
     try:
         filtering = FilterExistingMultiplex(experiments, reflections, full_params)

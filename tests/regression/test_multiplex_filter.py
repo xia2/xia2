@@ -72,7 +72,7 @@ def test_consistency(proteinase_k, run_in_tmp_path):
     with open(mplx_dir / "xia2.multiplex.json") as fh:
         d_mplx = json.load(fh)
 
-    with open("xia2.multiplex-filtering.json") as fh:
+    with open("xia2.multiplex_filtering.json") as fh:
         d_filtered = json.load(fh)
 
     for i in d_filtered["datasets"]["Filtered"]["merging_stats"]:
