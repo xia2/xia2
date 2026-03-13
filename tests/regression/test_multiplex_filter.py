@@ -17,8 +17,8 @@ expected_data_files = [
     "filtered_unmerged.mmcif",
     "filtered.sca",
     "filtered_unmerged.sca",
-    "xia2.multiplex-filtering.html",
-    "xia2.multiplex-filtering.json",
+    "xia2.multiplex_filtering.html",
+    "xia2.multiplex_filtering.json",
 ]
 
 

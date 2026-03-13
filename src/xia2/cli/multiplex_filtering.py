@@ -121,9 +121,7 @@ def run(args=sys.argv[1:]):
             args.remove(i)
             mplx_directory = input_directory
 
-    try:
-        assert mplx_directory
-    except AssertionError:
+    if not mplx_directory:
         raise sys.exit(
             "Please provide a path to a directory containing a completed multiplex job."
         )
@@ -138,9 +136,7 @@ def run(args=sys.argv[1:]):
         mplx_directory / "xia2.multiplex.json",
     ]
     for file in required_files:
-        try:
-            assert file.is_file()
-        except AssertionError:
+        if not file.is_file():
             raise sys.exit(
                 "Make sure xia2.multiplex has finished running and the following files are present: scaled.expt, scaled.refl, scaled.mtz, xia2-multiplex-working.phil, xia2.multiplex.json."
             )
@@ -173,23 +169,9 @@ def run(args=sys.argv[1:]):
         args=[f"{mplx_directory / 'xia2-multiplex-working.phil'}"], show_diff_phil=False
     )
 
+    full_params.filtering.deltacchalf = filter_params.filtering.deltacchalf
+
     full_params.filtering.method = "deltacchalf"
-    full_params.filtering.deltacchalf.max_cycles = (
-        filter_params.filtering.deltacchalf.max_cycles
-    )
-    full_params.filtering.deltacchalf.max_percent_removed = (
-        filter_params.filtering.deltacchalf.max_percent_removed
-    )
-    full_params.filtering.deltacchalf.min_completeness = (
-        filter_params.filtering.deltacchalf.min_completeness
-    )
-    full_params.filtering.deltacchalf.mode = filter_params.filtering.deltacchalf.mode
-    full_params.filtering.deltacchalf.group_size = (
-        filter_params.filtering.deltacchalf.group_size
-    )
-    full_params.filtering.deltacchalf.stdcutoff = (
-        filter_params.filtering.deltacchalf.stdcutoff
-    )
 
     if filter_params.resolution.d_min:
         full_params.resolution.d_min = filter_params.resolution.d_min
