@@ -59,6 +59,12 @@ filtering_scope = iotbx.phil.parse(
     """
 include scope xia2.Modules.MultiCrystal.filter_phil.filtering_scope
 
+input {
+  directory = None
+    .type=path
+    .help = "Path to a previous multiplex job"
+}
+
 resolution {
   d_min = None
     .type = float(value_min=0.0)
@@ -113,18 +119,38 @@ def run(args=sys.argv[1:]):
 
     usage = "xia2.multiplex_filtering [options] [param.phil] multiplex_directory"
 
-    mplx_directory = None
+    # Create the parser
+    filter_parser = ArgumentParser(
+        usage=usage,
+        phil=filtering_scope,
+        read_reflections=False,
+        read_experiments=False,
+        check_format=False,
+        epilog=help_message,
+    )
 
-    for i in args:
-        input_directory = pathlib.Path(i).resolve()
-        if input_directory.is_dir():
-            args.remove(i)
-            mplx_directory = input_directory
+    # Parse the command line
+    filter_params, filter_options, unhandled = filter_parser.parse_args(
+        args=args, show_diff_phil=False, return_unhandled=True
+    )
 
-    if not mplx_directory:
+    if not unhandled and not filter_params.input.directory:
         raise sys.exit(
             "Please provide a path to a directory containing a completed multiplex job."
         )
+
+    if unhandled and filter_params.input.directory:
+        raise sys.exit(
+            "Please provide only one path, either directly to the commandline or using directory=/path/to/multiplex."
+        )
+
+    if unhandled:
+        for i in unhandled:
+            input_directory = pathlib.Path(i).resolve()
+            if input_directory.is_dir():
+                filter_params.input.directory = input_directory
+
+    mplx_directory = pathlib.Path(filter_params.input.directory).resolve()
 
     # Check multiplex directory has all the files this module needs
 
@@ -141,16 +167,6 @@ def run(args=sys.argv[1:]):
                 "Make sure xia2.multiplex has finished running and the following files are present: scaled.expt, scaled.refl, scaled.mtz, xia2-multiplex-working.phil, xia2.multiplex.json."
             )
 
-    # Create the parser
-    filter_parser = ArgumentParser(
-        usage=usage,
-        phil=filtering_scope,
-        read_reflections=False,
-        read_experiments=False,
-        check_format=False,
-        epilog=help_message,
-    )
-
     mplx_parser = ArgumentParser(
         usage=usage,
         phil=mplx_scope,
@@ -158,11 +174,6 @@ def run(args=sys.argv[1:]):
         read_experiments=False,
         check_format=False,
         epilog=help_message,
-    )
-
-    # Parse the command line
-    filter_params, filter_options = filter_parser.parse_args(
-        args=args, show_diff_phil=False
     )
 
     full_params, _ = mplx_parser.parse_args(
