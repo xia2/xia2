@@ -98,5 +98,5 @@ class FilterExistingMultiplex:
         with open("xia2.multiplex_filtering.json", "w") as f:
             json.dump(json_data, f)
 
-        with open("xia2.multiplex-filtering.html", "wb") as f:
+        with open("xia2.multiplex_filtering.html", "wb") as f:
             f.write(html.encode("utf-8", "xmlcharrefreplace"))
