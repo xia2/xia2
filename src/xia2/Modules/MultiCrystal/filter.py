@@ -11,6 +11,7 @@ from dials.util.export_mtz import match_wavelengths
 from xia2.Driver.timing import record_step
 from xia2.Modules.MultiCrystal.data_manager import DataManager
 from xia2.Modules.MultiCrystal.ScaleAndMerge import MultiCrystalScale
+from xia2.Modules.MultiCrystalAnalysis import MultiCrystalReport
 from xia2.XIA2Version import Version
 
 logger = logging.getLogger(__name__)
@@ -29,7 +30,7 @@ class FilterExistingMultiplex:
         self.free_flags_in_full_set = True
 
     def filter_and_record(self):
-        _, _, filtered, self.data_manager = MultiCrystalScale.filter(
+        filter_results, _, filtered, self.data_manager = MultiCrystalScale.filter(
             self.data_manager,
             self.params,
             self.free_flags_in_full_set,
@@ -44,6 +45,10 @@ class FilterExistingMultiplex:
                 MultiCrystalScale._individual_report_dict(d, "Filtered")
             )
             MultiCrystalScale._log_report_info(d)
+
+        filter_graphs = MultiCrystalReport.make_scale_and_filter_plots(
+            filter_results, self.params.filtering.deltacchalf.mode
+        )["filter_plots"]
 
         if self.params.multiplex_json:
             with open(self.params.multiplex_json, "r") as f:
@@ -77,10 +82,12 @@ class FilterExistingMultiplex:
             cc_half_significance_level=self.params.resolution.cc_half_significance_level,
             image_range_tables=[image_range_table],
             individual_dataset_reports=individual_report_dicts,
+            filter_plots=filter_graphs,
             styles=styles,
             xia2_version=Version,
         )
         json_data: dict = {}
+        json_data.update(filter_graphs)
         json_data["datasets"] = {}
         for report_name, report in individual_report_dicts.items():
             json_data["datasets"][report_name] = {

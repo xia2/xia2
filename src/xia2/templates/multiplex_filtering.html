@@ -11,20 +11,32 @@
     </div>
 
     <ul class="nav nav-tabs">
-
+        <li class="active"><a data-toggle="tab" data-target="#home">Summary</a></li>
 
         {% for cluster_name, item in individual_dataset_reports.items() %}
-            <li class="{% if loop.first %}active{% endif %}"><a data-toggle="tab" data-target="#dataset_{{ cluster_name.replace(' ', '_') }}">{{ cluster_name }}</a></li>
+            <li><a data-toggle="tab" data-target="#dataset_{{ cluster_name | replace(" ", "_") }}">{{ cluster_name }}</a></li>
         {% endfor %}
     </ul>
 
     <div class="tab-content">
 
+        <div id="home" class="tab-pane in active">
+
+            <h2>Filtering Summary</h2>
+
+            <div class="panel-group">
+
+
+                {{ macros.panel('Scaling and filtering plots', 'filter_plots', filter_plots) }}
+
+
+            </div>
+
+        </div>
+
         {% for cluster_name, item in individual_dataset_reports.items() %}
 
-
-            <div id="dataset_{{ cluster_name.replace(' ', '_') }}"class="tab-pane {% if loop.first %}active{% endif %}">
-
+            <div id="dataset_{{ cluster_name | replace(" ", "_") }}" class="tab-pane">
 
                 <div>
                     <h2>Detailed statistics for dataset {{ cluster_name }}</h2>
