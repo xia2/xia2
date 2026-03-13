@@ -693,7 +693,7 @@ class MultiCrystalScale:
 
             # now export merged of each
             for wl in wavelengths:
-                name = MultiCrystalAnalysis.export_merged_wave_mtz(
+                name = MultiCrystalScale.export_merged_wave_mtz(
                     params,
                     data_manager,
                     wl,
