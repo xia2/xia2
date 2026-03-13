@@ -112,6 +112,8 @@ r_free_flags.extend = True
     )
 )
 
+multiplex_filter_error_message = "Make sure xia2.multiplex has finished running and the following files are present: models.expt, observations.refl, scaled.mtz, xia2-multiplex-working.phil, xia2.multiplex.json."
+
 
 @report_timing
 def run(args=sys.argv[1:]):
@@ -161,9 +163,7 @@ def run(args=sys.argv[1:]):
     ]
     for file in required_files:
         if not file.is_file():
-            raise sys.exit(
-                "Make sure xia2.multiplex has finished running and the following files are present: models.expt, observations.refl, scaled.mtz, xia2-multiplex-working.phil, xia2.multiplex.json."
-            )
+            raise sys.exit(multiplex_filter_error_message)
 
     mplx_parser = ArgumentParser(
         usage=usage,

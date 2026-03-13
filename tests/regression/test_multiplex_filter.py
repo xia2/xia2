@@ -7,6 +7,7 @@ import pathlib
 import pytest
 
 from xia2.cli.multiplex import run as run_multiplex
+from xia2.cli.multiplex_filtering import multiplex_filter_error_message
 from xia2.cli.multiplex_filtering import run as run_mplx_filter
 
 expected_data_files = [
@@ -90,10 +91,7 @@ def test_exit_for_invalid_multiplex_dir(run_in_tmp_path):
     filter_args = [mplx_dir.as_posix(), "filtering.method=deltacchalf"]
     with pytest.raises(SystemExit) as e:
         run_mplx_filter(filter_args)
-    assert (
-        str(e.value)
-        == "Make sure xia2.multiplex has finished running and the following files are present: scaled.expt, scaled.refl, scaled.mtz, xia2-multiplex-working.phil, xia2.multiplex.json."
-    )
+    assert str(e.value) == multiplex_filter_error_message
 
 
 @pytest.mark.parametrize("directory", [("fake_directory"), (None)])
@@ -130,10 +128,7 @@ def test_exit_partial_multiplex_dir(proteinase_k, run_in_tmp_path):
     filter_args = [mplx_dir.as_posix(), "filtering.method=deltacchalf"]
     with pytest.raises(SystemExit) as e:
         run_mplx_filter(filter_args)
-    assert (
-        str(e.value)
-        == "Make sure xia2.multiplex has finished running and the following files are present: scaled.expt, scaled.refl, scaled.mtz, xia2-multiplex-working.phil, xia2.multiplex.json."
-    )
+    assert str(e.value) == multiplex_filter_error_message
 
 
 def test_overwrite_multiplex_filtering_params(proteinase_k, run_in_tmp_path):
