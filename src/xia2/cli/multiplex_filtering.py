@@ -162,7 +162,7 @@ def run(args=sys.argv[1:]):
     for file in required_files:
         if not file.is_file():
             raise sys.exit(
-                "Make sure xia2.multiplex has finished running and the following files are present: modelx.expt, observations.refl, scaled.mtz, xia2-multiplex-working.phil, xia2.multiplex.json."
+                "Make sure xia2.multiplex has finished running and the following files are present: models.expt, observations.refl, scaled.mtz, xia2-multiplex-working.phil, xia2.multiplex.json."
             )
 
     mplx_parser = ArgumentParser(
