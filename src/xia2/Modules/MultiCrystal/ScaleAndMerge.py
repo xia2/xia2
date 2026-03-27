@@ -569,7 +569,7 @@ class MultiCrystalScale:
                 self._individual_report_dicts[cluster_name] = individual_report
                 self._update_comparison_graphs(report, dict_report, cluster_name)
                 self._log_report_info(dict_report)
-                if not self._params.output.keep_all_files:
+                if self._params.output.cleanup:
                     os.chdir(cluster.directory)
                     MultiplexFileHandler.record_temp_file("multiplicities_h_0.json")
                     MultiplexFileHandler.record_temp_file("multiplicities_k_0.json")
@@ -642,7 +642,10 @@ class MultiCrystalScale:
                 filtered,
                 data_manager,
             ) = self.filter(
-                data_manager, params, free_flags_in_full_set, self.wavelengths
+                data_manager,
+                params,
+                free_flags_in_full_set,
+                self.wavelengths,
             )
 
             with record_step("xia2.report(filtered)"):
@@ -651,7 +654,7 @@ class MultiCrystalScale:
                 )
 
         self.report()
-        if not self._params.output.keep_all_files:
+        if self._params.output.cleanup:
             MultiplexFileHandler.record_temp_file("multiplicities_h_0.json")
             MultiplexFileHandler.record_temp_file("multiplicities_k_0.json")
             MultiplexFileHandler.record_temp_file("multiplicities_l_0.json")
@@ -707,11 +710,14 @@ class MultiCrystalScale:
                 )
                 if name:
                     convert_unmerged_mtz_to_sca(name)
+                    MultiplexFileHandler.record_data_file(name)
+                    MultiplexFileHandler.record_data_file(name.replace(".mtz", ".sca"))
 
                 # unmerged mmcif for multiple wavelength
                 data_manager.export_unmerged_wave_mmcif(
                     wl, "filtered_unmerged", d_min=scaled.d_min
                 )
+                MultiplexFileHandler.record_data_file(name.replace(".mtz", ".mmcif"))
 
             # now export merged of each
             for wl in wavelengths:
@@ -724,6 +730,8 @@ class MultiCrystalScale:
                 )
                 if name:
                     convert_merged_mtz_to_sca(name)
+                    MultiplexFileHandler.record_data_file(name.replace(".mtz", ".sca"))
+
         else:
             data_manager.export_unmerged_mtz(
                 "filtered_unmerged.mtz",
@@ -736,6 +744,10 @@ class MultiCrystalScale:
             data_manager.export_unmerged_mmcif(
                 "filtered_unmerged.mmcif", d_min=scaled.d_min
             )
+            MultiplexFileHandler.record_data_file("filtered_unmerged.mtz")
+            MultiplexFileHandler.record_data_file("filtered_unmerged.mmcif")
+            MultiplexFileHandler.record_data_file("filtered_unmerged.sca")
+            MultiplexFileHandler.record_data_file("filtered.sca")
 
         data_manager._set_batches()
         data_manager.export_experiments("filtered.expt")
@@ -1195,7 +1207,7 @@ class MultiCrystalScale:
             logger.info(f"Using input Laue group: {self._params.symmetry.laue_group}")
 
         MultiplexFileHandler.record_temp_file("dials.cosym.log")
-        if not self._params.output.keep_all_files:
+        if self._params.output.cleanup:
             MultiplexFileHandler.record_temp_file(self._experiments_filename)
             MultiplexFileHandler.record_temp_file(self._reflections_filename)
             MultiplexFileHandler.record_temp_file(cosym.get_json())
@@ -1222,7 +1234,7 @@ class MultiCrystalScale:
         )
 
         MultiplexFileHandler.record_temp_file("dials.reindex.log")
-        if not self._params.output.keep_all_files:
+        if self._params.output.cleanup:
             MultiplexFileHandler.record_temp_file(self._experiments_filename)
             MultiplexFileHandler.record_temp_file(self._reflections_filename)
 
@@ -1277,7 +1289,7 @@ class MultiCrystalScale:
 
         MultiplexFileHandler.record_temp_file("dials.symmetry.log")
 
-        if not self._params.output.keep_all_files:
+        if self._params.output.cleanup:
             MultiplexFileHandler.record_temp_file(self._experiments_filename)
             MultiplexFileHandler.record_temp_file(self._reflections_filename)
 
@@ -1334,7 +1346,7 @@ class MultiCrystalScale:
             scale_and_filter_results=self.scale_and_filter_results,
             scale_and_filter_mode=self._params.filtering.deltacchalf.mode,
         )
-        if not self._params.output.keep_all_files:
+        if self._params.output.cleanup:
             for i in self._mca._temp_files:
                 MultiplexFileHandler.record_temp_file(i)
 
@@ -1449,7 +1461,7 @@ class Scale:
             self._experiments_filename, check_format=False
         )
 
-        if not self._params.output.keep_all_files:
+        if self._params.output.cleanup:
             for i in misc_files:
                 MultiplexFileHandler.record_temp_file(i)
 
@@ -1587,12 +1599,12 @@ class Scale:
         self._params.resolution.labels = "IPR,SIGIPR"
         if self._filtering:
             self.scale_and_filter_results = scaler.get_scale_and_filter_results()
-            if not self._params.output.keep_all_files:
+            if self._params.output.cleanup:
                 MultiplexFileHandler.record_temp_file(scaler._scale_and_filter_filename)
 
         MultiplexFileHandler.record_temp_file("dials.scale.log")
 
-        if not self._params.output.keep_all_files:
+        if self._params.output.cleanup:
             MultiplexFileHandler.record_temp_file(self._experiments_filename)
             MultiplexFileHandler.record_temp_file(self._reflections_filename)
 
@@ -1620,7 +1632,7 @@ class Scale:
 
         MultiplexFileHandler.record_temp_file("dials.estimate_resolution.log")
 
-        if not self._params.output.keep_all_files:
+        if self._params.output.cleanup:
             MultiplexFileHandler.record_temp_file(m.get_json())
 
         resolution_limits = []
