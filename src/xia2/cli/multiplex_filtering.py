@@ -98,6 +98,8 @@ seed = 42
 output {
   log = xia2.multiplex.log
     .type = str
+  cluster_html = False
+    .type = bool
 }
 """,
     process_includes=True,
@@ -168,8 +170,8 @@ def run(args=sys.argv[1:]):
     mplx_parser = ArgumentParser(
         usage=usage,
         phil=mplx_scope,
-        read_reflections=False,
-        read_experiments=False,
+        read_reflections=True,
+        read_experiments=True,
         check_format=False,
         epilog=help_message,
     )
@@ -214,12 +216,12 @@ def run(args=sys.argv[1:]):
         np.random.seed(full_params.seed)
         random.seed(full_params.seed)
 
-    experiments = ExperimentList.from_file(
-        filter_params.input.directory / "models.expt", check_format=False
-    )
-    reflections = flex.reflection_table.from_file(
-        filter_params.input.directory / "observations.refl"
-    )
+    expt_path = filter_params.input.directory / "models.expt"
+    refl_path = filter_params.input.directory / "observations.refl"
+    logger.info(f"Using {expt_path} and {refl_path} as input data for filtering.")
+
+    experiments = ExperimentList.from_file(expt_path, check_format=False)
+    reflections = flex.reflection_table.from_file(refl_path)
 
     if not full_params.r_free_flags.reference:
         full_params.r_free_flags.reference = str(
