@@ -167,6 +167,10 @@ def run(args=sys.argv[1:]):
         if not file.is_file():
             raise sys.exit(multiplex_filter_error_message)
 
+    # Note that experiments and reflections are set to true to avoid the parser throwing errors about unknown phil parameters
+    # (xia2-multiplex-working.phil contains the original expts/refls but these are not used by xia2.multiplex_filtering)
+    # The actual input expts/refls are derived from the multiplex directory and explicitly logged below
+
     mplx_parser = ArgumentParser(
         usage=usage,
         phil=mplx_scope,
