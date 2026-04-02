@@ -535,7 +535,6 @@ any systematic grouping of points may suggest a preferential crystal orientation
         with open("%s.html" % self.params.prefix, "wb") as f:
             f.write(html.encode("utf-8", "xmlcharrefreplace"))
 
-        
         MultiplexFileHandler.record_log_file(f"{self.params.prefix}.html")
 
     @staticmethod
