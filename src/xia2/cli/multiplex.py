@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import logging
+import os
 import random
 import sys
 
@@ -23,6 +24,7 @@ from dials.util.version import dials_version
 import xia2.Handlers.Streams
 from xia2.Applications.xia2_main import write_citations
 from xia2.Handlers.Citations import Citations
+from xia2.Modules.MultiCrystal.MplxFileHandler import MultiplexFileHandler, cleanup
 from xia2.Modules.MultiCrystal.ScaleAndMerge import MultiCrystalScale
 from xia2.Modules.SSX.util import report_timing
 
@@ -92,6 +94,9 @@ seed = 42
 output {
   log = xia2.multiplex.log
     .type = str
+  cleanup = True
+    .type = bool
+    .help = "Set to false to retain all intermediate data files not commonly used."
 }
 """,
     process_includes=True,
@@ -235,10 +240,20 @@ def run(args=sys.argv[1:]):
             "clustering.max_cluster_height_cos and re-run xia2.multiplex to differentiate."
         )
 
+    cwd = os.getcwd()
+    MultiplexFileHandler.record_log_file(params.output.log)
+    MultiplexFileHandler.record_log_file("xia2.multiplex.debug.log")
+    if not os.path.exists("Processing"):
+        os.mkdir("Processing")
+    os.chdir("Processing")
+
     try:
         runner = MultiCrystalScale(experiments, reflections_all, params)
-        runner.run()
+        with cleanup(cwd):
+            runner.run()
     except ValueError as e:
         sys.exit(str(e))
+
+    os.chdir("..")
 
     write_citations(program="xia2.multiplex")

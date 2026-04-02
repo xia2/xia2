@@ -70,7 +70,7 @@ def test_consistency(proteinase_k, run_in_tmp_path):
     for f in expected_data_files:
         assert os.path.isfile(f), "expected file %s missing" % f
 
-    with open(mplx_dir / "xia2.multiplex.json") as fh:
+    with open(mplx_dir / "Processing/xia2.multiplex.json") as fh:
         d_mplx = json.load(fh)
 
     with open("xia2.multiplex_filtering.json") as fh:
@@ -121,7 +121,7 @@ def test_exit_partial_multiplex_dir(proteinase_k, run_in_tmp_path):
     command_line_args = expts + refls + []
     run_multiplex(command_line_args)
     mplx_dir = pathlib.Path(run_in_tmp_path)
-    os.remove("xia2.multiplex.json")
+    os.remove("Processing/xia2.multiplex.json")
     filtering_dir = mplx_dir / "filtering"
     filtering_dir.mkdir()
     os.chdir(filtering_dir)
@@ -156,9 +156,21 @@ def test_overwrite_multiplex_filtering_params(proteinase_k, run_in_tmp_path):
     run_mplx_filter(filter_args)
     for f in expected_data_files:
         assert os.path.isfile(f), "expected file %s missing" % f
-    with open(mplx_dir / "dials.scale.log", "r") as f:
+
+    mplx_scale_logs = list((run_in_tmp_path / "Processing").glob("*_dials.scale.log"))
+
+    assert len(mplx_scale_logs) == 2
+
+    filter_scale_logs = list((run_in_tmp_path / "filtering").glob("*_dials.scale.log"))
+
+    assert len(filter_scale_logs) == 1
+
+    mplx_scale_log = mplx_scale_logs[1]
+    filter_scale_log = filter_scale_logs[0]
+
+    with open(mplx_scale_log, "r") as f:
         data_mplx = f.readlines()
-    with open(filtering_dir / "dials.scale.log", "r") as f:
+    with open(filter_scale_log, "r") as f:
         data_filtering = f.readlines()
 
     mplx_groups = None

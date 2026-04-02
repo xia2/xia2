@@ -83,22 +83,7 @@ output {
 mplx_scope = iotbx.phil.parse(
     """
 
-include scope xia2.Modules.MultiCrystal.ScaleAndMerge.phil_scope
-
-include scope dials.util.exclude_images.phil_scope
-
-wavelength_tolerance = 0.0001
-  .type = float
-  .help = "Absolute tolerance, in Angstroms, for determining whether to merge data from different"
-          "wavelengths in the output mtz/sca files. Increasing this number significantly may reduce"
-          "downstream data quality due to loss of information on wavelength."
-
-seed = 42
-  .type = int(value_min=0)
-output {
-  log = xia2.multiplex.log
-    .type = str
-}
+include scope xia2.cli.multiplex.phil_scope
 """,
     process_includes=True,
 )
@@ -155,11 +140,11 @@ def run(args=sys.argv[1:]):
     # Check multiplex directory has all the files this module needs
 
     required_files = [
-        filter_params.input.directory / "models.expt",
-        filter_params.input.directory / "observations.refl",
-        filter_params.input.directory / "scaled.mtz",
+        filter_params.input.directory / "Processing/models.expt",
+        filter_params.input.directory / "Processing/observations.refl",
+        filter_params.input.directory / "DataFiles/scaled.mtz",
         filter_params.input.directory / "xia2-multiplex-working.phil",
-        filter_params.input.directory / "xia2.multiplex.json",
+        filter_params.input.directory / "Processing/xia2.multiplex.json",
     ]
     for file in required_files:
         if not file.is_file():
@@ -187,7 +172,8 @@ def run(args=sys.argv[1:]):
         full_params.resolution.d_min = filter_params.resolution.d_min
 
     full_params.__inject__(
-        "multiplex_json", str(filter_params.input.directory / "xia2.multiplex.json")
+        "multiplex_json",
+        str(filter_params.input.directory / "Processing/xia2.multiplex.json"),
     )
 
     # Configure the logging
@@ -215,15 +201,15 @@ def run(args=sys.argv[1:]):
         random.seed(full_params.seed)
 
     experiments = ExperimentList.from_file(
-        filter_params.input.directory / "models.expt", check_format=False
+        filter_params.input.directory / "Processing/models.expt", check_format=False
     )
     reflections = flex.reflection_table.from_file(
-        filter_params.input.directory / "observations.refl"
+        filter_params.input.directory / "Processing/observations.refl"
     )
 
     if not full_params.r_free_flags.reference:
         full_params.r_free_flags.reference = str(
-            filter_params.input.directory / "scaled.mtz"
+            filter_params.input.directory / "DataFiles/scaled.mtz"
         )
 
     try:
