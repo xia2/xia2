@@ -494,7 +494,11 @@ def test_run_with_reference_pdb(run_in_tmp_path, dials_data):
     )
     run_multiplex(command_line_args)
 
-    assert (run_in_tmp_path / "Processing/5_dials.reindex.log").is_file()
+    candidate_reindex_logs = list(
+        (run_in_tmp_path / "Processing").glob("*_dials.reindex.log")
+    )
+
+    assert len(candidate_reindex_logs) == 1
     assert (run_in_tmp_path / "Processing/scaled.expt").is_file()
     multiplex_expts = load.experiment_list("Processing/scaled.expt", check_format=False)
     for expt in multiplex_expts:

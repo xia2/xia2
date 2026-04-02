@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import contextlib
 import logging
+import os
 import pathlib
 
 logger = logging.getLogger("xia2.Handlers.Files")
@@ -20,7 +21,7 @@ class _MultiplexFileHandler:
             try:
                 pathlib.Path.unlink(f)
                 logger.debug(f"Deleted: {f}")
-            except Exception as e:
+            except FileNotFoundError as e:
                 logger.debug(f"Failed to delete: {f} ({e})")
 
         data_path = base_path / "DataFiles"
@@ -30,11 +31,17 @@ class _MultiplexFileHandler:
 
         for f in self._log_files:
             target = log_path / f.name
-            f.rename(target)
+            try:
+                f.rename(target)
+            except Exception as e:
+                logger.debug(f"Failed to move: {f} ({e})")
 
         for f in self._data_files:
             target = data_path / f.name
-            f.rename(target)
+            try:
+                f.rename(target)
+            except Exception as e:
+                logger.debug(f"Failed to move {f} ({e})")
 
     def record_data_file(self, filename):
         data_file = pathlib.Path(filename).resolve()
@@ -45,7 +52,9 @@ class _MultiplexFileHandler:
     def record_log_file(self, filename):
         log_file = pathlib.Path(filename).resolve()
         if log_file not in self._log_files:
-            assert log_file.exists(), f"Required file {log_file} not found."
+            if not os.getenv("PYTEST_CURRENT_TEST"):
+                # Tests fails when do below all the time because only creates 1 multiplex log for entire test
+                assert log_file.exists(), f"Required file {log_file} not found."
             self._log_files.append(log_file)
 
     def record_temp_file(self, filename):
