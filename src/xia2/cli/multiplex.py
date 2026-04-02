@@ -94,9 +94,9 @@ seed = 42
 output {
   log = xia2.multiplex.log
     .type = str
-  cleanup = False
+  cleanup = True
     .type = bool
-    .help = "Set to true to remove intermediate data files not commonly used."
+    .help = "Set to false to retain all intermediate data files not commonly used."
 }
 """,
     process_includes=True,
