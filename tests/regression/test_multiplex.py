@@ -573,3 +573,28 @@ def test_shelx_output(proteinase_k, run_in_tmp_path):
 
     assert pathlib.Path("scaled.hkl").is_file(), "expected file %s missing" % f
     assert pathlib.Path("scaled.ins").is_file(), "expected file %s missing" % f
+
+
+def test_selected_identifiers(protk_experiments_and_reflections, run_in_tmp_path):
+    # This test mimics behaviour of selecting subset of data from html and using the working-phil to reprocess a subset
+    expts, refls = protk_experiments_and_reflections
+    test_uuid_1 = expts[2].identifier
+    test_uuid_2 = expts[5].identifier
+    expts.as_file(run_in_tmp_path / "tmp.expt")
+    refls.as_file(run_in_tmp_path / "tmp.refl")
+    run_multiplex(["tmp.expt", "tmp.refl"])
+
+    os.mkdir("subset")
+    cwd = os.getcwd()
+    working_phil = pathlib.Path(cwd) / "xia2-multiplex-working.phil"
+
+    os.chdir("subset")
+
+    command_line = [str(working_phil), f"identifiers={test_uuid_1},{test_uuid_2}"]
+
+    run_multiplex(command_line)
+
+    multiplex_expts = load.experiment_list("scaled.expt", check_format=False)
+    assert len(multiplex_expts) == 2
+    assert test_uuid_1 in multiplex_expts.identifiers()
+    assert test_uuid_2 in multiplex_expts.identifiers()

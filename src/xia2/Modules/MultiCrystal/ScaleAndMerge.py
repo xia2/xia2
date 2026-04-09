@@ -306,6 +306,8 @@ output {
     .type = str
   json = xia2.multiplex_clusters.json
     .type = str
+  cluster_html = False
+    .type = bool
 }
 """,
     process_includes=True,
@@ -1253,6 +1255,7 @@ class MultiCrystalScale:
         params.significant_clusters.noise_penalty.gamma = (
             self._params.significant_clusters.noise_penalty.gamma
         )
+        params.output.cluster_html = self._params.output.cluster_html
         data_manager = copy.deepcopy(self._data_manager)
         refl = data_manager.reflections
         data_manager.reflections = refl.select(refl["d"] >= self._scaled.d_min)

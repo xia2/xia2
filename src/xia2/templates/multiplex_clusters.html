@@ -1,0 +1,211 @@
+{% import 'xia2_macros.html' as xia2_macros %}
+
+
+{% extends "report_base.html" %}
+
+{% block css %}
+{{ super() }}
+<style>
+  .dendrogram-plot, .plot {
+    width: 100% !important;
+    height: auto !important;
+    float: none !important;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<div class="container-fluid">
+
+    <div class="page-header">
+        <h1>{{ page_title }}</h1>
+    </div>
+
+    <ul class="nav nav-tabs">
+        <li class="active"><a data-toggle="tab" data-target="#cosym_coordinates_tab">Cosym coordinates</a></li>
+        <li><a data-toggle="tab" data-target="#reachability_tab">OPTICS reachability</a></li>
+        <li><a data-toggle="tab" data-target="#cc_cluster_tab">Correlation coefficient clustering</a></li>
+        <li><a data-toggle="tab" data-target="#cos_angle_cluster_tab">Cos angle clustering</a></li>
+        <li><a data-toggle="tab" data-target="#pca_tab">Principal component analysis</a></li>
+        <li><a data-toggle="tab" data-target="#datasets_tab">Data sets</a></li>
+        <li><a data-toggle="tab" data-target="#help_tab">Help</a></li>
+    </ul>
+
+    <div class="tab-content">
+
+        <div id="cosym_coordinates_tab" class="tab-pane in active">
+            <div class="container-fluid">
+                {{ macros.plotly_graph("cosym_coordinates_principal_components", cos_angle_cosym_graphs["cosym_coordinates_principal_components"]) }}
+            </div>
+        </div>
+
+        <div id="reachability_tab" class="tab-pane">
+            <div class="container-fluid">
+                {{ macros.plotly_graph("reachability", cos_angle_cosym_graphs["reachability"]) }}
+            </div>
+        </div>
+
+        <div id="cc_cluster_tab" class="tab-pane">
+            <div class="container-fluid">
+                {{ macros.plotly_graph("cc_cluster", cc_cluster_json, style="dendrogram-plot") }}
+            </div>
+        </div>
+
+        <div id="cos_angle_cluster_tab" class="tab-pane">
+            <div class="container-fluid">
+                {{ macros.plotly_graph("cos_angle_cluster", cos_angle_cluster_json, style="dendrogram-plot") }}
+            </div>
+        </div>
+
+        <div id="pca_tab" class="tab-pane">
+            <div class="panel-group">
+                <div class="container-fluid">
+                    {{ macros.plotly_graph("pca_analysis", pca_plot, style="dendrogram-plot") }}
+                </div>
+            </div>
+        </div>
+
+        <div id="help_tab" class="tab-pane">
+            <div class="container-fluid" style="max-width: 900px; padding-top: 20px; margin-left: 0;">
+                <h2>Help</h2>
+
+                <h3>Cosym coordinates</h3>
+                <p>
+                    This graph shows the result of the coordinate method of clustering. 
+                </p>
+                <p>
+                    The further away from the origin a dataset is, the less random error it has. 
+                    The smaller the angle between pairs of datasets, the less systematic error there is between them. 
+                    This means that datasets that are internally consistent will cluster together. 
+                </p>
+                <p>
+                    The data are automatically classified into clusters based on their spatial density in this plot.
+                    Classification is performed using the OPTICS method (see the OPTICS reachability plot).
+                </p>
+                <p>
+                    Note that higher dimensions may be present, but this graph only shows the first two principal components.
+                </p>
+                <p>    
+                    This coordinate based approach is described in more detail <a href="https://doi.org/10.1107/S2059798325004589" target="_blank"> here</a>. 
+                </p>
+                <p>
+                    Highlight a subsection using the box or lasso selection tools to produce a xia2.multiplex command to merge your selection. 
+                </p>
+
+                <h3>OPTICS reachability</h3>
+                <p>
+                    This graph shows the density structure of the cosym coordinates.
+                </p>
+                <p>    
+                    OPTICS is a density-based clustering method that orders datasets based on their density structure. 
+                    This produces a reachability plot, where valleys correspond to high density regions. 
+                    Peaks between clusters indicate boundaries or outliers. 
+                    The start of a cluster begins with a high reachability distance, because this indicates it is far from the preceding dataset, not the next dataset. 
+                </p>
+                <p>
+                    Highlight a subsection using the box or lasso selection tools to produce a xia2.multiplex command to merge your selection. 
+                </p>
+
+                <h3>Correlation coefficient clustering</h3>
+                <p>
+                    This graph shows the result of hierarchical clustering based on pairwise correlation coefficients between datasets.
+                    The heatmap shows the correlation coefficients, while the dendrograms show the hierarchical clustering structure.
+                    Datasets which connect higher up in the dendrogram are more different to each other. 
+                </p>
+                <p>
+                    Click on a branch in the dendrogram to produce a xia2.multiplex command to merge that cluster. 
+                </p>
+
+                <h3>Cos angle clustering</h3>
+                <p>
+                    This graph shows the result of hierarchical clustering based on pairwise cosine angles between datasets in the cosym coordinate plot.
+                    The heatmap shows the cosine angles, while the dendrograms show the hierarchical clustering structure.
+                    Datasets which connect higher up in the dendrogram are more systematically different to each other.
+                </p>
+                <p>
+                    Click on a branch in the dendrogram to produce a xia2.multiplex command to merge that cluster.
+                </p>
+
+                <h3>Principal component analysis</h3>
+                <p>
+                    This matrix-style graph is an extension of the cosym coordinate plot to show between 2 and 6 dimensions. 
+                    If more than 6 dimensions are present, only the first 6 are shown. 
+                </p>
+                <p>
+                    Note that selecting datasets using the box or lasso tool on one graph will highlight the datasets across all dimensions.
+                </p>
+                <p>
+                    Highlight a subsection using the box or lasso selection tools to produce a xia2.multiplex command to merge your selection.
+                </p>
+            </div>
+        </div>
+
+        <div id="datasets_tab" class="tab-pane">
+            <div class="container-fluid">
+                {% for table in image_range_tables %}
+                    {{ macros.table(table, has_column_header=true) }}
+                {% endfor %}
+            </div>
+        </div>
+
+    </div>
+
+    {% include 'multiplex_cluster_selection.html' %}
+
+    <script>
+    (function() {
+        function resizePlot(div, heightRatio) {
+            var tabBar = document.querySelector('.nav-tabs');
+            var pageHeader = document.querySelector('.page-header');
+            var reservedHeight = (tabBar ? tabBar.offsetHeight : 40)
+                               + (pageHeader ? pageHeader.offsetHeight : 60)
+                               + 60;
+            var availableWidth = div.parentElement.clientWidth;
+            var availableHeight = window.innerHeight - reservedHeight;
+            var w = Math.min(availableWidth, availableHeight / heightRatio);
+            var h = Math.round(w * heightRatio);
+            if (w > 0) {
+                var titleFontSize = Math.max(12, Math.round(w / 35));
+                var legendFontSize = Math.max(10, Math.round(w / 50));
+                var markerSize = Math.max(3, Math.round(w / 110));
+                Plotly.relayout(div, {
+                    width: w,
+                    height: h,
+                    autosize: false,
+                    'title.font.size': titleFontSize,
+                    'legend.font.size': legendFontSize
+                });
+                Plotly.restyle(div, {'marker.size': markerSize});
+            }
+        }
+
+        var squareDivIds = ['cos_angle_cluster', 'cc_cluster', 'pca_analysis',
+                            'cosym_coordinates_principal_components'];
+        var wideDivIds = ['reachability'];
+
+        function resizeAllPlots() {
+            squareDivIds.forEach(function(id) {
+                var div = document.getElementById(id);
+                if (div) resizePlot(div, 1);
+            });
+            wideDivIds.forEach(function(id) {
+                var div = document.getElementById(id);
+                if (div) resizePlot(div, 0.75);
+            });
+        }
+
+        setTimeout(resizeAllPlots, 0);
+        window.addEventListener('resize', resizeAllPlots);
+        $('a[data-toggle="tab"]').on('shown.bs.tab', resizeAllPlots);
+
+    })();
+    </script>
+
+</div>
+
+<div>
+  <p>{{ xia2_version }}</p>
+</div>
+
+{% endblock %}
