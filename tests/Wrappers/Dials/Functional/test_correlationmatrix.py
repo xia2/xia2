@@ -15,7 +15,7 @@ from xia2.Wrappers.Dials.Functional.CorrelationMatrix import DialsCorrelationMat
 def proteinase_k(dials_data):
     expts = ExperimentList()
     refls = []
-    mcp = dials_data("vmxi_proteinase_k_sweeps", pathlib=True)
+    mcp = dials_data("vmxi_proteinase_k_sweeps")
     for i in [0, 1, 2, 3]:
         expt = load.experiment_list(mcp / f"experiments_{i}.expt", check_format=False)
         refl = flex.reflection_table.from_file(mcp / f"reflections_{i}.refl")

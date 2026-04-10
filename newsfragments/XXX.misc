@@ -1,0 +1,1 @@
+Update xia2 tests to drop explicit pathlib request. It is now the default.

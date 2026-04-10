@@ -18,7 +18,7 @@ from xia2.Schema.XWavelength import XWavelength
 def _exercise_dials_indexer(dials_data, tmp_path):
     PhilIndex.params.xia2.settings.multiprocessing.nproc = 1
 
-    template = dials_data("centroid_test_data", pathlib=True) / "centroid_####.cbf"
+    template = dials_data("centroid_test_data") / "centroid_####.cbf"
 
     indexer = DialsIndexer()
     indexer.set_working_directory(os.fspath(tmp_path))

@@ -10,7 +10,7 @@ from xia2.Modules.DeltaCcHalf import DeltaCcHalf
 
 
 def test_from_experiments_reflections(dials_data, tmpdir, capsys, mocker):
-    data_dir = dials_data("l_cysteine_4_sweeps_scaled", pathlib=True)
+    data_dir = dials_data("l_cysteine_4_sweeps_scaled")
     input_files = sorted(
         itertools.chain(data_dir.glob("scaled_*.expt"), data_dir.glob("scaled_*.refl"))
     )
@@ -34,7 +34,7 @@ def test_from_experiments_reflections(dials_data, tmpdir, capsys, mocker):
 
 
 def test_image_groups_from_unmerged_mtz(dials_data, tmpdir, capsys, mocker):
-    data_dir = dials_data("x4wide_processed", pathlib=True)
+    data_dir = dials_data("x4wide_processed")
     mocker.spy(DeltaCcHalf, "get_table")
     with tmpdir.as_cwd():
         run(

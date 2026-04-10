@@ -16,7 +16,7 @@ params.r_free_flags.extend = True
 
 @pytest.fixture()
 def lcy_data(dials_data):
-    lcy = dials_data("l_cysteine_4_sweeps_scaled", pathlib=True)
+    lcy = dials_data("l_cysteine_4_sweeps_scaled")
     expts = load.experiment_list(lcy / "scaled_20_25.expt", check_format=False)
     refls = flex.reflection_table.from_file(lcy / "scaled_20_25.refl")
     yield expts, refls

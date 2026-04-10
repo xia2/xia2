@@ -22,7 +22,7 @@ expected_files = [
 
 @pytest.fixture
 def blend_mtz_files(dials_data):
-    data_dir = dials_data("blend_tutorial", pathlib=True)
+    data_dir = dials_data("blend_tutorial")
     return [
         os.fspath(data_dir / "dataset_001.mtz"),
         os.fspath(data_dir / "dataset_002.mtz"),
@@ -67,7 +67,7 @@ def test_compare_merging_stats_d_min_d_max(blend_mtz_files, run_in_tmp_path, moc
 
 
 def test_compare_merging_stats_small_multiples(dials_data, run_in_tmp_path):
-    data_dir = dials_data("blend_tutorial", pathlib=True)
+    data_dir = dials_data("blend_tutorial")
     blend_mtz_files = [
         os.fspath(data_dir / f"dataset_{(i + 1):03}.mtz") for i in range(15)
     ]

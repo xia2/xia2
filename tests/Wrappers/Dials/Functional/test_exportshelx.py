@@ -9,7 +9,7 @@ from xia2.Wrappers.Dials.Functional.ExportShelx import ExportShelx
 
 @pytest.fixture()
 def lcy_data(dials_data):
-    lcy = dials_data("l_cysteine_4_sweeps_scaled", pathlib=True)
+    lcy = dials_data("l_cysteine_4_sweeps_scaled")
     expts = load.experiment_list(lcy / "scaled_20_25.expt", check_format=False)
     refls = flex.reflection_table.from_file(lcy / "scaled_20_25.refl")
     yield expts, refls
@@ -17,7 +17,7 @@ def lcy_data(dials_data):
 
 @pytest.fixture()
 def lcy_data_unscaled(dials_data):
-    lcy_unscaled = dials_data("l_cysteine_dials_output", pathlib=True)
+    lcy_unscaled = dials_data("l_cysteine_dials_output")
     expts = load.experiment_list(
         lcy_unscaled / "23_integrated.expt", check_format=False
     )

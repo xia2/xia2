@@ -140,6 +140,6 @@ def _exercise_dials_wrappers(image_file):
 
 
 def test_dials_wrappers_serial(dials_data, run_in_tmp_path):
-    image_file = dials_data("centroid_test_data", pathlib=True) / "centroid_0001.cbf"
+    image_file = dials_data("centroid_test_data") / "centroid_0001.cbf"
     with mock.patch.object(sys, "argv", []):
         _exercise_dials_wrappers(image_file)

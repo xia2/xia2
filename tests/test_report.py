@@ -11,7 +11,7 @@ from xia2.XIA2Version import VersionNumber
 
 @pytest.fixture(scope="session")
 def report(dials_data, tmp_path_factory):
-    data_dir = dials_data("pychef", pathlib=True)
+    data_dir = dials_data("pychef")
     mtz = data_dir / "insulin_dials_scaled_unmerged.mtz"
     tmp_path = tmp_path_factory.mktemp("test_report")
 
@@ -130,7 +130,7 @@ def test_deprecated_resolution_bins(dials_data, tmp_path, caplog):
             "Remove 'report.resolution_bins' parameter and test.", DeprecationWarning
         )
 
-    mtz = dials_data("pychef", pathlib=True) / "insulin_dials_scaled_unmerged.mtz"
+    mtz = dials_data("pychef") / "insulin_dials_scaled_unmerged.mtz"
 
     # Test normal behaviour — number of bins is taken from 'n_bins'.  No warning.
     params = phil_scope.extract()

@@ -25,7 +25,7 @@ expected_data_files = [
 
 @pytest.fixture()
 def proteinase_k(dials_data):
-    data_dir = dials_data("multi_crystal_proteinase_k", pathlib=True)
+    data_dir = dials_data("multi_crystal_proteinase_k")
     expts = sorted(os.fspath(f) for f in data_dir.glob("experiments*.json"))
     refls = sorted(os.fspath(f) for f in data_dir.glob("reflections*.pickle"))
     yield expts, refls
