@@ -19,7 +19,7 @@ def exercise_xds_indexer(dials_data, tmp_path, nproc=None):
     if nproc is not None:
         PhilIndex.params.xia2.settings.multiprocessing.nproc = nproc
 
-    template = dials_data("insulin", pathlib=True) / "insulin_1_###.img"
+    template = dials_data("insulin") / "insulin_1_###.img"
 
     indexer = XDSIndexer()
     indexer.set_working_directory(os.fspath(tmp_path))

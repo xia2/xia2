@@ -14,7 +14,7 @@ def test_init(dials_data):
     Test the filtering done as part of the initialisation of the MultiCrystalScale class
     """
     params = phil_scope.extract()
-    lcy = dials_data("l_cysteine_4_sweeps_scaled", pathlib=True)
+    lcy = dials_data("l_cysteine_4_sweeps_scaled")
     expts = load.experiment_list(lcy / "scaled_20_25.expt", check_format=False)
     refls = flex.reflection_table.from_file(lcy / "scaled_20_25.refl")
     identifiers = list(expts.identifiers())

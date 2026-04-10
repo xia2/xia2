@@ -7,7 +7,7 @@ from xia2.Wrappers.Dials.Functional.DeltaCCHalf import DeltaCCHalf
 
 
 def test_deltacchalf(dials_data, run_in_tmp_path):
-    lcy = dials_data("l_cysteine_4_sweeps_scaled", pathlib=True)
+    lcy = dials_data("l_cysteine_4_sweeps_scaled")
     deltacc = DeltaCCHalf()
     expts = load.experiment_list(lcy / "scaled_20_25.expt", check_format=False)
     refls = flex.reflection_table.from_file(lcy / "scaled_20_25.refl")

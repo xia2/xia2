@@ -36,7 +36,7 @@ def test_multiple_sweeps(multi_sweep_type, ccp4, dials_data, tmp_path):
     """
     # Use as input the first fifteen images of the first two sweeps of a typical
     # multiple-sweep data set.
-    data_dir = dials_data("l_cysteine_dials_output", pathlib=True)
+    data_dir = dials_data("l_cysteine_dials_output")
     images = [data_dir / f"l-cyst_{sweep:02d}_00001.cbf:1:15" for sweep in (1, 2)]
 
     command = [

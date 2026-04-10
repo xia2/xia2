@@ -8,9 +8,7 @@ import xia2.Modules.CctbxFrenchWilson
 
 
 def test_french_wilson(dials_data, tmp_path):
-    scaled_mtz = (
-        dials_data("x4wide_processed", pathlib=True) / "AUTOMATIC_DEFAULT_scaled.mtz"
-    )
+    scaled_mtz = dials_data("x4wide_processed") / "AUTOMATIC_DEFAULT_scaled.mtz"
     truncated_mtz = tmp_path / "truncate.mtz"
     xia2.Modules.CctbxFrenchWilson.do_french_wilson(
         scaled_mtz, truncated_mtz, anomalous=True
