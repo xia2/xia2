@@ -1,0 +1,125 @@
+<!-- Modal for cluster/lasso selection results -->
+<div id="lasso_selection_modal" class="modal fade" role="dialog">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal">&times;</button>
+        <h4 class="modal-title" id="lasso_modal_title">Selected Datasets</h4>
+      </div>
+      <div class="modal-body">
+        <p id="lasso_modal_body"></p>
+        <pre id="lasso_modal_command" style="background:#f5f5f5; padding:10px; border-radius:4px; white-space:pre-wrap; word-break:break-all; display:none;"></pre>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary" id="lasso_copy_btn" style="display:none;">Copy to clipboard</button>
+        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function() {
+    var idsToIdentifiers = {{ ids_to_identifiers | tojson }};
+    var currentCommand = '';
+
+    document.getElementById('lasso_copy_btn').addEventListener('click', function() {
+        navigator.clipboard.writeText(currentCommand).then(function() {
+            var btn = document.getElementById('lasso_copy_btn');
+            btn.textContent = 'Copied!';
+            setTimeout(function() { btn.textContent = 'Copy to clipboard'; }, 2000);
+        });
+    });
+
+    function showModal(title, datasets) {
+        var uuids = datasets.map(function(id) {
+            return idsToIdentifiers[id] || '(unknown)';
+        });
+        var philPath = decodeURIComponent(window.location.href)
+            .replace(/^file:\/\//, '')
+            .replace(/[^/]+$/, 'xia2-multiplex-working.phil');
+        currentCommand = 'xia2.multiplex ' + philPath + ' identifiers=' + uuids.join(',');
+        document.getElementById('lasso_modal_title').textContent = title;
+        document.getElementById('lasso_modal_body').innerHTML =
+            'Dataset IDs: ' + datasets.join(', ') +
+            '<br><br>These ' + datasets.length + ' datasets are included in your selection. To re-run xia2.multiplex on this subset, copy the command below into your terminal or into a processing script. It uses the datasets from your previous xia2.multiplex job, but will only merge this subset of Dataset IDs.';
+        document.getElementById('lasso_modal_command').textContent = currentCommand;
+        document.getElementById('lasso_modal_command').style.display = 'block';
+        document.getElementById('lasso_copy_btn').style.display = 'inline-block';
+        $('#lasso_selection_modal').modal('show');
+    }
+
+    function handleLassoSelection(eventData, graphTitle) {
+        if (!eventData || !eventData.points || eventData.points.length === 0) return;
+        var datasets = [];
+        eventData.points.forEach(function(point) {
+            var id = point.text !== undefined ? parseInt(point.text) : point.pointIndex;
+            if (datasets.indexOf(id) === -1) datasets.push(id);
+        });
+        datasets.sort(function(a, b) { return a - b; });
+        showModal('Selected datasets in ' + graphTitle, datasets);
+    }
+
+    var reachabilityDiv = document.getElementById('reachability');
+    if (reachabilityDiv) {
+        reachabilityDiv.on('plotly_selected', function(eventData) {
+            handleLassoSelection(eventData, 'OPTICS Reachability');
+        });
+    }
+
+    var cosymDiv = document.getElementById('cosym_coordinates_principal_components');
+    if (cosymDiv) {
+        cosymDiv.on('plotly_selected', function(eventData) {
+            handleLassoSelection(eventData, 'Cosym Coordinates');
+        });
+    }
+
+    var pcaDiv = document.getElementById('pca_analysis');
+    if (pcaDiv) {
+        pcaDiv.on('plotly_selected', function(eventData) {
+            handleLassoSelection(eventData, 'PCA Analysis');
+        });
+    }
+
+    function getClusterFromDendrogramTrace(trace, clusters) {
+        var nodeHeight;
+        if (trace.xaxis === 'x2') {
+            nodeHeight = Math.max.apply(null, trace.y);
+        } else if (trace.xaxis === 'x3') {
+            nodeHeight = Math.max.apply(null, trace.x);
+        } else {
+            return null;
+        }
+        for (var key in clusters) {
+            if (Math.abs(clusters[key].height - nodeHeight) < 1e-10) {
+                return clusters[key];
+            }
+        }
+        return null;
+    }
+
+    function handleDendrogramClick(eventData, graphData, graphTitle) {
+        if (!eventData || !eventData.points || !eventData.points.length) return;
+        var point = eventData.points[0];
+        var trace = graphData.data[point.curveNumber];
+        var cluster = getClusterFromDendrogramTrace(trace, graphData.clusters);
+        if (!cluster) return;
+        var datasets = cluster.datasets.map(function(d) { return d - 1; }).sort(function(a, b) { return a - b; });
+        showModal('Datasets in cluster (' + graphTitle + ')', datasets);
+    }
+
+    var ccClusterDiv = document.getElementById('cc_cluster');
+    if (ccClusterDiv) {
+        ccClusterDiv.on('plotly_click', function(eventData) {
+            handleDendrogramClick(eventData, graphs_cc_cluster, 'CC Cluster');
+        });
+    }
+
+    var cosAngleClusterDiv = document.getElementById('cos_angle_cluster');
+    if (cosAngleClusterDiv) {
+        cosAngleClusterDiv.on('plotly_click', function(eventData) {
+            handleDendrogramClick(eventData, graphs_cos_angle_cluster, 'Cos Angle Cluster');
+        });
+    }
+})();
+</script>

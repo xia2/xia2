@@ -1,0 +1,1 @@
+``xia2.multiplex``: Selected datasets on dendrogram or clustering graphs now outputs a xia2.multiplex command that can be copied to merge a custom subset of data. 

@@ -1,0 +1,110 @@
+{% import 'xia2_macros.html' as xia2_macros %}
+
+
+{% extends "report_base.html" %}
+{% block content %}
+
+<div class="container-fluid">
+
+    <div class="page-header">
+        <h1>{{ page_title }}</h1>
+    </div>
+
+    <ul class="nav nav-tabs">
+        <li class="active"><a data-toggle="tab" data-target="#home">Summary</a></li>
+
+        {% for cluster_name, item in individual_dataset_reports.items() %}
+            <li><a data-toggle="tab" data-target="#dataset_{{ cluster_name | replace(" ", "_") }}">{{ cluster_name }}</a></li>
+        {% endfor %}
+    </ul>
+
+    <div class="tab-content">
+
+        <div id="home" class="tab-pane in active">
+
+            <h2>Filtering Summary</h2>
+
+            <div class="panel-group">
+
+
+                {{ macros.panel('Scaling and filtering plots', 'filter_plots', filter_plots) }}
+
+
+            </div>
+
+        </div>
+
+        {% for cluster_name, item in individual_dataset_reports.items() %}
+
+            <div id="dataset_{{ cluster_name | replace(" ", "_") }}" class="tab-pane">
+
+                <div>
+                    <h2>Detailed statistics for dataset {{ cluster_name }}</h2>
+
+                    <div class="panel-group">
+
+                        <div class="panel panel-default">
+                            <div class="panel-heading" data-toggle="collapse" data-target="#collapse_overall_{{ cluster_name }}">
+                                <h4 class="panel-title">
+                                    <a>Overall ({{ item['number_of_datasets'] }} datasets) </a>
+                                </h4>
+                            </div>
+                            <div id="collapse_overall_{{ cluster_name | replace(" ", "_") }}" class="panel-collapse collapse in">
+                                <div class="panel-body">
+                                    <div style="width: 800px">
+                                        {{ macros.table(item['overall_statistics_table'],
+                                                        has_column_header=true,
+                                                        has_row_header=true) }}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="panel panel-default">
+                            <div class="panel-heading" data-toggle="collapse" data-target="#collapse_merging_stats_{{ cluster_name | replace(" ", "_") }}">
+                                <h4 class="panel-title">
+                                    <a>Resolution shells</a>
+                                </h4>
+                            </div>
+                            <div id="collapse_merging_stats_{{ cluster_name | replace(" ", "_") }}" class="panel-collapse collapse">
+                                <div class="panel-body">
+                                    {{ macros.table(item['merging_statistics_table'],
+                                                    has_column_header=true) }}
+                                  *significant at p={{ cc_half_significance_level }}
+                                </div>
+                            </div>
+                        </div>
+                        {% if "xtriage" in item %}
+                            {{ xia2_macros.xtriage_results(item["xtriage"]["success"], item["xtriage"]["warnings"], item["xtriage"]["danger"]) }}
+                        {% endif %}
+
+                    </div>
+
+                </div>
+
+                <div>
+                    <h2>Analysis plots</h2>
+
+                    <div class="panel-group">
+                        {{ macros.panel('Analysis by resolution', 'resolution_' + cluster_name | replace(" ", "_"), item['resolution_graphs']) }}
+                        {{ macros.panel('Analysis by image number', 'batch_' + cluster_name | replace(" ", "_"), item['batch_graphs'], tables=[item["image_range_table"]]) }}
+                        {{ macros.panel('Miscellaneous', 'misc_' + cluster_name | replace(" ", "_"), item['misc_graphs'], styles=styles) }}
+                    </div>
+
+                </div>
+
+            </div>
+
+        {% endfor %}
+
+    </div>
+
+</div>
+
+
+
+{% endblock %}
+
+<div>
+  <p>{{ xia2_version }}</p>
+</div>

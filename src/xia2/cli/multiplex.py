@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import logging
+import pathlib
 import random
 import sys
 
@@ -92,6 +93,8 @@ seed = 42
 output {
   log = xia2.multiplex.log
     .type = str
+  cluster_html = False
+    .type = bool
 }
 """,
     process_includes=True,
@@ -142,6 +145,15 @@ def run(args=sys.argv[1:]):
     if diff_phil != "":
         logger.info("The following parameters have been modified:\n")
         logger.info(diff_phil)
+
+    with open("xia2-multiplex-working.phil", "w") as f:
+        working_phil = parser.phil.as_str()
+        for i, j in zip(params.input.experiments, params.input.reflections):
+            resolved_exp = str(pathlib.Path(i.filename).resolve())
+            resolved_refl = str(pathlib.Path(j.filename).resolve())
+            working_phil = working_phil.replace(i.filename, resolved_exp)
+            working_phil = working_phil.replace(j.filename, resolved_refl)
+        f.write(working_phil)
 
     # Try to load the models and data
     if len(params.input.experiments) == 0:
