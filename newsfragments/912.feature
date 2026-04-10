@@ -1,1 +1,0 @@
-``xia2.multiplex_filtering``: Add a new module xia2.multiplex_filtering to perform filtering on existing multiplex processing for speed.
