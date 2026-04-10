@@ -18,6 +18,7 @@ mmcif_software_header = (
     "_software.type",
     "_software.classification",
     "_software.description",
+    "_software.pdbx_reference_DOI",
 )
 
 mmcif_citations_header = (
@@ -161,8 +162,15 @@ class _CIFHandler:
                 software_loop.delete_row(0)
                 citations_loop.delete_row(0)
             count = 1
+            programs = xia2.Handlers.Citations.Citations.get_programs()  # sorted
+            if "dials" in programs and "dials-reduction" in programs:
+                # don't repeat the same reference in this case.
+                xia2.Handlers.Citations.Citations.remove_citation("dials")
             for citation in xia2.Handlers.Citations.Citations.get_citations_dicts():
                 if "software_type" in citation:
+                    bibtex_data = xia2.Handlers.Citations.Citations._parse_bibtex(
+                        citation["bibtex"]
+                    )
                     software_loop.add_row(
                         (
                             count,
@@ -172,10 +180,8 @@ class _CIFHandler:
                             citation["software_type"],
                             citation["software_classification"],
                             citation["software_description"],
+                            bibtex_data["doi"],
                         )
-                    )
-                    bibtex_data = xia2.Handlers.Citations.Citations._parse_bibtex(
-                        citation["bibtex"]
                     )
                     citations_loop.add_row(
                         (
