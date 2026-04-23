@@ -62,7 +62,7 @@ include scope xia2.Modules.MultiCrystal.filter_phil.filtering_scope
 input {
   directory = None
     .type=path
-    .help = "Path to a previous multiplex job containing models_scaled.expt, observations_scaled.refl, scaled.mtz, xia2-multiplex-working.phil, and xia2.multiplex.json"
+    .help = "Path to a previous multiplex job containing models.expt, observations.refl, scaled.mtz, xia2-multiplex-working.phil, and xia2.multiplex.json"
 }
 
 resolution {
@@ -114,7 +114,7 @@ r_free_flags.extend = True
     )
 )
 
-multiplex_filter_error_message = "Make sure xia2.multiplex has finished running and the following files are present: models_scaled.expt, observations_scaled.refl, scaled.mtz, xia2-multiplex-working.phil, xia2.multiplex.json."
+multiplex_filter_error_message = "Make sure xia2.multiplex has finished running and the following files are present: models.expt, observations.refl, scaled.mtz, xia2-multiplex-working.phil, xia2.multiplex.json."
 
 
 @report_timing
@@ -162,8 +162,8 @@ def run(args=sys.argv[1:]):
     # Check multiplex directory has all the files this module needs
 
     required_files = [
-        filter_params.input.directory / "models_scaled.expt",
-        filter_params.input.directory / "observations_scaled.refl",
+        filter_params.input.directory / "models.expt",
+        filter_params.input.directory / "observations.refl",
         filter_params.input.directory / "scaled.mtz",
         filter_params.input.directory / "xia2-multiplex-working.phil",
         filter_params.input.directory / "xia2.multiplex.json",
@@ -225,8 +225,8 @@ def run(args=sys.argv[1:]):
         np.random.seed(full_params.seed)
         random.seed(full_params.seed)
 
-    expt_path = filter_params.input.directory / "models_scaled.expt"
-    refl_path = filter_params.input.directory / "observations_scaled.refl"
+    expt_path = filter_params.input.directory / "models.expt"
+    refl_path = filter_params.input.directory / "observations.refl"
     logger.info(f"Using {expt_path} and {refl_path} as input data for filtering.")
 
     experiments = ExperimentList.from_file(expt_path, check_format=False)
