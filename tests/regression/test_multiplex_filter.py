@@ -170,9 +170,9 @@ def test_overwrite_multiplex_filtering_params(proteinase_k, run_in_tmp_path):
     mplx_scale_log = mplx_scale_logs[1]
     filter_scale_log = filter_scale_logs[0]
 
-    with open(mplx_scale_log, "r") as f:
+    with open(mplx_scale_log, "r", encoding="utf-8") as f:
         data_mplx = f.readlines()
-    with open(filter_scale_log, "r") as f:
+    with open(filter_scale_log, "r", encoding="utf-8") as f:
         data_filtering = f.readlines()
 
     mplx_groups = None
