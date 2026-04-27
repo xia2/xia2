@@ -589,8 +589,6 @@ def test_shelx_output(proteinase_k, run_in_tmp_path):
     assert pathlib.Path("DataFiles/scaled.ins").is_file(), (
         "expected file %s missing" % f
     )
-    assert pathlib.Path("scaled.hkl").is_file(), "expected file %s missing" % f
-    assert pathlib.Path("scaled.ins").is_file(), "expected file %s missing" % f
 
 
 def test_selected_identifiers(protk_experiments_and_reflections, run_in_tmp_path):

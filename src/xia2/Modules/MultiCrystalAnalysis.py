@@ -556,6 +556,9 @@ any systematic grouping of points may suggest a preferential crystal orientation
         if self.params.output.cluster_html:
             with open(f"{self.params.prefix}_clustering.html", "wb") as f:
                 f.write(cluster_html.encode("utf-8", "xmlcharrefreplace"))
+            MultiplexFileHandler.record_log_file(
+                f"{self.params.prefix}_clustering.html"
+            )
 
     @staticmethod
     def make_scale_and_filter_plots(

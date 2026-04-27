@@ -226,14 +226,8 @@ def run(args=sys.argv[1:]):
         np.random.seed(full_params.seed)
         random.seed(full_params.seed)
 
-    experiments = ExperimentList.from_file(
-        filter_params.input.directory / "Processing/models.expt", check_format=False
-    )
-    reflections = flex.reflection_table.from_file(
-        filter_params.input.directory / "Processing/observations.refl"
-    )
-    expt_path = filter_params.input.directory / "models.expt"
-    refl_path = filter_params.input.directory / "observations.refl"
+    expt_path = filter_params.input.directory / "Processing/models.expt"
+    refl_path = filter_params.input.directory / "Processing/observations.refl"
     logger.info(f"Using {expt_path} and {refl_path} as input data for filtering.")
 
     experiments = ExperimentList.from_file(expt_path, check_format=False)
