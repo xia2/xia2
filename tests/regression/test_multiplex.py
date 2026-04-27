@@ -610,7 +610,7 @@ def test_selected_identifiers(protk_experiments_and_reflections, run_in_tmp_path
 
     run_multiplex(command_line)
 
-    multiplex_expts = load.experiment_list("scaled.expt", check_format=False)
+    multiplex_expts = load.experiment_list("Processing/scaled.expt", check_format=False)
     assert len(multiplex_expts) == 2
     assert test_uuid_1 in multiplex_expts.identifiers()
     assert test_uuid_2 in multiplex_expts.identifiers()

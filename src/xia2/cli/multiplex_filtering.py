@@ -83,24 +83,7 @@ output {
 mplx_scope = iotbx.phil.parse(
     """
 
-include scope xia2.Modules.MultiCrystal.ScaleAndMerge.phil_scope
-
-include scope dials.util.exclude_images.phil_scope
-
-wavelength_tolerance = 0.0001
-  .type = float
-  .help = "Absolute tolerance, in Angstroms, for determining whether to merge data from different"
-          "wavelengths in the output mtz/sca files. Increasing this number significantly may reduce"
-          "downstream data quality due to loss of information on wavelength."
-
-seed = 42
-  .type = int(value_min=0)
-output {
-  log = xia2.multiplex.log
-    .type = str
-  cluster_html = False
-    .type = bool
-}
+include scope xia2.cli.multiplex.phil_scope
 """,
     process_includes=True,
 )
