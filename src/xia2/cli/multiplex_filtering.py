@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import logging
+import os
 import pathlib
 import random
 import sys
@@ -17,6 +18,7 @@ import xia2.Handlers.Streams
 from xia2.Applications.xia2_main import write_citations
 from xia2.Handlers.Citations import Citations
 from xia2.Modules.MultiCrystal.filter import FilterExistingMultiplex
+from xia2.Modules.MultiCrystal.MplxFileHandler import MultiplexFileHandler, cleanup
 from xia2.Modules.SSX.util import report_timing
 
 logger = logging.getLogger("xia2.multiplex_filtering")
@@ -75,6 +77,9 @@ resolution {
 output {
   log = xia2.multiplex_filtering.log
     .type = str
+  cleanup = True
+    .type = bool
+    .help = "Set to false to retain all intermediate data files not commonly used."
 }
 """,
     process_includes=True,
@@ -180,6 +185,8 @@ def run(args=sys.argv[1:]):
     if filter_params.resolution.d_min:
         full_params.resolution.d_min = filter_params.resolution.d_min
 
+    full_params.output.cleanup = filter_params.output.cleanup
+
     full_params.__inject__(
         "multiplex_json",
         str(filter_params.input.directory / "Processing/xia2.multiplex.json"),
@@ -221,10 +228,20 @@ def run(args=sys.argv[1:]):
             filter_params.input.directory / "DataFiles/scaled.mtz"
         )
 
+    cwd = os.getcwd()
+    MultiplexFileHandler.record_log_file("xia2.multiplex_filtering.log")
+    MultiplexFileHandler.record_log_file("xia2.multiplex_filtering.debug.log")
+    if not os.path.exists("Processing"):
+        os.mkdir("Processing")
+    os.chdir("Processing")
+
     try:
         filtering = FilterExistingMultiplex(experiments, reflections, full_params)
-        filtering.filter_and_record()
+        with cleanup(cwd):
+            filtering.filter_and_record()
     except ValueError as e:
         sys.exit(str(e))
+
+    os.chdir("..")
 
     write_citations(program="xia2.multiplex")

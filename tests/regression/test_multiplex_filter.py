@@ -11,15 +11,15 @@ from xia2.cli.multiplex_filtering import multiplex_filter_error_message
 from xia2.cli.multiplex_filtering import run as run_mplx_filter
 
 expected_data_files = [
-    "filtered.expt",
-    "filtered.refl",
-    "filtered.mtz",
-    "filtered_unmerged.mtz",
-    "filtered_unmerged.mmcif",
-    "filtered.sca",
-    "filtered_unmerged.sca",
-    "xia2.multiplex_filtering.html",
-    "xia2.multiplex_filtering.json",
+    "Processing/filtered.expt",
+    "Processing/filtered.refl",
+    "DataFiles/filtered.mtz",
+    "DataFiles/filtered_unmerged.mtz",
+    "DataFiles/filtered_unmerged.mmcif",
+    "DataFiles/filtered.sca",
+    "DataFiles/filtered_unmerged.sca",
+    "LogFiles/xia2.multiplex_filtering.html",
+    "Processing/xia2.multiplex_filtering.json",
 ]
 
 
@@ -73,7 +73,7 @@ def test_consistency(proteinase_k, run_in_tmp_path):
     with open(mplx_dir / "Processing/xia2.multiplex.json") as fh:
         d_mplx = json.load(fh)
 
-    with open("xia2.multiplex_filtering.json") as fh:
+    with open("Processing/xia2.multiplex_filtering.json") as fh:
         d_filtered = json.load(fh)
 
     for i in d_filtered["datasets"]["Filtered"]["merging_stats"]:
@@ -161,7 +161,9 @@ def test_overwrite_multiplex_filtering_params(proteinase_k, run_in_tmp_path):
 
     assert len(mplx_scale_logs) == 2
 
-    filter_scale_logs = list((run_in_tmp_path / "filtering").glob("*_dials.scale.log"))
+    filter_scale_logs = list(
+        (run_in_tmp_path / "filtering/Processing").glob("*_dials.scale.log")
+    )
 
     assert len(filter_scale_logs) == 1
 
