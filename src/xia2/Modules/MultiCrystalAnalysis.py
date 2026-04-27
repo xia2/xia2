@@ -495,9 +495,26 @@ any systematic grouping of points may suggest a preferential crystal orientation
             individual_dataset_reports=individual_dataset_reports,
             comparison_graphs=comparison_graphs,
             symmetry_analysis=symmetry_analysis,
+            ids_to_identifiers=self._data_manager.ids_to_identifiers_map,
             styles=styles,
             xia2_version=Version,
         )
+
+        if self.params.output.cluster_html:
+            cluster_template = env.get_template("multiplex_clusters.html")
+            cluster_html = cluster_template.render(
+                page_title=f"{self.params.title} - Clustering",
+                cc_cluster_table=self._cc_cluster_table,
+                cc_cluster_json=self._cc_cluster_json,
+                cos_angle_cluster_table=self._cos_angle_cluster_table,
+                cos_angle_cluster_json=self._cos_angle_cluster_json,
+                cos_angle_cosym_graphs=self._cosym_graphs,
+                pca_plot=self._pca_plot,
+                image_range_tables=[image_range_table],
+                ids_to_identifiers=self._data_manager.ids_to_identifiers_map,
+                styles=styles,
+                xia2_version=Version,
+            )
 
         json_data: dict = {}
         json_data.update(unit_cell_graphs)
@@ -536,6 +553,9 @@ any systematic grouping of points may suggest a preferential crystal orientation
             f.write(html.encode("utf-8", "xmlcharrefreplace"))
 
         MultiplexFileHandler.record_log_file(f"{self.params.prefix}.html")
+        if self.params.output.cluster_html:
+            with open(f"{self.params.prefix}_clustering.html", "wb") as f:
+                f.write(cluster_html.encode("utf-8", "xmlcharrefreplace"))
 
     @staticmethod
     def make_scale_and_filter_plots(

@@ -11,7 +11,7 @@ def test_xds_scalerA(regression_test, ccp4, xds, dials_data, run_in_tmp_path):
 
     PhilIndex.params.xia2.settings.multiprocessing.nproc = 1
 
-    template = dials_data("insulin", pathlib=True) / "insulin_1_###.img"
+    template = dials_data("insulin") / "insulin_1_###.img"
 
     tmpdir = str(run_in_tmp_path)
 

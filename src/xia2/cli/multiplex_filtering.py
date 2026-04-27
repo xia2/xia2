@@ -83,7 +83,24 @@ output {
 mplx_scope = iotbx.phil.parse(
     """
 
-include scope xia2.cli.multiplex.phil_scope
+include scope xia2.Modules.MultiCrystal.ScaleAndMerge.phil_scope
+
+include scope dials.util.exclude_images.phil_scope
+
+wavelength_tolerance = 0.0001
+  .type = float
+  .help = "Absolute tolerance, in Angstroms, for determining whether to merge data from different"
+          "wavelengths in the output mtz/sca files. Increasing this number significantly may reduce"
+          "downstream data quality due to loss of information on wavelength."
+
+seed = 42
+  .type = int(value_min=0)
+output {
+  log = xia2.multiplex.log
+    .type = str
+  cluster_html = False
+    .type = bool
+}
 """,
     process_includes=True,
 )
@@ -137,6 +154,11 @@ def run(args=sys.argv[1:]):
             "Please provide a path to a directory containing a completed multiplex job."
         )
 
+    if isinstance(filter_params.input.directory, str):
+        filter_params.input.directory = pathlib.Path(
+            filter_params.input.directory
+        ).resolve()
+
     # Check multiplex directory has all the files this module needs
 
     required_files = [
@@ -150,11 +172,15 @@ def run(args=sys.argv[1:]):
         if not file.is_file():
             raise sys.exit(multiplex_filter_error_message)
 
+    # Note that experiments and reflections are set to true to avoid the parser throwing errors about unknown phil parameters
+    # (xia2-multiplex-working.phil contains the original expts/refls but these are not used by xia2.multiplex_filtering)
+    # The actual input expts/refls are derived from the multiplex directory and explicitly logged below
+
     mplx_parser = ArgumentParser(
         usage=usage,
         phil=mplx_scope,
-        read_reflections=False,
-        read_experiments=False,
+        read_reflections=True,
+        read_experiments=True,
         check_format=False,
         epilog=help_message,
     )
@@ -206,6 +232,12 @@ def run(args=sys.argv[1:]):
     reflections = flex.reflection_table.from_file(
         filter_params.input.directory / "Processing/observations.refl"
     )
+    expt_path = filter_params.input.directory / "models.expt"
+    refl_path = filter_params.input.directory / "observations.refl"
+    logger.info(f"Using {expt_path} and {refl_path} as input data for filtering.")
+
+    experiments = ExperimentList.from_file(expt_path, check_format=False)
+    reflections = flex.reflection_table.from_file(refl_path)
 
     if not full_params.r_free_flags.reference:
         full_params.r_free_flags.reference = str(

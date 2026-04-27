@@ -8,7 +8,7 @@ from xia2.Wrappers.Dials.Functional.StereographicProjection import (
 
 
 def test_stereographicprojection(dials_data, run_in_tmp_path):
-    lcy = dials_data("l_cysteine_4_sweeps_scaled", pathlib=True)
+    lcy = dials_data("l_cysteine_4_sweeps_scaled")
     sp = StereographicProjection()
     expts = load.experiment_list(lcy / "scaled_20_25.expt", check_format=False)
     sp.hkl = (1, 0, 0)

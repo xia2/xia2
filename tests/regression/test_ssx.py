@@ -42,7 +42,7 @@ def test_assess_crystals(dials_data, tmp_path, option, expected_success):
     crystals are indexed, or all images are used.
     """
 
-    ssx = dials_data("cunir_serial", pathlib=True)
+    ssx = dials_data("cunir_serial")
     # Set the max cell to avoid issue of a suitable max cell not being found
     # due to very thin batch size.
     with (tmp_path / "index.phil").open(mode="w") as f:
@@ -74,7 +74,7 @@ def test_assess_crystals(dials_data, tmp_path, option, expected_success):
 def test_import_phil_handling(dials_data, tmp_path):
     """Just run geometry refinement. This will do the refinement then reimport
     using the refined as reference."""
-    ssx = dials_data("cunir_serial", pathlib=True)
+    ssx = dials_data("cunir_serial")
     with (tmp_path / "import.phil").open(mode="w") as f:
         f.write("geometry.beam.wavelength=1.36\ngeometry.detector.distance=247.6")
     with (tmp_path / "index.phil").open(mode="w") as f:
@@ -119,7 +119,7 @@ def test_import_phil_handling(dials_data, tmp_path):
     ],
 )
 def test_geometry_refinement(dials_data, tmp_path, option, expected_success):
-    ssx = dials_data("cunir_serial", pathlib=True)
+    ssx = dials_data("cunir_serial")
     # Set the max cell to avoid issue of a suitable max cell not being found
     # due to very thin batch size.
     with (tmp_path / "index.phil").open(mode="w") as f:
@@ -171,7 +171,7 @@ def test_geometry_refinement(dials_data, tmp_path, option, expected_success):
 
 @pytest.fixture
 def refined_expt(dials_data, tmp_path):
-    ssx = dials_data("cunir_serial", pathlib=True)
+    ssx = dials_data("cunir_serial")
     args = [
         shutil.which("xia2.ssx"),
         "steps=None",
@@ -203,7 +203,7 @@ def test_run_with_reference(dials_data, tmp_path, refined_expt, starting):
     """
     refined_expt.as_file(tmp_path / "refined.expt")
 
-    ssx = dials_data("cunir_serial", pathlib=True)
+    ssx = dials_data("cunir_serial")
     args = [
         shutil.which("xia2.ssx"),
         "unit_cell=96.4,96.4,96.4,90,90,90",
@@ -235,7 +235,7 @@ def test_slice_cbfs(dials_data, tmp_path, refined_expt):
     """
     refined_expt.as_file(tmp_path / "refined.expt")
 
-    ssx = dials_data("cunir_serial", pathlib=True)
+    ssx = dials_data("cunir_serial")
     args = [
         shutil.which("xia2.ssx"),
         "unit_cell=96.4,96.4,96.4,90,90,90",
@@ -273,7 +273,7 @@ def test_slice_cbfs(dials_data, tmp_path, refined_expt):
 
 
 def test_full_run_without_reference(dials_data, tmp_path):
-    ssx = dials_data("cunir_serial", pathlib=True)
+    ssx = dials_data("cunir_serial")
     d_min = 2.0
     d_max = 15.0
     args = [
@@ -329,7 +329,7 @@ def test_full_run_without_reference(dials_data, tmp_path):
 
 
 def test_stepwise_run_without_reference(dials_data, tmp_path):
-    ssx = dials_data("cunir_serial", pathlib=True)
+    ssx = dials_data("cunir_serial")
     args = [
         shutil.which("xia2.ssx"),
         "unit_cell=96.4,96.4,96.4,90,90,90",
@@ -468,7 +468,7 @@ def test_ssx_reduce(dials_data, tmp_path, pdb_model, idx_ambiguity):
     Test with and without a reference model, plus processing integrated,
     scaled, and integrated+scaled data.
     """
-    ssx = dials_data("cunir_serial_processed", pathlib=True)
+    ssx = dials_data("cunir_serial_processed")
     if not idx_ambiguity:
         # Reindex to P432, which doesn't have an indexing ambiguity.
         cmd = [
@@ -499,7 +499,7 @@ def test_ssx_reduce(dials_data, tmp_path, pdb_model, idx_ambiguity):
         # forcing a stupidly small batch size can cause cosym failures, so change some options
     extra_args = []
     if pdb_model:
-        model = dials_data("cunir_serial", pathlib=True) / "2BW4.pdb"
+        model = dials_data("cunir_serial") / "2BW4.pdb"
         extra_args.append(f"model={str(model)}")
     # also test using scaling and cosym phil files
     scaling_phil = "reflection_selection.Isigma_range=3.0,0.0"
@@ -538,7 +538,7 @@ def test_ssx_reduce(dials_data, tmp_path, pdb_model, idx_ambiguity):
 def test_reduce_h5(dials_data, tmp_path):
     """Test the data reduction on data from h5 format. Use as an opportunity to test
     groupings too for h5 data."""
-    ssx = dials_data("dtpb_serial_processed", pathlib=True)
+    ssx = dials_data("dtpb_serial_processed")
     grouping_yml = """
 metadata:
   well_id:
@@ -585,11 +585,11 @@ def test_reduce_with_grouping(dials_data, tmp_path, use_grouping):
     """Test the feature of specifying a grouping yaml file
     to define merge groups.
     """
-    ssx = dials_data("cunir_serial_processed", pathlib=True)
-    ssx_data = dials_data("cunir_serial", pathlib=True)
+    ssx = dials_data("cunir_serial_processed")
+    ssx_data = dials_data("cunir_serial")
     args = [shutil.which("xia2.ssx_reduce"), f"directory={ssx}", "d_min=1.7"]
     extra_args = []
-    model = dials_data("cunir_serial", pathlib=True) / "2BW4.pdb"
+    model = dials_data("cunir_serial") / "2BW4.pdb"
     extra_args.append(f"model={str(model)}")
     # also test using scaling and cosym phil files
     cosym_phil = "d_min=1.8"
@@ -709,7 +709,7 @@ grouping:
 def test_ssx_reduce_filter_options(
     dials_data, tmp_path, cluster_args: list[str], expected_results: dict
 ):
-    ssx = dials_data("cunir_serial_processed", pathlib=True)
+    ssx = dials_data("cunir_serial_processed")
     args = [shutil.which("xia2.ssx_reduce"), f"directory={ssx}"] + cluster_args
     cosym_phil = "d_min=1.8\ncc_weights=None\nweights=None"
     with open(tmp_path / "cosym.phil", "w") as f:
@@ -729,7 +729,7 @@ def test_ssx_reduce_filter_options(
 
 
 def test_on_sacla_data(dials_data, tmp_path):
-    sacla_path = dials_data("image_examples", pathlib=True)
+    sacla_path = dials_data("image_examples")
     image = sacla_path / "SACLA-MPCCD-run266702-0-subset.h5"
     # NB need to set gain, as using reference from detector overwrites gain to 1
     # error with reference geom file? Alt is to manually set detector distance in
@@ -765,7 +765,7 @@ def test_on_sacla_data(dials_data, tmp_path):
 
 def test_on_sacla_data_slice(dials_data, tmp_path):
     "Just import to check the slicing functionality"
-    sacla_path = dials_data("image_examples", pathlib=True)
+    sacla_path = dials_data("image_examples")
     image = sacla_path / "SACLA-MPCCD-run266702-0-subset.h5:3:4"
     geometry = (
         sacla_path / "SACLA-MPCCD-run266702-0-subset-refined_experiments_level1.json"
