@@ -8,7 +8,7 @@ Custom Clustering via HTML
 
 ``xia2.multiplex`` outputs a html file summarising the outcome of the multi-crystal analysis (``xia2.multiplex.html``).
 In ``xia2.multiplex.html``, a range of intensity-based clustering graphs are produced. For help interpreting these plots,
-see this `clustering tutorial`_. For coordinate clustering, it is possible that you may want a cluster scale and merged that
+see this `clustering tutorial`_. For coordinate clustering, it is possible that you may want a cluster scaled and merged that
 is not automatically identified. For hierarchical clustering, it is :doc:`possible<intensity_based_clustering>`, but fiddly
 to set the commandline parameters to output the cluster you want. It is now possible to select clusters from ``xia2.multiplex.html``
 to simplify this process.
@@ -60,4 +60,4 @@ In this example, all datasets except 4, 2, and 5 have been selected.
 .. image:: ../figures/multiplex_html_dendrogram.png
 
 
-.. _clustering tutorial: https://dials.github.io/ADD_FULL_LINK
+.. _clustering tutorial: https://dials.github.io/documentation/tutorials/intensity_based_clustering.html

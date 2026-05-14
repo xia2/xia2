@@ -66,33 +66,21 @@ There are also some additional commandline options you may find useful:
  * ``filtering.method`` - applies additional filtering, see :doc:`here <multiplex_filtering>`.
  * ``clustering.output_clusters`` - output identified sub-clusters, see :doc:`here <intensity_based_clustering>` for more choices and details.
 
-Once ``xia2.multiplex`` has finished running, you will find the output organised into various folders:
-
-In the parent folder where ``xia2.multiplex`` was run, you can find citation information as well as ``xia2-multiplex-working.phil``. This
-contains the configuration of all commandline parameters used by ``xia2.multiplex``.
-
-**DataFiles**:
-This folder contains the final files you will find useful for feeding into structure solution/refinement pipelines. This includes any
-clusters that have been output as well as filtered data if this option is selected.
-
-**LogFiles**:
-This folder contains the main log files as well as the html report which summarises the analysis.
-
-**Processing**:
-This folder contains log files and graphics corresponding to different steps in the ``xia2.multiplex`` pipeline. Can be useful diagnostics for
-difficult data. If you would like the ``.expt / .refl`` files and ``.json`` files written by individual steps, you can set the commandline option
-``cleanup=False`` and additional files will be output to this folder.
-
 ----------------------------------
 Diagnostic Tools in xia2.multiplex
 ----------------------------------
 
-To find all of these graphs, open ``xia2.multiplex.html``.
+Most diagnostic graph are available in ``xia2.multiplex.html``. Some extra plots are output as ``.png`` files to the working folder.
 
 **Unit cell analysis:**
-The unit cell of each crystal input to ``xia2.multiplex`` is plotted to give an initial analysis of isomorphism.
-If you have two very distinct crystal forms, they will be visible in these histograms. In this case, all the data
-have very similar unit cells, and thus are ok to merge together.
+The unit cell of each crystal input to ``xia2.multiplex`` is plotted to give an initial analysis of isomorphism. To see the
+unit cell distributions of all input data, open `cluster_unit_cell_p1`. If you see subgroups in the dendrogram denoted by
+different colours, this means there are some major differences in unit cell and only the largest will be considered for analysis 
+with xia2.multiplex. If the entire dendrogram is the same colour, then all datasets will be fed into the pipeline. The ``xia2.multiplex.html``
+log file also contains graphs related to unit cell clustering. It is important to note that these graphs only pertain to any subset 
+chosen by the initial unit cell filtering. Subtle differences in unit cell can still occur, and the initial unit cell filtering
+is fairly conservative, so these graphs are worth examining. In this case, all the data were accepted during the initial filtering,
+and are shown to have very similar unit cells.
 
 .. image:: ../figures/multiplex_uc.png
 
@@ -119,5 +107,5 @@ An analysis that compares the intensities of each dataset to see if there are an
 subsets within the data that should be grouped together and merged separately. See `this tutorial`_ for more information on interpreting
 the graphs within this section. 
 
-.. _this tutorial: https://dials.github.io/ADD_FULL_LINK
+.. _this tutorial: https://dials.github.io/documentation/tutorials/intensity_based_clustering.html
 .. _DIALS tutorial: https://dials.github.io/documentation/tutorials/processing_in_detail_betalactamase.html
