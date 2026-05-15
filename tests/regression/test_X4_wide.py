@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 import shutil
 import subprocess
 
@@ -107,6 +108,7 @@ def test_dials(regression_test, dials_data, tmp_path, ccp4):
         "free_total=1000",
         "project=foo",
         "crystal=bar",
+        "--timing",
         dials_data("x4wide"),
     ]
     result = subprocess.run(command_line, cwd=tmp_path, capture_output=True)
@@ -130,6 +132,11 @@ def test_dials(regression_test, dials_data, tmp_path, ccp4):
                 scaled_expt[0].crystal.get_recalculated_unit_cell().parameters(),
                 abs=1e-4,
             )
+    assert (tmp_path / "xia2-timing.json").is_file()
+    with open(tmp_path / "xia2-timing.json") as f:
+        timings = json.load(f)
+        assert isinstance(timings, list)
+
     success, issues = xia2.Test.regression.check_result(
         "X4_wide.dials",
         result,
