@@ -7,8 +7,8 @@ small-wedge rotation datasets. The input to the pipeline is DIALS integrated dat
 (i.e. ``integrated.expt`` and ``integrated.refl`` files). As of DIALS version 3.25, XDS integrated data can also
 be processed if each ``INTEGRATE.HKL`` file is converted using ``dials.import_xds``.
 
-xia2.multiplex performs the following routine: unit cell filtering, laue group analysis, unit cell
-refinement, scaling, resolution analysis, space group analysis and merging. Additional non-isomorphism analysis is peformed and
+xia2.multiplex performs the following routine: unit cell filtering, Laue group analysis, unit cell
+refinement, scaling, resolution analysis, space group analysis and merging. Additional non-isomorphism analysis is performed and
 dataset statistics and clustering are presented in the ``xia2.multiplex.html`` report.
 For full details, see the publication at https://doi.org/10.1107/S2059798322004399 .
 

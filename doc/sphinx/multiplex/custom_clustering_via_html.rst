@@ -6,11 +6,11 @@ Custom Clustering via HTML
 
     The features described on this page require DIALS >= 3.28.0. They are not available in earlier versions of DIALS.
 
-``xia2.multiplex`` outputs a html file summarising the outcome of the multi-crystal analysis (``xia2.multiplex.html``).
+``xia2.multiplex`` outputs an HTML file summarising the outcome of the multi-crystal analysis (``xia2.multiplex.html``).
 In ``xia2.multiplex.html``, a range of intensity-based clustering graphs are produced. For help interpreting these plots,
 see this `clustering tutorial`_. For coordinate clustering, it is possible that you may want a cluster scaled and merged that
 is not automatically identified. For hierarchical clustering, it is :doc:`possible<intensity_based_clustering>`, but fiddly
-to set the commandline parameters to output the cluster you want. It is now possible to select clusters from ``xia2.multiplex.html``
+to set the command-line parameters to output the cluster you want. It is now possible to select clusters from ``xia2.multiplex.html``
 to simplify this process.
 
 --------
@@ -22,7 +22,7 @@ command into your terminal and run it. This will run a multiplex job to scale an
 This command specifies the sub-set of datasets from your selection, and uses the 
 ``xia2-multiplex-working.phil`` file to configure multiplex in the same way as the original job. This means you do not need
 to specify the input files again, as they are imported from ``xia2-multiplex-working.phil``. Note that this will not provide
-side-by-side comparison of data quality statisitics as you would get if you :doc:`selected clusters via the commandline<intensity_based_clustering>`.
+side-by-side comparison of data quality statistics as you would get if you :doc:`selected clusters via the command-line<intensity_based_clustering>`.
 
 .. image:: ../figures/multiplex_html_popup.png
 

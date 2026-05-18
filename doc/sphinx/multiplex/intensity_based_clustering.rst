@@ -13,7 +13,7 @@ Dataset clustering can be performed based on a hierarchical dendrogram analysis 
 or on density-based analysis of the cosym coordinates (``clustering.method=coordinate``). See the publication at https://doi.org/10.1107/S2059798325004589 for
 more details of the density-based analysis.
 
-Both methods share some common criteria when deciding which clusters to be output. These are tailorable via commandline input.
+Both methods share some common criteria when deciding which clusters to be output. These are tailorable via command-line input.
 
 1. They have at least a completeness of ``min_completeness`` (default value 0).
 2. They have at least a multiplicity of ``min_multiplicity`` (default value 0).
@@ -66,9 +66,9 @@ Distinct cluster analysis
 -------------------------
 The analysis described above does not guarantee that clusters will not share some individual datasets; this is not necessarily a problem, a typical use case for xia2.multiplex is generating a number
 of similar clusters containing similar datasets, to compare the effects of removing a number of outlier datasets on the overall statistics.
-An alternative use case is where one is interested in distinct clusters of datasets, i.e. clusters that do not share any individual datasets, which may correspond to distinct crystal strutures
+An alternative use case is where one is interested in distinct clusters of datasets, i.e. clusters that do not share any individual datasets, which may correspond to distinct crystal structures
 (this is the kind of clustering structure demonstrated in the image above). While this can be handled using the options above for small or simple cases, for large datasets the dendrogram structure
-becomes very complex, with many dendrogram subtructures and branches. As such, the options above do not guarantee selection and evaluation of distinct clusters in a timely manner.
+becomes very complex, with many dendrogram substructures and branches. As such, the options above do not guarantee selection and evaluation of distinct clusters in a timely manner.
 
 To generate output containing distinct clusters `instead` of the output above, one can use the option ``hierarchical.distinct_clusters=True``.
 In this case, individual clusters must still meet the four criteria above, then an analysis is performed to determine distinct clusters that do not share any individual datasets.

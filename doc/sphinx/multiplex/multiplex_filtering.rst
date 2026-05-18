@@ -14,10 +14,10 @@ The filtering starts on the combined scaled dataset, and several cycles of repea
 
 1. The number of cycles reaches ``deltacchalf.max_cycles`` (default 6).
 2. The percentage of reflections removed exceeds ``deltacchalf.max_percent_removed`` (default 10).
-3. The completess drops below ``deltacchalf.min_completeness`` (default 0).
+3. The completeness drops below ``deltacchalf.min_completeness`` (default 0).
 4. No groups are removed in the latest cycle of filtering.
 
-A merging statistics report for filtered dataset will be generated and displayed in the **Filtered** tab in the ``xia2.multiplex.html`` report.
+A merging statistics report for the filtered dataset will be generated and displayed in the **Filtered** tab in the ``xia2.multiplex.html`` report.
 Plots of changes in statistics during the scaling and filtering cycles can be found in the **Scaling and filtering plots** section in the **Summary** tab.
 
 **Key points:**
@@ -29,7 +29,7 @@ Plots of changes in statistics during the scaling and filtering cycles can be fo
 ------------------------
 xia2.multiplex_filtering
 ------------------------
-A commandline program now exists to run the filtering algorithms in ``xia2.multiplex`` on an existing processing directory. The filtering available in ``xia2.multiplex`` can be
+A command-line program now exists to run the filtering algorithms in ``xia2.multiplex`` on an existing processing directory. The filtering available in ``xia2.multiplex`` can be
 slow to run, so it is not always recommended for large datasets where an initial result is needed for fast feedback. In such a case, ``xia2.multiplex`` would be run on the data first
 without filtering, then, if the statistics show room for improvement, ``xia2.multiplex_filtering`` would be run on the same directory. 
 

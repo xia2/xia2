@@ -4,7 +4,7 @@ Basic Usage of xia2.multiplex
 -------------
 Tutorial Data
 -------------
-The data (~6GB total) were collected on I24 at Diamond Light Source and is available is available to download from |cows_pigs_people_data|.
+The data (~6GB total) were collected on I24 at Diamond Light Source and is available to download from |cows_pigs_people_data|.
 36 insulin crystals were collected from a range of 🐮, 🐷, and 💁‍♀️, with small rotation wedges recorded on each.
 All data have symmetry I 2\ :sub:`1` 3. For this introduction to multiplex, we will only be using the data from the
 🐮 insulin (~2GB). For a more advanced tutorial in automatically handling multi-crystal data with multiple "things" present,
@@ -60,7 +60,7 @@ Note that if you have separate integrated files you can list them in the input c
 
     xia2.multiplex integrated_1.expt integrated_1.refl integrated_2.expt integrated_2.refl
 
-There are also some additional commandline options you may find useful:
+There are also some additional command-line options you may find useful:
  * ``symmetry.space_group`` - set the space group if known, which can speed up symmetry analysis. 
  * ``resolution.d_min`` - set the resolution cut-off, otherwise it will be automatically determined.
  * ``filtering.method`` - applies additional filtering, see :doc:`here <multiplex_filtering>`.
@@ -70,7 +70,7 @@ There are also some additional commandline options you may find useful:
 Diagnostic Tools in xia2.multiplex
 ----------------------------------
 
-Most diagnostic graph are available in ``xia2.multiplex.html``. Some extra plots are output as ``.png`` files to the working folder.
+Most diagnostic graphs are available in ``xia2.multiplex.html``. Some extra plots are output as ``.png`` files to the working folder.
 
 **Unit cell analysis:**
 The unit cell of each crystal input to ``xia2.multiplex`` is plotted to give an initial analysis of isomorphism. To see the
@@ -85,8 +85,8 @@ and are shown to have very similar unit cells.
 .. image:: ../figures/multiplex_uc.png
 
 **Orientation analysis:**
-Multi-crystal data collections often have small wedges either due to radiation damage contraints, or sample environment
-constraints (ie *in situ* data collections). A risk with such experiments are that all the crystals are measured in the same
+Multi-crystal data collections often have small wedges either due to radiation damage constraints, or sample environment
+constraints (i.e. *in situ* data collections). A risk with such experiments are that all the crystals are measured in the same
 orientation, and the same small volumes of reciprocal space are measured repeatedly. Coverage of reciprocal space can be
 assessed by considering the distributions of the unit cell axes in reciprocal space. A stereographic projection plot is used
 for this. If the dots are widely distributed around the circles, then there is wide coverage of reciprocal space and
@@ -97,7 +97,7 @@ preferential orientation is not an issue.
 :math:`{\Delta}CC1/2`:
 Another useful tool is the :math:`{\Delta}CC1/2` analysis. This shows whether individual datasets contribute positively,
 or negatively to the overall quality of the merged dataset. Note that any outliers are not removed unless ``filtering.method=deltacchalf``
-is used. In this case, the :math:`{\Delta}CC1/2` for each dataset is quite minimal, although one dataset has a stronger affect
+is used. In this case, the :math:`{\Delta}CC1/2` for each dataset is quite minimal, although one dataset has a stronger effect
 than the others and could be removed if desired. The *intensity clustering* can also be compared to help determine if outliers here are significant.
 
 .. image:: ../figures/multiplex_dcc.png
