@@ -19,9 +19,9 @@ Both methods share some common criteria when deciding which clusters to be outpu
 2. They have at least a multiplicity of ``min_multiplicity`` (default value 0).
 3. The number of datasets in the cluster is at least ``min_cluster_size`` (default value 5).
 
----------------------
-Coordinate clustering
----------------------
+------------------------------
+Coordinate clustering analysis
+------------------------------
 
 .. tip::
     You can also output custom sub-sets of data by interacting with ``xia2.multiplex.html`` in DIALS >= 3.28.0. See :doc:`here <custom_clustering_via_html>`.
@@ -33,9 +33,9 @@ If ``clustering.method=coordinate``, the OPTICS clustering algorithm from scikit
 (these clusters will always be distinct and not share any individual datasets).
 Clusters that meet the ``min_multiplicity``, ``min_completeness`` and ``min_cluster_size`` thresholds will be individually scaled and merged.
 
------------------------
-Hierarchical clustering
------------------------
+--------------------------------
+Hierarchical clustering analysis
+--------------------------------
 
 .. tip::
     You can also output specific hierarchical clusters by interacting with ``xia2.multiplex.html`` in DIALS >= 3.28.0. See :doc:`here <custom_clustering_via_html>`.
