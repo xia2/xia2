@@ -10,8 +10,14 @@ logger = logging.getLogger("xia2.Handlers.Files")
 class _MultiplexFileHandler:
     def __init__(self):
         self._temporary_files = []
+        self._optional_files = []
         self._data_files = []
         self._log_files = []
+
+        self.delete_optional_files = False
+
+    def set_cleanup(self, cleanup: bool):
+        self.delete_optional_files = cleanup
 
     def cleanup(self, base_path):
         base_path = pathlib.Path(base_path).resolve()
@@ -22,6 +28,14 @@ class _MultiplexFileHandler:
                 logger.debug(f"Deleted: {f}")
             except FileNotFoundError as e:
                 logger.debug(f"Failed to delete: {f} ({e})")
+
+        if self.delete_optional_files:
+            for f in self._optional_files:
+                try:
+                    pathlib.Path.unlink(f)
+                    logger.debug(f"Deleted: {f}")
+                except FileNotFoundError as e:
+                    logger.debug(f"Failed to delete: {f} ({e})")
 
         data_path = base_path / "DataFiles"
         data_path.mkdir(exist_ok=True)
@@ -59,6 +73,12 @@ class _MultiplexFileHandler:
         if temp_file not in self._temporary_files:
             assert temp_file.exists(), f"Temporary file {temp_file} not found."
             self._temporary_files.append(temp_file)
+
+    def record_optional_file(self, filename):
+        optional_file = pathlib.Path(filename).resolve()
+        if optional_file not in self._optional_files:
+            assert optional_file.exists(), f"Optional file {optional_file} not found."
+            self._optional_files.append(optional_file)
 
 
 MultiplexFileHandler = _MultiplexFileHandler()

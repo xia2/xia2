@@ -37,6 +37,7 @@ from xia2.Modules.Scaler.DialsScaler import (
     convert_unmerged_mtz_to_sca,
     scaling_model_auto_rules,
 )
+from xia2.Modules.SSX.util import run_in_directory
 from xia2.Wrappers.Dials.Cosym import DialsCosym
 from xia2.Wrappers.Dials.EstimateResolution import EstimateResolution
 from xia2.Wrappers.Dials.Functional.ExportShelx import ExportShelx
@@ -571,12 +572,10 @@ class MultiCrystalScale:
                 self._individual_report_dicts[cluster_name] = individual_report
                 self._update_comparison_graphs(report, dict_report, cluster_name)
                 self._log_report_info(dict_report)
-                if self._params.output.cleanup:
-                    os.chdir(cluster.directory)
-                    MultiplexFileHandler.record_temp_file("multiplicities_h_0.json")
-                    MultiplexFileHandler.record_temp_file("multiplicities_k_0.json")
-                    MultiplexFileHandler.record_temp_file("multiplicities_l_0.json")
-                    os.chdir("..")
+                with run_in_directory(pathlib.Path(cluster.directory)):
+                    MultiplexFileHandler.record_optional_file("multiplicities_h_0.json")
+                    MultiplexFileHandler.record_optional_file("multiplicities_k_0.json")
+                    MultiplexFileHandler.record_optional_file("multiplicities_l_0.json")
 
             """
             # To ensure that pools within pools aren't created
@@ -661,10 +660,9 @@ class MultiCrystalScale:
                 )
 
         self.report()
-        if self._params.output.cleanup:
-            MultiplexFileHandler.record_temp_file("multiplicities_h_0.json")
-            MultiplexFileHandler.record_temp_file("multiplicities_k_0.json")
-            MultiplexFileHandler.record_temp_file("multiplicities_l_0.json")
+        MultiplexFileHandler.record_optional_file("multiplicities_h_0.json")
+        MultiplexFileHandler.record_optional_file("multiplicities_k_0.json")
+        MultiplexFileHandler.record_optional_file("multiplicities_l_0.json")
 
     @staticmethod
     def filter(
@@ -1214,10 +1212,9 @@ class MultiCrystalScale:
             logger.info(f"Using input Laue group: {self._params.symmetry.laue_group}")
 
         MultiplexFileHandler.record_temp_file("dials.cosym.log")
-        if self._params.output.cleanup:
-            MultiplexFileHandler.record_temp_file(self._experiments_filename)
-            MultiplexFileHandler.record_temp_file(self._reflections_filename)
-            MultiplexFileHandler.record_temp_file(cosym.get_json())
+        MultiplexFileHandler.record_optional_file(self._experiments_filename)
+        MultiplexFileHandler.record_optional_file(self._reflections_filename)
+        MultiplexFileHandler.record_optional_file(cosym.get_json())
 
     def reindex(self) -> None:
         logger.debug("Running reindexing")
@@ -1241,9 +1238,8 @@ class MultiCrystalScale:
         )
 
         MultiplexFileHandler.record_temp_file("dials.reindex.log")
-        if self._params.output.cleanup:
-            MultiplexFileHandler.record_temp_file(self._experiments_filename)
-            MultiplexFileHandler.record_temp_file(self._reflections_filename)
+        MultiplexFileHandler.record_optional_file(self._experiments_filename)
+        MultiplexFileHandler.record_optional_file(self._reflections_filename)
 
     def decide_space_group(self) -> None:
         if self._params.symmetry.space_group is not None:
@@ -1295,10 +1291,8 @@ class MultiCrystalScale:
         logger.info("Space group determined by dials.symmetry: %s" % space_group.info())
 
         MultiplexFileHandler.record_temp_file("dials.symmetry.log")
-
-        if self._params.output.cleanup:
-            MultiplexFileHandler.record_temp_file(self._experiments_filename)
-            MultiplexFileHandler.record_temp_file(self._reflections_filename)
+        MultiplexFileHandler.record_optional_file(self._experiments_filename)
+        MultiplexFileHandler.record_optional_file(self._reflections_filename)
 
     def multi_crystal_analysis(self) -> MultiCrystalReport:
         params = mca_phil.extract()
@@ -1354,9 +1348,8 @@ class MultiCrystalScale:
             scale_and_filter_results=self.scale_and_filter_results,
             scale_and_filter_mode=self._params.filtering.deltacchalf.mode,
         )
-        if self._params.output.cleanup:
-            for i in self._mca._temp_files:
-                MultiplexFileHandler.record_temp_file(i)
+        for i in self._mca._temp_files:
+            MultiplexFileHandler.record_optional_file(i)
 
     def cluster_analysis(self) -> None:
         self._mca.cluster_analysis()
@@ -1478,9 +1471,8 @@ class Scale:
             self._experiments_filename, check_format=False
         )
 
-        if self._params.output.cleanup:
-            for i in misc_files:
-                MultiplexFileHandler.record_temp_file(i)
+        for i in misc_files:
+            MultiplexFileHandler.record_optional_file(i)
 
     @property
     def data_manager(self) -> DataManager:
@@ -1616,14 +1608,12 @@ class Scale:
         self._params.resolution.labels = "IPR,SIGIPR"
         if self._filtering:
             self.scale_and_filter_results = scaler.get_scale_and_filter_results()
-            if self._params.output.cleanup:
-                MultiplexFileHandler.record_temp_file(scaler._scale_and_filter_filename)
+            MultiplexFileHandler.record_optional_file(scaler._scale_and_filter_filename)
 
         MultiplexFileHandler.record_temp_file("dials.scale.log")
 
-        if self._params.output.cleanup:
-            MultiplexFileHandler.record_temp_file(self._experiments_filename)
-            MultiplexFileHandler.record_temp_file(self._reflections_filename)
+        MultiplexFileHandler.record_optional_file(self._experiments_filename)
+        MultiplexFileHandler.record_optional_file(self._reflections_filename)
 
     def estimate_resolution_limit(self) -> tuple[float, str]:
         # see also xia2/Modules/Scaler/CommonScaler.py: CommonScaler._estimate_resolution_limit()
@@ -1648,9 +1638,7 @@ class Scale:
         m.run()
 
         MultiplexFileHandler.record_temp_file("dials.estimate_resolution.log")
-
-        if self._params.output.cleanup:
-            MultiplexFileHandler.record_temp_file(m.get_json())
+        MultiplexFileHandler.record_optional_file(m.get_json())
 
         resolution_limits = []
         reasoning = []

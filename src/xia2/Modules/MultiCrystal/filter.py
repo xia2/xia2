@@ -110,7 +110,6 @@ class FilterExistingMultiplex:
             f.write(html.encode("utf-8", "xmlcharrefreplace"))
 
         MultiplexFileHandler.record_log_file("xia2.multiplex_filtering.html")
-        if self.params.output.cleanup:
-            MultiplexFileHandler.record_temp_file("multiplicities_h_0.json")
-            MultiplexFileHandler.record_temp_file("multiplicities_k_0.json")
-            MultiplexFileHandler.record_temp_file("multiplicities_l_0.json")
+        MultiplexFileHandler.record_optional_file("multiplicities_h_0.json")
+        MultiplexFileHandler.record_optional_file("multiplicities_k_0.json")
+        MultiplexFileHandler.record_optional_file("multiplicities_l_0.json")
