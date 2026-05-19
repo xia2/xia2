@@ -37,7 +37,7 @@
                             <div class="panel panel-default">
                                 <div class="panel-heading" data-toggle="collapse" data-target="#collapse_cc_cluster">
                                     <h4 class="panel-title">
-                                        <a>Correlation coefficient clustering</a>
+                                        <a>Hierarchical correlation coefficient clustering</a>
                                     </h4>
                                 </div>
                                 <div id="collapse_cc_cluster" class="panel-collapse collapse">
@@ -54,10 +54,12 @@
                                 </div>
                             </div>
 
+                            {{ macros.panel('Cosym cluster plots', 'cosym_plots', cosym_graphs) }}
+
                             <div class="panel panel-default">
                                 <div class="panel-heading" data-toggle="collapse" data-target="#collapse_cos_angle_cluster">
                                     <h4 class="panel-title">
-                                        <a>Cos angle clustering</a>
+                                        <a>Hierarchical cos angle clustering</a>
                                     </h4>
                                 </div>
                                 <div id="collapse_cos_angle_cluster" class="panel-collapse collapse">
@@ -75,7 +77,7 @@
                                 </div>
                             </div>
 
-                            {{ macros.panel('Cosym cluster plots', 'cosym_plots', cosym_graphs) }}
+                            
 
                         </div>
                     </div>
