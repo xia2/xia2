@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import contextlib
 import logging
-import os
 import pathlib
 
 logger = logging.getLogger("xia2.Handlers.Files")
@@ -52,9 +51,7 @@ class _MultiplexFileHandler:
     def record_log_file(self, filename):
         log_file = pathlib.Path(filename).resolve()
         if log_file not in self._log_files:
-            if not os.getenv("PYTEST_CURRENT_TEST"):
-                # Tests fails when do below all the time because only creates 1 multiplex log for entire test
-                assert log_file.exists(), f"Required file {log_file} not found."
+            assert log_file.exists(), f"Required file {log_file} not found."
             self._log_files.append(log_file)
 
     def record_temp_file(self, filename):

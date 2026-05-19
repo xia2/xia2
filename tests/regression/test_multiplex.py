@@ -3,10 +3,11 @@ from __future__ import annotations
 import json
 import os
 import pathlib
+import shutil
+import subprocess
 
 import iotbx.mtz
 import pytest
-import pytest_mock
 from dials.array_family import flex
 from dials.command_line.slice_sequence import slice_experiments, slice_reflections
 from dials.util.multi_dataset_handling import (
@@ -18,7 +19,6 @@ from dxtbx.serialize import load
 
 from xia2.cli.multiplex import run as run_multiplex
 from xia2.Modules.MultiCrystal.data_manager import DataManager
-from xia2.Modules.Report import Report
 
 expected_data_files = [
     "Processing/scaled.expt",
@@ -41,34 +41,27 @@ def proteinase_k(dials_data):
     yield expts, refls
 
 
-def test_proteinase_k(mocker, proteinase_k, run_in_tmp_path):
+def test_proteinase_k(proteinase_k, run_in_tmp_path):
     expts, refls = proteinase_k
-    mocker.spy(Report, "pychef_plots")
-    run_multiplex(expts + refls + ["exclude_images=0:1:10"])
-    # Verify that the *_vs_dose plots have been correctly plotted
-    assert Report.pychef_plots.call_count == 1
-    for k in (
-        "rcp_vs_dose",
-        "scp_vs_dose",
-        "completeness_vs_dose",
-        "rd_vs_batch_difference",
-    ):
-        if getattr(pytest_mock, "version", "").startswith("1."):
-            assert Report.pychef_plots.return_value[k]["data"][0]["x"] == list(
-                range(26)
-            )
-        else:
-            assert Report.pychef_plots.spy_return[k]["data"][0]["x"] == list(range(26))
+    result = subprocess.run(
+        [shutil.which("xia2.multiplex"), "exclude_images=0:1:10"] + expts + refls,
+        cwd=run_in_tmp_path,
+        capture_output=True,
+    )
+    assert not result.returncode
+
     for f in expected_data_files:
-        assert os.path.isfile(f), f"expected file {f} missing"
-    multiplex_expts = load.experiment_list("Processing/scaled.expt", check_format=False)
+        assert (run_in_tmp_path / f).exists(), f"expected file {f} missing"
+    multiplex_expts = load.experiment_list(
+        run_in_tmp_path / "Processing" / "scaled.expt", check_format=False
+    )
     for i, expt in enumerate(multiplex_expts):
         valid_image_ranges = expt.scan.get_valid_image_ranges(expt.identifier)
         if i == 0:
             assert valid_image_ranges == [(11, 25)]
         else:
             assert valid_image_ranges == [(1, 25)]
-    with open("Processing/xia2.multiplex.json") as fh:
+    with open(run_in_tmp_path / "Processing" / "xia2.multiplex.json") as fh:
         d = json.load(fh)
     for hkl in ("100", "010", "001"):
         k = f"stereographic_projection_{hkl}"
@@ -97,12 +90,28 @@ def test_proteinase_k(mocker, proteinase_k, run_in_tmp_path):
         "warnings",
         "danger",
     ]
+    # Verify that the *_vs_dose plots have been correctly plotted
+    dose_plots = d["datasets"]["All data"]["batch_graphs"]
+
+    for k in (
+        "rcp_vs_dose",
+        "scp_vs_dose",
+        "completeness_vs_dose",
+        "rd_vs_batch_difference",
+    ):
+        assert dose_plots[k + "_All_data"]["data"][0]["x"] == list(range(26))
 
 
 def test_proteinase_k_anomalous(proteinase_k, run_in_tmp_path):
     expts, refls = proteinase_k
-    run_multiplex(expts + refls + ["anomalous=True"])
-    with open("Processing/xia2.multiplex.json") as fh:
+    result = subprocess.run(
+        [shutil.which("xia2.multiplex"), "anomalous=True"] + expts + refls,
+        cwd=run_in_tmp_path,
+        capture_output=True,
+    )
+    assert not result.returncode
+
+    with open(run_in_tmp_path / "Processing" / "xia2.multiplex.json") as fh:
         d = json.load(fh)
     assert "dano_All_data" in d["datasets"]["All data"]["resolution_graphs"]
 
@@ -129,7 +138,13 @@ def test_proteinase_k_filter_deltacchalf(proteinase_k, run_in_tmp_path):
             "resolution.d_min=2.0",
         ]
     )
-    run_multiplex(command_line_args)
+    result = subprocess.run(
+        [shutil.which("xia2.multiplex")] + command_line_args,
+        cwd=run_in_tmp_path,
+        capture_output=True,
+    )
+    assert not result.returncode
+
     for f in expected_data_files + [
         "Processing/filtered.expt",
         "Processing/filtered.refl",
@@ -139,21 +154,39 @@ def test_proteinase_k_filter_deltacchalf(proteinase_k, run_in_tmp_path):
         "DataFiles/filtered.sca",
         "DataFiles/filtered_unmerged.sca",
     ]:
-        assert os.path.isfile(f), "expected file %s missing" % f
-    assert len(load.experiment_list("Processing/scaled.expt", check_format=False)) == 8
-    assert len(load.experiment_list("Processing/filtered.expt", check_format=False)) < 8
+        assert os.path.isfile(run_in_tmp_path / f), "expected file %s missing" % f
+    assert (
+        len(
+            load.experiment_list(
+                run_in_tmp_path / "Processing" / "scaled.expt", check_format=False
+            )
+        )
+        == 8
+    )
+    assert (
+        len(
+            load.experiment_list(
+                run_in_tmp_path / "Processing" / "filtered.expt", check_format=False
+            )
+        )
+        < 8
+    )
 
     # assert that the reflection files are different - the filtered reflections
     # should have fewer reflections as one data set has been removed
-    mtz_scaled = iotbx.mtz.object("DataFiles/scaled_unmerged.mtz")
-    mtz_filtered = iotbx.mtz.object("DataFiles/filtered_unmerged.mtz")
+    mtz_scaled = iotbx.mtz.object(
+        str((run_in_tmp_path / "DataFiles" / "scaled_unmerged.mtz").resolve())
+    )
+    mtz_filtered = iotbx.mtz.object(
+        str((run_in_tmp_path / "DataFiles" / "filtered_unmerged.mtz").resolve())
+    )
     # assert that the input d_min has carried through to the output files
     for mtz in (mtz_scaled, mtz_filtered):
         assert mtz.as_miller_arrays()[0].d_min() == pytest.approx(2.0, abs=1e-4)
 
     assert mtz_filtered.n_reflections() != mtz_scaled.n_reflections()
 
-    with open("Processing/xia2.multiplex.json") as fh:
+    with open(run_in_tmp_path / "Processing" / "xia2.multiplex.json") as fh:
         d = json.load(fh)
     print(list(d["datasets"].keys()))
     assert list(d["datasets"].keys()) == ["All data", "cos cluster 6", "Filtered"]
@@ -169,11 +202,13 @@ def test_proteinase_k_filter_deltacchalf(proteinase_k, run_in_tmp_path):
 
     # Check that cluster 6 has been scaled
     cluster = "cos_cluster_6"
-    cluster_dir = pathlib.Path(f"Processing/{cluster}")
+    cluster_dir = run_in_tmp_path / "Processing" / f"{cluster}"
     assert cluster_dir.is_dir()
-    assert (pathlib.Path(f"DataFiles/{cluster}_scaled.mtz")).is_file()
-    assert (pathlib.Path(f"DataFiles/{cluster}_scaled_unmerged.mtz")).is_file()
-    assert (pathlib.Path(f"DataFiles/{cluster}_scaled_unmerged.mmcif")).is_file()
+    assert (run_in_tmp_path / "DataFiles" / f"{cluster}_scaled.mtz").is_file()
+    assert (run_in_tmp_path / "DataFiles" / f"{cluster}_scaled_unmerged.mtz").is_file()
+    assert (
+        run_in_tmp_path / "DataFiles" / f"{cluster}_scaled_unmerged.mmcif"
+    ).is_file()
 
 
 @pytest.mark.parametrize(
