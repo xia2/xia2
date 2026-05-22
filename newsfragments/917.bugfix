@@ -1,1 +1,0 @@
-``xia2.multiplex_filtering``: fix bug where working directory was an incompatible type if passed via phil 'input='
