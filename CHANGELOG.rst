@@ -1,3 +1,13 @@
+xia2 3.28.1 (2026-05-22)
+========================
+
+Bugfixes
+--------
+
+- ``xia2.multiplex_filtering``: fix bug where working directory was an incompatible type if passed via phil 'input=' (`#917 <https://github.com/xia2/xia2/issues/917>`_)
+- ``xia2.multiplex_filtering``: fixed inconsistent results in xia2.multiplex_filtering caused by incomplete models.expt/observations.refl files (`#918 <https://github.com/xia2/xia2/issues/918>`_)
+
+
 xia2 3.28.0 (2026-04-10)
 ========================
 
