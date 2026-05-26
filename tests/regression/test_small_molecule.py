@@ -21,7 +21,7 @@ def test_dials_aimless(regression_test, dials_data, tmp_path, ccp4):
         "small_molecule=True",
         "read_all_image_headers=False",
         "trust_beam_centre=True",
-        dials_data("small_molecule_example", pathlib=True),
+        dials_data("small_molecule_example"),
     ]
     result = subprocess.run(command_line, cwd=tmp_path, capture_output=True)
     success, issues = xia2.Test.regression.check_result(
@@ -42,7 +42,7 @@ def test_dials(regression_test, dials_data, tmp_path, ccp4):
         "small_molecule=True",
         "read_all_image_headers=False",
         "trust_beam_centre=True",
-        dials_data("small_molecule_example", pathlib=True),
+        dials_data("small_molecule_example"),
     ]
     result = subprocess.run(command_line, cwd=tmp_path, capture_output=True)
     success, issues = xia2.Test.regression.check_result(
@@ -63,7 +63,7 @@ def test_xds(regression_test, dials_data, tmp_path, ccp4, xds):
         "small_molecule=True",
         "read_all_image_headers=False",
         "trust_beam_centre=True",
-        dials_data("small_molecule_example", pathlib=True),
+        dials_data("small_molecule_example"),
     ]
     result = subprocess.run(command_line, cwd=tmp_path, capture_output=True)
     success, issues = xia2.Test.regression.check_result(
@@ -86,7 +86,7 @@ def test_xds_ccp4a(regression_test, dials_data, tmp_path, ccp4, xds):
         "read_all_image_headers=False",
         "trust_beam_centre=True",
         "scaler=ccp4a",
-        dials_data("small_molecule_example", pathlib=True),
+        dials_data("small_molecule_example"),
     ]
     result = subprocess.run(command_line, cwd=tmp_path, capture_output=True)
     success, issues = xia2.Test.regression.check_result(

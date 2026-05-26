@@ -11,7 +11,7 @@
    introductory_example
    insulin_tutorial
    Multi-crystal data <multi_crystal>
-   Multi-crystal data reduction (xia2.multiplex) <multiplex-multi-crystal>
+   Multi-crystal data reduction (xia2.multiplex) <multiplex/index.rst>
    Serial-crystallography <serial_crystallography>
    program_output
    parameters

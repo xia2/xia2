@@ -310,6 +310,11 @@ def run():
             print("CCP4 %s" % ccp4_version)
         sys.exit()
 
+    dump_timing = False
+    if "-timing" in sys.argv or "--timing" in sys.argv:
+        dump_timing = True
+        sys.argv = [a for a in sys.argv if a not in ["-timing", "--timing"]]
+
     xia2.Handlers.Streams.setup_logging(logfile="xia2.txt", debugfile="xia2-debug.txt")
 
     try:
@@ -330,6 +335,8 @@ def run():
         xia2_main()
         logger.debug("\nTiming report:")
         logger.debug("\n".join(xia2.Driver.timing.report()))
+        if dump_timing:
+            xia2.Driver.timing.dump_db()
         logger.info("Status: normal termination")
         return
     except Sorry as s:
