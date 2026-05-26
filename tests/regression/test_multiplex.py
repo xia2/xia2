@@ -17,19 +17,18 @@ from dials.util.multi_dataset_handling import (
 from dxtbx.model import ExperimentList
 from dxtbx.serialize import load
 
-from xia2.cli.multiplex import run as run_multiplex
 from xia2.Modules.MultiCrystal.data_manager import DataManager
 
 expected_data_files = [
-    "Processing/scaled.expt",
-    "Processing/scaled.refl",
-    "DataFiles/scaled.mtz",
-    "DataFiles/scaled_unmerged.mtz",
-    "DataFiles/scaled_unmerged.mmcif",
-    "DataFiles/scaled.sca",
-    "DataFiles/scaled_unmerged.sca",
-    "LogFiles/xia2.multiplex.html",
-    "Processing/xia2.multiplex.json",
+    pathlib.Path("Processing") / "scaled.expt",
+    pathlib.Path("Processing") / "scaled.refl",
+    pathlib.Path("DataFiles") / "scaled.mtz",
+    pathlib.Path("DataFiles") / "scaled_unmerged.mtz",
+    pathlib.Path("DataFiles") / "scaled_unmerged.mmcif",
+    pathlib.Path("DataFiles") / "scaled.sca",
+    pathlib.Path("DataFiles") / "scaled_unmerged.sca",
+    pathlib.Path("LogFiles") / "xia2.multiplex.html",
+    pathlib.Path("Processing") / "xia2.multiplex.json",
 ]
 
 
@@ -146,13 +145,13 @@ def test_proteinase_k_filter_deltacchalf(proteinase_k, run_in_tmp_path):
     assert not result.returncode
 
     for f in expected_data_files + [
-        "Processing/filtered.expt",
-        "Processing/filtered.refl",
-        "DataFiles/filtered.mtz",
-        "DataFiles/filtered_unmerged.mtz",
-        "DataFiles/filtered_unmerged.mmcif",
-        "DataFiles/filtered.sca",
-        "DataFiles/filtered_unmerged.sca",
+        pathlib.Path("Processing") / "filtered.expt",
+        pathlib.Path("Processing") / "filtered.refl",
+        pathlib.Path("DataFiles") / "filtered.mtz",
+        pathlib.Path("DataFiles") / "filtered_unmerged.mtz",
+        pathlib.Path("DataFiles") / "filtered_unmerged.mmcif",
+        pathlib.Path("DataFiles") / "filtered.sca",
+        pathlib.Path("DataFiles") / "filtered_unmerged.sca",
     ]:
         assert os.path.isfile(run_in_tmp_path / f), "expected file %s missing" % f
     assert (
@@ -188,7 +187,6 @@ def test_proteinase_k_filter_deltacchalf(proteinase_k, run_in_tmp_path):
 
     with open(run_in_tmp_path / "Processing" / "xia2.multiplex.json") as fh:
         d = json.load(fh)
-    print(list(d["datasets"].keys()))
     assert list(d["datasets"].keys()) == ["All data", "cos cluster 6", "Filtered"]
     # assert that the recorded merging statistics are different
     assert (
@@ -233,12 +231,20 @@ def test_proteinase_k_dose(
     )
     if threshold is not None:
         command_line_args.append("unit_cell_clustering.threshold=%s" % threshold)
-    run_multiplex(command_line_args)
+
+    result = subprocess.run(
+        [shutil.which("xia2.multiplex")] + command_line_args,
+        cwd=run_in_tmp_path,
+        capture_output=True,
+    )
+    assert not result.returncode
 
     for f in expected_data_files:
         assert os.path.isfile, f"expected file {f} missing"
 
-    multiplex_expts = load.experiment_list("Processing/scaled.expt", check_format=False)
+    multiplex_expts = load.experiment_list(
+        run_in_tmp_path / "Processing" / "scaled.expt", check_format=False
+    )
     if threshold is not None:
         # one experiment should have been rejected after unit cell clustering
         assert len(multiplex_expts) == 7
@@ -252,9 +258,13 @@ def test_proteinase_k_dose(
     for cluster in expected_clusters:
         cluster_dir = pathlib.Path(f"Processing/{cluster}")
         assert cluster_dir.is_dir()
-        assert (pathlib.Path(f"DataFiles/{cluster}_scaled.mtz")).is_file()
-        assert (pathlib.Path(f"DataFiles/{cluster}_scaled_unmerged.mtz")).is_file()
-        assert (pathlib.Path(f"DataFiles/{cluster}_scaled_unmerged.mmcif")).is_file()
+        assert (run_in_tmp_path / "DataFiles" / f"{cluster}_scaled.mtz").is_file()
+        assert (
+            run_in_tmp_path / "DataFiles" / f"{cluster}_scaled_unmerged.mtz"
+        ).is_file()
+        assert (
+            run_in_tmp_path / "DataFiles" / f"{cluster}_scaled_unmerged.mmcif"
+        ).is_file()
 
     for expt in multiplex_expts:
         if space_group is None:
@@ -275,19 +285,26 @@ def test_proteinase_k_coordinate_clusters(proteinase_k, run_in_tmp_path):
         "clustering.min_cluster_size=2",
     ]
     command_line_args = parameters + expts[:-1] + refls[:-1]
-    run_multiplex(command_line_args)
+    result = subprocess.run(
+        [shutil.which("xia2.multiplex")] + command_line_args,
+        cwd=run_in_tmp_path,
+        capture_output=True,
+    )
+    assert not result.returncode
 
     for f in expected_data_files:
         assert pathlib.Path(f).is_file(), "expected file %s missing" % f
 
-    multiplex_expts = load.experiment_list("Processing/scaled.expt", check_format=False)
+    multiplex_expts = load.experiment_list(
+        run_in_tmp_path / "Processing" / "scaled.expt", check_format=False
+    )
     assert len(multiplex_expts) == 7
-    assert (pathlib.Path("DataFiles/coordinate_cluster_0_scaled.mtz")).is_file()
+    assert (run_in_tmp_path / "DataFiles" / "coordinate_cluster_0_scaled.mtz").is_file()
     assert (
-        pathlib.Path("DataFiles/coordinate_cluster_0_scaled_unmerged.mtz")
+        run_in_tmp_path / "DataFiles" / "coordinate_cluster_0_scaled_unmerged.mtz"
     ).is_file()
     assert (
-        pathlib.Path("DataFiles/coordinate_cluster_0_scaled_unmerged.mmcif")
+        run_in_tmp_path / "DataFiles" / "coordinate_cluster_0_scaled_unmerged.mmcif"
     ).is_file()
 
 
@@ -300,23 +317,32 @@ def test_proteinase_k_hierarchical_clusters(proteinase_k, run_in_tmp_path):
     ]
     expts, refls = proteinase_k
     command_line_args = parameters + expts[:-1] + refls[:-1]
-    run_multiplex(command_line_args)
+    result = subprocess.run(
+        [shutil.which("xia2.multiplex")] + command_line_args,
+        cwd=run_in_tmp_path,
+        capture_output=True,
+    )
+    assert not result.returncode
 
     for f in expected_data_files:
         assert pathlib.Path(f).is_file(), "expected file %s missing" % f
 
-    multiplex_expts = load.experiment_list("Processing/scaled.expt", check_format=False)
+    multiplex_expts = load.experiment_list(
+        run_in_tmp_path / "Processing" / "scaled.expt", check_format=False
+    )
     assert len(multiplex_expts) == 7
     for ctype in ["cc", "cos"]:
         clusters = list(pathlib.Path("Processing").glob(ctype + "_cluster_[0-9]*"))
         assert len(clusters)
         for cluster in clusters:
-            assert (pathlib.Path(f"DataFiles/{cluster.name}_scaled.mtz")).is_file()
             assert (
-                pathlib.Path(f"DataFiles/{cluster.name}_scaled_unmerged.mtz")
+                run_in_tmp_path / "DataFiles" / f"{cluster.name}_scaled.mtz"
             ).is_file()
             assert (
-                pathlib.Path(f"DataFiles/{cluster.name}_scaled_unmerged.mmcif")
+                run_in_tmp_path / "DataFiles" / f"{cluster.name}_scaled_unmerged.mtz"
+            ).is_file()
+            assert (
+                run_in_tmp_path / "DataFiles" / f"{cluster.name}_scaled_unmerged.mmcif"
             ).is_file()
 
 
@@ -331,31 +357,44 @@ def test_proteinase_k_hierarchical_clusters_distinct(proteinase_k, run_in_tmp_pa
     ]
     expts, refls = proteinase_k
     command_line_args = parameters + expts[:-1] + refls[:-1]
-    run_multiplex(command_line_args)
+    result = subprocess.run(
+        [shutil.which("xia2.multiplex")] + command_line_args,
+        cwd=run_in_tmp_path,
+        capture_output=True,
+    )
+    assert not result.returncode
 
     for f in expected_data_files:
         assert pathlib.Path(f).is_file(), "expected file %s missing" % f
 
-    multiplex_expts = load.experiment_list("Processing/scaled.expt", check_format=False)
+    multiplex_expts = load.experiment_list(
+        run_in_tmp_path / "Processing" / "scaled.expt", check_format=False
+    )
     assert len(multiplex_expts) == 7
     clusters = list(pathlib.Path().glob("cc_cluster_[0-9]*"))
     # Has shown to be unstable if it finds clusters or not: just need to make sure code runs to completion
     if len(clusters):
         for cluster in clusters:
-            assert (pathlib.Path(f"DataFiles/{cluster.name}_scaled.mtz")).is_file()
             assert (
-                pathlib.Path(f"DataFiles/{cluster.name}_scaled_unmerged.mtz")
+                run_in_tmp_path / "DataFiles" / f"{cluster.name}_scaled.mtz"
             ).is_file()
             assert (
-                pathlib.Path(f"DataFiles/{cluster.name}_scaled_unmerged.mmcif")
+                run_in_tmp_path / "DataFiles" / f"{cluster.name}_scaled_unmerged.mtz"
+            ).is_file()
+            assert (
+                run_in_tmp_path / "DataFiles" / f"{cluster.name}_scaled_unmerged.mmcif"
             ).is_file()
 
 
 def test_proteinase_k_single_dataset_raises_error(proteinase_k, run_in_tmp_path):
     expts, refls = proteinase_k
-    with pytest.raises(SystemExit) as e:
-        run_multiplex([expts[0], refls[1]])
-    assert str(e.value) == "xia2.multiplex requires a minimum of two experiments"
+    result = subprocess.run(
+        [shutil.which("xia2.multiplex")] + [expts[0], refls[1]],
+        cwd=run_in_tmp_path,
+        capture_output=True,
+    )
+    assert result.returncode
+    assert result.stderr == b"xia2.multiplex requires a minimum of two experiments\n"
 
 
 def test_proteinase_k_laue_group_space_group_raises_error(
@@ -365,8 +404,12 @@ def test_proteinase_k_laue_group_space_group_raises_error(
     command_line_args = (
         ["symmetry.laue_group=P422", "symmetry.space_group=P41212"] + expts + refls
     )
-    with pytest.raises(SystemExit):
-        run_multiplex(command_line_args)
+    result = subprocess.run(
+        [shutil.which("xia2.multiplex")] + command_line_args,
+        cwd=run_in_tmp_path,
+        capture_output=True,
+    )
+    assert result.returncode
 
 
 @pytest.fixture
@@ -418,7 +461,13 @@ def test_prot_k_multiwave_single(run_in_tmp_path, protk_experiments_and_reflecti
     # just use first two
     experiments.as_file(run_in_tmp_path / "tmp.expt")
     reflections.as_file(run_in_tmp_path / "tmp.refl")
-    run_multiplex(["tmp.expt", "tmp.refl", "wavelength_tolerance=0.1"])
+    result = subprocess.run(
+        [shutil.which("xia2.multiplex")]
+        + ["tmp.expt", "tmp.refl", "wavelength_tolerance=0.1"],
+        cwd=run_in_tmp_path,
+        capture_output=True,
+    )
+    assert not result.returncode
 
     for f in expected_data_files:
         assert (run_in_tmp_path / f).is_file(), f"expected file {f} missing"
@@ -434,58 +483,66 @@ def test_prot_k_multiwave_double(run_in_tmp_path, protk_experiments_and_reflecti
     )
     experiments.as_file(run_in_tmp_path / "tmp.expt")
     reflections.as_file(run_in_tmp_path / "tmp.refl")
-    run_multiplex(
-        [
-            "tmp.expt",
-            "tmp.refl",
-            "wavelength_tolerance=0.001",
-            "clustering.output_clusters=True",
-            "clustering.min_completeness=0.55",  # 6",
-            "filtering.method=deltacchalf",
-            "resolution.d_min=2.6",
-        ]
+    cmdline_args = [
+        "tmp.expt",
+        "tmp.refl",
+        "wavelength_tolerance=0.001",
+        "clustering.output_clusters=True",
+        "clustering.min_completeness=0.55",  # 6",
+        "filtering.method=deltacchalf",
+        "resolution.d_min=2.6",
+    ]
+    result = subprocess.run(
+        [shutil.which("xia2.multiplex")] + cmdline_args,
+        cwd=run_in_tmp_path,
+        capture_output=True,
     )
+    assert not result.returncode
 
     expected_multi_data_files = [
-        "Processing/scaled.expt",
-        "Processing/scaled.refl",
-        "DataFiles/scaled_unmerged_WAVE1.mtz",
-        "DataFiles/scaled_unmerged_WAVE2.mtz",
-        "DataFiles/scaled_unmerged_WAVE1.mmcif",
-        "DataFiles/scaled_unmerged_WAVE2.mmcif",
-        "DataFiles/scaled_unmerged_WAVE1.sca",
-        "DataFiles/scaled_unmerged_WAVE2.sca",
-        "DataFiles/scaled_WAVE1.mtz",
-        "DataFiles/scaled_WAVE2.mtz",
-        "DataFiles/scaled_WAVE1.sca",
-        "DataFiles/scaled_WAVE2.sca",
-        "LogFiles/xia2.multiplex.html",
-        "Processing/xia2.multiplex.json",
+        pathlib.Path("Processing") / "scaled.expt",
+        pathlib.Path("Processing") / "scaled.refl",
+        pathlib.Path("DataFiles") / "scaled_unmerged_WAVE1.mtz",
+        pathlib.Path("DataFiles") / "scaled_unmerged_WAVE2.mtz",
+        pathlib.Path("DataFiles") / "scaled_unmerged_WAVE1.mmcif",
+        pathlib.Path("DataFiles") / "scaled_unmerged_WAVE2.mmcif",
+        pathlib.Path("DataFiles") / "scaled_unmerged_WAVE1.sca",
+        pathlib.Path("DataFiles") / "scaled_unmerged_WAVE2.sca",
+        pathlib.Path("DataFiles") / "scaled_WAVE1.mtz",
+        pathlib.Path("DataFiles") / "scaled_WAVE2.mtz",
+        pathlib.Path("DataFiles") / "scaled_WAVE1.sca",
+        pathlib.Path("DataFiles") / "scaled_WAVE2.sca",
+        pathlib.Path("LogFiles") / "xia2.multiplex.html",
+        pathlib.Path("Processing") / "xia2.multiplex.json",
     ]
 
     expected_filtered = [
-        "Processing/filtered.expt",
-        "Processing/filtered.refl",
-        "DataFiles/filtered_unmerged_WAVE1.mtz",
-        "DataFiles/filtered_unmerged_WAVE2.mtz",
-        "DataFiles/filtered_unmerged_WAVE1.mmcif",
-        "DataFiles/filtered_unmerged_WAVE2.mmcif",
-        "DataFiles/filtered_unmerged_WAVE1.sca",
-        "DataFiles/filtered_unmerged_WAVE2.sca",
-        "DataFiles/filtered_WAVE1.mtz",
-        "DataFiles/filtered_WAVE2.mtz",
-        "DataFiles/filtered_WAVE1.sca",
-        "DataFiles/filtered_WAVE2.sca",
+        pathlib.Path("Processing") / "filtered.expt",
+        pathlib.Path("Processing") / "filtered.refl",
+        pathlib.Path("DataFiles") / "filtered_unmerged_WAVE1.mtz",
+        pathlib.Path("DataFiles") / "filtered_unmerged_WAVE2.mtz",
+        pathlib.Path("DataFiles") / "filtered_unmerged_WAVE1.mmcif",
+        pathlib.Path("DataFiles") / "filtered_unmerged_WAVE2.mmcif",
+        pathlib.Path("DataFiles") / "filtered_unmerged_WAVE1.sca",
+        pathlib.Path("DataFiles") / "filtered_unmerged_WAVE2.sca",
+        pathlib.Path("DataFiles") / "filtered_WAVE1.mtz",
+        pathlib.Path("DataFiles") / "filtered_WAVE2.mtz",
+        pathlib.Path("DataFiles") / "filtered_WAVE1.sca",
+        pathlib.Path("DataFiles") / "filtered_WAVE2.sca",
     ]
 
-    for f in expected_multi_data_files + ["DataFiles/scaled.mtz"]:
+    for f in expected_multi_data_files + [pathlib.Path("DataFiles") / "scaled.mtz"]:
         assert (run_in_tmp_path / f).is_file(), f"expected file {f} missing"
     for f in expected_multi_data_files[:2]:
-        file = f.replace("/", "/cos_cluster_5/cos_cluster_5_")
-        assert (run_in_tmp_path / file).is_file(), f"expected file {f} missing"
+        cluster_path = pathlib.Path("cos_cluster_5") / f"cos_cluster_5_{f.name}"
+        assert (run_in_tmp_path / f.parent / cluster_path).is_file(), (
+            f"expected file {f} missing"
+        )
     for f in expected_multi_data_files[2:-2]:
-        file = f.replace("/", "/cos_cluster_5_")  # "cos_cluster_5_" + f
-        assert (run_in_tmp_path / file).is_file(), f"expected file {f} missing"
+        cluster_path = f"cos_cluster_5_{f.name}"
+        assert (run_in_tmp_path / f.parent / cluster_path).is_file(), (
+            f"expected file {f} missing"
+        )
     for f in expected_filtered:
         assert (run_in_tmp_path / f).is_file(), f"expected file {f} missing"
 
@@ -527,15 +584,22 @@ def test_run_with_reference_pdb(run_in_tmp_path, dials_data):
     command_line_args = (
         [f"reference={os.fspath(data_dir / '2id8.pdb')}"] + expts + refls
     )
-    run_multiplex(command_line_args)
+    result = subprocess.run(
+        [shutil.which("xia2.multiplex")] + command_line_args,
+        cwd=run_in_tmp_path,
+        capture_output=True,
+    )
+    assert not result.returncode
 
     candidate_reindex_logs = list(
         (run_in_tmp_path / "Processing").glob("*_dials.reindex.log")
     )
 
     assert len(candidate_reindex_logs) == 1
-    assert (run_in_tmp_path / "Processing/scaled.expt").is_file()
-    multiplex_expts = load.experiment_list("Processing/scaled.expt", check_format=False)
+    assert (run_in_tmp_path / "Processing" / "scaled.expt").is_file()
+    multiplex_expts = load.experiment_list(
+        run_in_tmp_path / "Processing" / "scaled.expt", check_format=False
+    )
     for expt in multiplex_expts:
         assert expt.crystal.get_space_group().type().lookup_symbol() == "P 43 21 2"
 
@@ -546,19 +610,26 @@ def test_run_with_reference_pdb(run_in_tmp_path, dials_data):
         + refls
     )
 
-    with pytest.raises(SystemExit):
-        run_multiplex(command_line_args)
+    result = subprocess.run(
+        [shutil.which("xia2.multiplex")] + command_line_args,
+        cwd=run_in_tmp_path,
+        capture_output=True,
+    )
+    assert result.returncode
 
 
 def test_clean_exit_on_stills_data(dials_data, run_in_tmp_path):
     ssx = dials_data("cunir_serial_processed")
-    with pytest.raises(SystemExit):
-        run_multiplex(
-            [
-                f"{ssx / 'integrated.refl'}",
-                f"{ssx / 'integrated.expt'}",
-            ],
-        )
+    result = subprocess.run(
+        [shutil.which("xia2.multiplex")]
+        + [
+            f"{ssx / 'integrated.refl'}",
+            f"{ssx / 'integrated.expt'}",
+        ],
+        cwd=run_in_tmp_path,
+        capture_output=True,
+    )
+    assert result.returncode
 
 
 def test_on_import_xds_data(dials_data, run_in_tmp_path):
@@ -598,12 +669,19 @@ def test_on_import_xds_data(dials_data, run_in_tmp_path):
         "xds_models_1.expt",
         "xds_models_2.expt",
     ]
-    run_multiplex(command_line_args)
+    result = subprocess.run(
+        [shutil.which("xia2.multiplex")] + command_line_args,
+        cwd=run_in_tmp_path,
+        capture_output=True,
+    )
+    assert not result.returncode
 
     for f in expected_data_files:
         assert pathlib.Path(f).is_file(), "expected file %s missing" % f
 
-    expts = load.experiment_list("Processing/scaled.expt", check_format=False)
+    expts = load.experiment_list(
+        run_in_tmp_path / "Processing" / "scaled.expt", check_format=False
+    )
     assert len(expts) == 2
 
 
@@ -613,15 +691,20 @@ def test_shelx_output(proteinase_k, run_in_tmp_path):
         "small_molecule.composition=CHSNO",
     ]
     command_line_args = parameters + expts[:-1] + refls[:-1]
-    run_multiplex(command_line_args)
+    result = subprocess.run(
+        [shutil.which("xia2.multiplex")] + command_line_args,
+        cwd=run_in_tmp_path,
+        capture_output=True,
+    )
+    assert not result.returncode
 
     for f in expected_data_files:
         assert pathlib.Path(f).is_file(), "expected file %s missing" % f
 
-    assert pathlib.Path("DataFiles/scaled.hkl").is_file(), (
+    assert (pathlib.Path("DataFiles") / "scaled.hkl").is_file(), (
         "expected file %s missing" % f
     )
-    assert pathlib.Path("DataFiles/scaled.ins").is_file(), (
+    assert (pathlib.Path("DataFiles") / "scaled.ins").is_file(), (
         "expected file %s missing" % f
     )
 
@@ -633,7 +716,12 @@ def test_selected_identifiers(protk_experiments_and_reflections, run_in_tmp_path
     test_uuid_2 = expts[5].identifier
     expts.as_file(run_in_tmp_path / "tmp.expt")
     refls.as_file(run_in_tmp_path / "tmp.refl")
-    run_multiplex(["tmp.expt", "tmp.refl"])
+    result = subprocess.run(
+        [shutil.which("xia2.multiplex")] + ["tmp.expt", "tmp.refl"],
+        cwd=run_in_tmp_path,
+        capture_output=True,
+    )
+    assert not result.returncode
 
     os.mkdir("subset")
     cwd = os.getcwd()
@@ -643,9 +731,16 @@ def test_selected_identifiers(protk_experiments_and_reflections, run_in_tmp_path
 
     command_line = [str(working_phil), f"identifiers={test_uuid_1},{test_uuid_2}"]
 
-    run_multiplex(command_line)
+    result = subprocess.run(
+        [shutil.which("xia2.multiplex")] + command_line,
+        cwd=run_in_tmp_path,
+        capture_output=True,
+    )
+    assert not result.returncode
 
-    multiplex_expts = load.experiment_list("Processing/scaled.expt", check_format=False)
+    multiplex_expts = load.experiment_list(
+        run_in_tmp_path / "Processing" / "scaled.expt", check_format=False
+    )
     assert len(multiplex_expts) == 2
     assert test_uuid_1 in multiplex_expts.identifiers()
     assert test_uuid_2 in multiplex_expts.identifiers()
