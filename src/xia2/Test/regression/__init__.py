@@ -3,8 +3,10 @@ from __future__ import annotations
 import os
 import platform
 import re
+import subprocess
 import warnings
 
+import iotbx.cif
 from cctbx import sgtbx
 from iotbx.reflection_file_reader import any_reflection_file
 
@@ -233,6 +235,19 @@ def check_result(
     html_file = tmp_path / "xia2.html"
     if not html_file.is_file():
         return False, "xia2.html not present after execution"
+
+    mmcif_file = tmp_path / "DataFiles" / "xia2.mmcif.bz2"
+    if not mmcif_file.is_file():
+        return False, "xia2.mmcif.bz2 not present after execution"
+
+    subprocess.run(["bunzip2", tmp_path / "DataFiles" / "xia2.mmcif.bz2"])
+
+    data = iotbx.cif.reader(file_path=str(mmcif_file).rstrip(".bz2")).model()
+    software_classification = data["xia2"]["_software"]["_software.classification"]
+    # Want only one software listed as the primary data reduction software
+    assert sum(i == "data reduction" for i in software_classification) == 1
+    # Want at least one software listed as data scaling category
+    assert sum(i == "data scaling" for i in software_classification) >= 1
 
     if not output_identical:
         print("xia2 output failing tolerance checks")
