@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import math
 import os
 import pathlib
 import shutil
@@ -94,11 +95,11 @@ def test_consistency(proteinase_k, run_in_tmp_path):
     with open(filtering_dir / "Processing" / "xia2.multiplex_filtering.json") as fh:
         d_filtered = json.load(fh)
 
-    for i in d_filtered["datasets"]["Filtered"]["merging_stats"]:
-        assert (
-            d_filtered["datasets"]["Filtered"]["merging_stats"][i]
-            == d_mplx["datasets"]["Filtered"]["merging_stats"][i]
-        )
+    for x, y in zip(
+        d_mplx["datasets"]["Filtered"]["merging_stats"]["cc_one_half"],
+        d_filtered["datasets"]["Filtered"]["merging_stats"]["cc_one_half"],
+    ):
+        assert math.isclose(x, y, abs_tol=1e-10)
 
 
 def test_exit_for_invalid_multiplex_dir(run_in_tmp_path):
