@@ -616,6 +616,11 @@ class MultiCrystalScale:
 
             """
 
+        # export these for xia2.multiplex_filtering so in correct space group and consistency
+
+        self._data_manager.export_experiments("models.expt")
+        self._data_manager.export_reflections("observations.refl")
+
         if self._params.filtering.method:
             data_manager = copy.deepcopy(self._data_manager)
             params = copy.deepcopy(self._params)
@@ -1355,8 +1360,17 @@ class Scale:
 
         self._experiments_filename: str = "models.expt"
         self._reflections_filename: str = "observations.refl"
-        self._data_manager.export_experiments(self._experiments_filename)
-        self._data_manager.export_reflections(self._reflections_filename)
+
+        if not filtering:
+            self._data_manager.export_experiments(self._experiments_filename)
+            self._data_manager.export_reflections(self._reflections_filename)
+        else:
+            # For filtering, export files if class called from external program (ie xia2.multiplex_filtering)
+            #   if called from multiplex, do not export files (files will already exist from export outside of class)
+            if not os.path.isfile(self._experiments_filename):
+                self._data_manager.export_experiments(self._experiments_filename)
+            if not os.path.isfile(self._reflections_filename):
+                self._data_manager.export_reflections(self._reflections_filename)
 
         if "two_theta" in self._params.unit_cell.refine:
             self.two_theta_refine()

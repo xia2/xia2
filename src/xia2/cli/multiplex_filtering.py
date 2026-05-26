@@ -154,6 +154,11 @@ def run(args=sys.argv[1:]):
             "Please provide a path to a directory containing a completed multiplex job."
         )
 
+    if isinstance(filter_params.input.directory, str):
+        filter_params.input.directory = pathlib.Path(
+            filter_params.input.directory
+        ).resolve()
+
     # Check multiplex directory has all the files this module needs
 
     required_files = [

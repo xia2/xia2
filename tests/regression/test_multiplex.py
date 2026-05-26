@@ -35,7 +35,7 @@ expected_data_files = [
 
 @pytest.fixture()
 def proteinase_k(dials_data):
-    data_dir = dials_data("multi_crystal_proteinase_k", pathlib=True)
+    data_dir = dials_data("multi_crystal_proteinase_k")
     expts = sorted(os.fspath(f) for f in data_dir.glob("experiments*.json"))
     refls = sorted(os.fspath(f) for f in data_dir.glob("reflections*.pickle"))
     yield expts, refls
@@ -329,7 +329,7 @@ def test_proteinase_k_laue_group_space_group_raises_error(
 
 @pytest.fixture
 def protk_experiments_and_reflections(dials_data):
-    data_dir = dials_data("multi_crystal_proteinase_k", pathlib=True)
+    data_dir = dials_data("multi_crystal_proteinase_k")
 
     # Load experiments
     experiments = ExperimentList()
@@ -472,7 +472,7 @@ def test_run_with_reference_pdb(run_in_tmp_path, dials_data):
     # Test that use case of providing a reference file to consistently reindex against
     # In this case there is no indexing ambiguity, so we're just testing it
     # completes as expected with the set space group from the pdb file.
-    data_dir = dials_data("multi_crystal_proteinase_k", pathlib=True)
+    data_dir = dials_data("multi_crystal_proteinase_k")
     expts = [
         os.fspath(data_dir / "experiments_1.json"),
         os.fspath(data_dir / "experiments_2.json"),
@@ -504,7 +504,7 @@ def test_run_with_reference_pdb(run_in_tmp_path, dials_data):
 
 
 def test_clean_exit_on_stills_data(dials_data, run_in_tmp_path):
-    ssx = dials_data("cunir_serial_processed", pathlib=True)
+    ssx = dials_data("cunir_serial_processed")
     with pytest.raises(SystemExit):
         run_multiplex(
             [
@@ -521,7 +521,7 @@ def test_on_import_xds_data(dials_data, run_in_tmp_path):
     result = subprocess.run(
         [
             shutil.which("dials.import_xds"),
-            dials_data("insulin_processed_xds_1", pathlib=True),
+            dials_data("insulin_processed_xds_1"),
             "output.reflections=integrate_hkl_1.refl",
             "output.xds_experiments=xds_models_1.expt",
         ],
@@ -534,7 +534,7 @@ def test_on_import_xds_data(dials_data, run_in_tmp_path):
     result = subprocess.run(
         [
             shutil.which("dials.import_xds"),
-            dials_data("insulin_processed_xds_2", pathlib=True),
+            dials_data("insulin_processed_xds_2"),
             "output.reflections=integrate_hkl_2.refl",
             "output.xds_experiments=xds_models_2.expt",
         ],

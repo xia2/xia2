@@ -5,7 +5,7 @@ import subprocess
 
 
 def test_to_shelx(dials_data, tmp_path):
-    l_cyst = dials_data("l_cysteine_4_sweeps_scaled", pathlib=True)
+    l_cyst = dials_data("l_cysteine_4_sweeps_scaled")
     # First create an unmerged mtz.
     expt = l_cyst / "scaled_30.expt"
     refls = l_cyst / "scaled_30.refl"
