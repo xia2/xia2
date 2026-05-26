@@ -53,12 +53,12 @@ delta_cc_half:
     doi={10.1107/S1600576716005471},
     publisher={International Union of Crystallography}
     }
-  software_classification: data processing
+  software_classification: data scaling
   software_description: Assessment of data nonisomorphism using an implementation of the delta-CC-Half algorithm
   software_name: xia2.delta_cc_half
   software_type: program
 
-dials-reduction: # Specific unique citation for DIALS integration, to give a unique 'data reduction' item for mmcif
+dials-integration: # Specific unique citation for DIALS integration, to give a unique 'data reduction' item for mmcif
 - acta: Winter, G. et al. (2018) Acta Cryst. D74, 85-97.
   bibtex: |
     @article{Winter:di5011,
@@ -88,7 +88,7 @@ dials-reduction: # Specific unique citation for DIALS integration, to give a uni
   software_type: package
   url: https://doi.org/10.1107/S2059798317017235
 
-dials: # General citation for anything that is not integration or a citable program (cosym, scale)
+dials-general: # General citation for anything that is not integration or a citable program (cosym, scale)
 - acta: Winter, G. et al. (2018) Acta Cryst. D74, 85-97.
   bibtex: |
     @article{Winter:di5011,
@@ -143,7 +143,7 @@ dials.cosym:
     data sets.},
     keywords = {Patterson group symmetry, partial data sets, indexing ambiguity},
     }
-  software_classification: data processing
+  software_classification: data scaling
   software_description: Determination of Patterson group symmetry from sparse multi-crystal data sets in the presence of an indexing ambiguity
   software_name: dials.cosym
   software_type: program
@@ -204,7 +204,7 @@ pointless:
     doi = {10.1107/S0907444905036693},
     url = {https://doi.org/10.1107/S0907444905036693},
     }
-  software_classification: data processing
+  software_classification: data scaling
   software_description: Symmetry assessment program
   software_name: pointless
   software_type: program
