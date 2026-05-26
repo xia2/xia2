@@ -108,7 +108,7 @@ def test_serial_data(
     output_correlation_cluster_number,
     exclude_correlation_cluster_number,
 ):
-    ssx = dials_data("cunir_serial_processed", pathlib=True)
+    ssx = dials_data("cunir_serial_processed")
     expt_int = os.fspath(ssx / "integrated.expt")
     refl_int = os.fspath(ssx / "integrated.refl")
     args_generate_scaled = [shutil.which("xia2.ssx_reduce"), expt_int, refl_int]
@@ -149,7 +149,7 @@ def test_serial_data(
 
 @pytest.fixture()
 def scaled_data(dials_data, run_in_tmp_path):
-    rot = dials_data("vmxi_proteinase_k_sweeps", pathlib=True)
+    rot = dials_data("vmxi_proteinase_k_sweeps")
 
     # First scale the data to get suitable input
     cmd = (

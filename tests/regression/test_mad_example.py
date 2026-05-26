@@ -24,7 +24,7 @@ def test_dials(regression_test, dials_data, tmp_path, ccp4):
         "njob=2",
         "mode=parallel",
         "trust_beam_centre=True",
-        dials_data("fumarase", pathlib=True),
+        dials_data("fumarase"),
     ]
     result = subprocess.run(command_line, cwd=tmp_path)
     success, issues = xia2.Test.regression.check_result(
@@ -45,7 +45,7 @@ def test_dials_aimless(regression_test, dials_data, tmp_path, ccp4):
         "njob=2",
         "mode=parallel",
         "trust_beam_centre=True",
-        dials_data("fumarase", pathlib=True),
+        dials_data("fumarase"),
     ]
     result = subprocess.run(command_line, cwd=tmp_path)
     success, issues = xia2.Test.regression.check_result(
@@ -66,7 +66,7 @@ def test_xds(regression_test, dials_data, tmp_path, ccp4, xds):
         "njob=2",
         "mode=parallel",
         "trust_beam_centre=True",
-        dials_data("fumarase", pathlib=True),
+        dials_data("fumarase"),
     ]
     result = subprocess.run(command_line, cwd=tmp_path)
     success, issues = xia2.Test.regression.check_result(
@@ -89,7 +89,7 @@ def test_xds_ccp4a(regression_test, dials_data, tmp_path, ccp4, xds):
         "mode=parallel",
         "trust_beam_centre=True",
         "scaler=ccp4a",
-        dials_data("fumarase", pathlib=True),
+        dials_data("fumarase"),
     ]
     result = subprocess.run(command_line, cwd=tmp_path)
     success, issues = xia2.Test.regression.check_result(

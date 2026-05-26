@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import contextlib
+import json
 import time
 
 _timing_db = []
@@ -54,6 +55,15 @@ def reset():
     """
     global _timing_db
     _timing_db = []
+
+
+def dump_db():
+    """
+    Export the timing database to a JSON file.
+    """
+
+    with open("xia2-timing.json", "w") as f:
+        json.dump(_timing_db, f)
 
 
 def visualise_db(timing_db):

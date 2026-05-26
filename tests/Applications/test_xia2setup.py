@@ -16,12 +16,10 @@ def insulin_with_missing_image(dials_data, tmp_path):
             continue
         try:
             tmp_path.joinpath(f"insulin_1_{j:03d}.img").symlink_to(
-                dials_data("insulin", pathlib=True) / f"insulin_1_{j:03d}.img"
+                dials_data("insulin") / f"insulin_1_{j:03d}.img"
             )
         except OSError:
-            shutil.copy(
-                dials_data("insulin", pathlib=True) / f"insulin_1_{j:03d}.img", tmp_path
-            )
+            shutil.copy(dials_data("insulin") / f"insulin_1_{j:03d}.img", tmp_path)
     return tmp_path / "insulin_1_###.img"
 
 
@@ -68,8 +66,8 @@ def test_write_xinfo_template_missing_images(insulin_with_missing_image, tmp_pat
 def test_write_xinfo_split_sweep(dials_data, tmp_path):
     cmd = [
         shutil.which("xia2.setup"),
-        f"image={dials_data('insulin', pathlib=True) / 'insulin_1_001.img:1:22'}",
-        f"image={dials_data('insulin', pathlib=True) / 'insulin_1_001.img:23:45'}",
+        f"image={dials_data('insulin') / 'insulin_1_001.img:1:22'}",
+        f"image={dials_data('insulin') / 'insulin_1_001.img:23:45'}",
         "read_all_image_headers=False",
     ]
     result = subprocess.run(
@@ -91,7 +89,7 @@ def test_write_xinfo_unroll(dials_data, tmp_path):
     # This test partially exercises the fix to https://github.com/xia2/xia2/issues/498 with a different syntax
     cmd = [
         shutil.which("xia2.setup"),
-        f"image={dials_data('insulin', pathlib=True) / 'insulin_1_001.img:1:45:15'}",
+        f"image={dials_data('insulin') / 'insulin_1_001.img:1:45:15'}",
         "read_all_image_headers=False",
     ]
     result = subprocess.run(

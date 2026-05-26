@@ -1,3 +1,59 @@
+xia2 3.28.1 (2026-05-22)
+========================
+
+Bugfixes
+--------
+
+- ``xia2.multiplex_filtering``: fix bug where working directory was an incompatible type if passed via phil 'input=' (`#917 <https://github.com/xia2/xia2/issues/917>`_)
+- ``xia2.multiplex_filtering``: fixed inconsistent results in xia2.multiplex_filtering caused by incomplete models.expt/observations.refl files (`#918 <https://github.com/xia2/xia2/issues/918>`_)
+
+
+xia2 3.28.0 (2026-04-10)
+========================
+
+Features
+--------
+
+- ``xia2.multiplex_filtering``: Add a new module, ``xia2.multiplex_filtering`` to perform filtering on existing multiplex processing, for speed. (`#912 <https://github.com/xia2/xia2/issues/912>`_)
+- ``xia2.multiplex``: Selected datasets on dendrogram or clustering graphs now outputs a ``xia2.multiplex`` command that can be copied to merge a custom subset of data. (`#914 <https://github.com/xia2/xia2/issues/914>`_)
+
+
+Bugfixes
+--------
+
+- ``xia2.multiplex``: Fix situation in which cosym filtering could cause a cluster identical to "all data" to be emitted. (`#910 <https://github.com/xia2/xia2/issues/910>`_)
+
+
+Misc
+----
+
+- `#916 <https://github.com/xia2/xia2/issues/916>`_
+
+
+xia2 3.27.0 (2026-02-23)
+========================
+
+Features
+--------
+
+- ``xia2.compare_merging_stats``: Produce HTML output with interactive plots, and optionally JSON format plot data. (`#906 <https://github.com/xia2/xia2/issues/906>`_)
+
+
+Bugfixes
+--------
+
+- ``xia2.multiplex``: Ensure clustering behaviour is consistent between ``xia2.multiplex`` and ``dials.correlation_matrix`` on ``scaled.{expt,refl}`` files. (`#894 <https://github.com/xia2/xia2/issues/894>`_)
+- Exit with a more informative error message if still images are passed to xia2. (`#902 <https://github.com/xia2/xia2/issues/902>`_)
+- ``xia2.compare_merging_stats``: Fix error with the resolution axis of HTML plots. (`#908 <https://github.com/xia2/xia2/issues/908>`_)
+- ``xia2.multiplex``: Fix bug causing multiplex to crash if trying to output coordinate clusters, but no coordinate clusters were found. (`#909 <https://github.com/xia2/xia2/issues/909>`_)
+
+
+Misc
+----
+
+- `#895 <https://github.com/xia2/xia2/issues/895>`_, `#901 <https://github.com/xia2/xia2/issues/901>`_, `#904 <https://github.com/xia2/xia2/issues/904>`_, `#905 <https://github.com/xia2/xia2/issues/905>`_
+
+
 xia2 3.26.0 (2025-11-06)
 ========================
 
