@@ -17,8 +17,14 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu, macOS, windows]
-    runs-on: ${{ matrix.os }}-latest
+        include:
+        - os-name: ubuntu
+          runs_on: ubuntu-latest
+        - os-name: macOS
+          runs_on: macos-latest
+        - os-name: windows
+          runs_on: windows-2022
+    runs-on: ${{ matrix.runs_on }}
     steps:
     - name: Checkout Repository
       uses: actions/checkout@v4
