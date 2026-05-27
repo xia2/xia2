@@ -1390,7 +1390,7 @@ class CommonScaler(Scaler):
             )
             for pi in groups:
                 tt_grouprefiner = TwoThetaRefine()
-                Citations.cite("dials")
+                Citations.cite("dials-general")
                 tt_grouprefiner.set_working_directory(self.get_working_directory())
                 auto_logfiler(tt_grouprefiner)
                 args = list(zip(*groups[pi]))
@@ -1449,7 +1449,7 @@ class CommonScaler(Scaler):
             # Two theta refine everything together
             if len(groups) > 1:
                 tt_refiner = TwoThetaRefine()
-                Citations.cite("dials")
+                Citations.cite("dials-general")
                 tt_refiner.set_working_directory(self.get_working_directory())
                 tt_refiner.set_output_p4p(p4p_file)
                 auto_logfiler(tt_refiner)

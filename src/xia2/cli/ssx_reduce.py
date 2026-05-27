@@ -36,7 +36,9 @@ xia2_logger = logging.getLogger(__name__)
 
 
 def run(args=sys.argv[1:]):
-    Citations.cite("dials")
+    # Note, more specific citations are recorded when individual
+    # programs are called.
+    Citations.cite("dials-general")
     Citations.cite("xia2.ssx")
     parser = ArgumentParser(
         usage="xia2.ssx_reduce directory=/path/to/integrated/directory/",

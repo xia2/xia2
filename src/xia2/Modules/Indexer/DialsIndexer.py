@@ -232,7 +232,7 @@ class DialsIndexer(Indexer):
         return wedges
 
     def _index_prepare(self):
-        Citations.cite("dials")
+        Citations.cite("dials-general")
 
         # all_images = self.get_matching_images()
         # first = min(all_images)

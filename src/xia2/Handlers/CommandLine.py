@@ -21,6 +21,7 @@ from dials.util.system import CPU_COUNT
 from dxtbx.serialize import load
 
 from xia2.Experts.FindImages import image2template_directory
+from xia2.Handlers.Citations import Citations
 from xia2.Handlers.Flags import Flags
 from xia2.Handlers.Phil import PhilIndex
 from xia2.Handlers.PipelineSelection import add_preference
@@ -556,6 +557,13 @@ class _CommandLine:
             PhilIndex.update("xia2.settings.integrater=%s" % integrater)
         if scaler is not None and settings.scaler is None:
             PhilIndex.update("xia2.settings.scaler=%s" % scaler)
+
+        # Cite here, workaround for fact that global aggregation of
+        # citations doesn't work if running in parallel mode.
+        if integrater == "dials":
+            Citations.cite("dials-integration")
+        if integrater == "xdsr":
+            Citations.cite("xds")
 
         if settings.scaler is not None:
             if settings.pipeline.startswith("2d"):
