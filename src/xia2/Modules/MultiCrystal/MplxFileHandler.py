@@ -24,7 +24,7 @@ class _MultiplexFileHandler:
 
         for f in self._temporary_files:
             try:
-                pathlib.Path.unlink(f)
+                f.unlink()
                 logger.debug(f"Deleted: {f}")
             except FileNotFoundError as e:
                 logger.debug(f"Failed to delete: {f} ({e})")
@@ -32,7 +32,7 @@ class _MultiplexFileHandler:
         if self.delete_optional_files:
             for f in self._optional_files:
                 try:
-                    pathlib.Path.unlink(f)
+                    f.unlink()
                     logger.debug(f"Deleted: {f}")
                 except FileNotFoundError as e:
                     logger.debug(f"Failed to delete: {f} ({e})")
