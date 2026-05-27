@@ -394,7 +394,9 @@ def test_proteinase_k_single_dataset_raises_error(proteinase_k, run_in_tmp_path)
         capture_output=True,
     )
     assert result.returncode
-    assert result.stderr == b"xia2.multiplex requires a minimum of two experiments\n"
+    assert result.stderr.decode().splitlines() == [
+        "xia2.multiplex requires a minimum of two experiments"
+    ]
 
 
 def test_proteinase_k_laue_group_space_group_raises_error(

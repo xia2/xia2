@@ -9,10 +9,17 @@ logger = logging.getLogger("xia2.Handlers.Files")
 
 class _MultiplexFileHandler:
     def __init__(self):
-        self._temporary_files = []
-        self._optional_files = []
-        self._data_files = []
-        self._log_files = []
+        # Files which will always be deleted
+        self._temporary_files: list[pathlib.Path] = []
+
+        # Files which have the option to be deleted based on phil param cleanup
+        self._optional_files: list[pathlib.Path] = []
+
+        # Final files output to DataFiles (mtz, sca, mmcif)
+        self._data_files: list[pathlib.Path] = []
+
+        # Overall multiplex log files output to LogFiles (does not include logs of individual steps)
+        self._log_files: list[pathlib.Path] = []
 
         self.delete_optional_files = False
 
@@ -23,19 +30,21 @@ class _MultiplexFileHandler:
         base_path = pathlib.Path(base_path).resolve()
 
         for f in self._temporary_files:
-            try:
-                f.unlink()
-                logger.debug(f"Deleted: {f}")
-            except FileNotFoundError as e:
-                logger.debug(f"Failed to delete: {f} ({e})")
-
-        if self.delete_optional_files:
-            for f in self._optional_files:
+            if base_path in f.parents:
                 try:
                     f.unlink()
                     logger.debug(f"Deleted: {f}")
                 except FileNotFoundError as e:
                     logger.debug(f"Failed to delete: {f} ({e})")
+
+        if self.delete_optional_files:
+            for f in self._optional_files:
+                if base_path in f.parents:
+                    try:
+                        f.unlink()
+                        logger.debug(f"Deleted: {f}")
+                    except FileNotFoundError as e:
+                        logger.debug(f"Failed to delete: {f} ({e})")
 
         data_path = base_path / "DataFiles"
         data_path.mkdir(exist_ok=True)
@@ -46,14 +55,14 @@ class _MultiplexFileHandler:
             target = log_path / f.name
             try:
                 f.rename(target)
-            except Exception as e:
+            except FileNotFoundError as e:
                 logger.debug(f"Failed to move: {f} ({e})")
 
         for f in self._data_files:
             target = data_path / f.name
             try:
                 f.rename(target)
-            except Exception as e:
+            except FileNotFoundError as e:
                 logger.debug(f"Failed to move {f} ({e})")
 
     def record_data_file(self, filename):
