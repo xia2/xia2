@@ -17,7 +17,8 @@ import xia2.Handlers.Streams
 from xia2.Applications.xia2_main import write_citations
 from xia2.Handlers.Citations import Citations
 from xia2.Modules.MultiCrystal.filter import FilterExistingMultiplex
-from xia2.Modules.SSX.util import report_timing
+from xia2.Modules.MultiCrystal.MplxFileHandler import MultiplexFileHandler, cleanup
+from xia2.Modules.SSX.util import report_timing, run_in_directory
 
 logger = logging.getLogger("xia2.multiplex_filtering")
 
@@ -75,6 +76,9 @@ resolution {
 output {
   log = xia2.multiplex_filtering.log
     .type = str
+  cleanup = True
+    .type = bool
+    .help = "Set to false to retain all intermediate data files not commonly used."
 }
 """,
     process_includes=True,
@@ -83,24 +87,7 @@ output {
 mplx_scope = iotbx.phil.parse(
     """
 
-include scope xia2.Modules.MultiCrystal.ScaleAndMerge.phil_scope
-
-include scope dials.util.exclude_images.phil_scope
-
-wavelength_tolerance = 0.0001
-  .type = float
-  .help = "Absolute tolerance, in Angstroms, for determining whether to merge data from different"
-          "wavelengths in the output mtz/sca files. Increasing this number significantly may reduce"
-          "downstream data quality due to loss of information on wavelength."
-
-seed = 42
-  .type = int(value_min=0)
-output {
-  log = xia2.multiplex.log
-    .type = str
-  cluster_html = False
-    .type = bool
-}
+include scope xia2.cli.multiplex.phil_scope
 """,
     process_includes=True,
 )
@@ -162,11 +149,11 @@ def run(args=sys.argv[1:]):
     # Check multiplex directory has all the files this module needs
 
     required_files = [
-        filter_params.input.directory / "models.expt",
-        filter_params.input.directory / "observations.refl",
-        filter_params.input.directory / "scaled.mtz",
+        filter_params.input.directory / "Processing" / "models.expt",
+        filter_params.input.directory / "Processing" / "observations.refl",
+        filter_params.input.directory / "DataFiles" / "scaled.mtz",
         filter_params.input.directory / "xia2-multiplex-working.phil",
-        filter_params.input.directory / "xia2.multiplex.json",
+        filter_params.input.directory / "Processing" / "xia2.multiplex.json",
     ]
     for file in required_files:
         if not file.is_file():
@@ -197,8 +184,11 @@ def run(args=sys.argv[1:]):
     if filter_params.resolution.d_min:
         full_params.resolution.d_min = filter_params.resolution.d_min
 
+    full_params.output.cleanup = filter_params.output.cleanup
+
     full_params.__inject__(
-        "multiplex_json", str(filter_params.input.directory / "xia2.multiplex.json")
+        "multiplex_json",
+        str(filter_params.input.directory / "Processing" / "xia2.multiplex.json"),
     )
 
     # Configure the logging
@@ -225,8 +215,8 @@ def run(args=sys.argv[1:]):
         np.random.seed(full_params.seed)
         random.seed(full_params.seed)
 
-    expt_path = filter_params.input.directory / "models.expt"
-    refl_path = filter_params.input.directory / "observations.refl"
+    expt_path = filter_params.input.directory / "Processing" / "models.expt"
+    refl_path = filter_params.input.directory / "Processing" / "observations.refl"
     logger.info(f"Using {expt_path} and {refl_path} as input data for filtering.")
 
     experiments = ExperimentList.from_file(expt_path, check_format=False)
@@ -234,13 +224,21 @@ def run(args=sys.argv[1:]):
 
     if not full_params.r_free_flags.reference:
         full_params.r_free_flags.reference = str(
-            filter_params.input.directory / "scaled.mtz"
+            filter_params.input.directory / "DataFiles" / "scaled.mtz"
         )
 
-    try:
-        filtering = FilterExistingMultiplex(experiments, reflections, full_params)
-        filtering.filter_and_record()
-    except ValueError as e:
-        sys.exit(str(e))
+    processing = pathlib.Path.cwd() / "Processing"
+    MultiplexFileHandler.record_log_file("xia2.multiplex_filtering.log")
+    MultiplexFileHandler.record_log_file("xia2.multiplex_filtering.debug.log")
+    processing.mkdir(exist_ok=True)
+    MultiplexFileHandler.set_cleanup(full_params.output.cleanup)
+
+    with run_in_directory(processing):
+        try:
+            filtering = FilterExistingMultiplex(experiments, reflections, full_params)
+            with cleanup(processing.parent):
+                filtering.filter_and_record()
+        except ValueError as e:
+            sys.exit(str(e))
 
     write_citations(program="xia2.multiplex")

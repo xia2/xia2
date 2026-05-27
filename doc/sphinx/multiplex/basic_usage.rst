@@ -66,6 +66,26 @@ There are also some additional command-line options you may find useful:
  * ``filtering.method`` - applies additional filtering, see :doc:`here <multiplex_filtering>`.
  * ``clustering.output_clusters`` - output identified sub-clusters, see :doc:`here <intensity_based_clustering>` for more choices and details.
 
+
+.. important::
+
+    For newer versions of DIALS (main branch and >= 3.29) you will find the output organised into various folders.
+
+    In the parent folder where ``xia2.multiplex`` was run, you can find citation information as well as ``xia2-multiplex-working.phil``. This
+    contains the configuration of all commandline parameters used by ``xia2.multiplex``.
+
+    **DataFiles**:
+    This folder contains the final files you will find useful for feeding into structure solution/refinement pipelines. This includes any
+    clusters that have been output as well as filtered data if this option is selected.
+
+    **LogFiles**:
+    This folder contains the main log files as well as the html report which summarises the analysis.
+
+    **Processing**:
+    This folder contains log files and graphics corresponding to different steps in the ``xia2.multiplex`` pipeline. Can be useful diagnostics for
+    difficult data. If you would like the ``.expt / .refl`` files and ``.json`` files written by individual steps, you can set the commandline option
+    ``cleanup=False`` and additional files will be output to this folder.
+
 ----------------------------------
 Diagnostic Tools in xia2.multiplex
 ----------------------------------
