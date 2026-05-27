@@ -17,11 +17,14 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu, macOS, windows]
-    defaults:
-      run:
-        shell: bash
-    runs-on: ${{ matrix.os }}-latest
+        include:
+        - os-name: ubuntu
+          runs-on-value: ubuntu-latest
+        - os-name: macOS
+          runs-on-value: macos-latest
+        - os-name: windows
+          runs-on-value: windows-2022
+    runs-on: ${{ matrix.runs-on-value }}
     steps:
     - name: Checkout Repository
       uses: actions/checkout@v4
@@ -42,7 +45,7 @@ jobs:
         echo "$(pwd)/conda_base/Scripts" >> $GITHUB_PATH
         echo "$(pwd)/conda_base/Library/bin" >> $GITHUB_PATH
         echo "$(pwd)/conda_base/" >> $GITHUB_PATH
-    - name: Set CMake Generator
+    - if: runner.os != 'Windows'
       run: echo "CMAKE_GENERATOR=Ninja" >> $GITHUB_ENV
     - name: Build
       run: python bootstrap.py build --config-flags='-DCMAKE_UNITY_BUILD=true'
