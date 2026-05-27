@@ -18,6 +18,9 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu, macOS, windows]
+    defaults:
+      run:
+        shell: bash
     runs-on: ${{ matrix.os }}-latest
     steps:
     - name: Checkout Repository
