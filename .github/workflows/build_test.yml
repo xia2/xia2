@@ -45,7 +45,7 @@ jobs:
     - name: Set CMake Generator
       run: echo "CMAKE_GENERATOR=Ninja" >> $GITHUB_ENV
     - name: Build
-      run: python bootstrap.py build --config-flags='-G "Ninja" -DCMAKE_UNITY_BUILD=true'
+      run: python bootstrap.py build --config-flags='-DCMAKE_UNITY_BUILD=true'
     - name: Prepare for cache restoration
       shell: bash
       run: |
