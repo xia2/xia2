@@ -15,7 +15,7 @@ logger = logging.getLogger("xia2.Wrappers.Dials.TwoThetaRefine")
 
 def TwoThetaRefine(DriverType=None):
     """A factory for RefineWrapper classes."""
-    Citations.cite("dials")
+    Citations.cite("dials-general")
 
     DriverInstance = DriverFactory.Driver(DriverType)
 

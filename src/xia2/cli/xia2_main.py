@@ -234,7 +234,7 @@ def xia2_main(stop_after=None):
                                 )
                             )
                         )
-                        Citations.cite("dials")
+                        Citations.cite("dials-general")
                         try:
                             if stop_after == "index":
                                 sweep.get_indexer_cell()
