@@ -19,12 +19,12 @@ jobs:
       matrix:
         include:
         - os-name: ubuntu
-          runs-on-value: ubuntu-latest
+          runs_on: ubuntu-latest
         - os-name: macOS
-          runs-on-value: macos-latest
+          runs_on: macos-latest
         - os-name: windows
-          runs-on-value: windows-2022
-    runs-on: ${{ matrix.runs-on-value }}
+          runs_on: windows-2022
+    runs-on: ${{ matrix.runs_on }}
     steps:
     - name: Checkout Repository
       uses: actions/checkout@v4
