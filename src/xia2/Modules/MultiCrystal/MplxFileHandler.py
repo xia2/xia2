@@ -76,10 +76,13 @@ class _MultiplexFileHandler:
 
         for f in self._data_files:
             target = data_path / f.name
-            try:
-                f.rename(target)
-            except FileNotFoundError as e:
-                logger.debug(f"Failed to move {f} ({e})")
+            if target.exists():
+                logger.debug(f"File {f} already in {target}")
+            else:
+                try:
+                    f.rename(target)
+                except FileNotFoundError as e:
+                    logger.debug(f"Failed to move {f} ({e})")
 
         for f in self._primary_logs:
             target = base_path / f.name

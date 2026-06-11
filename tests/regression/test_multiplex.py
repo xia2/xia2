@@ -725,23 +725,22 @@ def test_selected_identifiers(protk_experiments_and_reflections, run_in_tmp_path
     )
     assert not result.returncode
 
-    os.mkdir("subset")
-    cwd = os.getcwd()
-    working_phil = pathlib.Path(cwd) / "xia2-multiplex-working.phil"
+    subset_path = run_in_tmp_path / "subset"
+    subset_path.mkdir(exist_ok=True)
 
-    os.chdir("subset")
+    working_phil = run_in_tmp_path / "xia2-multiplex-working.phil"
 
     command_line = [str(working_phil), f"identifiers={test_uuid_1},{test_uuid_2}"]
 
     result = subprocess.run(
         [shutil.which("xia2.multiplex")] + command_line,
-        cwd=run_in_tmp_path,
+        cwd=subset_path,
         capture_output=True,
     )
     assert not result.returncode
 
     multiplex_expts = load.experiment_list(
-        run_in_tmp_path / "Processing" / "scaled.expt", check_format=False
+        subset_path / "Processing" / "scaled.expt", check_format=False
     )
     assert len(multiplex_expts) == 2
     assert test_uuid_1 in multiplex_expts.identifiers()
