@@ -51,8 +51,8 @@ class DeltaCCHalf:
         reflections: flex.reflection_table,
     ) -> None:
         xia2_logger.debug("Running dials.compute_delta_cchalf")
-        xpid = _get_number()
-        logfile = f"{xpid}_dials.compute_delta_cchalf.log"
+        self._xpid = _get_number()
+        logfile = f"{self._xpid}_dials.compute_delta_cchalf.log"
         # TEMPORARY - remove the xia2 handler from the dials logger, so that delta cc half
         # output does not go to the main log (this will soon be done in the main multiplex
         # run function).

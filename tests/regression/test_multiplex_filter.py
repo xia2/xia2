@@ -19,7 +19,7 @@ expected_data_files = [
     pathlib.Path("DataFiles") / "filtered_unmerged.mmcif",
     pathlib.Path("DataFiles") / "filtered.sca",
     pathlib.Path("DataFiles") / "filtered_unmerged.sca",
-    pathlib.Path("LogFiles") / "xia2.multiplex_filtering.html",
+    pathlib.Path("xia2.multiplex_filtering.html"),
     pathlib.Path("Processing") / "xia2.multiplex_filtering.json",
 ]
 
@@ -202,12 +202,12 @@ def test_overwrite_multiplex_filtering_params(proteinase_k, run_in_tmp_path):
     for f in expected_data_files:
         assert (filtering_dir / f).is_file(), "expected file %s missing" % f
 
-    mplx_scale_logs = list((run_in_tmp_path / "Processing").glob("*_dials.scale.log"))
+    mplx_scale_logs = list((run_in_tmp_path / "LogFiles").glob("*_dials.scale.log"))
 
     assert len(mplx_scale_logs) == 2
 
     filter_scale_logs = list(
-        (run_in_tmp_path / "filtering" / "Processing").glob("*_dials.scale.log")
+        (run_in_tmp_path / "filtering" / "LogFiles").glob("*_dials.scale.log")
     )
 
     assert len(filter_scale_logs) == 1

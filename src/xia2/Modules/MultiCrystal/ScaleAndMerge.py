@@ -576,6 +576,9 @@ class MultiCrystalScale:
                     MultiplexFileHandler.record_optional_file("multiplicities_h_0.json")
                     MultiplexFileHandler.record_optional_file("multiplicities_k_0.json")
                     MultiplexFileHandler.record_optional_file("multiplicities_l_0.json")
+                    MultiplexFileHandler.record_log_file("multiplicities_h_0.png")
+                    MultiplexFileHandler.record_log_file("multiplicities_k_0.png")
+                    MultiplexFileHandler.record_log_file("multiplicities_l_0.png")
 
             """
             # To ensure that pools within pools aren't created
@@ -663,6 +666,9 @@ class MultiCrystalScale:
         MultiplexFileHandler.record_optional_file("multiplicities_h_0.json")
         MultiplexFileHandler.record_optional_file("multiplicities_k_0.json")
         MultiplexFileHandler.record_optional_file("multiplicities_l_0.json")
+        MultiplexFileHandler.record_log_file("multiplicities_h_0.png")
+        MultiplexFileHandler.record_log_file("multiplicities_k_0.png")
+        MultiplexFileHandler.record_log_file("multiplicities_l_0.png")
 
     @staticmethod
     def filter(
@@ -1215,6 +1221,8 @@ class MultiCrystalScale:
         MultiplexFileHandler.record_optional_file(self._experiments_filename)
         MultiplexFileHandler.record_optional_file(self._reflections_filename)
         MultiplexFileHandler.record_optional_file(cosym.get_json())
+        MultiplexFileHandler.record_log_file(f"{cosym.get_xpid()}_dials.cosym.log")
+        MultiplexFileHandler.record_log_file(f"{cosym.get_xpid()}_dials.cosym.html")
 
     def reindex(self) -> None:
         logger.debug("Running reindexing")
@@ -1240,6 +1248,7 @@ class MultiCrystalScale:
         MultiplexFileHandler.record_temp_file("dials.reindex.log")
         MultiplexFileHandler.record_optional_file(self._experiments_filename)
         MultiplexFileHandler.record_optional_file(self._reflections_filename)
+        MultiplexFileHandler.record_log_file(f"{reindex.get_xpid()}_dials.reindex.log")
 
     def decide_space_group(self) -> None:
         if self._params.symmetry.space_group is not None:
@@ -1293,6 +1302,10 @@ class MultiCrystalScale:
         MultiplexFileHandler.record_temp_file("dials.symmetry.log")
         MultiplexFileHandler.record_optional_file(self._experiments_filename)
         MultiplexFileHandler.record_optional_file(self._reflections_filename)
+        MultiplexFileHandler.record_log_file(
+            f"{symmetry.get_xpid()}_dials.symmetry.log"
+        )
+        MultiplexFileHandler.record_log_file("dials.symmetry.html")
 
     def multi_crystal_analysis(self) -> MultiCrystalReport:
         params = mca_phil.extract()
@@ -1373,6 +1386,7 @@ class MultiCrystalScale:
         merge.run(expts, refls)
 
         MultiplexFileHandler.record_data_file(file_name)
+        MultiplexFileHandler.record_log_file(f"{merge._xpid}_dials.merge.log")
 
     @staticmethod
     def export_merged_wave_mtz(
@@ -1521,6 +1535,13 @@ class Scale:
         misc_file_names.append(tt_refiner.get_output_experiments())
         misc_file_names.append(tt_refiner._output_p4p.replace(".p4p", ".json"))
 
+        MultiplexFileHandler.record_log_file(
+            f"{tt_refiner.get_xpid()}_dials.two_theta_refine.log"
+        )
+        MultiplexFileHandler.record_log_file(
+            f"{tt_refiner.get_xpid()}_dials.two_theta_refine_2theta.png"
+        )
+
         return tt_refiner.get_output_experiments(), misc_file_names
 
     def scale(self, d_min: float | None = None, d_max: float | None = None) -> None:
@@ -1615,6 +1636,9 @@ class Scale:
         MultiplexFileHandler.record_optional_file(self._experiments_filename)
         MultiplexFileHandler.record_optional_file(self._reflections_filename)
 
+        MultiplexFileHandler.record_log_file(f"{scaler.get_xpid()}_dials.scale.log")
+        MultiplexFileHandler.record_log_file(f"{scaler.get_xpid()}_scaling.html")
+
     def estimate_resolution_limit(self) -> tuple[float, str]:
         # see also xia2/Modules/Scaler/CommonScaler.py: CommonScaler._estimate_resolution_limit()
         params = self._params.resolution
@@ -1639,6 +1663,12 @@ class Scale:
 
         MultiplexFileHandler.record_temp_file("dials.estimate_resolution.log")
         MultiplexFileHandler.record_optional_file(m.get_json())
+        MultiplexFileHandler.record_log_file(
+            f"{m.get_xpid()}_dials.estimate_resolution.log"
+        )
+        MultiplexFileHandler.record_log_file(
+            f"{m.get_xpid()}_dials.estimate_resolution.html"
+        )
 
         resolution_limits = []
         reasoning = []

@@ -85,6 +85,9 @@ class MultiCrystalAnalysis:
             sp.hkl = hkl
             sp.run(expts)
             sp_json_files[hkl] = str(sp.json_filename)
+            MultiplexFileHandler.record_log_file(
+                f"{sp._xpid}_dials.stereographic_projection.log"
+            )
         return sp_json_files
 
     @staticmethod
@@ -125,6 +128,7 @@ class MultiCrystalAnalysis:
             plt.tight_layout()
             plt.savefig(plot_name)
             plt.clf()
+            MultiplexFileHandler.record_log_file(plot_name)
 
         return clustering
 
@@ -209,6 +213,10 @@ class MultiCrystalAnalysis:
 
         self._temp_files.append("dials.correlation_matrix.json")
 
+        MultiplexFileHandler.record_log_file(
+            f"{intensity_clustering._xpid}_dials.correlation_matrix.log"
+        )
+
         # Need this here or else cos-angle dendrogram does not replicate original multiplex output
         self._cluster_analysis_run = True
 
@@ -265,6 +273,9 @@ class MultiCrystalAnalysis:
     ) -> tuple[dict[str, dict[str, Any]], list[list[str]]]:
         deltacc = DeltaCCHalf()
         deltacc.run(self._data_manager.experiments, self._data_manager.reflections)
+        MultiplexFileHandler.record_log_file(
+            f"{deltacc._xpid}_dials.compute_delta_cchalf.log"
+        )
         return deltacc.delta_cc_half_graphs, deltacc.delta_cc_half_table
 
     @staticmethod
@@ -552,7 +563,7 @@ any systematic grouping of points may suggest a preferential crystal orientation
         with open("%s.html" % self.params.prefix, "wb") as f:
             f.write(html.encode("utf-8", "xmlcharrefreplace"))
 
-        MultiplexFileHandler.record_log_file(f"{self.params.prefix}.html")
+        MultiplexFileHandler.record_primary_log_file(f"{self.params.prefix}.html")
         if self.params.output.cluster_html:
             with open(f"{self.params.prefix}_clustering.html", "wb") as f:
                 f.write(cluster_html.encode("utf-8", "xmlcharrefreplace"))

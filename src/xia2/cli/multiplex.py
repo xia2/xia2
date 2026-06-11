@@ -246,8 +246,8 @@ def run(args=sys.argv[1:]):
         )
 
     processing = pathlib.Path.cwd() / "Processing"
-    MultiplexFileHandler.record_log_file(params.output.log)
-    MultiplexFileHandler.record_log_file("xia2.multiplex.debug.log")
+    MultiplexFileHandler.record_primary_log_file(params.output.log)
+    MultiplexFileHandler.record_primary_log_file("xia2.multiplex.debug.log")
     MultiplexFileHandler.set_cleanup(params.output.cleanup)
 
     processing.mkdir(exist_ok=True)

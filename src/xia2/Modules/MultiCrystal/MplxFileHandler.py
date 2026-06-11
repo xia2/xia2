@@ -18,8 +18,11 @@ class _MultiplexFileHandler:
         # Final files output to DataFiles (mtz, sca, mmcif)
         self._data_files: list[pathlib.Path] = []
 
-        # Overall multiplex log files output to LogFiles (does not include logs of individual steps)
+        # Individual log files + .pngs
         self._log_files: list[pathlib.Path] = []
+
+        # Files to live in base directory (primary logs)
+        self._primary_logs: list[pathlib.Path] = []
 
         self.delete_optional_files = False
 
@@ -65,6 +68,16 @@ class _MultiplexFileHandler:
             except FileNotFoundError as e:
                 logger.debug(f"Failed to move {f} ({e})")
 
+        for f in self._primary_logs:
+            target = base_path / f.name
+            if target.exists():
+                logger.debug(f"Primary log file {f} already in base directory.")
+            else:
+                try:
+                    f.rename(target)
+                except FileNotFoundError as e:
+                    logger.debug(f"Failed to move {f} ({e})")
+
     def record_data_file(self, filename):
         data_file = pathlib.Path(filename).resolve()
         if data_file not in self._data_files:
@@ -88,6 +101,12 @@ class _MultiplexFileHandler:
         if optional_file not in self._optional_files:
             assert optional_file.exists(), f"Optional file {optional_file} not found."
             self._optional_files.append(optional_file)
+
+    def record_primary_log_file(self, filename):
+        primary_log = pathlib.Path(filename).resolve()
+        if primary_log not in self._primary_logs:
+            assert primary_log.exists(), f"Primary log file {primary_log} not found."
+            self._primary_logs.append(primary_log)
 
 
 MultiplexFileHandler = _MultiplexFileHandler()

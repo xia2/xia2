@@ -109,7 +109,7 @@ class FilterExistingMultiplex:
         with open("xia2.multiplex_filtering.html", "wb") as f:
             f.write(html.encode("utf-8", "xmlcharrefreplace"))
 
-        MultiplexFileHandler.record_log_file("xia2.multiplex_filtering.html")
+        MultiplexFileHandler.record_primary_log_file("xia2.multiplex_filtering.html")
         MultiplexFileHandler.record_optional_file("multiplicities_h_0.json")
         MultiplexFileHandler.record_optional_file("multiplicities_k_0.json")
         MultiplexFileHandler.record_optional_file("multiplicities_l_0.json")

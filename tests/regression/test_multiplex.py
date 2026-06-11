@@ -27,7 +27,7 @@ expected_data_files = [
     pathlib.Path("DataFiles") / "scaled_unmerged.mmcif",
     pathlib.Path("DataFiles") / "scaled.sca",
     pathlib.Path("DataFiles") / "scaled_unmerged.sca",
-    pathlib.Path("LogFiles") / "xia2.multiplex.html",
+    pathlib.Path("xia2.multiplex.html"),
     pathlib.Path("Processing") / "xia2.multiplex.json",
 ]
 
@@ -514,7 +514,7 @@ def test_prot_k_multiwave_double(run_in_tmp_path, protk_experiments_and_reflecti
         pathlib.Path("DataFiles") / "scaled_WAVE2.mtz",
         pathlib.Path("DataFiles") / "scaled_WAVE1.sca",
         pathlib.Path("DataFiles") / "scaled_WAVE2.sca",
-        pathlib.Path("LogFiles") / "xia2.multiplex.html",
+        pathlib.Path("xia2.multiplex.html"),
         pathlib.Path("Processing") / "xia2.multiplex.json",
     ]
 
@@ -594,7 +594,7 @@ def test_run_with_reference_pdb(run_in_tmp_path, dials_data):
     assert not result.returncode
 
     candidate_reindex_logs = list(
-        (run_in_tmp_path / "Processing").glob("*_dials.reindex.log")
+        (run_in_tmp_path / "LogFiles").glob("*_dials.reindex.log")
     )
 
     assert len(candidate_reindex_logs) == 1

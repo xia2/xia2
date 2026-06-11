@@ -228,8 +228,8 @@ def run(args=sys.argv[1:]):
         )
 
     processing = pathlib.Path.cwd() / "Processing"
-    MultiplexFileHandler.record_log_file("xia2.multiplex_filtering.log")
-    MultiplexFileHandler.record_log_file("xia2.multiplex_filtering.debug.log")
+    MultiplexFileHandler.record_primary_log_file("xia2.multiplex_filtering.log")
+    MultiplexFileHandler.record_primary_log_file("xia2.multiplex_filtering.debug.log")
     processing.mkdir(exist_ok=True)
     MultiplexFileHandler.set_cleanup(full_params.output.cleanup)
 
