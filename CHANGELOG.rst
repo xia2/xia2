@@ -1,3 +1,19 @@
+Xia2 3.28.0 (2026-06-11)
+========================
+
+Features
+--------
+
+- Add Wilson Biso to mmcif output. (`#899 <https://github.com/xia2/xia2/issues/899>`_)
+- Added ``--timing`` option to dump the timings database to ``xia2-timings.json``, for performance testing purposes. (`#920 <https://github.com/xia2/xia2/issues/920>`_)
+
+
+Misc
+----
+
+- `#898 <https://github.com/xia2/xia2/issues/898>`_, `#923 <https://github.com/xia2/xia2/issues/923>`_, `#924 <https://github.com/xia2/xia2/issues/924>`_
+
+
 xia2 3.28.1 (2026-05-22)
 ========================
 
