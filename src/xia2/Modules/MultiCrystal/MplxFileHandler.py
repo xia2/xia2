@@ -55,11 +55,24 @@ class _MultiplexFileHandler:
         log_path.mkdir(exist_ok=True)
 
         for f in self._log_files:
-            target = log_path / f.name
-            try:
-                f.rename(target)
-            except FileNotFoundError as e:
-                logger.debug(f"Failed to move: {f} ({e})")
+            cluster_file = False
+            if f.match("**/*_cluster_*/**"):
+                logger.debug(f"{f} is a cluster file")
+                cluster_file = True
+            if not cluster_file:
+                target = log_path / f.name
+            else:
+                cluster_logs = log_path / f.parent.name
+                cluster_logs.mkdir(exist_ok=True)
+                target = cluster_logs / f.name
+
+            if target.exists():
+                logger.debug(f"File {f} already in {target}")
+            else:
+                try:
+                    f.rename(target)
+                except FileNotFoundError as e:
+                    logger.debug(f"Failed to move: {f} ({e})")
 
         for f in self._data_files:
             target = data_path / f.name
