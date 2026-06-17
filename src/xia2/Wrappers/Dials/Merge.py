@@ -71,6 +71,9 @@ def DialsMerge(DriverType=None):
             """Run dials.merge"""
             self.clear_command_line()
 
+            # we want to do this later in freer_flag in a consistent way
+            self.add_command_line("r_free_flags.generate=False")
+
             assert self._experiments_filename
             assert self._reflections_filename
             self.add_command_line(self._reflections_filename)
