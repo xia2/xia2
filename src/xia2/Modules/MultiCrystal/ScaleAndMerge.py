@@ -6,7 +6,7 @@ import math
 import os
 import pathlib
 from collections import OrderedDict
-from typing import Any, Optional
+from typing import Any
 
 import iotbx.phil
 import libtbx.phil
@@ -1130,7 +1130,7 @@ class MultiCrystalScale:
 
     def unit_cell_clustering(
         self, plot_name: str | None = None
-    ) -> Optional[ClusteringResult]:
+    ) -> ClusteringResult | None:  # Optional[ClusteringResult]:
         lattice_ids = [
             self._data_manager.identifiers_to_ids_map[i]
             for i in self._data_manager.experiments.identifiers()
