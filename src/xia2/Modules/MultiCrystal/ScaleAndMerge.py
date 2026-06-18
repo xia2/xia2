@@ -6,11 +6,12 @@ import math
 import os
 import pathlib
 from collections import OrderedDict
-from typing import Any
+from typing import Any, Optional
 
 import iotbx.phil
 import libtbx.phil
 from cctbx import sgtbx, uctbx
+from dials.algorithms.clustering.unit_cell import ClusteringResult
 from dials.algorithms.scaling import scale_and_filter
 from dials.array_family import flex
 from dials.command_line.unit_cell_histogram import plot_uc_histograms
@@ -410,6 +411,7 @@ class MultiCrystalScale:
             if len(keep_expts) != len(self._data_manager.experiments):
                 self._data_manager.select(keep_expts)
 
+        self._preliminary_uc_clustering: ClusteringResult | None = None
         self._individual_report_dicts: dict[str, dict[str, Any]] = OrderedDict()
         self._comparison_graphs: dict[str, dict[str, Any]] = OrderedDict()
         self.scale_and_filter_results: scale_and_filter.AnalysisResults | None = None
@@ -417,7 +419,7 @@ class MultiCrystalScale:
 
     def run(self) -> None:
         logger.notice(banner("Unit cell clustering"))  # type: ignore
-        self.unit_cell_clustering(plot_name="cluster_unit_cell_p1.png")
+        self._preliminary_uc_clustering = self.unit_cell_clustering()
 
         if self._params.symmetry.resolve_indexing_ambiguity:
             logger.notice(banner("Applying consistent symmetry"))  # type: ignore
@@ -1126,7 +1128,9 @@ class MultiCrystalScale:
         d["merging_stats_anom"] = report_d["merging_stats_anom"]
         return d
 
-    def unit_cell_clustering(self, plot_name: str | None = None) -> None:
+    def unit_cell_clustering(
+        self, plot_name: str | None = None
+    ) -> Optional[ClusteringResult]:
         lattice_ids = [
             self._data_manager.identifiers_to_ids_map[i]
             for i in self._data_manager.experiments.identifiers()
@@ -1154,10 +1158,23 @@ class MultiCrystalScale:
                 ]
                 self._data_manager.select(cluster_identifiers)
                 self._data_manager._set_batches()
+                for id, color in zip(
+                    clustering.dendrogram["leaves"],
+                    clustering.dendrogram["leaves_color_list"],
+                ):
+                    if id in largest_cluster.lattice_ids:
+                        clustering.dendrogram["largest_cluster_color"] = color
+                        break
             else:
                 logger.info("Using all data sets for subsequent analysis")
+                clustering.dendrogram["largest_cluster_color"] = clustering.dendrogram[
+                    "leaves_color_list"
+                ][0]
+            return clustering
+
         else:
             logger.info("Clustering unsuccessful")
+            return None
 
     def unit_cell_histogram(self, plot_name: str | None = None) -> None:
         uc_params = [flex.double() for i in range(6)]
@@ -1356,7 +1373,11 @@ class MultiCrystalScale:
         refl = data_manager.reflections
         data_manager.reflections = refl.select(refl["d"] >= self._scaled.d_min)
         # Sets up the analysis and  report class, but doesn't do the clustering analysis.
-        mca = MultiCrystalReport(params=params, data_manager=data_manager)
+        mca = MultiCrystalReport(
+            params=params,
+            data_manager=data_manager,
+            prelim_uc_clustering=self._preliminary_uc_clustering,
+        )
         return mca
 
     def report(self) -> None:

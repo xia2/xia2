@@ -43,7 +43,11 @@ class MultiCrystalAnalysis:
         experiments: ExperimentList | None = None,
         reflections: flex.reflection_table | None = None,
         data_manager: DataManager | None = None,
+        prelim_uc_clustering: ClusteringResult | None = None,
+        uc_filtered_ids: list | None = None,
     ):
+        self.prelim_uc_clustering = prelim_uc_clustering
+        self.uc_filtered_ids = uc_filtered_ids
         self.params = params
         self._cluster_analysis_run: bool = False
         if data_manager is not None:
@@ -233,10 +237,64 @@ class MultiCrystalAnalysis:
         uc_params = uc_params_from_experiments(experiments)
         # panel_distances = panel_distances_from_experiments(experiments)
 
+        from dials.algorithms.clustering.plots import scipy_dendrogram_to_plotly_json
+
         d = OrderedDict()
+        if self.prelim_uc_clustering:
+            d["preliminary_uc_clustering"] = scipy_dendrogram_to_plotly_json(
+                self.prelim_uc_clustering.dendrogram,
+                title="Preliminary Unit cell clustering (all datasets)",
+                xtitle="Dataset",
+                ytitle="Distance (Å<sup>2</sup>)",
+                help="""\
+    The results of single-linkage hierarchical clustering on the unit cell parameters using
+    the Andrews–Bernstein NCDist distance metric (Andrews & Bernstein, 2014). The height at
+    which two clusters are merged in the dendrogram is a measure of the similarity between
+    the unit cells in each cluster. A larger separation between two clusters may be
+    indicative of a higher degree of non-isomorphism between the clusters. Conversely, a
+    small separation between two clusters suggests that their unit cell parameters are
+    relatively isomorphous.
+    """,
+            )
+            accepted = {
+                "type": "scatter",
+                "x": [None],
+                "y": [None],
+                "mode": "markers",
+                "marker": {
+                    "color": "rgb(44, 160, 44)",
+                },
+                "name": "Accepted datasets",
+                "showlegend": True,
+            }
+            rejected = {
+                "type": "scatter",
+                "x": [None],
+                "y": [None],
+                "mode": "markers",
+                "marker": {
+                    "color": "rgb(0, 0, 0)",
+                },
+                "name": "Rejected datasets",
+                "showlegend": True,
+            }
+            d["preliminary_uc_clustering"]["data"].append(accepted)
+            d["preliminary_uc_clustering"]["data"].append(rejected)
+            d["preliminary_uc_clustering"]["layout"]["showlegend"] = True
+        else:
+            d["preliminary_uc_clustering"] = {}
+
         from xia2.Modules.MultiCrystal.plots import plot_uc_histograms
 
         d.update(plot_uc_histograms(uc_params))
+
+        d["uc_scatter"]["layout"]["title"] = (
+            "Distribution of unit cell parameters (accepted datasets)"
+        )
+        d["uc_hist"]["layout"]["title"] = (
+            "Histogram of unit cell parameters (accepted datasets)"
+        )
+
         # self._plot_uc_vs_detector_distance(uc_params, panel_distances, outliers, params.steps_per_angstrom)
         # self._plot_number_of_crystals(experiments)
 
@@ -246,12 +304,11 @@ class MultiCrystalAnalysis:
             threshold=self.params.unit_cell_clustering.threshold,
             log=self.params.unit_cell_clustering.log,
         )
-        from dials.algorithms.clustering.plots import scipy_dendrogram_to_plotly_json
 
         if clustering:
             d["uc_clustering"] = scipy_dendrogram_to_plotly_json(
                 clustering.dendrogram,
-                title="Unit cell clustering",
+                title="Unit cell clustering (accepted datasets)",
                 xtitle="Dataset",
                 ytitle="Distance (Å<sup>2</sup>)",
                 help="""\
