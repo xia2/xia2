@@ -69,9 +69,10 @@ There are also some additional command-line options you may find useful:
 
 .. important::
 
-    For newer versions of DIALS (main branch and >= 3.29) you will find the output organised into various folders.
+    For newer versions of DIALS (main branch and > 3.29) you will find the output organised into various folders.
 
-    In the parent folder where ``xia2.multiplex`` was run, you can find citation information as well as ``xia2-multiplex-working.phil``. This
+    In the parent folder where ``xia2.multiplex`` was run, you can find the primary logs and reports from the multi-crystal analysis.
+    You can also find citation information and ``xia2-multiplex-working.phil``. This
     contains the configuration of all commandline parameters used by ``xia2.multiplex``.
 
     **DataFiles**:
@@ -79,11 +80,11 @@ There are also some additional command-line options you may find useful:
     clusters that have been output as well as filtered data if this option is selected.
 
     **LogFiles**:
-    This folder contains the main log files as well as the html report which summarises the analysis.
+    This folder contains the log files and graphical reports from intermediate processing steps.
 
     **Processing**:
-    This folder contains log files and graphics corresponding to different steps in the ``xia2.multiplex`` pipeline. Can be useful diagnostics for
-    difficult data. If you would like the ``.expt / .refl`` files and ``.json`` files written by individual steps, you can set the commandline option
+    This folder contains the key ``.expt / .refl`` files and ``.json`` logs. For files of these types output
+    by intermediate steps of the multiplex pipeline, you can set the commandline option
     ``cleanup=False`` and additional files will be output to this folder.
 
 ----------------------------------
