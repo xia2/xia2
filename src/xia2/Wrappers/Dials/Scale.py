@@ -438,7 +438,7 @@ def DialsScale(DriverType=None, decay_correction=None):
 
             if not self._html:
                 self._html = os.path.join(
-                    self.get_working_directory(), f"{self.get_xpid()}_scaling.html"
+                    self.get_working_directory(), f"{self.get_xpid()}_dials.scale.html"
                 )
             self.add_command_line(f"output.html={self._html}")
 
