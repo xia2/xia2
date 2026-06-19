@@ -1222,7 +1222,7 @@ class MultiCrystalScale:
         MultiplexFileHandler.record_optional_file(self._reflections_filename)
         MultiplexFileHandler.record_optional_file(cosym.get_json())
         MultiplexFileHandler.record_log_file(f"{cosym.get_xpid()}_dials.cosym.log")
-        MultiplexFileHandler.record_log_file(f"{cosym.get_xpid()}_dials.cosym.html")
+        MultiplexFileHandler.record_log_file(cosym.get_html())
 
     def reindex(self) -> None:
         logger.debug("Running reindexing")
@@ -1305,7 +1305,7 @@ class MultiCrystalScale:
         MultiplexFileHandler.record_log_file(
             f"{symmetry.get_xpid()}_dials.symmetry.log"
         )
-        MultiplexFileHandler.record_log_file("dials.symmetry.html")
+        MultiplexFileHandler.record_log_file(symmetry.get_html())
 
     def multi_crystal_analysis(self) -> MultiCrystalReport:
         params = mca_phil.extract()
@@ -1637,7 +1637,7 @@ class Scale:
         MultiplexFileHandler.record_optional_file(self._reflections_filename)
 
         MultiplexFileHandler.record_log_file(f"{scaler.get_xpid()}_dials.scale.log")
-        MultiplexFileHandler.record_log_file(f"{scaler.get_xpid()}_scaling.html")
+        MultiplexFileHandler.record_log_file(scaler.get_html())
 
     def estimate_resolution_limit(self) -> tuple[float, str]:
         # see also xia2/Modules/Scaler/CommonScaler.py: CommonScaler._estimate_resolution_limit()
@@ -1666,9 +1666,7 @@ class Scale:
         MultiplexFileHandler.record_log_file(
             f"{m.get_xpid()}_dials.estimate_resolution.log"
         )
-        MultiplexFileHandler.record_log_file(
-            f"{m.get_xpid()}_dials.estimate_resolution.html"
-        )
+        MultiplexFileHandler.record_log_file(m.get_html())
 
         resolution_limits = []
         reasoning = []
