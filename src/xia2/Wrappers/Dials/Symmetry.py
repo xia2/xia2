@@ -66,6 +66,7 @@ def DialsSymmetry(DriverType=None):
             self._cell = None
 
             self._json = None
+            self._html = None
 
         def set_mode_absences_only(self):
             self._laue_group = None
@@ -103,6 +104,12 @@ def DialsSymmetry(DriverType=None):
 
         def set_json(self, json):
             self._json = json
+
+        def set_html(self, filepath):
+            self._html = filepath
+
+        def get_html(self):
+            return self._html
 
         def set_allow_out_of_sequence_files(self, allow=True):
             self._allow_out_of_sequence_files = allow
@@ -182,6 +189,12 @@ def DialsSymmetry(DriverType=None):
                 self.add_command_line("laue_group=None")
             if not self._sys_abs_check:
                 self.add_command_line("systematic_absences.check=False")
+            if not self._html:
+                self._html = os.path.join(
+                    self.get_working_directory(),
+                    f"{self.get_xpid()}_dials.symmetry.html",
+                )
+            self.add_command_line(f"output.html={self._html}")
             self.add_command_line(
                 "relative_length_tolerance=%s" % self._relative_length_tolerance
             )
