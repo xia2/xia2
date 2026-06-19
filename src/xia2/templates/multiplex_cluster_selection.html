@@ -90,12 +90,18 @@
         } else {
             return null;
         }
-        for (var key in clusters) {
-            if (Math.abs(clusters[key].height - nodeHeight) < 1e-10) {
-                return clusters[key];
+        var bestKey = null;
+        var bestDiff = Infinity;
+
+        for (const key in clusters) {
+            const diff = Math.abs(clusters[key].height - nodeHeight);
+            if (diff < bestDiff) {
+                bestDiff = diff;
+                bestKey = key;
             }
-        }
-        return null;
+            }
+        if (!bestKey) return;
+        return clusters[bestKey];
     }
 
     function handleDendrogramClick(eventData, graphData, graphTitle) {
