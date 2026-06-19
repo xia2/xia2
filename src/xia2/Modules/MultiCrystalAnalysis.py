@@ -264,7 +264,7 @@ class MultiCrystalAnalysis:
                 "marker": {
                     "color": "rgb(44, 160, 44)",
                 },
-                "name": "Accepted datasets",
+                "name": "Selected datasets",
                 "showlegend": True,
             }
             rejected = {
@@ -289,10 +289,10 @@ class MultiCrystalAnalysis:
         d.update(plot_uc_histograms(uc_params))
 
         d["uc_scatter"]["layout"]["title"] = (
-            "Distribution of unit cell parameters (accepted datasets)"
+            "Distribution of unit cell parameters (final datasets)"
         )
         d["uc_hist"]["layout"]["title"] = (
-            "Histogram of unit cell parameters (accepted datasets)"
+            "Histogram of unit cell parameters (final datasets)"
         )
 
         # self._plot_uc_vs_detector_distance(uc_params, panel_distances, outliers, params.steps_per_angstrom)
@@ -308,7 +308,7 @@ class MultiCrystalAnalysis:
         if clustering:
             d["uc_clustering"] = scipy_dendrogram_to_plotly_json(
                 clustering.dendrogram,
-                title="Unit cell clustering (accepted datasets)",
+                title="Unit cell clustering (final datasets)",
                 xtitle="Dataset",
                 ytitle="Distance (Å<sup>2</sup>)",
                 help="""\
