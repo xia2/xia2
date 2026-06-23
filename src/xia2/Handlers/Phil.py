@@ -855,6 +855,10 @@ xia2.settings
     .type = unit_cell
     .help = "Provide a target unit cell to the indexing program"
     .short_caption = "Unit cell (requires the space group to be set)"
+  reindex_C2_to_I2 = False
+    .type = bool
+    .help = "Reindex C2 to I2 space group"
+    .short_caption = "Reindex C2 to I2"
   resolution
     .short_caption = "Resolution"
   {
