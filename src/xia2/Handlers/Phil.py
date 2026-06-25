@@ -239,6 +239,11 @@ dials
     .short_caption = "Closeness to the spindle cutoff for including " \
                      "reflections in refinement"
     .expert_level = 2
+  reindex_C2_to_I2 = False
+    .type = bool
+    .help = "Reindex C2 to I2 space group"
+    .short_caption = "Reindex C2 to I2"
+    .expert_level = 2
 
   detect_blanks
     .short_caption = "Detect blank images"
@@ -855,10 +860,6 @@ xia2.settings
     .type = unit_cell
     .help = "Provide a target unit cell to the indexing program"
     .short_caption = "Unit cell (requires the space group to be set)"
-  reindex_C2_to_I2 = False
-    .type = bool
-    .help = "Reindex C2 to I2 space group"
-    .short_caption = "Reindex C2 to I2"
   resolution
     .short_caption = "Resolution"
   {
