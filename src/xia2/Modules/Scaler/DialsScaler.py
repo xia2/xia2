@@ -573,6 +573,9 @@ pipeline=dials (supported for pipeline=dials-aimless).
             ]
             for epoch in self._sweep_handler.get_epochs():
                 si = self._sweep_handler.get_sweep_information(epoch)
+                integrater = si.get_integrater()
+                if not integrater.get_integrater_spacegroup_number() == 5:
+                    continue
 
                 reindexer = DialsReindex()
                 reindexer.set_working_directory(self.get_working_directory())
