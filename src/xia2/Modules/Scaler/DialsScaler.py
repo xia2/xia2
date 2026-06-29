@@ -568,6 +568,9 @@ pipeline=dials (supported for pipeline=dials-aimless).
 
         # Reindex C2 to I2 if requested
         if PhilIndex.params.dials.reindex_C2_to_I2:
+            self._scalr_likely_spacegroups = [
+                s.replace("C 1 2 1", "I 1 2 1") for s in self._scalr_likely_spacegroups
+            ]
             for epoch in self._sweep_handler.get_epochs():
                 si = self._sweep_handler.get_sweep_information(epoch)
 
