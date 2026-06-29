@@ -187,7 +187,7 @@ def test_proteinase_k_dose(
         [
             "dose=1,20",
             "symmetry.laue_group=%s" % laue_group,
-            "symmetry.space_group=%s" % space_group,
+            "space_group=%s" % space_group,
             "clustering.output_clusters=True",
             "clustering.max_output_clusters=2",
             "clustering.min_cluster_size=2",
@@ -235,7 +235,7 @@ def test_proteinase_k_coordinate_clusters(proteinase_k, run_in_tmp_path):
     parameters = [
         "clustering.output_clusters=True",
         "clustering.method=coordinate",
-        "symmetry.space_group=P422",
+        "space_group=P422",
         "clustering.min_cluster_size=2",
     ]
     command_line_args = parameters + expts[:-1] + refls[:-1]
@@ -262,7 +262,7 @@ def test_proteinase_k_hierarchical_clusters(proteinase_k, run_in_tmp_path):
         "clustering.output_clusters=True",
         "clustering.min_completeness=0.5",
         "clustering.hierarchical.method=correlation+cos_angle",
-        "symmetry.space_group=P422",
+        "space_group=P422",
     ]
     expts, refls = proteinase_k
     command_line_args = parameters + expts[:-1] + refls[:-1]
@@ -288,7 +288,7 @@ def test_proteinase_k_hierarchical_clusters_distinct(proteinase_k, run_in_tmp_pa
         "clustering.min_completeness=0.2",
         "clustering.min_cluster_size=1",
         "clustering.hierarchical.method=correlation",
-        "symmetry.space_group=P422",
+        "space_group=P422",
         "distinct_clusters=True",
     ]
     expts, refls = proteinase_k
@@ -321,7 +321,7 @@ def test_proteinase_k_laue_group_space_group_raises_error(
 ):
     expts, refls = proteinase_k
     command_line_args = (
-        ["symmetry.laue_group=P422", "symmetry.space_group=P41212"] + expts + refls
+        ["symmetry.laue_group=P422", "space_group=P41212"] + expts + refls
     )
     with pytest.raises(SystemExit):
         run_multiplex(command_line_args)
@@ -494,7 +494,7 @@ def test_run_with_reference_pdb(run_in_tmp_path, dials_data):
 
     # test EXIT if incompatible space group
     command_line_args = (
-        [f"reference={os.fspath(data_dir / '2id8.pdb')}", "symmetry.space_group=P1"]
+        [f"reference={os.fspath(data_dir / '2id8.pdb')}", "space_group=P1"]
         + expts
         + refls
     )
