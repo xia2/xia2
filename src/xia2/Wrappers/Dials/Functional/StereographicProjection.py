@@ -68,12 +68,12 @@ class StereographicProjection:
             raise ValueError(
                 "No hkl value set in dials.stereographic_projection wrapper"
             )
-        xpid = _get_number()
+        self._xpid = _get_number()
         self._logfile = (
-            self._working_directory / f"{xpid}_dials.stereographic_projection.log"
+            self._working_directory / f"{self._xpid}_dials.stereographic_projection.log"
         )
         self._json_filename = self._json_filename.parent / (
-            f"{xpid}_" + self._json_filename.name
+            f"{self._xpid}_" + self._json_filename.name
         )
         with (
             run_in_directory(self._working_directory),

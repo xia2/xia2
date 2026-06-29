@@ -59,6 +59,7 @@ def DialsScale(DriverType=None, decay_correction=None):
             self._deltacchalf_group_size = None
             self._deltacchalf_stdcutoff = None
             self._scale_and_filter_results = None
+            self._scale_and_filter_filename = None
 
             # input and output files
             self._unmerged_reflections = None
@@ -449,11 +450,11 @@ def DialsScale(DriverType=None, decay_correction=None):
 
             if self._filtering_method:
                 self.add_command_line(f"filtering.method={self._filtering_method}")
-                scale_and_filter_filename = (
+                self._scale_and_filter_filename = (
                     f"{self.get_xpid()}_scale_and_filter_results.json"
                 )
                 self.add_command_line(
-                    f"output.scale_and_filter_results={scale_and_filter_filename}"
+                    f"output.scale_and_filter_results={self._scale_and_filter_filename}"
                 )
                 if self._deltacchalf_max_cycles:
                     self.add_command_line(
@@ -500,8 +501,10 @@ def DialsScale(DriverType=None, decay_correction=None):
 
             logger.debug("dials.scale status: OK")
 
-            if self._filtering_method and os.path.isfile(scale_and_filter_filename):
-                with open(scale_and_filter_filename) as fh:
+            if self._filtering_method and os.path.isfile(
+                self._scale_and_filter_filename
+            ):
+                with open(self._scale_and_filter_filename) as fh:
                     self._scale_and_filter_results = (
                         scale_and_filter.AnalysisResults.from_dict(json.load(fh))
                     )
