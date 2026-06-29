@@ -139,10 +139,6 @@ symmetry
     .short_caption = "Resolve indexing ambiguity"
   cosym {
     include scope dials.algorithms.symmetry.cosym.cosym_scope
-    lattice_group = None
-      .type = space_group
-      .short_caption = "Lattice group"
-      .expert_level=2
     lattice_symmetry_max_delta = 5.0
       .type = float(value_min=0)
       .short_caption = "Lattice symmetry max δ"
