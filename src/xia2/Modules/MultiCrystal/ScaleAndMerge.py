@@ -1225,6 +1225,8 @@ class MultiCrystalScale:
             relative_length_tolerance=None, absolute_angle_tolerance=None
         )
         symmetry.set_mode_absences_only()
+        if self._params.small_molecule.composition:
+            symmetry.set_small_molecule_true()
         symmetry.decide_pointgroup()
 
         self._data_manager.experiments = load.experiment_list(

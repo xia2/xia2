@@ -50,6 +50,7 @@ def DialsSymmetry(DriverType=None):
             self._absolute_angle_tolerance = 2
             self._laue_group = "auto"
             self._sys_abs_check = True
+            self._small_molecule = False
 
             # space to store all possible solutions, to allow discussion of
             # the correct lattice with the indexer... this should be a
@@ -110,6 +111,9 @@ def DialsSymmetry(DriverType=None):
 
         def get_html(self):
             return self._html
+
+        def set_small_molecule_true(self):
+            self._small_molecule = True
 
         def set_allow_out_of_sequence_files(self, allow=True):
             self._allow_out_of_sequence_files = allow
@@ -189,6 +193,8 @@ def DialsSymmetry(DriverType=None):
                 self.add_command_line("laue_group=None")
             if not self._sys_abs_check:
                 self.add_command_line("systematic_absences.check=False")
+            if self._small_molecule:
+                self.add_command_line("systematic_absences.small_molecule=True")
             if not self._html:
                 self._html = os.path.join(
                     self.get_working_directory(),
