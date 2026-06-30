@@ -275,7 +275,10 @@ significant_clusters {
 small_molecule {
   composition = None
     .type = str
-    .help = "The chemical composition of the asymmetric unit. Set this to trigger export to shelx format."
+    .help = "The chemical composition of the asymmetric unit. This is the key parameter to set to trigger symmetry"
+            "analysis that considers all symmetry elements, including glide planes, mirrors etc., i.e. symmetry analysis"
+            "that is not restricted to MX spacegroups. This parameter also triggers export to shelx format, which makes"
+            "use of the composition formula. A dummy formula can be used e.g. composition=CH."
 }
 
 """,
