@@ -243,7 +243,7 @@ class MultiCrystalAnalysis:
         if self.prelim_uc_clustering:
             d["preliminary_uc_clustering"] = scipy_dendrogram_to_plotly_json(
                 self.prelim_uc_clustering.dendrogram,
-                title="Preliminary Unit cell clustering (all datasets)",
+                title="Preliminary unit cell clustering (all datasets)",
                 xtitle="Dataset",
                 ytitle="Distance (Å<sup>2</sup>)",
                 help="""\
