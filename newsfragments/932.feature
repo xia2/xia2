@@ -1,1 +1,1 @@
-``xia2.multiplex``: Search all possible space groups when small_molecule.composition is set
+``xia2.multiplex``: Add a ``small_molecule`` option, to trigger full symmetry analysis and shelx output for small-molecule data.
