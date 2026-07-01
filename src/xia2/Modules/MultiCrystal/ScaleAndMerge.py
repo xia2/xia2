@@ -1069,6 +1069,13 @@ class MultiCrystalScale:
                         data["text"] = list(flex.std_string(data["text"]).select(sel))
 
         d.update(report.multiplicity_plots())
+
+        for axis in ["h", "k", "l"]:
+            try:
+                os.remove(f"multiplicities_{axis}_0.png")
+            except FileNotFoundError:
+                pass
+
         return d
 
     @staticmethod
