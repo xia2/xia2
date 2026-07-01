@@ -2,6 +2,10 @@
 Chemical Crystallography
 ++++++++++++++++++++++++
 
+**Note on DIALS versions:** The ``small_molecule`` feature described is available in DIALS versions >3.29.
+DIALS versions 3.29 - 3.26 have the ``composition`` parameter.
+
+
 Data from small molecule (or chemical crystallography) experiments can also be processed using xia2.multiplex.
 To enable relevant options for small molecule data processing, set the parameter ``small_molecule=True``.
 This will trigger a full symmetry analysis including glide planes, mirror planes etc., i.e. the space group
