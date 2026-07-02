@@ -3,6 +3,8 @@ from __future__ import annotations
 import json
 import os
 import pathlib
+import shutil
+import subprocess
 
 import iotbx.mtz
 import pytest
@@ -562,9 +564,7 @@ def test_on_import_xds_data(dials_data, run_in_tmp_path):
 
 def test_shelx_output(proteinase_k, run_in_tmp_path):
     expts, refls = proteinase_k
-    parameters = [
-        "small_molecule.composition=CHSNO",
-    ]
+    parameters = ["composition=CHSNO"]
     command_line_args = parameters + expts[:-1] + refls[:-1]
     run_multiplex(command_line_args)
 
@@ -598,3 +598,42 @@ def test_selected_identifiers(protk_experiments_and_reflections, run_in_tmp_path
     assert len(multiplex_expts) == 2
     assert test_uuid_1 in multiplex_expts.identifiers()
     assert test_uuid_2 in multiplex_expts.identifiers()
+
+
+def test_small_molecule(dials_data, run_in_tmp_path):
+    # We don't have any small molecule multi-crystal data in dials-data, so
+    # make a copy of the single dataset to be able to trigger multiplex and
+    # test the small molecule symmetry determination.
+    nidppe = dials_data("nidppe_processed")
+    expts = nidppe / "integrated.expt"
+    refls = nidppe / "integrated.refl.gz"
+    subprocess.run(
+        [
+            shutil.which("dials.assign_experiment_identifiers"),
+            expts,
+            refls,
+            "identifiers='copy'",
+        ],
+        cwd=run_in_tmp_path,
+    )
+    command_line_args = [
+        "small_molecule=True",
+        os.fspath(expts),
+        os.fspath(refls),
+        run_in_tmp_path / "assigned.expt",
+        run_in_tmp_path / "assigned.refl",
+    ]
+    result = subprocess.run(
+        [shutil.which("xia2.multiplex")] + command_line_args,
+        cwd=run_in_tmp_path,
+        capture_output=True,
+    )
+    assert not result.returncode
+    multiplex_expts = load.experiment_list(
+        run_in_tmp_path / "scaled.expt", check_format=False
+    )
+    # Check small molecule symmetry assessment was done.
+    assert str(multiplex_expts[0].crystal.get_space_group().info()) == "P 1 21/c 1"
+    # Check that shelx files were also generated, even though no composition was specified
+    assert (run_in_tmp_path / "scaled.hkl").is_file()
+    assert (run_in_tmp_path / "scaled.ins").is_file()

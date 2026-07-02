@@ -15,6 +15,7 @@ from dxtbx.model.experiment_list import ExperimentList
 
 import xia2.Handlers.Streams
 from xia2.Applications.xia2_main import write_citations
+from xia2.cli.multiplex import phil_scope as mplx_scope
 from xia2.Handlers.Citations import Citations
 from xia2.Modules.MultiCrystal.filter import FilterExistingMultiplex
 from xia2.Modules.SSX.util import report_timing
@@ -75,31 +76,6 @@ resolution {
 output {
   log = xia2.multiplex_filtering.log
     .type = str
-}
-""",
-    process_includes=True,
-)
-
-mplx_scope = iotbx.phil.parse(
-    """
-
-include scope xia2.Modules.MultiCrystal.ScaleAndMerge.phil_scope
-
-include scope dials.util.exclude_images.phil_scope
-
-wavelength_tolerance = 0.0001
-  .type = float
-  .help = "Absolute tolerance, in Angstroms, for determining whether to merge data from different"
-          "wavelengths in the output mtz/sca files. Increasing this number significantly may reduce"
-          "downstream data quality due to loss of information on wavelength."
-
-seed = 42
-  .type = int(value_min=0)
-output {
-  log = xia2.multiplex.log
-    .type = str
-  cluster_html = False
-    .type = bool
 }
 """,
     process_includes=True,
