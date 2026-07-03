@@ -280,13 +280,14 @@ significant_clusters {
       .help = "Exponential scale for noise penalty."
   }
 }
-
-small_molecule {
-  composition = None
-    .type = str
-    .help = "The chemical composition of the asymmetric unit. Set this to trigger export to shelx format."
-}
-
+small_molecule = False
+    .type = bool
+    .help = "Trigger options to handle small-molecule/chemical crystallography data."
+            "This consists of symmetry analysis that considers all symmetry elements, including glide planes,"
+            "mirrors etc., i.e. symmetry analysis that is not restricted to MX spacegroups. This also triggers"
+            "export to shelx format, using a dummy composition of CH if no composition is provided with the"
+            "output.composition parameter."
+    .expert_level = 1
 """,
     process_includes=True,
 )
@@ -351,6 +352,15 @@ class MultiCrystalScale:
         self._params = params
         if all([params.symmetry.laue_group, params.symmetry.space_group]):
             raise ValueError("Can not specify both laue_group and space_group")
+
+        # small molecule logic section
+        if self._params.small_molecule:
+            if not self._params.output.composition:
+                # set dummy composition to trigger shelx output
+                self._params.output.composition = "CH"
+                logger.info(
+                    "Setting dummy composition=CH for shelx export for small-molecule processing."
+                )
 
         if self._params.nproc is Auto:
             self._params.nproc = CPU_COUNT
@@ -442,7 +452,7 @@ class MultiCrystalScale:
         # Exporting to mtz alters the reflection table without a copy here
         temp_refls = copy.deepcopy(self._data_manager._reflections)
 
-        if self._params.small_molecule.composition:
+        if self._params.output.composition:
             self.export_shelx(
                 self._params,
                 self._data_manager._experiments,
@@ -670,7 +680,7 @@ class MultiCrystalScale:
             f"Datasets merged after filtering: {len(data_manager._experiments)}"
         )
 
-        if params.small_molecule.composition:
+        if params.output.composition:
             MultiCrystalScale.export_shelx(
                 params,
                 data_manager._experiments,
@@ -765,7 +775,7 @@ class MultiCrystalScale:
         # if we didn't have an external reference for the free_flags set, we need to make
         # and record one here.
 
-        if params.small_molecule.composition:
+        if params.output.composition:
             MultiCrystalScale.export_shelx(
                 params,
                 data_manager._experiments,
@@ -1234,6 +1244,8 @@ class MultiCrystalScale:
             relative_length_tolerance=None, absolute_angle_tolerance=None
         )
         symmetry.set_mode_absences_only()
+        if self._params.small_molecule:
+            symmetry.set_small_molecule_true()
         symmetry.decide_pointgroup()
 
         self._data_manager.experiments = load.experiment_list(
@@ -1352,7 +1364,7 @@ class MultiCrystalScale:
     ) -> None:
         export = ExportShelx()
         export.set_output_names(output_name)
-        export.set_composition(params.small_molecule.composition)
+        export.set_composition(params.output.composition)
         export.run(expts, refls)
 
 

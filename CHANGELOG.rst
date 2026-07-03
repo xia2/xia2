@@ -96,7 +96,7 @@ Features
 - ``xia2.ssx``: Add ``d_max=`` parameter to apply low resolution cutoff. (`#851 <https://github.com/xia2/xia2/issues/851>`_)
 - ``xia2.multiplex``: Significantly speed up multiplex report generation by using dials delta-cc½ code. (`#860 <https://github.com/xia2/xia2/issues/860>`_)
 - ``xia2.ssx``: Output both a ``merged.mtz`` and ``merged_full.mtz`` in cases where the suggested resolution is lower than the resolution of the dataset. (`#881 <https://github.com/xia2/xia2/issues/881>`_)
-- ``xia2.multiplex``: Added option (``small_molecule.composition=``) to export SHELX files, for small molecule crystallography. (`#887 <https://github.com/xia2/xia2/issues/887>`_)
+- ``xia2.multiplex``: Added option (``composition=``) to export SHELX files, for small molecule crystallography. (`#887 <https://github.com/xia2/xia2/issues/887>`_)
 
 
 Bugfixes
