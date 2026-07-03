@@ -73,6 +73,8 @@ class ReductionParams:
     partiality_threshold: float = 0.25
     mean_i_over_sigma_threshold: float | None = None
     remove_filtered_reflections: bool = True
+    deltacchalf: bool = False
+    stdcutoff: float = 4.0
 
     @classmethod
     def from_phil(cls, params: iotbx.phil.scope_extract):
@@ -138,4 +140,6 @@ class ReductionParams:
             params.partiality_threshold,
             params.filtering.mean_i_over_sigma_threshold,
             params.filtering.remove_filtered_reflections,
+            params.filtering.deltacchalf,
+            params.filtering.stdcutoff,
         )

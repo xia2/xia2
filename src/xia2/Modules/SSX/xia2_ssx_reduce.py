@@ -119,6 +119,16 @@ clustering {
     .expert_level = 2
 }
 filtering {
+  deltacchalf = False
+    .type = bool
+    .help = "If True, perform iterative delta-cc-half filtering during scaling."
+            "The stdcutoff value can be set, further options can be set through"
+            "the scaling.phil file."
+  stdcutoff = 4.0
+    .type = float
+    .help = "For deltacchalf filtering, datasets with this number of standard"
+            "deviations below the mean are removed. A smaller stdcutoff value"
+            "will result in more aggressive filtering."
   mean_i_over_sigma_threshold = None
     .type = float(allow_none=True)
     .help = "Apply a per-image mean I/sigma filter, calculated on reflections with"

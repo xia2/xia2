@@ -704,6 +704,13 @@ grouping:
                 "n_cryst": 3,
             },
         ),
+        (
+            ["deltacchalf=True", "stdcutoff=0.5"],
+            {
+                "best_unit_cell": [96.402166, 96.402166, 96.402166, 90.0, 90.0, 90.0],
+                "n_cryst": 4,
+            },
+        ),
     ],
 )
 def test_ssx_reduce_filter_options(

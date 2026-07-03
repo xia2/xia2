@@ -19,7 +19,7 @@ from dials.algorithms.merging.merge import (
     merge_scaled_array_to_mtz_with_report_collection,
 )
 from dials.algorithms.merging.reporting import generate_html_report as merge_html_report
-from dials.algorithms.scaling.algorithm import ScalingAlgorithm
+from dials.algorithms.scaling.algorithm import ScaleAndFilterAlgorithm, ScalingAlgorithm
 from dials.array_family import flex
 from dials.command_line.cluster_unit_cell import do_cluster_analysis
 from dials.command_line.cluster_unit_cell import phil_scope as cluster_phil_scope
@@ -497,6 +497,12 @@ def _extract_scaling_params(reduction_params):
             str(round(p, 4)) for p in reduction_params.central_unit_cell.parameters()
         )
         xia2_phil += f"\nreflection_selection.best_unit_cell={vals}"
+    if reduction_params.deltacchalf:
+        xia2_phil += f"""
+            filtering.method=deltacchalf
+            filtering.deltacchalf.mode=dataset
+            filtering.deltacchalf.stdcutoff={reduction_params.stdcutoff}
+"""
 
     if reduction_params.scaling_phil:
         itpr = scaling_phil_scope.command_line_argument_interpreter()
@@ -766,7 +772,10 @@ def scale_on_batches(
         )
 
         # Run the scaling using the algorithm class to give access to scaler
-        scaler = ScalingAlgorithm(params, expts, tables)
+        if reduction_params.deltacchalf:
+            scaler = ScaleAndFilterAlgorithm(params, expts, tables)
+        else:
+            scaler = ScalingAlgorithm(params, expts, tables)
         scaler.run()
         try:
             d_min = resolution_cc_half(
