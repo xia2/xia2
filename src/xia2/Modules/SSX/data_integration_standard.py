@@ -8,9 +8,12 @@ import os
 import pathlib
 import shutil
 import subprocess
+import time
 from dataclasses import asdict, dataclass, field
 from typing import Any
 
+import dxtbx.nexus
+import h5py
 import libtbx.easy_mp
 import numpy as np
 from dials.algorithms.clustering.unit_cell import Cluster
@@ -20,6 +23,7 @@ from dials.array_family import flex
 from dials.util.image_grouping import ParsedYAML
 from dxtbx import flumpy
 from dxtbx.model import ExperimentList
+from dxtbx.model.experiment_list import ExperimentListFactory
 from dxtbx.serialize import load
 from libtbx import phil
 
@@ -82,6 +86,118 @@ class AlgorithmParams:
     multiprocessing_method: str = "multiprocessing"
     enable_live_reporting: bool = False
     parsed_grouping: ParsedYAML | None = None
+    wait_for_images: bool = False
+    wait_for_images_method: str = "swmr"
+    wait_for_images_timeout: float = 3600
+    wait_for_images_interval: float = 10
+
+
+def wait_for_batch_images(
+    working_directory: pathlib.Path, options: AlgorithmParams
+) -> bool:
+    """Poll until every image referenced by the batch's imported.expt has been written
+    to disk, for live processing during data collection.
+
+    Only HDF5/NeXus imagesets are gated (using dxtbx VDS introspection); imagesets in
+    other formats are treated as always available. Returns True once the images are
+    available, or False if options.wait_for_images_timeout is exceeded.
+    """
+    expts = load.experiment_list(
+        working_directory / "imported.expt", check_format=False
+    )
+    needed: dict[str, int] = {}  # master file -> highest global frame index required
+    for iset in expts.imagesets():
+        path = iset.paths()[0]
+        if not h5py.is_hdf5(path):
+            continue
+        needed[path] = max(needed.get(path, -1), max(iset.indices()))
+    if not needed:
+        return True
+
+    deadline = time.monotonic() + options.wait_for_images_timeout
+    waited = False
+    while True:
+        if all(
+            dxtbx.nexus.get_available_frame_count(path, options.wait_for_images_method)
+            > index
+            for path, index in needed.items()
+        ):
+            if waited:
+                xia2_logger.info(
+                    f"Images for {working_directory.name} are now available"
+                )
+            return True
+        if time.monotonic() > deadline:
+            return False
+        xia2_logger.info(
+            f"Waiting for images for {working_directory.name} "
+            f"(polling every {options.wait_for_images_interval:g}s)..."
+        )
+        waited = True
+        time.sleep(options.wait_for_images_interval)
+
+
+def _path_from_image_input(obj: str) -> str:
+    """Strip any trailing ':start:end' slice from an image input string, returning
+    just the filesystem path (e.g. '/path/data.h5:1:100' -> '/path/data.h5')."""
+    drive, tail = os.path.splitdrive(obj)
+    if ":" in tail:
+        tokens = tail.split(":")
+        if len(tokens) == 3:
+            return drive + tokens[0]
+    return obj
+
+
+def _input_file_ready(path: pathlib.Path) -> bool:
+    """Judge whether an input image file can be read by dials.import.
+
+    Existence, or even that an HDF5 master opens, is not enough: while the writer is
+    still creating the file the superblock may open but the NXmx metadata dials.import
+    needs (detector parameters, bit depth, geometry, ...) may not have been written
+    yet, so the read fails. Probe with the same machinery dials.import uses -- build
+    the imageset from the filename -- and treat any failure as not-yet-ready so we keep
+    waiting. This reads metadata/geometry only; whether the frames have actually been
+    written is deferred to the per-batch image wait, which is where that matters.
+    """
+    if not path.is_file():
+        return False
+    try:
+        expts = ExperimentListFactory.from_filenames([os.fspath(path)])
+    except Exception:  # noqa: BLE001 - any read failure means the file isn't ready yet
+        return False
+    return len(expts) > 0
+
+
+def wait_for_input_files(file_input: FileInput, options: AlgorithmParams) -> bool:
+    """Poll until the input image files exist on disk *and* are readable, for live
+    processing where dials.import may be invoked before data collection has created
+    the master file(s), or while the writer is still creating them.
+
+    Only plain image=file inputs are gated. Returns True once every input file is
+    ready (or if there is nothing to wait for), or False if
+    options.wait_for_images_timeout is exceeded.
+    """
+    paths = [pathlib.Path(_path_from_image_input(obj)) for obj in file_input.images]
+    if not paths:
+        return True
+
+    deadline = time.monotonic() + options.wait_for_images_timeout
+    waited = False
+    while True:
+        not_ready = [p for p in paths if not _input_file_ready(p)]
+        if not not_ready:
+            if waited:
+                xia2_logger.info("Input image files are now available")
+            return True
+        if time.monotonic() > deadline:
+            return False
+        xia2_logger.info(
+            "Waiting for input image files to be ready: "
+            + ", ".join(os.fspath(p) for p in not_ready)
+            + f" (polling every {options.wait_for_images_interval:g}s)..."
+        )
+        waited = True
+        time.sleep(options.wait_for_images_interval)
 
 
 def process_batch(
@@ -100,6 +216,14 @@ def process_batch(
         "n_cryst_integrated": None,
         "directory": working_directory,
     }
+    if options.wait_for_images:
+        if not wait_for_batch_images(working_directory, options):
+            xia2_logger.warning(
+                f"Timed out waiting for images in {working_directory}; stopping "
+                "(finishing with the data collected so far)."
+            )
+            data["timed_out"] = True
+            return data
     if options.enable_live_reporting:
         nuggets_dir = working_directory / "nuggets"
         if not nuggets_dir.is_dir():
@@ -542,6 +666,13 @@ def cumulative_assess_crystal_parameters(
             )
         except NoMoreImages:
             break
+        if options.wait_for_images:
+            if not wait_for_batch_images(working_directory, options):
+                xia2_logger.warning(
+                    "Timed out waiting for images during crystal assessment; "
+                    "proceeding with the images collected so far."
+                )
+                break
         strong = ssx_find_spots(working_directory, spotfinding_params)
         # NB ideally count is formatted the same as batch numbering e.g 01 if >9 batches
         dir_placeholder = pathlib.Path(f"assess_batch_{count}")
@@ -744,6 +875,13 @@ def cumulative_determine_reference_geometry(
             )
         except NoMoreImages:
             break
+        if options.wait_for_images:
+            if not wait_for_batch_images(working_directory, options):
+                xia2_logger.warning(
+                    "Timed out waiting for images during geometry refinement; "
+                    "proceeding with the images collected so far."
+                )
+                break
         strong = ssx_find_spots(working_directory, spotfinding_params)
         # NB ideally count is formatted the same as batch numbering e.g 01 if >9 batches
         dir_placeholder = pathlib.Path(f"refinement_batch_{count}")
@@ -992,6 +1130,8 @@ def process_batches(
     progress = ProgressReport(setup_data)
 
     def process_output(summary_data, add_all_to_progress=True):
+        if summary_data.get("timed_out"):
+            return
         if add_all_to_progress:
             progress.add_all(summary_data)
         progress.summarise()
@@ -1028,6 +1168,9 @@ def process_batches(
                 options,
                 progress,
             )
+            if summary_data.get("timed_out"):
+                xia2_logger.info("No more images available; stopping batch processing.")
+                break
             process_output(summary_data, add_all_to_progress=False)
 
 
@@ -1086,6 +1229,10 @@ def run_data_integration(
 
     import_was_run = False
     if not same_as_previous:
+        if options.wait_for_images and not wait_for_input_files(file_input, options):
+            raise ValueError(
+                "Timed out waiting for the input image files to appear on disk."
+            )
         # Run the first import, or reimport if options different
         run_import(import_wd, file_input)
         import_was_run = True
