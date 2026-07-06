@@ -469,7 +469,7 @@ class MergeResult:
     name: str = ""
 
 
-def _extract_scaling_params(reduction_params):
+def _extract_scaling_params(reduction_params, final_scale=False):
     # scaling options for scaling without a reference
     extra_defaults = """
         model=KB
@@ -497,7 +497,7 @@ def _extract_scaling_params(reduction_params):
             str(round(p, 4)) for p in reduction_params.central_unit_cell.parameters()
         )
         xia2_phil += f"\nreflection_selection.best_unit_cell={vals}"
-    if reduction_params.deltacchalf:
+    if reduction_params.deltacchalf and final_scale:
         xia2_phil += f"""
             filtering.method=deltacchalf
             filtering.deltacchalf.mode=dataset
@@ -649,6 +649,23 @@ def scale_against_reference(
         scaler.run()
         scaled_expts, scaled_table = scaler.finish()
 
+        if reduction_params.deltacchalf:
+            # This will log at the end of dials.scale.log, similar to scaling and filtering,
+            # but without the additional scaling which does not make sense when scaling against
+            # a reference - there is no benefit to further scaling against the same reference.
+            from dials.algorithms.statistics.cc_half_algorithm import CCHalfFromDials
+            from dials.command_line.compute_delta_cchalf import (
+                phil_scope as deltaccphilscope,
+            )
+
+            ccparams = deltaccphilscope.extract()
+            ccparams.partiality_threshold = reduction_params.partiality_threshold
+            ccparams.stdcutoff = reduction_params.stdcutoff
+            script = CCHalfFromDials(ccparams, scaled_expts, scaled_table)
+            script.run()
+            scaled_expts = script.experiments
+            scaled_table = script.filtered_reflection_table
+
         dials_logger.info(f"Saving scaled experiments to {params.output.experiments}")
         scaled_expts.as_file(params.output.experiments)
         dials_logger.info(f"Saving scaled reflections to {params.output.reflections}")
@@ -689,6 +706,7 @@ def scale_parallel_batches(
                 [batch],
                 reduction_params,
                 name,
+                False,
             ): i
             for i, (name, batch) in enumerate(jobs.items())
         }
@@ -718,6 +736,7 @@ def scale_on_batches(
     batches_to_scale: list[ProcessingBatch],
     reduction_params: ReductionParams,
     name="",
+    final_scale=True,
 ) -> ProgramResult:
     Citations.cite("dials.scale")
     logfile = "dials.scale.log"
@@ -763,8 +782,7 @@ def scale_on_batches(
                 all_expts.extend(expts)
                 tables.append(table)
         expts = all_expts
-
-        params, diff_phil = _extract_scaling_params(reduction_params)
+        params, diff_phil = _extract_scaling_params(reduction_params, final_scale)
         dials_logger.info(
             "The following parameters have been modified:\n"
             + input_
@@ -772,7 +790,7 @@ def scale_on_batches(
         )
 
         # Run the scaling using the algorithm class to give access to scaler
-        if reduction_params.deltacchalf:
+        if reduction_params.deltacchalf and final_scale:
             scaler = ScaleAndFilterAlgorithm(params, expts, tables)
         else:
             scaler = ScalingAlgorithm(params, expts, tables)
@@ -969,6 +987,7 @@ def scale_reindex_single(
         [batch_for_reindex],
         reduction_params,
         "batch1",
+        final_scale=False,
     )
     logfile = "dials.reindex.log"
     with (
