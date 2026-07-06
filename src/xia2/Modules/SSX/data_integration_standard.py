@@ -8,9 +8,12 @@ import os
 import pathlib
 import shutil
 import subprocess
+import time
 from dataclasses import asdict, dataclass, field
 from typing import Any
 
+import dxtbx.nexus
+import h5py
 import libtbx.easy_mp
 import numpy as np
 from dials.algorithms.clustering.unit_cell import Cluster
@@ -82,6 +85,55 @@ class AlgorithmParams:
     multiprocessing_method: str = "multiprocessing"
     enable_live_reporting: bool = False
     parsed_grouping: ParsedYAML | None = None
+    wait_for_images: bool = False
+    wait_for_images_method: str = "swmr"
+    wait_for_images_timeout: float = 3600
+    wait_for_images_interval: float = 10
+
+
+def wait_for_batch_images(
+    working_directory: pathlib.Path, options: AlgorithmParams
+) -> bool:
+    """Poll until every image referenced by the batch's imported.expt has been written
+    to disk, for live processing during data collection.
+
+    Only HDF5/NeXus imagesets are gated (using dxtbx VDS introspection); imagesets in
+    other formats are treated as always available. Returns True once the images are
+    available, or False if options.wait_for_images_timeout is exceeded.
+    """
+    expts = load.experiment_list(
+        working_directory / "imported.expt", check_format=False
+    )
+    needed: dict[str, int] = {}  # master file -> highest global frame index required
+    for iset in expts.imagesets():
+        path = iset.paths()[0]
+        if not h5py.is_hdf5(path):
+            continue
+        needed[path] = max(needed.get(path, -1), max(iset.indices()))
+    if not needed:
+        return True
+
+    deadline = time.monotonic() + options.wait_for_images_timeout
+    waited = False
+    while True:
+        if all(
+            dxtbx.nexus.get_available_frame_count(path, options.wait_for_images_method)
+            > index
+            for path, index in needed.items()
+        ):
+            if waited:
+                xia2_logger.info(
+                    f"Images for {working_directory.name} are now available"
+                )
+            return True
+        if time.monotonic() > deadline:
+            return False
+        xia2_logger.info(
+            f"Waiting for images for {working_directory.name} "
+            f"(polling every {options.wait_for_images_interval:g}s)..."
+        )
+        waited = True
+        time.sleep(options.wait_for_images_interval)
 
 
 def process_batch(
@@ -100,6 +152,14 @@ def process_batch(
         "n_cryst_integrated": None,
         "directory": working_directory,
     }
+    if options.wait_for_images:
+        if not wait_for_batch_images(working_directory, options):
+            xia2_logger.warning(
+                f"Timed out waiting for images in {working_directory}; stopping "
+                "(finishing with the data collected so far)."
+            )
+            data["timed_out"] = True
+            return data
     if options.enable_live_reporting:
         nuggets_dir = working_directory / "nuggets"
         if not nuggets_dir.is_dir():
@@ -542,6 +602,13 @@ def cumulative_assess_crystal_parameters(
             )
         except NoMoreImages:
             break
+        if options.wait_for_images:
+            if not wait_for_batch_images(working_directory, options):
+                xia2_logger.warning(
+                    "Timed out waiting for images during crystal assessment; "
+                    "proceeding with the images collected so far."
+                )
+                break
         strong = ssx_find_spots(working_directory, spotfinding_params)
         # NB ideally count is formatted the same as batch numbering e.g 01 if >9 batches
         dir_placeholder = pathlib.Path(f"assess_batch_{count}")
@@ -744,6 +811,13 @@ def cumulative_determine_reference_geometry(
             )
         except NoMoreImages:
             break
+        if options.wait_for_images:
+            if not wait_for_batch_images(working_directory, options):
+                xia2_logger.warning(
+                    "Timed out waiting for images during geometry refinement; "
+                    "proceeding with the images collected so far."
+                )
+                break
         strong = ssx_find_spots(working_directory, spotfinding_params)
         # NB ideally count is formatted the same as batch numbering e.g 01 if >9 batches
         dir_placeholder = pathlib.Path(f"refinement_batch_{count}")
@@ -992,6 +1066,8 @@ def process_batches(
     progress = ProgressReport(setup_data)
 
     def process_output(summary_data, add_all_to_progress=True):
+        if summary_data.get("timed_out"):
+            return
         if add_all_to_progress:
             progress.add_all(summary_data)
         progress.summarise()
@@ -1028,6 +1104,9 @@ def process_batches(
                 options,
                 progress,
             )
+            if summary_data.get("timed_out"):
+                xia2_logger.info("No more images available; stopping batch processing.")
+                break
             process_output(summary_data, add_all_to_progress=False)
 
 

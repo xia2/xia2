@@ -213,6 +213,31 @@ enable_live_reporting = False
   .type = bool
   .help = "If True, additional output will be generated to allow in-process monitoring"
   .expert_level=3
+wait_for_images {
+  enable = False
+    .type = bool
+    .help = "Live-processing mode: before processing each batch, pause until that batch's"
+            "image data has actually been written to disk. Intended for processing during"
+            "data collection, where the master H5 virtual dataset declares the full planned"
+            "number of images up front but the underlying data files are filled incrementally."
+    .expert_level=3
+  method = *swmr file_close
+    .type = choice
+    .help = "How to test that a batch's source data is ready. 'swmr' reads the current written"
+            "extent of the source dataset via an SWMR read (per-image granularity, requires the"
+            "writer to use SWMR). 'file_close' waits until the writer has released/closed the"
+            "source file (per-block granularity, no SWMR support needed)."
+    .expert_level=3
+  timeout = 3600
+    .type = float
+    .help = "Maximum time in seconds to wait for a batch's images before giving up and"
+            "finishing with the data collected so far."
+    .expert_level=3
+  interval = 10
+    .type = float
+    .help = "Polling interval in seconds while waiting for images."
+    .expert_level=3
+}
 """
 
 full_phil_str = phil_str + data_reduction_phil_str + workflow_phil
@@ -297,6 +322,10 @@ def run_xia2_ssx(
         steps=params.workflow.steps,
         enable_live_reporting=params.enable_live_reporting,
         parsed_grouping=parsed_grouping,
+        wait_for_images=params.wait_for_images.enable,
+        wait_for_images_method=params.wait_for_images.method,
+        wait_for_images_timeout=params.wait_for_images.timeout,
+        wait_for_images_interval=params.wait_for_images.interval,
     )
 
     if params.assess_crystals.images_to_use:
