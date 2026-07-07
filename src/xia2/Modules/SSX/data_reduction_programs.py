@@ -662,6 +662,7 @@ def scale_against_reference(
             ccparams.stdcutoff = reduction_params.stdcutoff
             script = CCHalfFromDials(ccparams, scaled_expts, scaled_table)
             script.run()
+            script.output()
             scaled_expts = script.experiments
             scaled_table = script.filtered_reflection_table
 
