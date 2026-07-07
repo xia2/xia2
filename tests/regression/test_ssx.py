@@ -701,7 +701,7 @@ grouping:
             },
         ),
         (
-            ["mean_i_over_sigma_threshold=1.5"],
+            ["filtering.method=Isigma", "mean_i_over_sigma_threshold=1.5"],
             False,
             {
                 "best_unit_cell": [96.410488, 96.410488, 96.410488, 90.0, 90.0, 90.0],
@@ -709,7 +709,7 @@ grouping:
             },
         ),
         (
-            ["deltacchalf=True", "stdcutoff=0.5"],
+            ["filtering.method=deltacchalf", "stdcutoff=0.5"],
             False,
             {
                 "best_unit_cell": [96.402166, 96.402166, 96.402166, 90.0, 90.0, 90.0],
@@ -717,7 +717,7 @@ grouping:
             },
         ),
         (
-            ["deltacchalf=True", "stdcutoff=0.5"],
+            ["filtering.method=deltacchalf", "stdcutoff=0.5"],
             True,
             {
                 "best_unit_cell": [96.410488, 96.410488, 96.410488, 90.0, 90.0, 90.0],

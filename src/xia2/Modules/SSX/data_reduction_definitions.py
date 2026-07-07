@@ -117,6 +117,16 @@ class ReductionParams:
                 raise FileNotFoundError(
                     errno.ENOENT, os.strerror(errno.ENOENT), os.fspath(grouping)
                 )
+        deltacchalf = False
+        mean_i_over_sigma_threshold = None
+        if params.filtering.method:
+            if "deltacchalf" in params.filtering.method:
+                deltacchalf = True
+            if "Isigma" in params.filtering.method:
+                mean_i_over_sigma_threshold = (
+                    params.filtering.mean_i_over_sigma_threshold
+                )
+
         return cls(
             params.symmetry.space_group,
             params.reduction_batch_size,
@@ -138,8 +148,8 @@ class ReductionParams:
             params.reference_model.k_sol,
             params.reference_model.b_sol,
             params.partiality_threshold,
-            params.filtering.mean_i_over_sigma_threshold,
+            mean_i_over_sigma_threshold,
             params.filtering.remove_filtered_reflections,
-            params.filtering.deltacchalf,
+            deltacchalf,
             params.filtering.stdcutoff,
         )

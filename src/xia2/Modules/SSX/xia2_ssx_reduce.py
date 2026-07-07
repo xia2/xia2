@@ -119,20 +119,27 @@ clustering {
     .expert_level = 2
 }
 filtering {
-  deltacchalf = False
-    .type = bool
-    .help = "If True, perform iterative delta-cc-half filtering during scaling."
-            "The stdcutoff value can be set, further options can be set through"
-            "the scaling.phil file."
+  method = deltacchalf Isigma
+    .type=choice(multi=True)
+    .expert_level = 2
+    .help = "Apply per-image filtering based on the deltacchalf method and/or"
+            "mean I/sigma for an image."
+            "The deltacchalf option performs iterative delta-cc-half filtering"
+            "during scaling. The stdcutoff value determines the harshness of"
+            "filtering, further options can be set through the scaling.phil file."
+            "If Isigma is chosen, it applies a per-image mean I/sigma filter,"
+            "using the value of the mean_i_over_sigma_threshold parameter "
+            "calculated on reflections with partialities above the partiality_threshold".
   stdcutoff = 4.0
     .type = float
     .help = "For deltacchalf filtering, datasets with this number of standard"
             "deviations below the mean are removed. A smaller stdcutoff value"
             "will result in more aggressive filtering."
-  mean_i_over_sigma_threshold = None
+            "Only used if filtering.method=deltacchalf is chosen."
+  mean_i_over_sigma_threshold = 0.5
     .type = float(allow_none=True)
-    .help = "Apply a per-image mean I/sigma filter, calculated on reflections with"
-            "partialities above the partiality_threshold."
+    .help = "Threshold to use for per-image mean I/sigma filter. Only used if"
+            "filtering.method=Isigma is chosen."
   remove_filtered_reflections = True
     .type = bool
     .help = "In the output DIALS reflection files, remove reflections that we not"
