@@ -1,23 +1,28 @@
-++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+**********************************************************************
 Processing serial synchrotron crystallography (SSX) datasets with xia2
-++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+**********************************************************************
 
 xia2 is able to processes serial synchrotron data through a SSX
-pipeline built upon data analysis programs from DIALS.
+pipeline built upon data analysis programs from DIALS, using the xia2.ssx
+pipeline.
 
 To process serial data from images to a merged MTZ file, the
 minimal recommended example command is::
 
-    xia2.ssx template=../lyso_1_###.cbf space_group=P43212 \
-      unit_cell=79.1,79.1,38.2,90,90,90  reference../lyso.mtz
+    xia2.ssx image=../lyso_1.nxs space_group=P43212 \
+      unit_cell=79.1,79.1,38.2,90,90,90
 
 i.e. the minimal required information is the location of the images, the expected
-space group and unit cell. A suitable reference file, containing a reference set of
-intensities or pdb model (:samp:`.mtz, .cif, .pdb`) is also recommended to enable data
-reduction using a reference.
+space group and unit cell.
+For large datasets, quick scaling can be achieved by providing a reference file
+containing a reference set of intensities or pdb model (:samp:`.mtz, .cif, .pdb`).
+For full processing, it is recommended that data is scaled without reference intensities
+or pdb model.
 Typically, a reference geometry and mask should also be provided, as described below.
 
-**Table of contents of xia2 SSX processing documentation**
+======================================================
+Table of contents of xia2.ssx processing documentation
+======================================================
 
 | :ref:`DataIntegration`
 | :ref:`DataReduction`
@@ -28,9 +33,9 @@ Typically, a reference geometry and mask should also be provided, as described b
 
 .. _DataIntegration:
 
-----------------
+================
 Data Integration
-----------------
+================
 To integrate data, the images must be provided, plus the space group to use for
 processing and an estimate of the unit cell.
 If the space group or unit cell are not known, the pipeline can be initially
@@ -40,12 +45,12 @@ populous unit cell clusters will be presented to the user.
 The location of the image data must be specified by using one of the options
 :samp:`image=`, :samp:`template=` or :samp:`directory=` (multiple instances of
 one option is allowed). Here :samp:`image` corresponds to an image file
-(e.g. :samp:`.cbf` or :samp:`.h5`), :samp:`template` is a file template for a
+(e.g. :samp:`.cbf` or :samp:`.h5/.nxs`), :samp:`template` is a file template for a
 sequence of images (e.g. for files :samp:`lyso_1_001.cbf` to :samp:`lyso_1_900.cbf`, the matching
 template is :samp:`lyso_1_###.cbf`), and :samp:`directory` is a path to a
 directory containing image files.
 For data in h5 format, the option :samp:`image=/path/to/image_master.h5` is recommended.
-For cbf data, the file template option is recommended, e.g.::
+For single-file-per-image formats (e.g. cbf), the file template option is recommended, e.g.::
 
     xia2.ssx template=../lyso_1_###.cbf space_group=P43212 \
       unit_cell=79.1,79.1,38.2,90,90,90
@@ -81,9 +86,9 @@ then :samp:`steps=index` and finally :samp:`steps=integrate`.
 
 .. _DataReduction:
 
---------------
+==============
 Data Reduction
---------------
+==============
 Following data integration, data reduction (reindexing, scaling and merging) will
 be performed. The data reduction can be run separately to the full pipeline through
 the command :samp:`xia2.ssx_reduce`, taking integrated data as input, e.g.::
@@ -95,24 +100,49 @@ To run only the data integration without reduction, use the option
 
 The data reduction process consists of unit cell filtering, followed by indexing
 ambiguity resolution in batches (if ambiguities are possible due to lattice
-and space group symmetries), followed by scaling and merging.
+and space group symmetries), followed by scaling and merging. The output are typically two
+merged MTZ files - one cut at the estimated resolution limit of the data and one containing
+all data to the full resolution limit of the detector.
 
-If a reference dataset/PDB model is
-provided with the option :samp:`reference=`, then reindexing and scaling is performed
+-----------------------------------
+Scaling with or without a reference
+-----------------------------------
+For scaling, there is a distinction in the workflow depending on if a reference is used.
+Using a reference enables quicker parallel scaling, which is beneficial for quick feedback when
+datasets are large, however this could introduce bias. Scaling without a reference is
+recommended for the final processing.
+
+If a reference dataset/PDB model is provided with the option :samp:`reference=`, then reindexing and scaling is performed
 in parallel in batches of at least :samp:`reduction_batch_size` crystals, using intensities
 extracted/generated from the reference as a reference when reindexing and scaling.
-It is recommended to use a high-quality reference set of intensities in preference to genering
+If using a reference for quick scaling of large datasets, it is recommended to use a
+high-quality reference set of intensities in preference to genering
 a set of intensities from a PDB model, to give a higher accuracy. If generating intensities
 from a PDB model, the default bulk solvent parameters (:samp:`k_sol` and :samp:`b_sol`) should
 be adjusted to suitable values.
-If there is no reference given, the scaling is not performed in parallel. Other important
-options are setting :samp:`anomalous=True/False` and specifying a :samp:`d_min` value.
+
+-----------------------------
+Indexing ambiguity resolution
+-----------------------------
+
+-----------------
+Important options
+-----------------
+- :samp:`anomalous=True/False`: if True, anomalous pairs are separated in scaling.
+- :samp:`d_min`: The resolution limit to apply to the data in scaling. A single MTZ file will be produced to this resolution. If omitted, a resolution limit will be estimated at the point of merging.
+- :samp:`deltacchalf=True/False`: if True, ΔCC1/2 filtering will be performed as part of scaling, to remove the crystals with worst agreement with the rest of the dataset.
+
+The xia2.ssx.log file will indicate whether indexing ambiguity resolution was triggered.
+This can be triggered based on symmetry or if cell parameters are close such that axes could
+be mislabelled.
 To evaluate the success of indexing ambiguity resolution, it is important to inspect
 the html output from dials.cosym jobs in the :samp:`data_reduction\\reindex` folder.
 To see the full list of data reduction parameters and their descriptions,
-run :samp:`xia2.ssx_reduce -ce3 -a2`. The output of the data reduction pipeline
-is a merged MTZ file which can be taken onwards for structure determination.
+run :samp:`xia2.ssx_reduce -ce3 -a2`.
 
+---------------------------------
+Quick remerging of processed data
+---------------------------------
 ``xia2.ssx_reduce`` also supports quick remerging of already processed data by using the option
 ``steps=merge``. This can be useful for aggregating multiple processing jobs processed
 using the same reference model, or generating MTZ files with specified resolution
@@ -124,9 +154,9 @@ cutoffs e.g.::
 
 .. _GeometryRefinement:
 
-----------------------------------------------
+==============================================
 Overcoming difficulties in geometry refinement
-----------------------------------------------
+==============================================
 The first step of processing with :samp:`xia2.ssx` is to improve the detector geometry in order to
 improve the indexing rate. The starting assumption is that the initial geometry is good enough to
 successfully index a fraction of the images. When this is not the case, it will be necessary to
@@ -139,9 +169,9 @@ processing cases are described in the link below.
 
 .. _MergingInGroups:
 
------------------
+=================
 Merging in groups
------------------
+=================
 
 ``xia2.ssx_reduce`` also supports merging in groups to handle more complex experiments such
 as dose series experiments. This is described in more detail in the links below.
@@ -151,9 +181,9 @@ as dose series experiments. This is described in more detail in the links below.
 
 .. _ExportingUnmerged:
 
------------------------
+=======================
 Exporting unmerged data
------------------------
+=======================
 
 Merged data (in MTZ format) is the standard output of ``xia2.ssx``, however unmerged scaled data files
 (in mmCIF format) can be generated using the tools from DIALS (note that this requires a
