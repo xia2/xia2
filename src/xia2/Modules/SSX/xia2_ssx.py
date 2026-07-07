@@ -216,7 +216,8 @@ enable_live_reporting = False
 wait_for_images {
   enable = False
     .type = bool
-    .help = "Live-processing mode: before processing each batch, pause until that batch's"
+    .help = "Live-processing mode: pause until the input image file(s) exist on disk"
+            "before importing, then before processing each batch pause until that batch's"
             "image data has actually been written to disk. Intended for processing during"
             "data collection, where the master H5 virtual dataset declares the full planned"
             "number of images up front but the underlying data files are filled incrementally."

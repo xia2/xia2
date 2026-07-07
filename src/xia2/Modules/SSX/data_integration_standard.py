@@ -23,6 +23,7 @@ from dials.array_family import flex
 from dials.util.image_grouping import ParsedYAML
 from dxtbx import flumpy
 from dxtbx.model import ExperimentList
+from dxtbx.model.experiment_list import ExperimentListFactory
 from dxtbx.serialize import load
 from libtbx import phil
 
@@ -131,6 +132,69 @@ def wait_for_batch_images(
         xia2_logger.info(
             f"Waiting for images for {working_directory.name} "
             f"(polling every {options.wait_for_images_interval:g}s)..."
+        )
+        waited = True
+        time.sleep(options.wait_for_images_interval)
+
+
+def _path_from_image_input(obj: str) -> str:
+    """Strip any trailing ':start:end' slice from an image input string, returning
+    just the filesystem path (e.g. '/path/data.h5:1:100' -> '/path/data.h5')."""
+    drive, tail = os.path.splitdrive(obj)
+    if ":" in tail:
+        tokens = tail.split(":")
+        if len(tokens) == 3:
+            return drive + tokens[0]
+    return obj
+
+
+def _input_file_ready(path: pathlib.Path) -> bool:
+    """Judge whether an input image file can be read by dials.import.
+
+    Existence, or even that an HDF5 master opens, is not enough: while the writer is
+    still creating the file the superblock may open but the NXmx metadata dials.import
+    needs (detector parameters, bit depth, geometry, ...) may not have been written
+    yet, so the read fails. Probe with the same machinery dials.import uses -- build
+    the imageset from the filename -- and treat any failure as not-yet-ready so we keep
+    waiting. This reads metadata/geometry only; whether the frames have actually been
+    written is deferred to the per-batch image wait, which is where that matters.
+    """
+    if not path.is_file():
+        return False
+    try:
+        expts = ExperimentListFactory.from_filenames([os.fspath(path)])
+    except Exception:  # noqa: BLE001 - any read failure means the file isn't ready yet
+        return False
+    return len(expts) > 0
+
+
+def wait_for_input_files(file_input: FileInput, options: AlgorithmParams) -> bool:
+    """Poll until the input image files exist on disk *and* are readable, for live
+    processing where dials.import may be invoked before data collection has created
+    the master file(s), or while the writer is still creating them.
+
+    Only plain image=file inputs are gated. Returns True once every input file is
+    ready (or if there is nothing to wait for), or False if
+    options.wait_for_images_timeout is exceeded.
+    """
+    paths = [pathlib.Path(_path_from_image_input(obj)) for obj in file_input.images]
+    if not paths:
+        return True
+
+    deadline = time.monotonic() + options.wait_for_images_timeout
+    waited = False
+    while True:
+        not_ready = [p for p in paths if not _input_file_ready(p)]
+        if not not_ready:
+            if waited:
+                xia2_logger.info("Input image files are now available")
+            return True
+        if time.monotonic() > deadline:
+            return False
+        xia2_logger.info(
+            "Waiting for input image files to be ready: "
+            + ", ".join(os.fspath(p) for p in not_ready)
+            + f" (polling every {options.wait_for_images_interval:g}s)..."
         )
         waited = True
         time.sleep(options.wait_for_images_interval)
@@ -1165,6 +1229,10 @@ def run_data_integration(
 
     import_was_run = False
     if not same_as_previous:
+        if options.wait_for_images and not wait_for_input_files(file_input, options):
+            raise ValueError(
+                "Timed out waiting for the input image files to appear on disk."
+            )
         # Run the first import, or reimport if options different
         run_import(import_wd, file_input)
         import_was_run = True
