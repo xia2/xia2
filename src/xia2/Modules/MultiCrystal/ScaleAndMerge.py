@@ -138,7 +138,15 @@ symmetry
     .type = bool
     .short_caption = "Resolve indexing ambiguity"
   cosym {
-    include scope dials.algorithms.symmetry.cosym.phil_scope
+    include scope dials.algorithms.symmetry.cosym.cosym_scope
+    lattice_symmetry_max_delta = 5.0
+      .type = float(value_min=0)
+      .short_caption = "Lattice symmetry max δ"
+    best_monoclinic_beta = True
+      .type = bool
+      .help = "If True, then for monoclinic centered cells, I2 will be preferred over C2 if"
+              "it gives a less oblique cell (i.e. smaller beta angle)."
+      .short_caption = "Best monoclinic β"
     relative_length_tolerance = 0.05
       .type = float(value_min=0)
       .help = "Datasets are only accepted if unit cell lengths fall within this relative tolerance of the median cell lengths."
@@ -156,6 +164,7 @@ symmetry
     .help = "Specify the space group. If None, then the dials.symmetry will perform"
             "analysis of systematically absent reflections to determine the space group."
     .short_caption = "Space group"
+    .expert_level=0
 }
 
 reference = None
