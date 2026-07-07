@@ -20,9 +20,13 @@ from dials.algorithms.merging.merge import (
 )
 from dials.algorithms.merging.reporting import generate_html_report as merge_html_report
 from dials.algorithms.scaling.algorithm import ScaleAndFilterAlgorithm, ScalingAlgorithm
+from dials.algorithms.statistics.cc_half_algorithm import CCHalfFromDials
 from dials.array_family import flex
 from dials.command_line.cluster_unit_cell import do_cluster_analysis
 from dials.command_line.cluster_unit_cell import phil_scope as cluster_phil_scope
+from dials.command_line.compute_delta_cchalf import (
+    phil_scope as deltacc_phil_scope,
+)
 from dials.command_line.cosym import cosym, register_default_cosym_observers
 from dials.command_line.cosym import phil_scope as cosym_phil_scope
 from dials.command_line.merge import phil_scope as merge_phil_scope
@@ -653,12 +657,7 @@ def scale_against_reference(
             # This will log at the end of dials.scale.log, similar to scaling and filtering,
             # but without the additional scaling which does not make sense when scaling against
             # a reference - there is no benefit to further scaling against the same reference.
-            from dials.algorithms.statistics.cc_half_algorithm import CCHalfFromDials
-            from dials.command_line.compute_delta_cchalf import (
-                phil_scope as deltaccphilscope,
-            )
-
-            ccparams = deltaccphilscope.extract()
+            ccparams = deltacc_phil_scope.extract()
             ccparams.partiality_threshold = reduction_params.partiality_threshold
             ccparams.stdcutoff = reduction_params.stdcutoff
             script = CCHalfFromDials(ccparams, scaled_expts, scaled_table)
