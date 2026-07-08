@@ -671,10 +671,11 @@ grouping:
 
 
 @pytest.mark.parametrize(
-    ("cluster_args", "expected_results"),
+    ("cluster_args", "reference", "expected_results"),
     [
         (
             ["clustering.threshold=1"],
+            False,
             {
                 "best_unit_cell": [96.411, 96.411, 96.411, 90.0, 90.0, 90.0],
                 "n_cryst": 3,
@@ -685,6 +686,7 @@ grouping:
                 "central_unit_cell=96.4,96.4,96.4,90,90,90",
                 "absolute_length_tolerance=0.015",
             ],
+            False,
             {
                 "best_unit_cell": [96.4107, 96.4107, 96.4107, 90.0, 90.0, 90.0],
                 "n_cryst": 4,
@@ -692,13 +694,31 @@ grouping:
         ),
         (
             ["absolute_length_tolerance=0.001"],
+            False,
             {
                 "best_unit_cell": [96.4107, 96.4107, 96.4107, 90.0, 90.0, 90.0],
                 "n_cryst": 2,
             },
         ),
         (
-            ["mean_i_over_sigma_threshold=1.5"],
+            ["filtering.method=Isigma", "mean_i_over_sigma_threshold=1.5"],
+            False,
+            {
+                "best_unit_cell": [96.410488, 96.410488, 96.410488, 90.0, 90.0, 90.0],
+                "n_cryst": 3,
+            },
+        ),
+        (
+            ["filtering.method=deltacchalf", "stdcutoff=0.5"],
+            False,
+            {
+                "best_unit_cell": [96.402166, 96.402166, 96.402166, 90.0, 90.0, 90.0],
+                "n_cryst": 4,
+            },
+        ),
+        (
+            ["filtering.method=deltacchalf", "stdcutoff=0.5"],
+            True,
             {
                 "best_unit_cell": [96.410488, 96.410488, 96.410488, 90.0, 90.0, 90.0],
                 "n_cryst": 3,
@@ -707,10 +727,17 @@ grouping:
     ],
 )
 def test_ssx_reduce_filter_options(
-    dials_data, tmp_path, cluster_args: list[str], expected_results: dict
+    dials_data,
+    tmp_path,
+    cluster_args: list[str],
+    reference: bool,
+    expected_results: dict,
 ):
     ssx = dials_data("cunir_serial_processed")
     args = [shutil.which("xia2.ssx_reduce"), f"directory={ssx}"] + cluster_args
+    if reference:
+        model = dials_data("cunir_serial") / "2BW4.pdb"
+        args.append(f"model={str(model)}")
     cosym_phil = "d_min=1.8\ncc_weights=None\nweights=None"
     with open(tmp_path / "cosym.phil", "w") as f:
         f.write(cosym_phil)
@@ -718,9 +745,13 @@ def test_ssx_reduce_filter_options(
 
     result = subprocess.run(args, cwd=tmp_path, capture_output=True)
     assert not result.returncode and not result.stderr
-    check_data_reduction_files(tmp_path, d_min=0.01)  # no _full files expected
-
-    expts = load.experiment_list(tmp_path / "DataFiles" / "scaled.expt")
+    check_data_reduction_files(
+        tmp_path, d_min=0.01, reference=reference
+    )  # no _full files expected
+    if reference:
+        expts = load.experiment_list(tmp_path / "DataFiles" / "scaled_batch1.expt")
+    else:
+        expts = load.experiment_list(tmp_path / "DataFiles" / "scaled.expt")
     assert len(expts) == expected_results["n_cryst"]
 
     assert list(determine_best_unit_cell(expts).parameters()) == pytest.approx(

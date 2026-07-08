@@ -73,6 +73,8 @@ class ReductionParams:
     partiality_threshold: float = 0.25
     mean_i_over_sigma_threshold: float | None = None
     remove_filtered_reflections: bool = True
+    deltacchalf: bool = False
+    stdcutoff: float = 4.0
 
     @classmethod
     def from_phil(cls, params: iotbx.phil.scope_extract):
@@ -115,6 +117,16 @@ class ReductionParams:
                 raise FileNotFoundError(
                     errno.ENOENT, os.strerror(errno.ENOENT), os.fspath(grouping)
                 )
+        deltacchalf = False
+        mean_i_over_sigma_threshold = None
+        if params.filtering.method:
+            if "deltacchalf" in params.filtering.method:
+                deltacchalf = True
+            if "Isigma" in params.filtering.method:
+                mean_i_over_sigma_threshold = (
+                    params.filtering.mean_i_over_sigma_threshold
+                )
+
         return cls(
             params.symmetry.space_group,
             params.reduction_batch_size,
@@ -136,6 +148,8 @@ class ReductionParams:
             params.reference_model.k_sol,
             params.reference_model.b_sol,
             params.partiality_threshold,
-            params.filtering.mean_i_over_sigma_threshold,
+            mean_i_over_sigma_threshold,
             params.filtering.remove_filtered_reflections,
+            deltacchalf,
+            params.filtering.stdcutoff,
         )
