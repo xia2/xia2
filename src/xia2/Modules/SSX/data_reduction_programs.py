@@ -19,10 +19,14 @@ from dials.algorithms.merging.merge import (
     merge_scaled_array_to_mtz_with_report_collection,
 )
 from dials.algorithms.merging.reporting import generate_html_report as merge_html_report
-from dials.algorithms.scaling.algorithm import ScalingAlgorithm
+from dials.algorithms.scaling.algorithm import ScaleAndFilterAlgorithm, ScalingAlgorithm
+from dials.algorithms.statistics.cc_half_algorithm import CCHalfFromDials
 from dials.array_family import flex
 from dials.command_line.cluster_unit_cell import do_cluster_analysis
 from dials.command_line.cluster_unit_cell import phil_scope as cluster_phil_scope
+from dials.command_line.compute_delta_cchalf import (
+    phil_scope as deltacc_phil_scope,
+)
 from dials.command_line.cosym import cosym, register_default_cosym_observers
 from dials.command_line.cosym import phil_scope as cosym_phil_scope
 from dials.command_line.merge import phil_scope as merge_phil_scope
@@ -469,7 +473,7 @@ class MergeResult:
     name: str = ""
 
 
-def _extract_scaling_params(reduction_params):
+def _extract_scaling_params(reduction_params, final_scale=False):
     # scaling options for scaling without a reference
     extra_defaults = """
         model=KB
@@ -497,6 +501,12 @@ def _extract_scaling_params(reduction_params):
             str(round(p, 4)) for p in reduction_params.central_unit_cell.parameters()
         )
         xia2_phil += f"\nreflection_selection.best_unit_cell={vals}"
+    if reduction_params.deltacchalf and final_scale:
+        xia2_phil += f"""
+            filtering.method=deltacchalf
+            filtering.deltacchalf.mode=dataset
+            filtering.deltacchalf.stdcutoff={reduction_params.stdcutoff}
+"""
 
     if reduction_params.scaling_phil:
         itpr = scaling_phil_scope.command_line_argument_interpreter()
@@ -643,6 +653,19 @@ def scale_against_reference(
         scaler.run()
         scaled_expts, scaled_table = scaler.finish()
 
+        if reduction_params.deltacchalf:
+            # This will log at the end of dials.scale.log, similar to scaling and filtering,
+            # but without the additional scaling which does not make sense when scaling against
+            # a reference - there is no benefit to further scaling against the same reference.
+            ccparams = deltacc_phil_scope.extract()
+            ccparams.partiality_threshold = reduction_params.partiality_threshold
+            ccparams.stdcutoff = reduction_params.stdcutoff
+            script = CCHalfFromDials(ccparams, scaled_expts, scaled_table)
+            script.run()
+            script.output()
+            scaled_expts = script.experiments
+            scaled_table = script.filtered_reflection_table
+
         dials_logger.info(f"Saving scaled experiments to {params.output.experiments}")
         scaled_expts.as_file(params.output.experiments)
         dials_logger.info(f"Saving scaled reflections to {params.output.reflections}")
@@ -683,6 +706,7 @@ def scale_parallel_batches(
                 [batch],
                 reduction_params,
                 name,
+                False,
             ): i
             for i, (name, batch) in enumerate(jobs.items())
         }
@@ -712,6 +736,7 @@ def scale_on_batches(
     batches_to_scale: list[ProcessingBatch],
     reduction_params: ReductionParams,
     name="",
+    final_scale=True,
 ) -> ProgramResult:
     Citations.cite("dials.scale")
     logfile = "dials.scale.log"
@@ -757,8 +782,7 @@ def scale_on_batches(
                 all_expts.extend(expts)
                 tables.append(table)
         expts = all_expts
-
-        params, diff_phil = _extract_scaling_params(reduction_params)
+        params, diff_phil = _extract_scaling_params(reduction_params, final_scale)
         dials_logger.info(
             "The following parameters have been modified:\n"
             + input_
@@ -766,7 +790,10 @@ def scale_on_batches(
         )
 
         # Run the scaling using the algorithm class to give access to scaler
-        scaler = ScalingAlgorithm(params, expts, tables)
+        if reduction_params.deltacchalf and final_scale:
+            scaler = ScaleAndFilterAlgorithm(params, expts, tables)
+        else:
+            scaler = ScalingAlgorithm(params, expts, tables)
         scaler.run()
         try:
             d_min = resolution_cc_half(
@@ -960,6 +987,7 @@ def scale_reindex_single(
         [batch_for_reindex],
         reduction_params,
         "batch1",
+        final_scale=False,
     )
     logfile = "dials.reindex.log"
     with (
