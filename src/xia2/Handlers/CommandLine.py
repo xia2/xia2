@@ -336,9 +336,19 @@ class _CommandLine:
         params = PhilIndex.get_python_object()
 
         # Handle user selection of I2 spacegroup
-        if str(params.xia2.settings.space_group) == "I 1 2 1":
-            logger.debug("Setting user space group to C2 rather than I2")
-            PhilIndex.update("xia2.settings.space_group=C 1 2 1")
+        mI_to_mC = {
+            "I 1 2 1": "C 1 2 1",
+            "I 1 m 1": "C 1 m 1",
+            "I 1 a 1": "C 1 c 1",
+            "I 1 2/m 1": "C 1 2/m 1",
+            "I 1 2/a 1": "C 1 2/c 1",
+        }
+        if str(params.xia2.settings.space_group) in mI_to_mC:
+            logger.debug("Setting user lattice to mC rather than mI")
+            PhilIndex.update(
+                "xia2.settings.space_group="
+                + mI_to_mC[str(params.xia2.settings.space_group)]
+            )
             if params.xia2.settings.unit_cell:
                 from cctbx.sgtbx import change_of_basis_op
 
@@ -355,7 +365,7 @@ class _CommandLine:
                 )
             if params.xia2.settings.pipeline == "dials":
                 # Handle conversion back to I2 after integration for the DIALS pipeline
-                PhilIndex.update("dials.reindex_C2_to_I2=True")
+                PhilIndex.update("dials.reindex_mC_to_mI=True")
 
         params = PhilIndex.get_python_object()
 

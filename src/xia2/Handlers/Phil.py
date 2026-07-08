@@ -239,9 +239,9 @@ dials
     .short_caption = "Closeness to the spindle cutoff for including " \
                      "reflections in refinement"
     .expert_level = 2
-  reindex_C2_to_I2 = False
+  reindex_mC_to_mI = False
     .type = bool
-    .help = "Reindex C2 to I2 space group"
+    .help = "Reindex mC lattice to mI setting"
     .short_caption = "Reindex C2 to I2"
     .expert_level = 2
 
