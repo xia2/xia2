@@ -1,1 +1,1 @@
-``xia2.ssx``: Add deltacchalf filtering option to data reduction, controlled with the deltacchalf=True/False parameter
+``xia2.ssx``: Add deltacchalf filtering option to data reduction, enabled with the parameter ``filtering.method=deltacchalf``
