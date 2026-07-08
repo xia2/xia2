@@ -4,7 +4,7 @@ Processing serial synchrotron crystallography (SSX) datasets with xia2
 
 xia2 is able to processes serial synchrotron data through a SSX
 pipeline built upon data analysis programs from DIALS, using the xia2.ssx
-pipeline.
+command.
 
 To process serial data from images to a merged MTZ file, the
 minimal recommended example command is::
@@ -67,22 +67,41 @@ size can be adjusted with the :samp:`batch_size` parameter. The number of availa
 processes will be determined automatically (optionally a value for :samp:`nproc` can be given),
 and parallel processing will be performed within the batch.
 
-A DIALS reference geometry file (:samp:`refined.expt`) can be provided as input
+---------------------------------------
+Supplying a reference geometry and mask
+---------------------------------------
+
+A DIALS reference geometry file (e.g. :samp:`refined.expt`) can be provided as input
 with the option :samp:`reference_geometry=`, which will be used instead of
 performing a joint refinement on the data. A mask file created from the DIALS
 image viewer can also be provided with the option :samp:`mask=`, which will be
-used in spotfinding and integration. A few other common options to set are the
-:samp:`max_lattices` parameter, which determines the number of lattices to search
-for on each image in indexing, and :samp:`d_min` which controls the resolution
-limit for spotfinding and integration.
+used in spotfinding and integration.
 
-To see the full list of options and their descriptions, run :samp:`xia2.ssx -ce2 -a1`.
+-----------------
+Important options
+-----------------
+- :samp:`max_lattices`: Determines the number of lattices to search for on each image (default 3).
+- :samp:`d_min`: Controls the resolution limit for spotfinding and integration.
+- :samp:`steps=find_spots+index+integrate+reduce`: This can be changed to a single value to run part of the xia2.ssx workflow, which can be useful for stepwise processing and result inspection, or rerunning a subset of the workflow. To run only the data integration without reduction, use the option :samp:`steps=find_spots+index+integrate` (i.e. omit :samp:`+reduce`).
+
+To see the full list of options and their descriptions, run :samp:`xia2.ssx -ce3 -a2`.
 Change the number after :samp:`-ce` to a value from 0 to 3 to see different
-"expert levels" of program parameters. Note that a phil options file can be
-provided for each of the DIALS programs, to allow further customisation of the
-options for the individual programs. Additionally, stepwise processing can be
-performed by running the program multiple times with the option :samp:`steps=find_spots`,
-then :samp:`steps=index` and finally :samp:`steps=integrate`.
+"expert levels" of program parameters.
+
+--------------------------------------------------
+Providing tailored parameters for individual steps
+--------------------------------------------------
+xia2.ssx exposes a limited set of key parameters for processing. However, the underlying programs
+(spotfinding, indexing, integration), have numerous options for different parts of their algorithms.
+These can be changed by using phil option files, which are a mechanism to specify parameters in a hierachical manner.
+
+For example, to set the spotfinding gain parameter, one would make a plain-text file called :samp:`spots.phil` containing the line::
+
+    spotfinder.threshold.dispersion.gain=0.8
+
+and then pass this to xia2.ssx with the option :samp:`spotfinding.phil=spots.phil`. Similarity, options can be provided in
+a similar way for dials.import (:samp:`dials_import.phil=`), dials.ssx\_index (:samp:`indexing.phil=`),
+dials.ssx\_integrate (:samp:`integration.phil=`), dials.cosym (:samp:`symmetry.phil=`) and dials.scale (:samp:`scaling.phil=`).
 
 .. _DataReduction:
 
@@ -95,14 +114,30 @@ the command :samp:`xia2.ssx_reduce`, taking integrated data as input, e.g.::
 
     xia2.ssx_reduce ../xia2_ssx/batch_*/integrated*.{expt,refl}
 
-To run only the data integration without reduction, use the option
-:samp:`steps=find_spots+index+integrate` (i.e. omit :samp:`+reduce`) when running :samp:`xia2.ssx`.
-
 The data reduction process consists of unit cell filtering, followed by indexing
 ambiguity resolution in batches (if ambiguities are possible due to lattice
 and space group symmetries), followed by scaling and merging. The output are typically two
 merged MTZ files - one cut at the estimated resolution limit of the data and one containing
 all data to the full resolution limit of the detector.
+
+-----------------------------
+Indexing ambiguity resolution
+-----------------------------
+The xia2.ssx.log file will indicate whether indexing ambiguity resolution was triggered.
+Two assessments are made based on the space group symmetry and unit cell parameters.
+If the space group is one where indexing ambiguities are possible, the dials.cosym
+program is used to resolve the indexing ambiguity. dials.cosym is memory intensive
+for large datasets, so data are split into batches of 1000 crystals by default, controllable
+with the :samp:`reduction_batch_size` parameter. Therefore the routine used is to resolve in
+batches of 1000, internally scale each batch and then reindex all batches against eachother.
+If the space group symmetry does not allow indexing ambiguities, the assessment will still
+be made if the cell parameters mean the cell could be misindexed (e.g. close cell parameters
+in a P222 cell). The level of similarity needed to trigger this is controlled by the 
+:samp:`lattice_symmetry_max_delta` parameter. Lowering this parameter to zero will avoid
+the analysis for accidental indexing ambiguity being triggered.
+
+To evaluate the success of indexing ambiguity resolution, it is important to inspect
+the html outputs from dials.cosym jobs in the :samp:`data_reduction\\reindex` folder.
 
 -----------------------------------
 Scaling with or without a reference
@@ -112,31 +147,24 @@ Using a reference enables quicker parallel scaling, which is beneficial for quic
 datasets are large, however this could introduce bias. Scaling without a reference is
 recommended for the final processing.
 
-If a reference dataset/PDB model is provided with the option :samp:`reference=`, then reindexing and scaling is performed
-in parallel in batches of at least :samp:`reduction_batch_size` crystals, using intensities
-extracted/generated from the reference as a reference when reindexing and scaling.
+If a reference dataset/PDB model is provided with the option :samp:`reference=`, then reindexing
+and scaling is performed in parallel in batches of at least :samp:`reduction_batch_size` crystals,
+using intensities extracted/generated from the reference as a reference when reindexing and scaling.
 If using a reference for quick scaling of large datasets, it is recommended to use a
-high-quality reference set of intensities in preference to genering
+high-quality reference set of intensities in preference to generating
 a set of intensities from a PDB model, to give a higher accuracy. If generating intensities
 from a PDB model, the default bulk solvent parameters (:samp:`k_sol` and :samp:`b_sol`) should
 be adjusted to suitable values.
-
------------------------------
-Indexing ambiguity resolution
------------------------------
 
 -----------------
 Important options
 -----------------
 - :samp:`anomalous=True/False`: if True, anomalous pairs are separated in scaling.
 - :samp:`d_min`: The resolution limit to apply to the data in scaling. A single MTZ file will be produced to this resolution. If omitted, a resolution limit will be estimated at the point of merging.
-- :samp:`deltacchalf=True/False`: if True, ΔCC1/2 filtering will be performed as part of scaling, to remove the crystals with worst agreement with the rest of the dataset.
+- :samp:`filtering.method=deltacchalf`: Perform ΔCC1/2 filtering as part of scaling, to remove the crystals with worst agreement with the rest of the dataset.
+- :samp:`steps=scale+merge`: This can be changed to a single value to run part of the xia2.ssx\_reduce workflow.
+- :samp:`dose_series_repeat`: Set this to an integer to merge the data into separate groups based on image number. See :ref:`MergingInGroups` for more details and more generalised merging options.
 
-The xia2.ssx.log file will indicate whether indexing ambiguity resolution was triggered.
-This can be triggered based on symmetry or if cell parameters are close such that axes could
-be mislabelled.
-To evaluate the success of indexing ambiguity resolution, it is important to inspect
-the html output from dials.cosym jobs in the :samp:`data_reduction\\reindex` folder.
 To see the full list of data reduction parameters and their descriptions,
 run :samp:`xia2.ssx_reduce -ce3 -a2`.
 
@@ -148,7 +176,7 @@ Quick remerging of processed data
 using the same reference model, or generating MTZ files with specified resolution
 cutoffs e.g.::
 
-    xia2.ssx_reduce ../xia2_ssx_reduce/DataFiles/scaled*.{expt,refl} steps=merge d_min=1.8
+    xia2.ssx_reduce steps=merge ../xia2_ssx_reduce/DataFiles/scaled*.{expt,refl}  d_min=1.8
 
     xia2.ssx_reduce steps=merge ../{chip1,chip2}/DataFiles/scaled*.{expt,refl}
 
@@ -186,19 +214,23 @@ Exporting unmerged data
 =======================
 
 Merged data (in MTZ format) is the standard output of ``xia2.ssx``, however unmerged scaled data files
-(in mmCIF format) can be generated using the tools from DIALS (note that this requires a
-DIALS version later than v3.20).
-
-If data were reduced with a reference, there may be more than one set of scaled reflection and experiment files.
-In this case, these must first be combined with ``dials.combine_experiments``, before using ``dials.export`` to
-export to mmcif format::
-
-    dials.combine_experiments data_reduction/scale/scaled*.{expt,refl}
-    dials.export combined.* format=mmcif
+(in mmCIF format or mtz format) can be generated using the tools from DIALS.
 
 If data were not reduced with a reference, then one can just use ``dials.export``::
 
-    dials.export data_reduction/scale/scaled.{expt,refl} format=mmcif
+    dials.export data_reduction/scale/scaled.{expt,refl} format=mmcif partiality_threshold=0.25
+
+or::
+
+    dials.export data_reduction/scale/scaled.{expt,refl} format=mtz partiality_threshold=0.25
+
+The :samp:`partiality_threshold` parameter should be set to match that used in xia2.ssx (default 0.25).
+
+If data were reduced with a reference, there may be more than one set of scaled reflection and experiment files.
+In this case, these must first be combined with ``dials.combine_experiments``, before using ``dials.export``::
+
+    dials.combine_experiments data_reduction/scale/scaled*.{expt,refl}
+    dials.export combined.* format=mmcif partiality_threshold=0.25
 
 mmCIF is a standardised format that is able to describe unmerged diffraction data, and the output scaled.cif file conforms to the v5
 standard https://mmcif.wwpdb.org/dictionaries/mmcif_pdbx_v50.dic/Index/. Note that during export to mmcif, the overall scale of the data
