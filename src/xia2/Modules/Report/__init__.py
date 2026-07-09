@@ -134,11 +134,12 @@ class Report:
         self.intensities.setup_binner(n_bins=self.n_bins)
         self.merged_intensities = self.intensities.merge_equivalents().array()
 
-    def multiplicity_plots(self, dest_path=None):
+    def multiplicity_plots(self, dest_path=None, save_png=True):
         settings = master_phil.extract()
         settings.size_inches = (5, 5)
         settings.show_missing = True
         settings.slice_index = 0
+        settings.plot.save_png = save_png
 
         mult_json_files = {}
         mult_img_files = {}
@@ -157,11 +158,12 @@ class Report:
                 % (settings.slice_axis, settings.slice_index),
             )
             # settings.slice_axis = axis
-            plot_multiplicity(self.intensities, settings)
+            png_data = plot_multiplicity(self.intensities, settings)
             mult_json_files[settings.slice_axis] = settings.json.filename
-            with open(settings.plot.filename, "rb") as fh:
-                data = codecs.encode(fh.read(), encoding="base64").decode("ascii")
-                mult_img_files[settings.slice_axis] = data.replace("\n", "")
+            data = codecs.encode(
+                png_data[settings.plot.filename], encoding="base64"
+            ).decode("ascii")
+            mult_img_files[settings.slice_axis] = data.replace("\n", "")
 
         return OrderedDict(
             ("multiplicity_%s" % axis, mult_img_files[axis]) for axis in ("h", "k", "l")

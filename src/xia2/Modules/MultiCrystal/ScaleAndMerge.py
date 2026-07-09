@@ -1068,13 +1068,7 @@ class MultiCrystalScale:
                     if "text" in data:
                         data["text"] = list(flex.std_string(data["text"]).select(sel))
 
-        d.update(report.multiplicity_plots())
-
-        for axis in ["h", "k", "l"]:
-            try:
-                os.remove(f"multiplicities_{axis}_0.png")
-            except FileNotFoundError:
-                pass
+        d.update(report.multiplicity_plots(save_png=False))
 
         return d
 
@@ -1567,6 +1561,7 @@ class Scale:
         tt_refiner.set_experiments([experiments_filename])
         tt_refiner.set_reflection_files([reflections_filename])
         tt_refiner.set_combine_crystal_models(combine_crystal_models)
+        tt_refiner.output_graph = False
         tt_refiner.run()
         uc = tt_refiner.get_unit_cell()
         uc_sd = tt_refiner.get_unit_cell_esd()
