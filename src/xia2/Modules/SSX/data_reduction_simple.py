@@ -16,7 +16,10 @@ class SimpleDataReduction(BaseDataReduction):
             Path.mkdir(self._scale_wd)
 
         result = scale_on_batches(
-            self._scale_wd, self._batches_to_scale, self._reduction_params
+            self._scale_wd,
+            self._batches_to_scale,
+            self._reduction_params,
+            final_scale=True,
         )
         xia2_logger.info("Completed scaling of all data")
         self._files_to_merge = [FilePair(result.exptfile, result.reflfile)]

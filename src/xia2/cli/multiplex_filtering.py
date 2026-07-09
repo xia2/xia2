@@ -15,6 +15,7 @@ from dxtbx.model.experiment_list import ExperimentList
 
 import xia2.Handlers.Streams
 from xia2.Applications.xia2_main import write_citations
+from xia2.cli.multiplex import phil_scope as mplx_scope
 from xia2.Handlers.Citations import Citations
 from xia2.Modules.MultiCrystal.filter import FilterExistingMultiplex
 from xia2.Modules.MultiCrystal.MplxFileHandler import MultiplexFileHandler, cleanup
@@ -80,14 +81,6 @@ output {
     .type = bool
     .help = "Set to false to retain all intermediate data files not commonly used."
 }
-""",
-    process_includes=True,
-)
-
-mplx_scope = iotbx.phil.parse(
-    """
-
-include scope xia2.cli.multiplex.phil_scope
 """,
     process_includes=True,
 )

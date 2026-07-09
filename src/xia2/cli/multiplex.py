@@ -99,6 +99,10 @@ output {
     .help = "Set to false to retain all intermediate data files not commonly used."
   cluster_html = False
     .type = bool
+  composition = None
+    .type = str
+    .help = "The chemical composition of the asymmetric unit. Set this to trigger export to shelx format."
+    .expert_level = 2
 }
 """,
     process_includes=True,
