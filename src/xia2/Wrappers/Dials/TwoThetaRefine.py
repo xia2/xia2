@@ -33,6 +33,8 @@ def TwoThetaRefine(DriverType=None):
             self._phil_file = None
             self._combine_crystal_models = True
 
+            self.output_graph = True
+
             # The following are set during run() call:
             self._output_cif = None
             self._output_mmcif = None
@@ -126,10 +128,13 @@ def TwoThetaRefine(DriverType=None):
                     self.get_working_directory(),
                     "%s_dials.two_theta_refine.p4p" % self.get_xpid(),
                 )
-            self._output_correlation_plot = os.path.join(
-                self.get_working_directory(),
-                "%s_dials.two_theta_refine.png" % self.get_xpid(),
-            )
+
+            if self.output_graph:
+                self._output_correlation_plot = os.path.join(
+                    self.get_working_directory(),
+                    "%s_dials.two_theta_refine.png" % self.get_xpid(),
+                )
+
             self._output_experiments = os.path.join(
                 self.get_working_directory(), "%s_refined_cell.expt" % self.get_xpid()
             )
