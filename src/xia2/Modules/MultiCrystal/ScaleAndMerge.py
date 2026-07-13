@@ -1443,6 +1443,7 @@ class MultiCrystalScale:
         export.run(expts, refls)
         MultiplexFileHandler.record_data_file(f"{output_name}.ins")
         MultiplexFileHandler.record_data_file(f"{output_name}.hkl")
+        MultiplexFileHandler.record_log_file(export.get_output_log())
 
 
 class Scale:

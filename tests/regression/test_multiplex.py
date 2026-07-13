@@ -775,10 +775,10 @@ def test_small_molecule(dials_data, run_in_tmp_path):
     )
     assert not result.returncode
     multiplex_expts = load.experiment_list(
-        run_in_tmp_path / "scaled.expt", check_format=False
+        run_in_tmp_path / "Processing" / "scaled.expt", check_format=False
     )
     # Check small molecule symmetry assessment was done.
     assert str(multiplex_expts[0].crystal.get_space_group().info()) == "P 1 21/c 1"
     # Check that shelx files were also generated, even though no composition was specified
-    assert (run_in_tmp_path / "scaled.hkl").is_file()
-    assert (run_in_tmp_path / "scaled.ins").is_file()
+    assert (run_in_tmp_path / "DataFiles" / "scaled.hkl").is_file()
+    assert (run_in_tmp_path / "DataFiles" / "scaled.ins").is_file()

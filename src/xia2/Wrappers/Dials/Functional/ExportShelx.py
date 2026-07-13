@@ -23,6 +23,8 @@ class ExportShelx:
         else:
             self._working_directory = Path.cwd()
 
+        self._output_log = ""
+
         self._params: libtbx.phil.scope_extract = phil_scope.extract()
 
         # Default params
@@ -44,6 +46,9 @@ class ExportShelx:
     def set_intensity(self, intensity: str) -> None:
         self._params.intensity = intensity
 
+    def get_output_log(self) -> str | None:
+        return self._output_log
+
     @property
     def use_xpid(self) -> bool:
         return self._use_xpid
@@ -60,6 +65,8 @@ class ExportShelx:
             logfile = f"{self._xpid}_dials.export.log"
         else:
             logfile = "dials.export.log"
+
+        self._output_log = logfile
 
         with (
             run_in_directory(self._working_directory),
