@@ -79,7 +79,7 @@ def DialsCosym(DriverType=None, decay_correction=None):
             return self._json
 
         def get_html(self):
-            self._html
+            return self._html
 
         def run(self):
             Citations.cite("dials.cosym")

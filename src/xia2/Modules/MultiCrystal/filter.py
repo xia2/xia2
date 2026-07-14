@@ -10,6 +10,7 @@ from dials.util.export_mtz import match_wavelengths
 
 from xia2.Driver.timing import record_step
 from xia2.Modules.MultiCrystal.data_manager import DataManager
+from xia2.Modules.MultiCrystal.MplxFileHandler import MultiplexFileHandler
 from xia2.Modules.MultiCrystal.ScaleAndMerge import MultiCrystalScale
 from xia2.Modules.MultiCrystalAnalysis import MultiCrystalReport
 from xia2.XIA2Version import Version
@@ -107,3 +108,8 @@ class FilterExistingMultiplex:
 
         with open("xia2.multiplex_filtering.html", "wb") as f:
             f.write(html.encode("utf-8", "xmlcharrefreplace"))
+
+        MultiplexFileHandler.record_primary_log_file("xia2.multiplex_filtering.html")
+        MultiplexFileHandler.record_optional_file("multiplicities_h_0.json")
+        MultiplexFileHandler.record_optional_file("multiplicities_k_0.json")
+        MultiplexFileHandler.record_optional_file("multiplicities_l_0.json")

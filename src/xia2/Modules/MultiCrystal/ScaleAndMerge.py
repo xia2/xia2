@@ -30,12 +30,14 @@ from xia2.lib.bits import auto_logfiler
 from xia2.Modules import Report
 from xia2.Modules.MultiCrystal.cluster_analysis import SubCluster, get_subclusters
 from xia2.Modules.MultiCrystal.data_manager import DataManager
+from xia2.Modules.MultiCrystal.MplxFileHandler import MultiplexFileHandler
 from xia2.Modules.MultiCrystalAnalysis import MultiCrystalAnalysis, MultiCrystalReport
 from xia2.Modules.Scaler.DialsScaler import (
     convert_merged_mtz_to_sca,
     convert_unmerged_mtz_to_sca,
     scaling_model_auto_rules,
 )
+from xia2.Modules.SSX.util import run_in_directory
 from xia2.Wrappers.Dials.Cosym import DialsCosym
 from xia2.Wrappers.Dials.EstimateResolution import EstimateResolution
 from xia2.Wrappers.Dials.Functional.ExportShelx import ExportShelx
@@ -500,11 +502,16 @@ class MultiCrystalScale:
                 )
                 if name:
                     convert_unmerged_mtz_to_sca(name)
+                    MultiplexFileHandler.record_data_file(name)
+                    MultiplexFileHandler.record_data_file(name.replace(".mtz", ".sca"))
 
-                # unmerged mmcif for multiple wavelength
-                self._data_manager.export_unmerged_wave_mmcif(
-                    wl, "scaled_unmerged", d_min=self._scaled.d_min
-                )
+                    # unmerged mmcif for multiple wavelength
+                    self._data_manager.export_unmerged_wave_mmcif(
+                        wl, "scaled_unmerged", d_min=self._scaled.d_min
+                    )
+                    MultiplexFileHandler.record_data_file(
+                        name.replace(".mtz", ".mmcif")
+                    )
 
             # now export merged of each
             for wl in self.wavelengths:
@@ -517,6 +524,7 @@ class MultiCrystalScale:
                 )
                 if name:
                     convert_merged_mtz_to_sca(name)
+                    MultiplexFileHandler.record_data_file(name.replace(".mtz", ".sca"))
 
         else:
             self._data_manager.export_unmerged_mtz(
@@ -530,6 +538,11 @@ class MultiCrystalScale:
             self._data_manager.export_unmerged_mmcif(
                 "scaled_unmerged.mmcif", d_min=self._scaled.d_min
             )
+
+            MultiplexFileHandler.record_data_file("scaled_unmerged.mtz")
+            MultiplexFileHandler.record_data_file("scaled_unmerged.mmcif")
+            MultiplexFileHandler.record_data_file("scaled_unmerged.sca")
+            MultiplexFileHandler.record_data_file("scaled.sca")
 
         with record_step("xia2.report(all-data)"):
             self._record_individual_report(
@@ -578,6 +591,13 @@ class MultiCrystalScale:
                 self._individual_report_dicts[cluster_name] = individual_report
                 self._update_comparison_graphs(report, dict_report, cluster_name)
                 self._log_report_info(dict_report)
+                with run_in_directory(pathlib.Path(cluster.directory)):
+                    MultiplexFileHandler.record_optional_file("multiplicities_h_0.json")
+                    MultiplexFileHandler.record_optional_file("multiplicities_k_0.json")
+                    MultiplexFileHandler.record_optional_file("multiplicities_l_0.json")
+                    MultiplexFileHandler.record_log_file("multiplicities_h_0.png")
+                    MultiplexFileHandler.record_log_file("multiplicities_k_0.png")
+                    MultiplexFileHandler.record_log_file("multiplicities_l_0.png")
 
             """
             # To ensure that pools within pools aren't created
@@ -650,7 +670,10 @@ class MultiCrystalScale:
                 filtered,
                 data_manager,
             ) = self.filter(
-                data_manager, params, free_flags_in_full_set, self.wavelengths
+                data_manager,
+                params,
+                free_flags_in_full_set,
+                self.wavelengths,
             )
 
             with record_step("xia2.report(filtered)"):
@@ -659,6 +682,12 @@ class MultiCrystalScale:
                 )
 
         self.report()
+        MultiplexFileHandler.record_optional_file("multiplicities_h_0.json")
+        MultiplexFileHandler.record_optional_file("multiplicities_k_0.json")
+        MultiplexFileHandler.record_optional_file("multiplicities_l_0.json")
+        MultiplexFileHandler.record_log_file("multiplicities_h_0.png")
+        MultiplexFileHandler.record_log_file("multiplicities_k_0.png")
+        MultiplexFileHandler.record_log_file("multiplicities_l_0.png")
 
     @staticmethod
     def filter(
@@ -711,11 +740,14 @@ class MultiCrystalScale:
                 )
                 if name:
                     convert_unmerged_mtz_to_sca(name)
+                    MultiplexFileHandler.record_data_file(name)
+                    MultiplexFileHandler.record_data_file(name.replace(".mtz", ".sca"))
 
                 # unmerged mmcif for multiple wavelength
                 data_manager.export_unmerged_wave_mmcif(
                     wl, "filtered_unmerged", d_min=scaled.d_min
                 )
+                MultiplexFileHandler.record_data_file(name.replace(".mtz", ".mmcif"))
 
             # now export merged of each
             for wl in wavelengths:
@@ -728,6 +760,8 @@ class MultiCrystalScale:
                 )
                 if name:
                     convert_merged_mtz_to_sca(name)
+                    MultiplexFileHandler.record_data_file(name.replace(".mtz", ".sca"))
+
         else:
             data_manager.export_unmerged_mtz(
                 "filtered_unmerged.mtz",
@@ -740,6 +774,10 @@ class MultiCrystalScale:
             data_manager.export_unmerged_mmcif(
                 "filtered_unmerged.mmcif", d_min=scaled.d_min
             )
+            MultiplexFileHandler.record_data_file("filtered_unmerged.mtz")
+            MultiplexFileHandler.record_data_file("filtered_unmerged.mmcif")
+            MultiplexFileHandler.record_data_file("filtered_unmerged.sca")
+            MultiplexFileHandler.record_data_file("filtered.sca")
 
         data_manager._set_batches()
         data_manager.export_experiments("filtered.expt")
@@ -812,11 +850,16 @@ class MultiCrystalScale:
                 )
                 if name:
                     convert_unmerged_mtz_to_sca(name)
+                    MultiplexFileHandler.record_data_file(name)
+                    MultiplexFileHandler.record_data_file(name.replace(".mtz", ".sca"))
 
-                # unmerged mmcif for multiple wavelength
-                data_manager.export_unmerged_wave_mmcif(
-                    wl, f"{output_name}_unmerged", d_min=scaled.d_min
-                )
+                    # unmerged mmcif for multiple wavelength
+                    data_manager.export_unmerged_wave_mmcif(
+                        wl, f"{output_name}_unmerged", d_min=scaled.d_min
+                    )
+                    MultiplexFileHandler.record_data_file(
+                        name.replace(".mtz", ".mmcif")
+                    )
 
             for wl in wavelengths:
                 name = MultiCrystalScale.export_merged_wave_mtz(
@@ -828,6 +871,7 @@ class MultiCrystalScale:
                 )
                 if name:
                     convert_merged_mtz_to_sca(name)
+                    MultiplexFileHandler.record_data_file(name.replace(".mtz", ".sca"))
         else:
             data_manager.export_unmerged_mtz(
                 f"{output_name}_unmerged.mtz",
@@ -836,10 +880,14 @@ class MultiCrystalScale:
             )
             convert_merged_mtz_to_sca(f"{output_name}.mtz")
             convert_unmerged_mtz_to_sca(f"{output_name}_unmerged.mtz")
+            MultiplexFileHandler.record_data_file(f"{output_name}.sca")
+            MultiplexFileHandler.record_data_file(f"{output_name}_unmerged.sca")
+            MultiplexFileHandler.record_data_file(f"{output_name}_unmerged.mtz")
 
             data_manager.export_unmerged_mmcif(
                 f"{output_name}_unmerged.mmcif", d_min=scaled.d_min
             )
+            MultiplexFileHandler.record_data_file(f"{output_name}_unmerged.mmcif")
         rep = scaled.report()
 
         d = MultiCrystalScale._report_as_dict(rep, len(data_manager._experiments))
@@ -1139,6 +1187,8 @@ class MultiCrystalScale:
         logger.debug("Running cosym analysis")
         experiments_filename = self._data_manager.export_experiments("tmp.expt")
         reflections_filename = self._data_manager.export_reflections("tmp.refl")
+        MultiplexFileHandler.record_temp_file(experiments_filename)
+        MultiplexFileHandler.record_temp_file(reflections_filename)
         cosym = DialsCosym()
         auto_logfiler(cosym)
 
@@ -1186,6 +1236,13 @@ class MultiCrystalScale:
         elif self._params.symmetry.laue_group:
             logger.info(f"Using input Laue group: {self._params.symmetry.laue_group}")
 
+        MultiplexFileHandler.record_temp_file("dials.cosym.log")
+        MultiplexFileHandler.record_optional_file(self._experiments_filename)
+        MultiplexFileHandler.record_optional_file(self._reflections_filename)
+        MultiplexFileHandler.record_optional_file(cosym.get_json())
+        MultiplexFileHandler.record_log_file(f"{cosym.get_xpid()}_dials.cosym.log")
+        MultiplexFileHandler.record_log_file(cosym.get_html())
+
     def reindex(self) -> None:
         logger.debug("Running reindexing")
         logger.info("Re-indexing to reference")
@@ -1206,6 +1263,11 @@ class MultiCrystalScale:
         self._data_manager.reflections = flex.reflection_table.from_file(
             self._reflections_filename
         )
+
+        MultiplexFileHandler.record_temp_file("dials.reindex.log")
+        MultiplexFileHandler.record_optional_file(self._experiments_filename)
+        MultiplexFileHandler.record_optional_file(self._reflections_filename)
+        MultiplexFileHandler.record_log_file(f"{reindex.get_xpid()}_dials.reindex.log")
 
     def decide_space_group(self) -> None:
         if self._params.symmetry.space_group is not None:
@@ -1257,6 +1319,14 @@ class MultiCrystalScale:
         space_group = self._data_manager.experiments[0].crystal.get_space_group()
 
         logger.info("Space group determined by dials.symmetry: %s" % space_group.info())
+
+        MultiplexFileHandler.record_temp_file("dials.symmetry.log")
+        MultiplexFileHandler.record_optional_file(self._experiments_filename)
+        MultiplexFileHandler.record_optional_file(self._reflections_filename)
+        MultiplexFileHandler.record_log_file(
+            f"{symmetry.get_xpid()}_dials.symmetry.log"
+        )
+        MultiplexFileHandler.record_log_file(symmetry.get_html())
 
     def multi_crystal_analysis(self) -> MultiCrystalReport:
         params = mca_phil.extract()
@@ -1312,6 +1382,8 @@ class MultiCrystalScale:
             scale_and_filter_results=self.scale_and_filter_results,
             scale_and_filter_mode=self._params.filtering.deltacchalf.mode,
         )
+        for i in self._mca._temp_files:
+            MultiplexFileHandler.record_optional_file(i)
 
     def cluster_analysis(self) -> None:
         self._mca.cluster_analysis()
@@ -1333,6 +1405,9 @@ class MultiCrystalScale:
         merge.set_wavelength_tolerance(params.wavelength_tolerance)
         merge.set_r_free_params(params.r_free_flags)
         merge.run(expts, refls)
+
+        MultiplexFileHandler.record_data_file(file_name)
+        MultiplexFileHandler.record_log_file(f"{merge._xpid}_dials.merge.log")
 
     @staticmethod
     def export_merged_wave_mtz(
@@ -1366,6 +1441,9 @@ class MultiCrystalScale:
         export.set_output_names(output_name)
         export.set_composition(params.output.composition)
         export.run(expts, refls)
+        MultiplexFileHandler.record_data_file(f"{output_name}.ins")
+        MultiplexFileHandler.record_data_file(f"{output_name}.hkl")
+        MultiplexFileHandler.record_log_file(export.get_output_log())
 
 
 class Scale:
@@ -1420,7 +1498,7 @@ class Scale:
 
     def two_theta_refine(self) -> None:
         # two-theta refinement to get best estimate of unit cell
-        self._experiments_filename = self._dials_two_theta_refine(
+        self._experiments_filename, misc_files = self._dials_two_theta_refine(
             self._experiments_filename,
             self._reflections_filename,
             combine_crystal_models=self._params.two_theta_refine.combine_crystal_models,
@@ -1428,6 +1506,9 @@ class Scale:
         self._data_manager.experiments = load.experiment_list(
             self._experiments_filename, check_format=False
         )
+
+        for i in misc_files:
+            MultiplexFileHandler.record_optional_file(i)
 
     @property
     def data_manager(self) -> DataManager:
@@ -1452,7 +1533,7 @@ class Scale:
         experiments_filename: str,
         reflections_filename: str,
         combine_crystal_models: bool = True,
-    ) -> str:
+    ) -> tuple[str, list]:
         tt_refiner = TwoThetaRefine()
         auto_logfiler(tt_refiner)
         tt_refiner.set_experiments([experiments_filename])
@@ -1466,7 +1547,24 @@ class Scale:
             for (v, e) in zip(uc, uc_sd)
         ]
         logger.info("Refined unit cell: " + ", ".join(cell_str))
-        return tt_refiner.get_output_experiments()
+
+        MultiplexFileHandler.record_temp_file("dials.two_theta_refine.log")
+
+        misc_file_names = []
+        misc_file_names.append(tt_refiner.get_output_mmcif())
+        misc_file_names.append(tt_refiner.get_output_cif())
+        misc_file_names.append(tt_refiner._output_p4p)
+        misc_file_names.append(tt_refiner.get_output_experiments())
+        misc_file_names.append(tt_refiner._output_p4p.replace(".p4p", ".json"))
+
+        MultiplexFileHandler.record_log_file(
+            f"{tt_refiner.get_xpid()}_dials.two_theta_refine.log"
+        )
+        MultiplexFileHandler.record_log_file(
+            f"{tt_refiner.get_xpid()}_dials.two_theta_refine_2theta.png"
+        )
+
+        return tt_refiner.get_output_experiments(), misc_file_names
 
     def scale(self, d_min: float | None = None, d_max: float | None = None) -> None:
         logger.debug("Scaling with dials.scale")
@@ -1553,6 +1651,15 @@ class Scale:
         self._params.resolution.labels = "IPR,SIGIPR"
         if self._filtering:
             self.scale_and_filter_results = scaler.get_scale_and_filter_results()
+            MultiplexFileHandler.record_optional_file(scaler._scale_and_filter_filename)
+
+        MultiplexFileHandler.record_temp_file("dials.scale.log")
+
+        MultiplexFileHandler.record_optional_file(self._experiments_filename)
+        MultiplexFileHandler.record_optional_file(self._reflections_filename)
+
+        MultiplexFileHandler.record_log_file(f"{scaler.get_xpid()}_dials.scale.log")
+        MultiplexFileHandler.record_log_file(scaler.get_html())
 
     def estimate_resolution_limit(self) -> tuple[float, str]:
         # see also xia2/Modules/Scaler/CommonScaler.py: CommonScaler._estimate_resolution_limit()
@@ -1575,6 +1682,13 @@ class Scale:
         # start, end = batch_range
         # m.set_batch_range(start, end)
         m.run()
+
+        MultiplexFileHandler.record_temp_file("dials.estimate_resolution.log")
+        MultiplexFileHandler.record_optional_file(m.get_json())
+        MultiplexFileHandler.record_log_file(
+            f"{m.get_xpid()}_dials.estimate_resolution.log"
+        )
+        MultiplexFileHandler.record_log_file(m.get_html())
 
         resolution_limits = []
         reasoning = []

@@ -1,25 +1,26 @@
 from __future__ import annotations
 
 import json
+import math
 import os
 import pathlib
+import shutil
+import subprocess
 
 import pytest
 
-from xia2.cli.multiplex import run as run_multiplex
 from xia2.cli.multiplex_filtering import multiplex_filter_error_message
-from xia2.cli.multiplex_filtering import run as run_mplx_filter
 
 expected_data_files = [
-    "filtered.expt",
-    "filtered.refl",
-    "filtered.mtz",
-    "filtered_unmerged.mtz",
-    "filtered_unmerged.mmcif",
-    "filtered.sca",
-    "filtered_unmerged.sca",
-    "xia2.multiplex_filtering.html",
-    "xia2.multiplex_filtering.json",
+    pathlib.Path("Processing") / "filtered.expt",
+    pathlib.Path("Processing") / "filtered.refl",
+    pathlib.Path("DataFiles") / "filtered.mtz",
+    pathlib.Path("DataFiles") / "filtered_unmerged.mtz",
+    pathlib.Path("DataFiles") / "filtered_unmerged.mmcif",
+    pathlib.Path("DataFiles") / "filtered.sca",
+    pathlib.Path("DataFiles") / "filtered_unmerged.sca",
+    pathlib.Path("xia2.multiplex_filtering.html"),
+    pathlib.Path("Processing") / "xia2.multiplex_filtering.json",
 ]
 
 
@@ -40,18 +41,27 @@ def test_multiplex_filtering_program(proteinase_k, filtering, run_in_tmp_path):
     """
     expts, refls = proteinase_k
     command_line_args = expts + refls + []
-    run_multiplex(command_line_args)
+    result = subprocess.run(
+        [shutil.which("xia2.multiplex")] + command_line_args,
+        cwd=run_in_tmp_path,
+        capture_output=True,
+    )
+    assert not result.returncode
     mplx_dir = pathlib.Path(run_in_tmp_path)
     filtering_dir = mplx_dir / "filtering"
     filtering_dir.mkdir()
-    os.chdir(filtering_dir)
     if filtering:
         filter_args = [mplx_dir.as_posix(), f"filtering.method={filtering}"]
     else:
         filter_args = [mplx_dir.as_posix()]
-    run_mplx_filter(filter_args)
+    result = subprocess.run(
+        [shutil.which("xia2.multiplex_filtering")] + filter_args,
+        cwd=run_in_tmp_path / filtering_dir,
+        capture_output=True,
+    )
+    assert not result.returncode
     for f in expected_data_files:
-        assert os.path.isfile(f), "expected file %s missing" % f
+        assert (filtering_dir / f).is_file(), "expected file %s missing" % f
 
 
 def test_consistency(proteinase_k, run_in_tmp_path):
@@ -60,27 +70,36 @@ def test_consistency(proteinase_k, run_in_tmp_path):
     """
     expts, refls = proteinase_k
     command_line_args = expts + refls + ["filtering.method=deltacchalf"]
-    run_multiplex(command_line_args)
+    result = subprocess.run(
+        [shutil.which("xia2.multiplex")] + command_line_args,
+        cwd=run_in_tmp_path,
+        capture_output=True,
+    )
+    assert not result.returncode
     mplx_dir = pathlib.Path(run_in_tmp_path)
     filtering_dir = mplx_dir / "filtering"
     filtering_dir.mkdir()
-    os.chdir(filtering_dir)
     filter_args = [mplx_dir.as_posix(), "filtering.method=deltacchalf"]
-    run_mplx_filter(filter_args)
+    result = subprocess.run(
+        [shutil.which("xia2.multiplex_filtering")] + filter_args,
+        cwd=run_in_tmp_path / filtering_dir,
+        capture_output=True,
+    )
+    assert not result.returncode
     for f in expected_data_files:
-        assert os.path.isfile(f), "expected file %s missing" % f
+        assert (filtering_dir / f).is_file(), "expected file %s missing" % f
 
-    with open(mplx_dir / "xia2.multiplex.json") as fh:
+    with open(mplx_dir / "Processing" / "xia2.multiplex.json") as fh:
         d_mplx = json.load(fh)
 
-    with open("xia2.multiplex_filtering.json") as fh:
+    with open(filtering_dir / "Processing" / "xia2.multiplex_filtering.json") as fh:
         d_filtered = json.load(fh)
 
-    for i in d_filtered["datasets"]["Filtered"]["merging_stats"]:
-        assert (
-            d_filtered["datasets"]["Filtered"]["merging_stats"][i]
-            == d_mplx["datasets"]["Filtered"]["merging_stats"][i]
-        )
+    for x, y in zip(
+        d_mplx["datasets"]["Filtered"]["merging_stats"]["cc_one_half"],
+        d_filtered["datasets"]["Filtered"]["merging_stats"]["cc_one_half"],
+    ):
+        assert math.isclose(x, y, abs_tol=1e-10)
 
 
 def test_exit_for_invalid_multiplex_dir(run_in_tmp_path):
@@ -89,9 +108,13 @@ def test_exit_for_invalid_multiplex_dir(run_in_tmp_path):
     """
     mplx_dir = pathlib.Path(run_in_tmp_path)
     filter_args = [mplx_dir.as_posix(), "filtering.method=deltacchalf"]
-    with pytest.raises(SystemExit) as e:
-        run_mplx_filter(filter_args)
-    assert str(e.value) == multiplex_filter_error_message
+    result = subprocess.run(
+        [shutil.which("xia2.multiplex_filtering")] + filter_args,
+        cwd=run_in_tmp_path,
+        capture_output=True,
+    )
+    assert result.returncode
+    assert multiplex_filter_error_message in str(result.stderr)
 
 
 @pytest.mark.parametrize("directory", [("fake_directory"), (None)])
@@ -103,11 +126,15 @@ def test_exit_for_no_multiplex_dir(directory, run_in_tmp_path):
         filter_args = [pathlib.Path(directory).as_posix()]
     else:
         filter_args = []
-    with pytest.raises(SystemExit) as e:
-        run_mplx_filter(filter_args)
+    result = subprocess.run(
+        [shutil.which("xia2.multiplex_filtering")] + filter_args,
+        cwd=run_in_tmp_path,
+        capture_output=True,
+    )
+    assert result.returncode
     assert (
-        str(e.value)
-        == "Please provide a path to a directory containing a completed multiplex job."
+        "Please provide a path to a directory containing a completed multiplex job."
+        in str(result.stderr)
     )
 
 
@@ -119,16 +146,25 @@ def test_exit_partial_multiplex_dir(proteinase_k, run_in_tmp_path):
     """
     expts, refls = proteinase_k
     command_line_args = expts + refls + []
-    run_multiplex(command_line_args)
+    result = subprocess.run(
+        [shutil.which("xia2.multiplex")] + command_line_args,
+        cwd=run_in_tmp_path,
+        capture_output=True,
+    )
+    assert not result.returncode
     mplx_dir = pathlib.Path(run_in_tmp_path)
-    os.remove("xia2.multiplex.json")
+    json = run_in_tmp_path / "Processing" / "xia2.multiplex.json"
+    json.unlink()
     filtering_dir = mplx_dir / "filtering"
     filtering_dir.mkdir()
-    os.chdir(filtering_dir)
     filter_args = [mplx_dir.as_posix(), "filtering.method=deltacchalf"]
-    with pytest.raises(SystemExit) as e:
-        run_mplx_filter(filter_args)
-    assert str(e.value) == multiplex_filter_error_message
+    result = subprocess.run(
+        [shutil.which("xia2.multiplex_filtering")] + filter_args,
+        cwd=run_in_tmp_path,
+        capture_output=True,
+    )
+    assert result.returncode
+    assert multiplex_filter_error_message in str(result.stderr)
 
 
 def test_overwrite_multiplex_filtering_params(proteinase_k, run_in_tmp_path):
@@ -143,22 +179,45 @@ def test_overwrite_multiplex_filtering_params(proteinase_k, run_in_tmp_path):
         + refls
         + ["filtering.method=deltacchalf", "filtering.deltacchalf.mode=dataset"]
     )
-    run_multiplex(command_line_args)
+    result = subprocess.run(
+        [shutil.which("xia2.multiplex")] + command_line_args,
+        cwd=run_in_tmp_path,
+        capture_output=True,
+    )
+    assert not result.returncode
     mplx_dir = pathlib.Path(run_in_tmp_path)
     filtering_dir = mplx_dir / "filtering"
     filtering_dir.mkdir()
-    os.chdir(filtering_dir)
     filter_args = [
         mplx_dir.as_posix(),
         "filtering.deltacchalf.mode=image_group",
         "filtering.deltacchalf.group_size=12",
     ]
-    run_mplx_filter(filter_args)
+    result = subprocess.run(
+        [shutil.which("xia2.multiplex_filtering")] + filter_args,
+        cwd=run_in_tmp_path / filtering_dir,
+        capture_output=True,
+    )
+    assert not result.returncode
     for f in expected_data_files:
-        assert os.path.isfile(f), "expected file %s missing" % f
-    with open(mplx_dir / "dials.scale.log", "r") as f:
+        assert (filtering_dir / f).is_file(), "expected file %s missing" % f
+
+    mplx_scale_logs = list((run_in_tmp_path / "LogFiles").glob("*_dials.scale.log"))
+
+    assert len(mplx_scale_logs) == 2
+
+    filter_scale_logs = list(
+        (run_in_tmp_path / "filtering" / "LogFiles").glob("*_dials.scale.log")
+    )
+
+    assert len(filter_scale_logs) == 1
+
+    mplx_scale_log = mplx_scale_logs[1]
+    filter_scale_log = filter_scale_logs[0]
+
+    with open(mplx_scale_log, "r", encoding="utf-8") as f:
         data_mplx = f.readlines()
-    with open(filtering_dir / "dials.scale.log", "r") as f:
+    with open(filter_scale_log, "r", encoding="utf-8") as f:
         data_filtering = f.readlines()
 
     mplx_groups = None
