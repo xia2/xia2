@@ -597,9 +597,6 @@ class MultiCrystalScale:
                     MultiplexFileHandler.record_optional_file("multiplicities_h_0.json")
                     MultiplexFileHandler.record_optional_file("multiplicities_k_0.json")
                     MultiplexFileHandler.record_optional_file("multiplicities_l_0.json")
-                    MultiplexFileHandler.record_log_file("multiplicities_h_0.png")
-                    MultiplexFileHandler.record_log_file("multiplicities_k_0.png")
-                    MultiplexFileHandler.record_log_file("multiplicities_l_0.png")
 
             """
             # To ensure that pools within pools aren't created
@@ -687,9 +684,6 @@ class MultiCrystalScale:
         MultiplexFileHandler.record_optional_file("multiplicities_h_0.json")
         MultiplexFileHandler.record_optional_file("multiplicities_k_0.json")
         MultiplexFileHandler.record_optional_file("multiplicities_l_0.json")
-        MultiplexFileHandler.record_log_file("multiplicities_h_0.png")
-        MultiplexFileHandler.record_log_file("multiplicities_k_0.png")
-        MultiplexFileHandler.record_log_file("multiplicities_l_0.png")
 
     @staticmethod
     def filter(
@@ -1578,13 +1572,9 @@ class Scale:
         misc_file_names.append(tt_refiner.get_output_cif())
         misc_file_names.append(tt_refiner._output_p4p)
         misc_file_names.append(tt_refiner.get_output_experiments())
-        misc_file_names.append(tt_refiner._output_p4p.replace(".p4p", ".json"))
 
         MultiplexFileHandler.record_log_file(
             f"{tt_refiner.get_xpid()}_dials.two_theta_refine.log"
-        )
-        MultiplexFileHandler.record_log_file(
-            f"{tt_refiner.get_xpid()}_dials.two_theta_refine_2theta.png"
         )
 
         return tt_refiner.get_output_experiments(), misc_file_names
