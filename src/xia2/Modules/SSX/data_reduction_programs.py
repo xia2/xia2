@@ -554,7 +554,6 @@ def _extract_scaling_params_for_scale_against_reference(reduction_params, name):
         reflection_selection.method=intensity_ranges
         reflection_selection.Isigma_range=2.0,0.0
         output.additional_stats=True
-        cut_data.small_scale_cutoff=1e-9
     """
     xia2_phil = f"""
         anomalous={reduction_params.anomalous}
