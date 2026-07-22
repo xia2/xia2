@@ -513,30 +513,30 @@ def _write_sweeps(sweeps, out):
                     min(s.get_images()) <= start_ends[0][1] <= max(s.get_images())
                 )
                 if not all((start_good, end_good)):
-                    logger.debug("Rejecting sweep %s:" % s.get_template())
+                    logger.error("Rejecting sweep %s:" % s.get_template())
                     if not start_good:
-                        logger.debug(
+                        logger.error(
                             "  Your specified start-point image lies outside the bounds of this sweep."
                         )
                     if not end_good:
-                        logger.debug(
+                        logger.error(
                             "  Your specified end-point image lies outside the bounds of this sweep."
                         )
-                    logger.debug(
+                    logger.error(
                         "  Your specified start and end points were %d & %d,"
                         % start_ends[0]
                     )
-                    logger.debug(
+                    logger.error(
                         "  this sweep consists of images from %d to %d."
                         % (min(s.get_images()), max(s.get_images()))
                     )
-                    logger.debug(
+                    logger.error(
                         """  If there are missing images in your sweep, but you have selected valid
   start and end points within a contiguous range of images, you will see this
   message, even though all is well with your selection, because xia2 treats
   each contiguous image range as a separate sweep."""
                     )
-                    continue
+                    sys.exit(1)
             else:
                 start_ends = [(min(s.get_images()), max(s.get_images()))]
 
