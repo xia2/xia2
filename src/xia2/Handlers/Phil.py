@@ -239,6 +239,11 @@ dials
     .short_caption = "Closeness to the spindle cutoff for including " \
                      "reflections in refinement"
     .expert_level = 2
+  reindex_mC_to_mI = False
+    .type = bool
+    .help = "Reindex mC lattice to mI setting"
+    .short_caption = "Reindex C2 to I2"
+    .expert_level = 2
 
   detect_blanks
     .short_caption = "Detect blank images"

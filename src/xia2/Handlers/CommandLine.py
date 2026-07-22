@@ -334,6 +334,41 @@ class _CommandLine:
             PhilIndex.update("xia2.settings.trust_beam_centre=true")
 
         params = PhilIndex.get_python_object()
+
+        # Handle user selection of I2 spacegroup
+        mI_to_mC = {
+            "I 1 2 1": "C 1 2 1",
+            "I 1 m 1": "C 1 m 1",
+            "I 1 a 1": "C 1 c 1",
+            "I 1 2/m 1": "C 1 2/m 1",
+            "I 1 2/a 1": "C 1 2/c 1",
+        }
+        if str(params.xia2.settings.space_group) in mI_to_mC:
+            logger.debug("Setting user lattice to mC rather than mI")
+            PhilIndex.update(
+                "xia2.settings.space_group="
+                + mI_to_mC[str(params.xia2.settings.space_group)]
+            )
+            if params.xia2.settings.unit_cell:
+                from cctbx.sgtbx import change_of_basis_op
+
+                cb_op = change_of_basis_op("h+l,k,-h")
+                old_params = params.xia2.settings.unit_cell.parameters()
+                new_cell = params.xia2.settings.unit_cell.change_basis(cb_op=cb_op)
+                new_params = new_cell.parameters()
+                PhilIndex.update(
+                    "xia2.settings.unit_cell="
+                    + ",".join([f"{p:.6f}" for p in new_params])
+                )
+                logger.debug(
+                    "Unit cell basis change: %s -> %s" % (old_params, new_params)
+                )
+            if params.xia2.settings.pipeline == "dials":
+                # Handle conversion back to I2 after integration for the DIALS pipeline
+                PhilIndex.update("dials.reindex_mC_to_mI=True")
+
+        params = PhilIndex.get_python_object()
+
         if params.xia2.settings.input.xinfo is not None:
             xinfo_file = os.path.abspath(params.xia2.settings.input.xinfo)
             PhilIndex.update("xia2.settings.input.xinfo=%s" % xinfo_file)

@@ -566,6 +566,36 @@ pipeline=dials (supported for pipeline=dials-aimless).
                             f"unit cell parameters differ in {reference_expt} and {si.get_reflections()}"
                         )
 
+        # Reindex C2 to I2 if requested
+        if PhilIndex.params.dials.reindex_mC_to_mI:
+            mC_to_mI = {
+                "C 1 2 1": "I 1 2 1",
+                "C 1 m 1": "I 1 m 1",
+                "C 1 c 1": "I 1 a 1",
+                "C 1 2/m 1": "I 1 2/m 1",
+                "C 1 2/c 1": "I 1 2/a 1",
+            }
+            self._scalr_likely_spacegroups = [
+                mC_to_mI.get(s, s) for s in self._scalr_likely_spacegroups
+            ]
+            for epoch in self._sweep_handler.get_epochs():
+                si = self._sweep_handler.get_sweep_information(epoch)
+                integrater = si.get_integrater()
+                if not integrater.get_integrater_spacegroup_number() == 5:
+                    continue
+
+                reindexer = DialsReindex()
+                reindexer.set_working_directory(self.get_working_directory())
+                auto_logfiler(reindexer)
+
+                reindexer.set_cb_op("-l,k,h+l")
+                reindexer.set_indexed_filename(si.get_reflections())
+                reindexer.set_experiments_filename(si.get_experiments())
+                reindexer.run()
+
+                si.set_reflections(reindexer.get_reindexed_reflections_filename())
+                si.set_experiments(reindexer.get_reindexed_experiments_filename())
+
         # Now make sure all batches ok before finish preparing
         # This should be made safer, currently after dials.scale there is no
         # concept of 'batch', dials.export uses the calculate_batch_offsets
