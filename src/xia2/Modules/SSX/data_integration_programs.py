@@ -30,11 +30,11 @@ from dials.array_family import flex
 from dials.command_line.combine_experiments import CombineWithReference
 from dials.command_line.find_spots import working_phil as find_spots_phil
 from dials.command_line.refine import run_dials_refine
-from dials.command_line.refine import working_phil as refine_phil
 from dials.command_line.ssx_index import index
 from dials.command_line.ssx_index import phil_scope as indexing_phil
 from dials.command_line.ssx_integrate import run_integration
 from dials.command_line.ssx_integrate import working_phil as integration_phil
+from dials.command_line.ssx_refine import working_phil as refine_phil
 from dials.util.ascii_art import spot_counts_per_image_plot
 from dxtbx.model import ExperimentList
 from dxtbx.serialize import load
@@ -417,40 +417,28 @@ def run_refinement(
 ) -> None:
     xia2_logger.notice(banner("Joint refinement"))  # type: ignore
 
-    logfile = "dials.refine.log"
+    logfile = "dials.ssx_refine.log"
     with (
         run_in_directory(working_directory),
         log_to_file(logfile) as dials_logger,
-        record_step("dials.refine"),
+        record_step("dials.ssx_refine"),
     ):
         indexed_refl = flex.reflection_table.from_file("indexed.refl")
         indexed_expts = load.experiment_list("indexed.expt", check_format=False)
-
-        extra_defaults = """
-            refinement.parameterisation.beam.fix="all"
-            refinement.parameterisation.auto_reduction.action="fix"
-            refinement.parameterisation.detector.fix_list="Tau1"
-            refinement.refinery.engine=SparseLevMar
-            refinement.reflections.outlier.algorithm=sauter_poon
-        """
 
         if refinement_params.phil:
             itpr = refine_phil.command_line_argument_interpreter()
             try:
                 user_phil = itpr.process(args=[os.fspath(refinement_params.phil)])[0]
-                working_phil = refine_phil.fetch(
-                    sources=[iotbx.phil.parse(extra_defaults), user_phil]
-                )
+                working_phil = refine_phil.fetch(sources=[user_phil])
                 # Note, the order above makes the user phil take precedent over the extra defaults
             except Exception as e:
                 xia2_logger.warning(
                     f"Unable to interpret {refinement_params.phil} as a refinement phil file. Error:\n{e}"
                 )
-                working_phil = refine_phil.fetch(
-                    sources=[iotbx.phil.parse(extra_defaults)]
-                )
+                working_phil = refine_phil
         else:
-            working_phil = refine_phil.fetch(sources=[iotbx.phil.parse(extra_defaults)])
+            working_phil = refine_phil
         diff_phil = refine_phil.fetch_diff(source=working_phil)
         params = working_phil.extract()
         dials_logger.info(
@@ -467,7 +455,7 @@ def run_refinement(
         refls.as_file("refined.refl")
         FileHandler.record_data_file(working_directory / "refined.expt")
         FileHandler.record_log_file(
-            "dials.refine", working_directory / "dials.refine.log"
+            "dials.ssx_refine", working_directory / "dials.ssx_refine.log"
         )
     # add a stream handler to capture printing of summary tables for output to xia2 log.
     stream = StringIO()
