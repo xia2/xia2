@@ -166,7 +166,7 @@ def test_geometry_refinement(dials_data, tmp_path, option, expected_success):
     assert len(refined_expts.detectors()) == 1
 
     assert (tmp_path / "DataFiles" / "refined.expt").is_file()
-    assert (tmp_path / "LogFiles" / "dials.refine.log").is_file()
+    assert (tmp_path / "LogFiles" / "dials.ssx_refine.log").is_file()
 
 
 @pytest.fixture
@@ -222,10 +222,10 @@ def test_run_with_reference(dials_data, tmp_path, refined_expt, starting):
     check_output(tmp_path, find_spots=True, index=True, integrate=True)
     if starting:
         assert (tmp_path / "DataFiles" / "refined.expt").is_file()
-        assert (tmp_path / "LogFiles" / "dials.refine.log").is_file()
+        assert (tmp_path / "LogFiles" / "dials.ssx_refine.log").is_file()
     else:
         assert not (tmp_path / "DataFiles" / "refined.expt").is_file()
-        assert not (tmp_path / "LogFiles" / "dials.refine.log").is_file()
+        assert not (tmp_path / "LogFiles" / "dials.ssx_refine.log").is_file()
     assert (tmp_path / "geometry_refinement" / "detector_models.pdf").is_file()
 
 
@@ -297,7 +297,7 @@ def test_full_run_without_reference(dials_data, tmp_path):
     reference = tmp_path / "geometry_refinement" / "refined.expt"
     assert reference.is_file()
     assert (tmp_path / "DataFiles" / "refined.expt").is_file()
-    assert (tmp_path / "LogFiles" / "dials.refine.log").is_file()
+    assert (tmp_path / "LogFiles" / "dials.ssx_refine.log").is_file()
 
     # Now check that the data was reimported with this reference
     assert (tmp_path / "import" / "file_input.json").is_file()
