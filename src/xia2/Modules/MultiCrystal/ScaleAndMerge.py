@@ -11,6 +11,7 @@ from typing import Any
 import iotbx.phil
 import libtbx.phil
 from cctbx import sgtbx, uctbx
+from dials.algorithms.clustering.unit_cell import ClusteringResult
 from dials.algorithms.scaling import scale_and_filter
 from dials.array_family import flex
 from dials.command_line.unit_cell_histogram import plot_uc_histograms
@@ -410,6 +411,7 @@ class MultiCrystalScale:
             if len(keep_expts) != len(self._data_manager.experiments):
                 self._data_manager.select(keep_expts)
 
+        self._preliminary_uc_clustering: ClusteringResult | None = None
         self._individual_report_dicts: dict[str, dict[str, Any]] = OrderedDict()
         self._comparison_graphs: dict[str, dict[str, Any]] = OrderedDict()
         self.scale_and_filter_results: scale_and_filter.AnalysisResults | None = None
@@ -417,7 +419,7 @@ class MultiCrystalScale:
 
     def run(self) -> None:
         logger.notice(banner("Unit cell clustering"))  # type: ignore
-        self.unit_cell_clustering(plot_name="cluster_unit_cell_p1.png")
+        self._preliminary_uc_clustering = self.unit_cell_clustering()
 
         if self._params.symmetry.resolve_indexing_ambiguity:
             logger.notice(banner("Applying consistent symmetry"))  # type: ignore
@@ -595,9 +597,6 @@ class MultiCrystalScale:
                     MultiplexFileHandler.record_optional_file("multiplicities_h_0.json")
                     MultiplexFileHandler.record_optional_file("multiplicities_k_0.json")
                     MultiplexFileHandler.record_optional_file("multiplicities_l_0.json")
-                    MultiplexFileHandler.record_log_file("multiplicities_h_0.png")
-                    MultiplexFileHandler.record_log_file("multiplicities_k_0.png")
-                    MultiplexFileHandler.record_log_file("multiplicities_l_0.png")
 
             """
             # To ensure that pools within pools aren't created
@@ -685,9 +684,6 @@ class MultiCrystalScale:
         MultiplexFileHandler.record_optional_file("multiplicities_h_0.json")
         MultiplexFileHandler.record_optional_file("multiplicities_k_0.json")
         MultiplexFileHandler.record_optional_file("multiplicities_l_0.json")
-        MultiplexFileHandler.record_log_file("multiplicities_h_0.png")
-        MultiplexFileHandler.record_log_file("multiplicities_k_0.png")
-        MultiplexFileHandler.record_log_file("multiplicities_l_0.png")
 
     @staticmethod
     def filter(
@@ -1066,7 +1062,8 @@ class MultiCrystalScale:
                     if "text" in data:
                         data["text"] = list(flex.std_string(data["text"]).select(sel))
 
-        d.update(report.multiplicity_plots())
+        d.update(report.multiplicity_plots(save_png=False))
+
         return d
 
     @staticmethod
@@ -1126,7 +1123,9 @@ class MultiCrystalScale:
         d["merging_stats_anom"] = report_d["merging_stats_anom"]
         return d
 
-    def unit_cell_clustering(self, plot_name: str | None = None) -> None:
+    def unit_cell_clustering(
+        self, plot_name: str | None = None
+    ) -> ClusteringResult | None:  # Optional[ClusteringResult]:
         lattice_ids = [
             self._data_manager.identifiers_to_ids_map[i]
             for i in self._data_manager.experiments.identifiers()
@@ -1154,10 +1153,23 @@ class MultiCrystalScale:
                 ]
                 self._data_manager.select(cluster_identifiers)
                 self._data_manager._set_batches()
+                for id, color in zip(
+                    clustering.dendrogram["leaves"],
+                    clustering.dendrogram["leaves_color_list"],
+                ):
+                    if id in largest_cluster.lattice_ids:
+                        clustering.dendrogram["largest_cluster_color"] = color
+                        break
             else:
                 logger.info("Using all data sets for subsequent analysis")
+                clustering.dendrogram["largest_cluster_color"] = clustering.dendrogram[
+                    "leaves_color_list"
+                ][0]
+            return clustering
+
         else:
             logger.info("Clustering unsuccessful")
+            return None
 
     def unit_cell_histogram(self, plot_name: str | None = None) -> None:
         uc_params = [flex.double() for i in range(6)]
@@ -1356,7 +1368,11 @@ class MultiCrystalScale:
         refl = data_manager.reflections
         data_manager.reflections = refl.select(refl["d"] >= self._scaled.d_min)
         # Sets up the analysis and  report class, but doesn't do the clustering analysis.
-        mca = MultiCrystalReport(params=params, data_manager=data_manager)
+        mca = MultiCrystalReport(
+            params=params,
+            data_manager=data_manager,
+            prelim_uc_clustering=self._preliminary_uc_clustering,
+        )
         return mca
 
     def report(self) -> None:
@@ -1539,6 +1555,7 @@ class Scale:
         tt_refiner.set_experiments([experiments_filename])
         tt_refiner.set_reflection_files([reflections_filename])
         tt_refiner.set_combine_crystal_models(combine_crystal_models)
+        tt_refiner.output_graph = False
         tt_refiner.run()
         uc = tt_refiner.get_unit_cell()
         uc_sd = tt_refiner.get_unit_cell_esd()
@@ -1555,13 +1572,9 @@ class Scale:
         misc_file_names.append(tt_refiner.get_output_cif())
         misc_file_names.append(tt_refiner._output_p4p)
         misc_file_names.append(tt_refiner.get_output_experiments())
-        misc_file_names.append(tt_refiner._output_p4p.replace(".p4p", ".json"))
 
         MultiplexFileHandler.record_log_file(
             f"{tt_refiner.get_xpid()}_dials.two_theta_refine.log"
-        )
-        MultiplexFileHandler.record_log_file(
-            f"{tt_refiner.get_xpid()}_dials.two_theta_refine_2theta.png"
         )
 
         return tt_refiner.get_output_experiments(), misc_file_names

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import sys
+from io import BytesIO
 
 import iotbx.phil
 from cctbx.miller.display import render_2d, scene
@@ -12,7 +13,7 @@ from scitbx.array_family import flex
 
 
 class MultiplicityViewPng(render_2d):
-    def __init__(self, scene, settings=None):
+    def __init__(self, scene, settings=None, save_fig=True):
         import matplotlib
 
         matplotlib.use("Agg")
@@ -27,8 +28,11 @@ class MultiplicityViewPng(render_2d):
         self._filled_circle_radii = []
         self._filled_circle_colors = []
 
+        self.save_fig = save_fig
+        self.png_bytes = None
+
         self.fig, self.ax = pyplot.subplots(figsize=self.settings.size_inches)
-        self.render(self.ax)
+        self.png_bytes = self.render(self.ax)
         pyplot.close()
 
     def GetSize(self):
@@ -112,9 +116,18 @@ class MultiplicityViewPng(render_2d):
         ax.get_yaxis().set_visible(False)
 
         self.fig.tight_layout()
+
+        buf = BytesIO()
         self.fig.savefig(
-            self.settings.plot.filename, bbox_inches="tight", facecolor=self._background
+            buf, format="png", bbox_inches="tight", facecolor=self._background
         )
+        png_bytes = buf.getvalue()
+
+        if self.settings.plot.save_png:
+            with open(self.settings.plot.filename, "wb") as fh:
+                fh.write(png_bytes)
+
+        return png_bytes
 
 
 class MultiplicityViewJson(render_2d):
@@ -304,6 +317,8 @@ space_group = None
 plot {
   filename = multiplicities.png
     .type = path
+  save_png = True
+    .type = bool
 }
 json {
   filename = None
@@ -361,12 +376,18 @@ def plot_multiplicity(miller_array, settings):
     settings.expand_anomalous = True
     settings.slice_mode = True
 
+    output_plots = {}
+
     if settings.plot.filename is not None:
-        MultiplicityViewPng(
+        png_plots = MultiplicityViewPng(
             scene(miller_array, settings, merge=True), settings=settings
         )
+
+        output_plots[settings.plot.filename] = png_plots.png_bytes
 
     if settings.json.filename is not None:
         MultiplicityViewJson(
             scene(miller_array, settings, merge=True), settings=settings
         )
+
+    return output_plots
