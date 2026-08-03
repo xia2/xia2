@@ -1,2 +1,1 @@
-``dials.merge``: do not assign FreeR_flag column here, instead defer to CCP4 freer_flag program
-
+``dials.merge``: do not assign FreeR_flag column here, instead defer to CCP4 ``freer_flag`` program.
