@@ -1,3 +1,29 @@
+xia2 3.30.0 (2026-08-03)
+========================
+
+Features
+--------
+
+- Allow ``space_group=I2`` and other ``mI`` space groups by processing in their ``mC`` equivalent then reindexing for scaling and export. (`#931 <https://github.com/xia2/xia2/issues/931>`_)
+- ``xia2.multiplex``: Add a ``small_molecule=`` option, to trigger full symmetry analysis and shelx output for small-molecule data. (`#932 <https://github.com/xia2/xia2/issues/932>`_)
+- ``xia2.ssx``: Add deltacchalf filtering option to data reduction, enabled with the parameter ``filtering.method=deltacchalf`` (`#934 <https://github.com/xia2/xia2/issues/934>`_)
+- ``xia2.multiplex``: Include plot of initial unit cell clustering in HTML, and remove duplicate png output. (`#940 <https://github.com/xia2/xia2/issues/940>`_)
+- ``xia2.ssx``: Add live-processing mode ``wait_for_images.enable=True``. You can launch ``xia2.ssx`` on a partial dataset during collection, and it will wait for each block of images to be available before processing. (`#942 <https://github.com/xia2/xia2/issues/942>`_)
+
+
+Bugfixes
+--------
+
+- ``dials.merge``: do not assign FreeR_flag column here, instead defer to CCP4 ``freer_flag`` program. (`#927 <https://github.com/xia2/xia2/issues/927>`_)
+- ``xia2.multiplex``: Fix issue where clicking on HTML clustering dendrograms failed to give corresponding identifiers. (`#929 <https://github.com/xia2/xia2/issues/929>`_)
+
+
+Misc
+----
+
+- `#915 <https://github.com/xia2/xia2/issues/915>`_, `#928 <https://github.com/xia2/xia2/issues/928>`_, `#930 <https://github.com/xia2/xia2/issues/930>`_, `#935 <https://github.com/xia2/xia2/issues/935>`_, `#937 <https://github.com/xia2/xia2/issues/937>`_, `#939 <https://github.com/xia2/xia2/issues/939>`_
+
+
 xia2 3.29.0 (2026-06-12)
 ========================
 

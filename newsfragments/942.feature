@@ -1,1 +1,0 @@
-``xia2.ssx``: Add live-processing mode ``wait_for_images.enable=True``. You can launch ``xia2.ssx`` on a partial dataset during collection, and it will wait for each block of images to be available before processing.
