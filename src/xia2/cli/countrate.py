@@ -1,4 +1,26 @@
-"""
+from __future__ import annotations
+
+import json
+import logging
+import pathlib
+import subprocess
+import sys
+import time
+import traceback
+from collections import Counter
+
+import iotbx.phil
+from dials.array_family import flex
+from dials.util.options import ArgumentParser
+from dxtbx.serialize import load
+
+import xia2.Handlers.Streams
+from xia2.Applications.xia2_main import write_citations
+from xia2.Handlers.Citations import Citations
+
+logger = logging.getLogger("xia2.cli.countrate")
+
+help_message = """
 xia2.countrate: Process crystallography data through import and spotfinding.
 
 This program performs the following steps:
@@ -13,25 +35,6 @@ Usage examples:
     xia2.countrate image=/path/to/data.h5 spotfinder.filter.min_spot_size=3
 """
 
-from __future__ import annotations
-
-import logging
-import pathlib
-import subprocess
-import sys
-import traceback
-
-import iotbx.phil
-from dials.array_family import flex
-from dials.util.options import ArgumentParser
-from dxtbx.serialize import load
-
-import xia2.Handlers.Streams
-from xia2.Applications.xia2_main import write_citations
-from xia2.Handlers.Citations import Citations
-
-logger = logging.getLogger("xia2.cli.countrate")
-
 phil_scope = iotbx.phil.parse(
     """
 input {
@@ -44,24 +47,13 @@ input {
     directory = None
         .type = str
         .help = "Directory containing image files"
-}
+    max_trusted_range_factor = 5.0
+        .type = float
+        .help = "Factor to multiply the detector's maximum trusted range for spotfinding, allowing some headroom above the trusted range so that the pixels still get found",
+    nproc = Auto
+        .type = int
+        .help = "Number of processes to use for spotfinding"
 
-spotfinder {
-    min_spot_size = 2
-        .type = int
-        .help = "Minimum spot size in pixels"
-    max_spot_size = 10
-        .type = int
-        .help = "Maximum spot size in pixels"
-    d_min = None
-        .type = float
-        .help = "Minimum d-spacing to consider for spotfinding (Angstroms)"
-    d_max = None
-        .type = float
-        .help = "Maximum d-spacing to consider for spotfinding (Angstroms)"
-    nproc = 1
-        .type = int
-        .help = "Number of processors for spotfinding"
 }
 
 processing {
@@ -84,7 +76,8 @@ output {
         .type = str
         .help = "Log file for processing"
 }
-"""
+""",
+    process_includes=True,
 )
 
 
@@ -130,20 +123,17 @@ def run_dials_find_spots(working_dir: pathlib.Path, params) -> None:
     if not experiments_file.exists():
         raise FileNotFoundError(f"Experiments file not found: {experiments_file}")
 
+    experiment = load.experiment_list(str(experiments_file), check_format=False)[0]
+    trusted_range = experiment.detector[0].get_trusted_range()[1]
+
     find_spots_cmd = [
         "dials.find_spots",
         str(experiments_file),
         f"output.reflections={params.output.reflections}",
-        f"spotfinder.filter.min_spot_size={params.spotfinder.min_spot_size}",
-        f"spotfinder.filter.max_spot_size={params.spotfinder.max_spot_size}",
-        f"spotfinder.mp.nproc={params.spotfinder.nproc}",
+        "ice_rings.filter=True",
+        f"maximum_trusted_value={trusted_range * params.input.max_trusted_range_factor}",  # Allow some headroom above the trusted range
+        f"mp.nproc={params.input.nproc}",
     ]
-
-    if params.spotfinder.d_min is not None:
-        find_spots_cmd.append(f"spotfinder.filter.d_min={params.spotfinder.d_min}")
-
-    if params.spotfinder.d_max is not None:
-        find_spots_cmd.append(f"spotfinder.filter.d_max={params.spotfinder.d_max}")
 
     logger.debug(f"Running: {' '.join(find_spots_cmd)}")
 
@@ -161,7 +151,9 @@ def run_dials_find_spots(working_dir: pathlib.Path, params) -> None:
     logger.info("dials.find_spots completed successfully")
 
 
-def process_spotfinding_results(working_dir: pathlib.Path, params) -> dict:
+def process_spotfinding_results(
+    working_dir: pathlib.Path, params
+) -> tuple[dict[int, int], int]:
     """Process the spotfinding results and perform additional analysis."""
     logger.info("Processing spotfinding results...")
 
@@ -173,60 +165,31 @@ def process_spotfinding_results(working_dir: pathlib.Path, params) -> dict:
         raise FileNotFoundError(f"Reflections file not found: {reflections_path}")
 
     reflections = flex.reflection_table.from_file(str(reflections_path))
-    experiments = load.experiment_list(str(experiments_path), check_format=False)
+    experiment = load.experiment_list(str(experiments_path), check_format=False)[0]
+    detector = experiment.detector.to_dict()
 
-    # Basic statistics
-    n_experiments = len(experiments)
-    n_reflections = len(reflections)
+    detector_max_trusted_counts = detector["panels"][0]["trusted_range"][1]
 
-    logger.info(f"Found {n_experiments} experiments")
-    logger.info(f"Found {n_reflections} total reflections")
+    shoeboxes = reflections["shoebox"]
 
-    # Per-image spot counts
-    spot_counts = {}
-    if n_reflections > 0 and "id" in reflections:
-        for expt_id in range(n_experiments):
-            n_spots = (reflections["id"] == expt_id).count(True)
-            spot_counts[expt_id] = n_spots
-            logger.info(f"  Experiment {expt_id}: {n_spots} spots")
+    counter = Counter(int(shoebox.data.as_numpy_array().max()) for shoebox in shoeboxes)
+    sorted_counter = sorted(counter.items())
+    histogram: dict[int, int] = dict(sorted_counter)
 
-    # Filter based on minimum spots per image
-    if params.processing.min_spots_per_image > 0:
-        selected = flex.bool(n_reflections, True)
-        for i in range(n_reflections):
-            if "id" in reflections:
-                expt_id = reflections["id"][i]
-                if spot_counts.get(expt_id, 0) < params.processing.min_spots_per_image:
-                    selected[i] = False
+    return histogram, detector_max_trusted_counts
 
-        n_filtered = selected.count(True)
-        logger.info(
-            f"After filtering: {n_filtered} reflections "
-            f"(removed {n_reflections - n_filtered})"
-        )
 
-        # Save filtered reflections if any were removed
-        if n_filtered < n_reflections:
-            filtered_reflections = reflections.select(selected)
-            filtered_path = working_dir / "strong_filtered.refl"
-            filtered_reflections.as_file(str(filtered_path))
-            logger.info(f"Saved filtered reflections to {filtered_path}")
-
-    # Generate summary statistics
-    summary = {
-        "n_experiments": n_experiments,
-        "n_reflections": n_reflections,
-        "spot_counts": spot_counts,
-        "reflections_per_experiment": (
-            n_reflections / n_experiments if n_experiments > 0 else 0
-        ),
-    }
-
-    return summary
+def save_hist_to_json(hist, max_trusted_value):
+    results_path = "pixel_counts.json"
+    logger.info(f"Saving counts histogram to {str(results_path)}")
+    with open(results_path, "w") as f:
+        json.dump({"counts": hist, "overload_limit": max_trusted_value}, f, indent=2)
 
 
 def run(args=None):
     """Main entry point for the CLI program."""
+    start_time = time.time()
+
     if args is None:
         args = sys.argv[1:]
 
@@ -240,7 +203,7 @@ def run(args=None):
             read_reflections=False,
             read_experiments=False,
             check_format=False,
-            epilog=__doc__,
+            epilog=help_message,
         )
 
         params, options = parser.parse_args(args=args, show_diff_phil=False)
@@ -272,19 +235,20 @@ def run(args=None):
         run_dials_find_spots(working_dir, params)
 
         # Step 3: Process results
-        summary = process_spotfinding_results(working_dir, params)
+        hist, max_trusted_value = process_spotfinding_results(working_dir, params)
+
+        save_hist_to_json(hist, max_trusted_value)
 
         # Log summary
         logger.info("=" * 60)
         logger.info("Processing Summary:")
-        logger.info(f"  Experiments: {summary['n_experiments']}")
-        logger.info(f"  Total reflections: {summary['n_reflections']}")
-        logger.info(
-            f"  Average spots per experiment: "
-            f"{summary['reflections_per_experiment']:.1f}"
-        )
         logger.info("=" * 60)
 
+        duration = time.time() - start_time
+
+        logger.info(
+            f"Processing took {time.strftime('%Hh %Mm %Ss', time.gmtime(duration))}"
+        )
         write_citations(program="xia2.countrate")
 
     except Exception as e:
@@ -293,3 +257,7 @@ def run(args=None):
         logger.error('Error: "%s"', str(e))
         logger.info(traceback.format_exc())
         sys.exit(1)
+
+
+if __name__ == "__main__":
+    run()
