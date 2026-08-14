@@ -22,6 +22,7 @@ console_scripts = [
     "xia2.ssx_reduce=xia2.cli.ssx_reduce:run",
     "xia2.add_free_set=xia2.cli.add_free_set:run",
     "xia2.compare_merging_stats=xia2.cli.compare_merging_stats:run",
+    "xia2.countrate=xia2.cli.countrate:run",
     "xia2.delta_cc_half=xia2.cli.delta_cc_half:run",
     "xia2.get_image_number=xia2.cli.get_image_number:run",
     "xia2.html=xia2.cli.xia2_html:run_with_log",
