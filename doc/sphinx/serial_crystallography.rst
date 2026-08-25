@@ -164,6 +164,7 @@ Important options
 - :samp:`filtering.method=deltacchalf`: Perform ΔCC1/2 filtering as part of scaling, to remove the crystals with worst agreement with the rest of the dataset.
 - :samp:`steps=scale+merge`: This can be changed to a single value to run part of the xia2.ssx\_reduce workflow.
 - :samp:`dose_series_repeat`: Set this to an integer to merge the data into separate groups based on image number. See :ref:`MergingInGroups` for more details and more generalised merging options.
+- :samp:`series_repeat`: Set this to a list of names to merge the data into separate, named groups based on image number, e.g. :samp:`series_repeat=first,second,last`. See :ref:`MergingInGroups` for more details and more generalised merging options.
 
 To see the full list of data reduction parameters and their descriptions,
 run :samp:`xia2.ssx_reduce -ce3 -a2`.

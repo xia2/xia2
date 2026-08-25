@@ -28,7 +28,9 @@ xia2_logger = logging.getLogger(__name__)
 
 
 def dose_series_repeat_to_groupings(
-    experiments: list[ExperimentList], dose_series_repeat: int
+    experiments: list[ExperimentList],
+    dose_series_repeat: int,
+    metadata_name: str = "dose_point",
 ) -> ParsedYAML:
     """
     For a dose series data collection, attempt to create and then parse a
@@ -60,12 +62,12 @@ def dose_series_repeat_to_groupings(
         raise ValueError("Unable to extract images/templates from experiments")
     grouping = f"""
 metadata:
-  dose_point:
+  {metadata_name}:
     {metalines}
 grouping:
   merge_by:
     values:
-      - dose_point
+      - {metadata_name}
 """
     parsed_yaml = ParsedYAML(yml_str=grouping)
     return parsed_yaml
