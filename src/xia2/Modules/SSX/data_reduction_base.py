@@ -180,7 +180,9 @@ def record_merge_files(
             FileHandler.record_html_file(
                 mergeresult.htmlfile.name.removesuffix(".html"), mergeresult.htmlfile
             )
-        res_limits = mergeresult.table_1_stats.split("\n")[1]
+        stats_lines = mergeresult.table_1_stats.split("\n")
+        # table_1_stats can be empty e.g. if merging statistics could not be calculated
+        res_limits = stats_lines[1] if len(stats_lines) > 1 else ""
         match = re.search(r"High resolution limit\s+(\d+(?:\.\d+)?)", res_limits)
         full_limit = ""
         if match:
