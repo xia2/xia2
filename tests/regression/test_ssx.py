@@ -578,12 +578,12 @@ grouping:
 
 
 @pytest.mark.parametrize(
-    "use_grouping",
-    [True, False],
+    "grouping_option",
+    ["yaml", "dose_series_repeat", "series_repeat"],
 )
-def test_reduce_with_grouping(dials_data, tmp_path, use_grouping):
-    """Test the feature of specifying a grouping yaml file
-    to define merge groups.
+def test_reduce_with_grouping(dials_data, tmp_path, grouping_option):
+    """Test the features for defining merge groups i.e. a grouping yaml file,
+    the dose_series_repeat option and the series_repeat option.
     """
     ssx = dials_data("cunir_serial_processed")
     ssx_data = dials_data("cunir_serial")
@@ -602,7 +602,7 @@ def test_reduce_with_grouping(dials_data, tmp_path, use_grouping):
     extra_args.append("scaling.phil=scaling.phil")
 
     # pretend that this is some dose series data
-    if use_grouping:
+    if grouping_option == "yaml":
         grouping = f"""
 metadata:
     dose_point:
@@ -615,13 +615,17 @@ grouping:
         with open(tmp_path / "example.yaml", "w") as f:
             f.write(grouping)
         extra_args.append("grouping=example.yaml")
-    else:
+        output_names = ["group_1", "group_2"]
+    elif grouping_option == "dose_series_repeat":
         extra_args.append("dose_series_repeat=2")
+        output_names = ["dose_1", "dose_2"]
+    else:
+        extra_args.append("series_repeat=first,second")
+        output_names = ["first", "second"]
 
     result = subprocess.run(args + extra_args, cwd=tmp_path, capture_output=True)
     assert not result.returncode
     assert not result.stderr
-    output_names = [f"group_{i}" if use_grouping else f"dose_{i}" for i in [1, 2]]
     for n in output_names:
         assert (tmp_path / "DataFiles" / f"{n}.mtz").is_file()
         assert (tmp_path / "LogFiles" / f"dials.merge.{n}.html").is_file()
@@ -649,20 +653,9 @@ grouping:
     # now rerun with a res limit on one group. Should be able to just process straight from
     # the group files for fast merging.
     args = [shutil.which("xia2.ssx_reduce"), "d_min=3.0", "steps=merge"]
-    if use_grouping:
-        args += list(
-            (tmp_path / "data_reduction" / "merge" / "group_1").glob("group*.expt")
-        )
-        args += list(
-            (tmp_path / "data_reduction" / "merge" / "group_1").glob("group*.refl")
-        )
-    else:
-        args += list(
-            (tmp_path / "data_reduction" / "merge" / "dose_1").glob("group*.expt")
-        )
-        args += list(
-            (tmp_path / "data_reduction" / "merge" / "dose_1").glob("group*.refl")
-        )
+    group_dir = tmp_path / "data_reduction" / "merge" / output_names[0]
+    args += list(group_dir.glob("group*.expt"))
+    args += list(group_dir.glob("group*.refl"))
 
     result = subprocess.run(args, cwd=tmp_path, capture_output=True)
     assert not result.returncode
