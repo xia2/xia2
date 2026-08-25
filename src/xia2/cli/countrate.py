@@ -8,8 +8,10 @@ import sys
 import time
 import traceback
 from collections import Counter
+from itertools import accumulate
 
 import iotbx.phil
+import matplotlib.pyplot as plt
 from dials.array_family import flex
 from dials.util.options import ArgumentParser
 from dxtbx.serialize import load
@@ -53,7 +55,15 @@ input {
     nproc = Auto
         .type = int
         .help = "Number of processes to use for spotfinding"
-
+    target_countrate_pct = 30.0
+        .type = float
+        .help = "Target percentage of the detector trusted range to scale the reference percentile reflection to"
+    ref_percentile = 99.9
+        .type = float
+        .help = "Percentile value used in transmission recommendation. xia2.countrate will calculate the transmission required to scale this percentile reflection intensity to the desired target_countrate_pct"
+    transmission = None
+        .type = float
+        .help = "Override the transmission in the imported experiment. Should be a value between 0.0 and 1.0 inclusive"
 }
 
 processing {
@@ -186,6 +196,34 @@ def save_hist_to_json(hist, max_trusted_value):
         json.dump({"counts": hist, "overload_limit": max_trusted_value}, f, indent=2)
 
 
+def get_percentile_index(num_spots, percentile):
+    threshold = sum(num_spots) * percentile
+
+    for i, cum_sum in enumerate(accumulate(num_spots)):
+        if cum_sum >= threshold:
+            return i
+
+    return len(num_spots)
+
+
+def save_plot(spot_intensity: list[int], num_spots: list[int], dir: pathlib.Path):
+    """Save the plot as png"""
+
+    logger.info("Plotting spot maximum intensities...")
+
+    xlabel = "Spot max pixel intensity"
+    ylabel = "N spots"
+
+    fig = plt.subplot()
+    fig.scatter(spot_intensity, num_spots)
+    fig.set_xlabel(xlabel)
+    fig.set_ylabel(ylabel)
+    # fig.set_xscale("log")
+    fig.set_yscale("log")
+
+    plt.savefig(dir / "spot_intensities.png")
+
+
 def run(args=None):
     """Main entry point for the CLI program."""
     start_time = time.time()
@@ -225,11 +263,21 @@ def run(args=None):
 
         # Run the processing pipeline
         logger.info("=" * 60)
-        logger.info("Starting data processing pipeline")
+        logger.info("Starting xia2.countrate")
         logger.info("=" * 60)
 
         # Step 1: Import data
         run_dials_import(working_dir, params)
+
+        experiments_file = working_dir / params.output.experiments
+        if not experiments_file.exists():
+            raise FileNotFoundError(f"Experiments file not found: {experiments_file}")
+        experiment = load.experiment_list(str(experiments_file), check_format=False)[0]
+        # trusted_range = experiment.detector[0].get_trusted_range()[1]
+
+        transmission = params.input.transmission
+        if not transmission:
+            transmission = experiment.beam.get_transmission()
 
         # Step 2: Find spots
         run_dials_find_spots(working_dir, params)
@@ -239,9 +287,49 @@ def run(args=None):
 
         save_hist_to_json(hist, max_trusted_value)
 
+        max_pixel_count = max(hist.keys())
+        max_pixel_percent_of_trusted_range = max_pixel_count * 100 / max_trusted_value
+
+        num_spots = list(hist.values())
+        spot_intensities = list(hist.keys())
+        total_spots = sum(num_spots)
+
+        # save_plot(spot_intensities, num_spots, working_dir)
+        percentiles = [99.99, 99.9, 99.0, 90.0]
+        percentile_trusted_range_pct: list[float] = []
+        for percentile in percentiles:
+            percentile_idx = get_percentile_index(num_spots, percentile / 100)
+            percentile_counts = spot_intensities[percentile_idx]
+            percentile_trusted_range_pct.append(
+                percentile_counts * 100 / max_trusted_value
+            )
+
+        # Calculate transmission needed to scale reference percentile reflection to target countrate
+        target_countrate_pct = params.input.target_countrate_pct
+        target_counts = max_trusted_value * (target_countrate_pct / 100)
+        ref_percentile = params.input.ref_percentile
+        ref_percentile_idx = percentile_idx = get_percentile_index(
+            num_spots, ref_percentile / 100
+        )
+        ref_percentile_counts = spot_intensities[ref_percentile_idx]
+        scale_factor = target_counts / ref_percentile_counts
+        recommended_transmission = min(transmission * scale_factor, 1.0)
+
         # Log summary
         logger.info("=" * 60)
         logger.info("Processing Summary:")
+        logger.info(f"Found {total_spots} strong reflections\n")
+        logger.info(f"Experiment transmission was {transmission:.2f}")
+        logger.info(
+            f"Max pixel recorded at {max_pixel_percent_of_trusted_range:.2f}% of detector trusted range\n"
+        )
+        for i, percentile in enumerate(percentiles):
+            logger.info(
+                f"{percentile}% of strong reflections <= {percentile_trusted_range_pct[i]:.2f}% of detector trusted range\n"
+            )
+        logger.info(
+            f"Recommended max transmission of {recommended_transmission:.2f} to keep {ref_percentile}% of strong reflections below {target_countrate_pct}% of detector trusted range\n"
+        )
         logger.info("=" * 60)
 
         duration = time.time() - start_time
