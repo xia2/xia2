@@ -4,7 +4,7 @@ import contextlib
 import json
 import time
 
-_timing_db = []
+_timing_db: list[dict] = []
 
 
 def record(timing_information):

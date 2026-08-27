@@ -138,8 +138,10 @@ def record_merge_files(
                     float(full_limit_match.group(1)) if full_limit_match else ""
                 )
                 old_mtzname = mergeresult.merge_file.name
-                new_mtzname = old_mtzname.rstrip(".mtz") + "_full.mtz"
-                new_logname = mergeresult.logfile.name.rstrip(".log") + "_full.log"
+                new_mtzname = old_mtzname.removesuffix(".mtz") + "_full.mtz"
+                new_logname = (
+                    mergeresult.logfile.name.removesuffix(".log") + "_full.log"
+                )
                 shutil.move(mergeresult.merge_file, merge_wds[name] / new_mtzname)
                 shutil.move(mergeresult.logfile, merge_wds[name] / new_logname)
                 FileHandler.record_data_file(merge_wds[name] / new_mtzname)
@@ -147,13 +149,17 @@ def record_merge_files(
                     new_logname[:-4], merge_wds[name] / new_logname
                 )
                 if mergeresult.jsonfile:
-                    new_json = mergeresult.jsonfile.name.rstrip(".json") + "_full.json"
+                    new_json = (
+                        mergeresult.jsonfile.name.removesuffix(".json") + "_full.json"
+                    )
                     shutil.move(mergeresult.jsonfile, merge_wds[name] / new_json)
                     FileHandler.record_more_log_file(
                         new_json[:-5], merge_wds[name] / new_json
                     )
                 if mergeresult.htmlfile:
-                    new_html = mergeresult.htmlfile.name.rstrip(".html") + "_full.html"
+                    new_html = (
+                        mergeresult.htmlfile.name.removesuffix(".html") + "_full.html"
+                    )
                     shutil.move(mergeresult.htmlfile, merge_wds[name] / new_html)
                     FileHandler.record_html_file(
                         new_html[:-5], merge_wds[name] / new_html
@@ -164,15 +170,15 @@ def record_merge_files(
     if not recorded:
         FileHandler.record_data_file(mergeresult.merge_file)
         FileHandler.record_log_file(
-            mergeresult.logfile.name.rstrip(".log"), mergeresult.logfile
+            mergeresult.logfile.name.removesuffix(".log"), mergeresult.logfile
         )
         if mergeresult.jsonfile:
             FileHandler.record_more_log_file(
-                mergeresult.jsonfile.name.rstrip(".json"), mergeresult.jsonfile
+                mergeresult.jsonfile.name.removesuffix(".json"), mergeresult.jsonfile
             )
         if mergeresult.htmlfile:
             FileHandler.record_html_file(
-                mergeresult.htmlfile.name.rstrip(".html"), mergeresult.htmlfile
+                mergeresult.htmlfile.name.removesuffix(".html"), mergeresult.htmlfile
             )
         res_limits = mergeresult.table_1_stats.split("\n")[1]
         match = re.search(r"High resolution limit\s+(\d+(?:\.\d+)?)", res_limits)
