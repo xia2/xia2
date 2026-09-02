@@ -31,9 +31,8 @@ This program performs the following steps:
 3. Analyses pixel intensities from shoeboxes to generate histogram of pixel intensities
 
 Usage examples:
-    xia2.countrate image=/path/to/data/data_master.h5
-    xia2.countrate template=/path/to/data/image_####.cbf
-    xia2.countrate directory=/path/to/data/
+    xia2.countrate /path/to/data/data_master.h5
+    xia2.countrate /path/to/data/image_####.cbf
     xia2.countrate image=/path/to/data.h5 spotfinder.filter.min_spot_size=3
 """
 
@@ -46,9 +45,6 @@ input {
     template = None
         .type = str
         .help = "Image template (e.g., image_####.cbf)"
-    directory = None
-        .type = str
-        .help = "Directory containing image files"
     nproc = Auto
         .type = int
         .help = "Number of processes to use for spotfinding"
@@ -70,6 +66,9 @@ output {
     log = "xia2.countrate.log"
         .type = str
         .help = "Log file for processing"
+    histogram = "pixel_counts.json"
+        .type = str
+        .help = "JSON file containing histogram of pixel intensities and detector trusted range"
 }
 """,
     process_includes=True,
@@ -91,10 +90,10 @@ def run_dials_import(working_dir: pathlib.Path, params) -> None:
         import_cmd.append(params.input.image)
     elif params.input.template:
         import_cmd.append(f"template={params.input.template}")
-    elif params.input.directory:
-        import_cmd.append(f"directory={params.input.directory}")
     else:
-        raise ValueError("Must provide one of: image, template, or directory")
+        raise ValueError(
+            "Must provide one of: image file (.h5, .nxs) or template (.cbf)"
+        )
 
     logger.debug(f"Running: {' '.join(import_cmd)}")
 
@@ -142,6 +141,27 @@ def run_dials_find_spots(working_dir: pathlib.Path, params) -> None:
     logger.info("dials.find_spots completed successfully")
 
 
+def set_input_from_unhandled(params, unhandled: list[str]) -> None:
+    """Set the input PHIL parameter from one positional input path."""
+    if not unhandled:
+        return
+    if len(unhandled) > 1:
+        raise ValueError("Please provide only one input path")
+    if params.input.image or params.input.template:
+        raise ValueError(
+            "Please provide the input path either positionally or with image=, "
+            "template=, or directory="
+        )
+
+    input_path = unhandled[0]
+    if input_path.endswith(".cbf"):
+        params.input.template = input_path
+    elif input_path.endswith((".h5", ".nxs")):
+        params.input.image = input_path
+    else:
+        raise ValueError("Input path must be a .cbf template, or a .h5/.nxs image file")
+
+
 def process_spotfinding_results(
     working_dir: pathlib.Path, params
 ) -> tuple[dict[int, int], int, int]:
@@ -175,8 +195,7 @@ def process_spotfinding_results(
     return histogram, detector_max_trusted_counts, n_reflections
 
 
-def save_hist_to_json(hist, max_trusted_value):
-    results_path = "pixel_counts.json"
+def save_hist_to_json(hist, max_trusted_value, results_path: pathlib.Path):
     logger.info(f"Saving counts histogram to {str(results_path)}")
     with open(results_path, "w") as f:
         json.dump({"counts": hist, "overload_limit": max_trusted_value}, f, indent=2)
@@ -212,7 +231,10 @@ def run(args=None):
             epilog=help_message,
         )
 
-        params, options = parser.parse_args(args=args, show_diff_phil=False)
+        params, options, unhandled = parser.parse_args(
+            args=args, show_diff_phil=False, return_unhandled=True
+        )
+        set_input_from_unhandled(params, unhandled)
 
         # Setup logging
         xia2.Handlers.Streams.setup_logging(
@@ -244,7 +266,7 @@ def run(args=None):
 
         # Dials does not import experiment transmission from hdf5 files, so need to read it in directly.
         # TODO Fix this in Dials and then remove this code.
-        if params.input.image.endswith((".h5", ".nxs")):
+        if params.input.image and params.input.image.endswith((".h5", ".nxs")):
             with h5py.File(params.input.image, "r") as f:
                 transmission = f[
                     "/entry/instrument/attenuator/attenuator_transmission"
@@ -260,7 +282,7 @@ def run(args=None):
             working_dir, params
         )
 
-        save_hist_to_json(hist, max_trusted_value)
+        save_hist_to_json(hist, max_trusted_value, params.output.histogram)
 
         max_pixel_count = max(hist.keys())
         max_pixel_percent_of_trusted_range = max_pixel_count * 100 / max_trusted_value
