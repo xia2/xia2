@@ -10,6 +10,7 @@ import traceback
 from collections import Counter
 from itertools import accumulate
 
+import h5py
 import iotbx.phil
 import matplotlib.pyplot as plt
 from dials.array_family import flex
@@ -28,7 +29,7 @@ xia2.countrate: Process crystallography data through import and spotfinding.
 This program performs the following steps:
 1. Runs dials.import to import image data
 2. Runs dials.find_spots to find strong spots
-3. Performs additional processing on the spotfinding results
+3. Analyses pixel intensities from shoeboxes to generate histogram of pixel intensities
 
 Usage examples:
     xia2.countrate image=/path/to/data/data_master.h5
@@ -49,30 +50,15 @@ input {
     directory = None
         .type = str
         .help = "Directory containing image files"
-    max_trusted_range_factor = 5.0
-        .type = float
-        .help = "Factor to multiply the detector's maximum trusted range for spotfinding, allowing some headroom above the trusted range so that the pixels still get found",
     nproc = Auto
         .type = int
         .help = "Number of processes to use for spotfinding"
-    target_countrate_pct = 30.0
+    target_countrate_pct = 10.0
         .type = float
         .help = "Target percentage of the detector trusted range to scale the reference percentile reflection to"
     ref_percentile = 99.9
         .type = float
         .help = "Percentile value used in transmission recommendation. xia2.countrate will calculate the transmission required to scale this percentile reflection intensity to the desired target_countrate_pct"
-    transmission = None
-        .type = float
-        .help = "Override the transmission in the imported experiment. Should be a value between 0.0 and 1.0 inclusive"
-}
-
-processing {
-    min_spots_per_image = 0
-        .type = int
-        .help = "Minimum number of spots required per image"
-    output_html_report = False
-        .type = bool
-        .help = "Generate HTML report of spotfinding results"
 }
 
 output {
@@ -133,15 +119,11 @@ def run_dials_find_spots(working_dir: pathlib.Path, params) -> None:
     if not experiments_file.exists():
         raise FileNotFoundError(f"Experiments file not found: {experiments_file}")
 
-    experiment = load.experiment_list(str(experiments_file), check_format=False)[0]
-    trusted_range = experiment.detector[0].get_trusted_range()[1]
-
     find_spots_cmd = [
         "dials.find_spots",
         str(experiments_file),
         f"output.reflections={params.output.reflections}",
         "ice_rings.filter=True",
-        f"maximum_trusted_value={trusted_range * params.input.max_trusted_range_factor}",  # Allow some headroom above the trusted range
         f"mp.nproc={params.input.nproc}",
     ]
 
@@ -163,7 +145,7 @@ def run_dials_find_spots(working_dir: pathlib.Path, params) -> None:
 
 def process_spotfinding_results(
     working_dir: pathlib.Path, params
-) -> tuple[dict[int, int], int]:
+) -> tuple[dict[int, int], int, int]:
     """Process the spotfinding results and perform additional analysis."""
     logger.info("Processing spotfinding results...")
 
@@ -181,12 +163,17 @@ def process_spotfinding_results(
     detector_max_trusted_counts = detector["panels"][0]["trusted_range"][1]
 
     shoeboxes = reflections["shoebox"]
-
-    counter = Counter(int(shoebox.data.as_numpy_array().max()) for shoebox in shoeboxes)
+    n_reflections = len(shoeboxes)
+    counter: Counter[int] = Counter()
+    for shoebox in shoeboxes:
+        counter.update(
+            int(pixel_intensity)
+            for pixel_intensity in shoebox.data.as_numpy_array().ravel()
+        )
     sorted_counter = sorted(counter.items())
     histogram: dict[int, int] = dict(sorted_counter)
 
-    return histogram, detector_max_trusted_counts
+    return histogram, detector_max_trusted_counts, n_reflections
 
 
 def save_hist_to_json(hist, max_trusted_value):
@@ -196,32 +183,32 @@ def save_hist_to_json(hist, max_trusted_value):
         json.dump({"counts": hist, "overload_limit": max_trusted_value}, f, indent=2)
 
 
-def get_percentile_index(num_spots, percentile):
-    threshold = sum(num_spots) * percentile
+def get_percentile_index(num_pixels, percentile):
+    threshold = sum(num_pixels) * percentile
 
-    for i, cum_sum in enumerate(accumulate(num_spots)):
+    for i, cum_sum in enumerate(accumulate(num_pixels)):
         if cum_sum >= threshold:
             return i
 
-    return len(num_spots)
+    return len(num_pixels)
 
 
-def save_plot(spot_intensity: list[int], num_spots: list[int], dir: pathlib.Path):
+def save_plot(pixel_intensity: list[int], num_pixels: list[int], dir: pathlib.Path):
     """Save the plot as png"""
 
-    logger.info("Plotting spot maximum intensities...")
+    logger.info("Plotting pixel intensities...")
 
-    xlabel = "Spot max pixel intensity"
-    ylabel = "N spots"
+    xlabel = "Pixel intensity"
+    ylabel = "N pixels"
 
     fig = plt.subplot()
-    fig.scatter(spot_intensity, num_spots)
+    fig.scatter(pixel_intensity, num_pixels)
     fig.set_xlabel(xlabel)
     fig.set_ylabel(ylabel)
     # fig.set_xscale("log")
     fig.set_yscale("log")
 
-    plt.savefig(dir / "spot_intensities.png")
+    plt.savefig(dir / "pixel_intensities.png")
 
 
 def run(args=None):
@@ -273,33 +260,40 @@ def run(args=None):
         if not experiments_file.exists():
             raise FileNotFoundError(f"Experiments file not found: {experiments_file}")
         experiment = load.experiment_list(str(experiments_file), check_format=False)[0]
-        # trusted_range = experiment.detector[0].get_trusted_range()[1]
 
-        transmission = params.input.transmission
-        if not transmission:
+        # Dials does not import experiment transmission from hdf5 files, so need to read it in directly.
+        # TODO Fix this in Dials and then remove this code.
+        if params.input.image.endswith((".h5", ".nxs")):
+            with h5py.File(params.input.image, "r") as f:
+                transmission = f[
+                    "/entry/instrument/attenuator/attenuator_transmission"
+                ][()]
+                logger.debug(f"Read transmission from HDF5 file: {transmission:.2f}")
+        else:
             transmission = experiment.beam.get_transmission()
+            logger.debug(f"Read transmission from experiment: {transmission:.2f}")
 
-        # Step 2: Find spots
         run_dials_find_spots(working_dir, params)
 
-        # Step 3: Process results
-        hist, max_trusted_value = process_spotfinding_results(working_dir, params)
+        hist, max_trusted_value, n_reflections = process_spotfinding_results(
+            working_dir, params
+        )
 
         save_hist_to_json(hist, max_trusted_value)
 
         max_pixel_count = max(hist.keys())
         max_pixel_percent_of_trusted_range = max_pixel_count * 100 / max_trusted_value
 
-        num_spots = list(hist.values())
-        spot_intensities = list(hist.keys())
-        total_spots = sum(num_spots)
+        num_pixels = list(hist.values())
+        pixel_intensities = list(hist.keys())
+        total_pixels = sum(num_pixels)
 
-        # save_plot(spot_intensities, num_spots, working_dir)
-        percentiles = [99.99, 99.9, 99.0, 90.0]
+        save_plot(pixel_intensities, num_pixels, working_dir)
+        percentiles = [99.999, 99.99, 99.9, 99.0, 90.0]
         percentile_trusted_range_pct: list[float] = []
         for percentile in percentiles:
-            percentile_idx = get_percentile_index(num_spots, percentile / 100)
-            percentile_counts = spot_intensities[percentile_idx]
+            percentile_idx = get_percentile_index(num_pixels, percentile / 100)
+            percentile_counts = pixel_intensities[percentile_idx]
             percentile_trusted_range_pct.append(
                 percentile_counts * 100 / max_trusted_value
             )
@@ -309,26 +303,28 @@ def run(args=None):
         target_counts = max_trusted_value * (target_countrate_pct / 100)
         ref_percentile = params.input.ref_percentile
         ref_percentile_idx = percentile_idx = get_percentile_index(
-            num_spots, ref_percentile / 100
+            num_pixels, ref_percentile / 100
         )
-        ref_percentile_counts = spot_intensities[ref_percentile_idx]
+        ref_percentile_counts = pixel_intensities[ref_percentile_idx]
         scale_factor = target_counts / ref_percentile_counts
         recommended_transmission = min(transmission * scale_factor, 1.0)
 
         # Log summary
         logger.info("=" * 60)
         logger.info("Processing Summary:")
-        logger.info(f"Found {total_spots} strong reflections\n")
-        logger.info(f"Experiment transmission was {transmission:.2f}")
+        logger.info(
+            f"Found {total_pixels} pixels from {n_reflections} strong reflections\n"
+        )
+        logger.info(f"Experiment transmission = {transmission:.2f}")
         logger.info(
             f"Max pixel recorded at {max_pixel_percent_of_trusted_range:.2f}% of detector trusted range\n"
         )
         for i, percentile in enumerate(percentiles):
             logger.info(
-                f"{percentile}% of strong reflections <= {percentile_trusted_range_pct[i]:.2f}% of detector trusted range\n"
+                f"{percentile}% of pixels <= {percentile_trusted_range_pct[i]:.2f}% of detector trusted range\n"
             )
         logger.info(
-            f"Recommended max transmission of {recommended_transmission:.2f} to keep {ref_percentile}% of strong reflections below {target_countrate_pct}% of detector trusted range\n"
+            f"Recommended max transmission of {recommended_transmission * 100:.2f}% to keep {ref_percentile}% of pixel intensities below {target_countrate_pct}% of detector trusted range\n"
         )
         logger.info("=" * 60)
 
