@@ -12,7 +12,6 @@ from itertools import accumulate
 
 import h5py
 import iotbx.phil
-import matplotlib.pyplot as plt
 from dials.array_family import flex
 from dials.util.options import ArgumentParser
 from dxtbx.serialize import load
@@ -193,24 +192,6 @@ def get_percentile_index(num_pixels, percentile):
     return len(num_pixels)
 
 
-def save_plot(pixel_intensity: list[int], num_pixels: list[int], dir: pathlib.Path):
-    """Save the plot as png"""
-
-    logger.info("Plotting pixel intensities...")
-
-    xlabel = "Pixel intensity"
-    ylabel = "N pixels"
-
-    fig = plt.subplot()
-    fig.scatter(pixel_intensity, num_pixels)
-    fig.set_xlabel(xlabel)
-    fig.set_ylabel(ylabel)
-    # fig.set_xscale("log")
-    fig.set_yscale("log")
-
-    plt.savefig(dir / "pixel_intensities.png")
-
-
 def run(args=None):
     """Main entry point for the CLI program."""
     start_time = time.time()
@@ -288,7 +269,6 @@ def run(args=None):
         pixel_intensities = list(hist.keys())
         total_pixels = sum(num_pixels)
 
-        save_plot(pixel_intensities, num_pixels, working_dir)
         percentiles = [99.999, 99.99, 99.9, 99.0, 90.0]
         percentile_trusted_range_pct: list[float] = []
         for percentile in percentiles:
