@@ -149,8 +149,8 @@ def set_input_from_unhandled(params, unhandled: list[str]) -> None:
         raise ValueError("Please provide only one input path")
     if params.input.image or params.input.template:
         raise ValueError(
-            "Please provide the input path either positionally or with image=, "
-            "template=, or directory="
+            "Please provide the input path either positionally or with image=, or "
+            "template=, but not both"
         )
 
     input_path = unhandled[0]
@@ -195,20 +195,22 @@ def process_spotfinding_results(
     return histogram, detector_max_trusted_counts, n_reflections
 
 
-def save_hist_to_json(hist, max_trusted_value, results_path: pathlib.Path):
+def save_hist_to_json(
+    hist: dict[int, int], max_trusted_value: int, results_path: pathlib.Path
+):
     logger.info(f"Saving counts histogram to {str(results_path)}")
     with open(results_path, "w") as f:
         json.dump({"counts": hist, "overload_limit": max_trusted_value}, f, indent=2)
 
 
-def get_percentile_index(num_pixels, percentile):
+def get_percentile_index(num_pixels: list[int], percentile: float) -> int:
     threshold = sum(num_pixels) * percentile
 
-    for i, cum_sum in enumerate(accumulate(num_pixels)):
+    for index, cum_sum in enumerate(accumulate(num_pixels)):
         if cum_sum >= threshold:
-            return i
+            break
 
-    return len(num_pixels)
+    return index
 
 
 def run(args=None):
@@ -304,9 +306,7 @@ def run(args=None):
         target_countrate_pct = params.input.target_countrate_pct
         target_counts = max_trusted_value * (target_countrate_pct / 100)
         ref_percentile = params.input.ref_percentile
-        ref_percentile_idx = percentile_idx = get_percentile_index(
-            num_pixels, ref_percentile / 100
-        )
+        ref_percentile_idx = get_percentile_index(num_pixels, ref_percentile / 100)
         ref_percentile_counts = pixel_intensities[ref_percentile_idx]
         scale_factor = target_counts / ref_percentile_counts
         recommended_transmission = min(transmission * scale_factor, 1.0)
@@ -321,9 +321,9 @@ def run(args=None):
         logger.info(
             f"Max pixel recorded at {max_pixel_percent_of_trusted_range:.2f}% of detector trusted range\n"
         )
-        for i, percentile in enumerate(percentiles):
+        for percentile_index, percentile in enumerate(percentiles):
             logger.info(
-                f"{percentile}% of pixels <= {percentile_trusted_range_pct[i]:.2f}% of detector trusted range\n"
+                f"{percentile}% of pixels <= {percentile_trusted_range_pct[percentile_index]:.2f}% of detector trusted range\n"
             )
         logger.info(
             f"Recommended max transmission of {recommended_transmission * 100:.2f}% to keep {ref_percentile}% of pixel intensities below {target_countrate_pct}% of detector trusted range\n"
