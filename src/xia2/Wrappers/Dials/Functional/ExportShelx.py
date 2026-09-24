@@ -31,7 +31,7 @@ class ExportShelx:
 
         self._params.shelx.hklout = "dials.hkl"
         self._params.shelx.ins = "dials.ins"
-        self._params.shelx.composition = "CH"
+        self._params.small_molecule.composition = "CH"
         self._params.format = "shelx"
         self._params.intensity = "scale"
         self._use_xpid = True
@@ -41,7 +41,7 @@ class ExportShelx:
         self._params.shelx.ins = output_name + ".ins"
 
     def set_composition(self, composition: str) -> None:
-        self._params.shelx.composition = composition
+        self._params.small_molecule.composition = composition
 
     def set_intensity(self, intensity: str) -> None:
         self._params.intensity = intensity
