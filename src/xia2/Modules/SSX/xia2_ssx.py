@@ -103,6 +103,17 @@ dose_series_repeat = None
           "is assumed that $dose_series_repeat measurements are taken on each crystal"
           "and that these form consecutive images in the input image files. Each dose"
           "point will be merged separately"
+series_repeat = None
+  .type = strings
+  .expert_level = 2
+  .help = "A generalisation of dose_series_repeat, which allows the groups of a"
+          "repeated series of measurements to be named, e.g."
+          "series_repeat=first,second,last (or series_repeat='first second last')."
+          "The number of names given defines the number of repeated measurements"
+          "taken on each crystal, and the names are used to label the merged"
+          "output files, in place of the dose_1, dose_2, ... naming. A name may"
+          "be given more than once, in which case each occurrence is numbered in"
+          "order, i.e. series_repeat=dose,dose,apo gives dose_1, dose_2 and apo."
 dials_import.phil = None
   .type = path
   .help = "Phil file to use for dials.import. Parameters defined in the"

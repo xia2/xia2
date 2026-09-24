@@ -1,0 +1,1 @@
+``xia2.ssx``: Don't crash when merging a group for which merging statistics could not be calculated (e.g. a single crystal).

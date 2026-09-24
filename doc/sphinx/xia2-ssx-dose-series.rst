@@ -42,6 +42,34 @@ can be used as input for subsequent merging jobs, for example with a specified r
 
 The experiment files can also be used to verify which images were split into which dose group.
 
+------------------------------------------------
+Named series groups - the *series_repeat* option
+------------------------------------------------
+The ``series_repeat=`` option is a generalisation of ``dose_series_repeat=``, which allows
+the groups to be given meaningful names rather than the generic ``dose_1``, ``dose_2``, ...
+The number of names given defines the size of the repeat, e.g.::
+
+    xia2.ssx_reduce ../xia2-ssx/batch_*/integrated*.{expt,refl} series_repeat=first,second,last
+
+is equivalent to ``dose_series_repeat=3``, except that the merged data are written to
+``first.mtz``, ``second.mtz`` and ``last.mtz``, with the corresponding directory structure::
+
+    - data_reduction
+        - merge
+            - first
+            - second
+            - last
+
+The names are assigned in image order within each repeat, i.e. the first name is given to the
+group of images for which ``image-index modulo repeat = 0``. The names can alternatively be
+given as a quoted, space-separated list, i.e. ``series_repeat='first second last'``.
+
+A name can be given more than once, in which case each occurrence is numbered in order, so
+that the output names are still unique. For example, ``series_repeat=dose,dose,apo`` gives
+the names ``dose_1``, ``dose_2`` and ``apo``, while a name given twelve times would be
+numbered ``_01`` to ``_12``. As the names are used as file and directory names, they must not
+contain path separators.
+
 -----------------------------------------
 Dose series - using a *grouping.yml* file
 -----------------------------------------
