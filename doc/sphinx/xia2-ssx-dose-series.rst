@@ -45,9 +45,15 @@ The experiment files can also be used to verify which images were split into whi
 ------------------------------------------------
 Named series groups - the *series_repeat* option
 ------------------------------------------------
-The ``series_repeat=`` option is a generalisation of ``dose_series_repeat=``, which allows
-the groups to be given meaningful names rather than the generic ``dose_1``, ``dose_2``, ...
-The number of names given defines the size of the repeat, e.g.::
+The ``series_repeat=`` option is a generalisation of ``dose_series_repeat=``. It can be
+given either as an integer, the size of the repeat, or as a list of names for the groups.
+
+If an integer is given, e.g. ``series_repeat=3``, the data are split as for
+``dose_series_repeat=3``, but the groups are given the generic names ``group_0``, ``group_1``,
+``group_2`` (matching the naming used by ``dials.split_still_data``).
+
+Alternatively, the groups can be given meaningful names. The number of names given defines
+the size of the repeat, e.g.::
 
     xia2.ssx_reduce ../xia2-ssx/batch_*/integrated*.{expt,refl} series_repeat=first,second,last
 

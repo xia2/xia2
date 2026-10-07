@@ -53,9 +53,14 @@ class FilePair:
 def _parse_series_repeat_names(series_repeat: list[str]) -> list[str]:
     """Interpret the series_repeat phil option as a list of group names.
 
-    Phil does not split multi-word values, so the names may be given as a
-    comma-separated list (series_repeat=first,second,last) or as a quoted,
-    whitespace-separated list (series_repeat='first second last').
+    The option may be given as a single integer, the size of the repeat, in
+    which case the groups are given the generic names group_0, group_1, ...
+    (matching dials.split_still_data).
+
+    Otherwise, it is a list of names. Phil does not split multi-word values,
+    so the names may be given as a comma-separated list
+    (series_repeat=first,second,last) or as a quoted, whitespace-separated
+    list (series_repeat='first second last').
 
     A name may be repeated, in which case each occurrence is numbered in
     order, e.g. series_repeat=dose,dose,apo gives the names
@@ -64,10 +69,17 @@ def _parse_series_repeat_names(series_repeat: list[str]) -> list[str]:
     names: list[str] = []
     for item in series_repeat:
         names.extend(name for name in item.replace(",", " ").split() if name)
+    if len(names) == 1 and names[0].isdigit():
+        n = int(names[0])
+        if n < 2:
+            raise ValueError(
+                f"series_repeat must be at least 2 if given as an integer, got {n}"
+            )
+        return [f"group_{i}" for i in range(n)]
     if len(names) < 2:
         raise ValueError(
-            "At least two names must be given for series_repeat, "
-            "e.g. series_repeat=first,second,last"
+            "series_repeat must be an integer, or at least two names, "
+            "e.g. series_repeat=3 or series_repeat=first,second,last"
         )
     for name in names:
         if name != Path(name).name or name in (".", ".."):

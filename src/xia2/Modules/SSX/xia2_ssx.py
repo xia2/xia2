@@ -106,13 +106,15 @@ dose_series_repeat = None
 series_repeat = None
   .type = strings
   .expert_level = 2
-  .help = "A generalisation of dose_series_repeat, which allows the groups of a"
-          "repeated series of measurements to be named, e.g."
-          "series_repeat=first,second,last (or series_repeat='first second last')."
-          "The number of names given defines the number of repeated measurements"
-          "taken on each crystal, and the names are used to label the merged"
-          "output files, in place of the dose_1, dose_2, ... naming. A name may"
-          "be given more than once, in which case each occurrence is numbered in"
+  .help = "A generalisation of dose_series_repeat, for data where a repeated"
+          "series of measurements is taken on each crystal, forming consecutive"
+          "images in the input image files. Either give the number of repeated"
+          "measurements, e.g. series_repeat=3, in which case the groups are named"
+          "group_0, group_1, ..., or give a list of names for the groups, e.g."
+          "series_repeat=first,second,last (or series_repeat='first second last'),"
+          "in which case the number of names defines the size of the repeat and"
+          "the names are used to label the merged output files. A name may be"
+          "given more than once, in which case each occurrence is numbered in"
           "order, i.e. series_repeat=dose,dose,apo gives dose_1, dose_2 and apo."
 dials_import.phil = None
   .type = path
