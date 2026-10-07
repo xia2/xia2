@@ -19,6 +19,7 @@
 </div>
 
 <script>
+var PHIL_PATH_OVERRIDE = "";
 (function() {
     var idsToIdentifiers = {{ ids_to_identifiers | tojson }};
     var currentCommand = '';
@@ -31,13 +32,19 @@
         });
     });
 
+    function getPhilPath() {
+        if (PHIL_PATH_OVERRIDE) return PHIL_PATH_OVERRIDE;
+        var href = decodeURIComponent(window.location.href)
+            .replace(/^file:\/\//, '')
+            .replace(/[^/]+$/, 'xia2-multiplex-working.phil');
+        return href
+    }
+
     function showModal(title, datasets) {
         var uuids = datasets.map(function(id) {
             return idsToIdentifiers[id] || '(unknown)';
         });
-        var philPath = decodeURIComponent(window.location.href)
-            .replace(/^file:\/\//, '')
-            .replace(/[^/]+$/, 'xia2-multiplex-working.phil');
+        var philPath = getPhilPath();
         currentCommand = 'xia2.multiplex ' + philPath + ' identifiers=' + uuids.join(',');
         document.getElementById('lasso_modal_title').textContent = title;
         document.getElementById('lasso_modal_body').innerHTML =
