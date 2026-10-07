@@ -26,6 +26,14 @@ def test_series_repeat(phil_str):
     assert reduction_params.dose_series_repeat == 3
 
 
+@pytest.mark.parametrize("phil_str", ["series_repeat=3", "series_repeat='3'"])
+def test_series_repeat_integer(phil_str):
+    """An integer gives the size of the repeat, with generic group names."""
+    reduction_params = _reduction_params(phil_str)
+    assert reduction_params.series_repeat_names == ["group_0", "group_1", "group_2"]
+    assert reduction_params.dose_series_repeat == 3
+
+
 def test_dose_series_repeat():
     reduction_params = _reduction_params("dose_series_repeat=3")
     assert reduction_params.series_repeat_names is None
@@ -55,6 +63,8 @@ def test_repeated_series_repeat_names(phil_str, expected_names):
     "phil_str",
     [
         "series_repeat=first",  # need at least two names
+        "series_repeat=1",  # integer repeat must be at least 2
+        "series_repeat=0",
         "series_repeat=first,'second/last'",  # no path separators allowed
         "series_repeat=dose,dose,dose_1",  # numbering gives a duplicate name
         "series_repeat=first,second\ndose_series_repeat=2",  # mutually exclusive

@@ -579,11 +579,12 @@ grouping:
 
 @pytest.mark.parametrize(
     "grouping_option",
-    ["yaml", "dose_series_repeat", "series_repeat"],
+    ["yaml", "dose_series_repeat", "series_repeat", "series_repeat_integer"],
 )
 def test_reduce_with_grouping(dials_data, tmp_path, grouping_option):
     """Test the features for defining merge groups i.e. a grouping yaml file,
-    the dose_series_repeat option and the series_repeat option.
+    the dose_series_repeat option and the series_repeat option (as both a
+    list of names and an integer).
     """
     ssx = dials_data("cunir_serial_processed")
     ssx_data = dials_data("cunir_serial")
@@ -619,6 +620,9 @@ grouping:
     elif grouping_option == "dose_series_repeat":
         extra_args.append("dose_series_repeat=2")
         output_names = ["dose_1", "dose_2"]
+    elif grouping_option == "series_repeat_integer":
+        extra_args.append("series_repeat=2")
+        output_names = ["group_0", "group_1"]
     else:
         extra_args.append("series_repeat=first,second")
         output_names = ["first", "second"]
