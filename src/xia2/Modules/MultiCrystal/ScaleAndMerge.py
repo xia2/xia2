@@ -694,6 +694,15 @@ class MultiCrystalScale:
     ):
         logger.notice(banner("Rescaling with extra filtering"))  # type: ignore
         # Final round of scaling, this time filtering out any bad datasets
+
+        # small molecule logic section
+        if params.small_molecule:
+            if not params.output.composition:
+                # set dummy composition to trigger shelx output
+                params.output.composition = "CH"
+                logger.info(
+                    "Setting dummy composition=CH for shelx export for small-molecule processing."
+                )
         params.unit_cell.refine = []
         scaled = Scale(data_manager, params, filtering=True)
         scale_and_filter_results = scaled.scale_and_filter_results
