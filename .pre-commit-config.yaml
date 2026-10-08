@@ -17,7 +17,7 @@ repos:
     name: Don't commit to 'main'
 
 - repo: https://github.com/astral-sh/ruff-pre-commit
-  rev: v0.15.20
+  rev: v0.16.10
   hooks:
     - id: ruff
       args: [--fix, --exit-non-zero-on-fix, --show-fixes]
@@ -27,7 +27,7 @@ repos:
 
 # Type checking
 - repo: https://github.com/pre-commit/mirrors-mypy
-  rev: v2.1.0
+  rev: v2.4.0
   hooks:
   - id: mypy
     files: src/.*\.py$
