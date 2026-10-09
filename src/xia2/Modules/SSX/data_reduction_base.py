@@ -247,21 +247,33 @@ class BaseDataReduction:
         self._parsed_grouping = None
         if self._reduction_params.grouping or self._reduction_params.dose_series_repeat:
             if self._reduction_params.dose_series_repeat:
+                option = (
+                    "series_repeat"
+                    if self._reduction_params.series_repeat_names
+                    else "dose_series_repeat"
+                )
+                metadata_name = (
+                    "series_point"
+                    if self._reduction_params.series_repeat_names
+                    else "dose_point"
+                )
                 expts = []
                 for fp in self._integrated_data + self._files_to_merge:
                     expts.append(load.experiment_list(fp.expt, check_format=False))
                 try:
                     self._parsed_grouping = dose_series_repeat_to_groupings(
-                        expts, self._reduction_params.dose_series_repeat
+                        expts,
+                        self._reduction_params.dose_series_repeat,
+                        metadata_name,
                     )
                 except Exception as e:
                     xia2_logger.warning(
-                        "Unable to automatically deduce groupings from input data and dose_series_repeat option."
+                        f"Unable to automatically deduce groupings from input data and {option} option."
                         + f"\nSpecific exception encountered: {e}"
                     )
                 else:
                     xia2_logger.info(
-                        f"Assigning dose groups using: image_no modulo {self._reduction_params.dose_series_repeat} = dose_point"
+                        f"Assigning {metadata_name} groups using: image_no modulo {self._reduction_params.dose_series_repeat} = {metadata_name}"
                     )
             if not self._parsed_grouping and self._reduction_params.grouping:
                 try:
@@ -420,11 +432,18 @@ class BaseDataReduction:
                     grouping="merge_by",
                 )
                 if self._reduction_params.dose_series_repeat:
-                    # Not essential, but nicer to be named dose rather than generic 'group'
-                    for name in list(groups_for_merge.keys()):
-                        groups_for_merge[name.replace("group", "dose")] = (
-                            groups_for_merge.pop(name)
+                    names = self._reduction_params.series_repeat_names
+                    if names and len(names) != len(groups_for_merge):
+                        xia2_logger.warning(
+                            f"{len(names)} names given with series_repeat, but the data"
+                            + f" was split into {len(groups_for_merge)} groups."
+                            + " Using default group names."
                         )
+                        names = None
+                    if not names:
+                        # Not essential, but nicer to be named dose rather than generic 'group'
+                        names = [n.replace("group", "dose") for n in groups_for_merge]
+                    groups_for_merge = dict(zip(names, groups_for_merge.values()))
 
                 # move the data into subdirs
                 for g, flist in groups_for_merge.items():
@@ -460,8 +479,13 @@ class BaseDataReduction:
                     )
                 )
                 if self._reduction_params.dose_series_repeat:
+                    metadata_name = (
+                        "series_point"
+                        if self._reduction_params.series_repeat_names
+                        else "dose_point"
+                    )
                     xia2_logger.info(
-                        f"Dose groups assigned using formula: image_no modulo {self._reduction_params.dose_series_repeat} = dose_point"
+                        f"Groups assigned using formula: image_no modulo {self._reduction_params.dose_series_repeat} = {metadata_name}"
                     )
 
         if not merge_input:  # i.e. no "merge_by" in parsed_grouping
