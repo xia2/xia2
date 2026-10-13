@@ -5,7 +5,7 @@ from pathlib import Path
 
 import libtbx.phil
 from dials.array_family import flex
-from dials.command_line.export import export_shelx, phil_scope
+from dials.command_line.export import export_cif, export_shelx, phil_scope
 from dxtbx.model import ExperimentList
 
 from xia2.Driver.timing import record_step
@@ -31,6 +31,7 @@ class ExportShelx:
 
         self._params.shelx.hklout = "dials.hkl"
         self._params.shelx.ins = "dials.ins"
+        self._params.cif.hklout = "dials.cif"
         self._params.small_molecule.composition = "CH"
         self._params.format = "shelx"
         self._params.intensity = "scale"
@@ -39,12 +40,16 @@ class ExportShelx:
     def set_output_names(self, output_name: str) -> None:
         self._params.shelx.hklout = output_name + ".hkl"
         self._params.shelx.ins = output_name + ".ins"
+        self._params.cif.hklout = output_name + ".cif"
 
     def set_composition(self, composition: str) -> None:
         self._params.small_molecule.composition = composition
 
     def set_intensity(self, intensity: str) -> None:
         self._params.intensity = intensity
+
+    def set_format(self, format: str) -> None:
+        self._params.format = format
 
     def get_output_log(self) -> str | None:
         return self._output_log
@@ -77,4 +82,8 @@ class ExportShelx:
 
             # diff_phil_from_params_and_scope is unhappy if intensity param is a list
             self._params.intensity = [self._params.intensity]
-            export_shelx(self._params, expts, [refls])
+            if self._params.format == "shelx":
+                export_shelx(self._params, expts, [refls])
+            elif self._params.format == "cif":
+                self._params.cif.extra = []  # Otherwise brought into export_cif as [None] which fails...
+                export_cif(self._params, expts, [refls])

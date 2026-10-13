@@ -1469,6 +1469,13 @@ class MultiCrystalScale:
         MultiplexFileHandler.record_data_file(f"{output_name}.ins")
         MultiplexFileHandler.record_data_file(f"{output_name}.hkl")
         MultiplexFileHandler.record_log_file(export.get_output_log())
+        export_cif = ExportShelx()
+        export_cif.set_format("cif")
+        export_cif.set_output_names(output_name)
+        export_cif.set_composition(params.output.composition)
+        export_cif.run(expts, refls)
+        MultiplexFileHandler.record_data_file(f"{output_name}.cif")
+        MultiplexFileHandler.record_log_file(export_cif.get_output_log())
 
 
 class Scale:
