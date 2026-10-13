@@ -78,6 +78,12 @@ class ExportShelx:
             log_to_file(logfile) as dials_logger,
             record_step("dials.export"),
         ):
+            if self._params.format not in ["shelx", "cif"]:
+                xia2_logger.error("Format not recognised. Aborting dials.export.")
+                raise ValueError(
+                    "dials.export format must be 'shelx' or 'cif' for xia2.multiplex."
+                )
+
             dials_logger.info(diff_phil_from_params_and_scope(self._params, phil_scope))
 
             # diff_phil_from_params_and_scope is unhappy if intensity param is a list
