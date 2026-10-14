@@ -273,7 +273,7 @@ class BaseDataReduction:
                     )
                 else:
                     xia2_logger.info(
-                        f"Assigning {metadata_name} groups using: image_no modulo {self._reduction_params.dose_series_repeat} = {metadata_name}"
+                        f"Assigning {metadata_name} groups using: image-index modulo {self._reduction_params.dose_series_repeat} = {metadata_name}"
                     )
             if not self._parsed_grouping and self._reduction_params.grouping:
                 try:
@@ -485,7 +485,7 @@ class BaseDataReduction:
                         else "dose_point"
                     )
                     xia2_logger.info(
-                        f"Groups assigned using formula: image_no modulo {self._reduction_params.dose_series_repeat} = {metadata_name}"
+                        f"Groups assigned using formula: image-index modulo {self._reduction_params.dose_series_repeat} = {metadata_name}"
                     )
 
         if not merge_input:  # i.e. no "merge_by" in parsed_grouping
