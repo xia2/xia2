@@ -1,0 +1,1 @@
+``xia2.ssx``: Reuse spotfinding results from crystal assessment and geometry refinement for the main processing, instead of repeating spotfinding. Externally generated spotfinding results can be supplied with ``spotfinding.external.experiments=`` and ``spotfinding.external.reflections=``.

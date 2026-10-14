@@ -23,6 +23,7 @@ from xia2.Modules.SSX.data_integration_standard import (
 )
 from xia2.Modules.SSX.data_reduction_definitions import ReductionParams
 from xia2.Modules.SSX.data_reduction_interface import get_reducer
+from xia2.Modules.SSX.spotfinding_results import SpotfindingSource
 from xia2.Modules.SSX.util import report_timing
 from xia2.Modules.SSX.xia2_ssx_reduce import data_reduction_phil_str
 
@@ -124,6 +125,29 @@ spotfinding {
             "the xia2.ssx phil scope will take precedent over identical options"
             "defined in the phil file."
     .expert_level=3
+  reuse = True
+    .type = bool
+    .help = "Reuse the results of spotfinding run on the same images during"
+            "earlier processing (crystal assessment and geometry refinement),"
+            "rather than repeating spotfinding. Results are only reused if the"
+            "spotfinding options are unchanged."
+    .expert_level=2
+  external {
+    experiments = None
+      .type = path
+      .multiple = True
+      .help = "Experiment list(s) for spotfinding results generated outside of"
+              "xia2.ssx, to be used instead of running spotfinding on these"
+              "images. Each must be paired with a spotfinding.external.reflections"
+              "file, with reflection ids corresponding to the experiments."
+      .expert_level=2
+    reflections = None
+      .type = path
+      .multiple = True
+      .help = "Strong reflection file(s) generated outside of xia2.ssx, in"
+              "DIALS format, paired with the spotfinding.external.experiments."
+      .expert_level=2
+  }
 }
 indexing {
   unit_cell = None
@@ -327,7 +351,27 @@ def run_xia2_ssx(
         wait_for_images_method=params.wait_for_images.method,
         wait_for_images_timeout=params.wait_for_images.timeout,
         wait_for_images_interval=params.wait_for_images.interval,
+        reuse_spotfinding=params.spotfinding.reuse,
     )
+
+    if len(params.spotfinding.external.experiments) != len(
+        params.spotfinding.external.reflections
+    ):
+        raise ValueError(
+            "Equal numbers of spotfinding.external.experiments and spotfinding.external.reflections must be given"
+        )
+    for expt, refl in zip(
+        params.spotfinding.external.experiments,
+        params.spotfinding.external.reflections,
+    ):
+        expt_path = pathlib.Path(expt).resolve()
+        refl_path = pathlib.Path(refl).resolve()
+        for path in (expt_path, refl_path):
+            if not path.is_file():
+                raise FileNotFoundError(
+                    errno.ENOENT, os.strerror(errno.ENOENT), os.fspath(path)
+                )
+        options.external_spotfinding.append(SpotfindingSource(expt_path, refl_path))
 
     if params.assess_crystals.images_to_use:
         if ":" not in params.assess_crystals.images_to_use:

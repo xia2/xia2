@@ -46,6 +46,13 @@ from xia2.Modules.SSX.reporting import (
     condensed_metric_unit_cell_info,
     condensed_unit_cell_info,
 )
+from xia2.Modules.SSX.spotfinding_results import (
+    REUSED_SPOTFINDING_MARKER,
+    SpotfindingResults,
+    SpotfindingSource,
+    populate_batches_from_existing_results,
+    spotfinding_signature,
+)
 from xia2.Modules.SSX.util import redirect_xia2_logger
 
 xia2_logger = logging.getLogger(__name__)
@@ -90,6 +97,8 @@ class AlgorithmParams:
     wait_for_images_method: str = "swmr"
     wait_for_images_timeout: float = 3600
     wait_for_images_interval: float = 10
+    reuse_spotfinding: bool = True
+    external_spotfinding: list[SpotfindingSource] = field(default_factory=list)
 
 
 def wait_for_batch_images(
@@ -200,6 +209,31 @@ def wait_for_input_files(file_input: FileInput, options: AlgorithmParams) -> boo
         time.sleep(options.wait_for_images_interval)
 
 
+def find_spots(
+    working_directory: pathlib.Path,
+    spotfinding_params: SpotfindingParams,
+    spotfinding_results: SpotfindingResults | None = None,
+) -> flex.reflection_table | None:
+    """
+    Find spots on the images in the working directory, reusing existing
+    spotfinding results if these are available for all of the images.
+    """
+    if spotfinding_results:
+        experiments = load.experiment_list(
+            working_directory / "imported.expt", check_format=False
+        )
+        found, strong = spotfinding_results.get(experiments)
+        if found:
+            xia2_logger.info(
+                f"Using existing spotfinding results for {len(experiments)} images"
+            )
+            return strong
+    strong = ssx_find_spots(working_directory, spotfinding_params)
+    if spotfinding_results:
+        spotfinding_results.add(working_directory / "imported.expt", strong)
+    return strong
+
+
 def process_batch(
     working_directory: pathlib.Path,
     spotfinding_params: SpotfindingParams,
@@ -232,7 +266,15 @@ def process_batch(
         integration_params.output_nuggets_dir = nuggets_dir
 
     if "find_spots" in options.steps:
-        strong = ssx_find_spots(working_directory, spotfinding_params)
+        if (working_directory / REUSED_SPOTFINDING_MARKER).is_file():
+            xia2_logger.info("Using existing spotfinding results")
+            strong = None
+            if (working_directory / "strong.refl").is_file():
+                strong = flex.reflection_table.from_file(
+                    working_directory / "strong.refl"
+                )
+        else:
+            strong = ssx_find_spots(working_directory, spotfinding_params)
         if not strong:  # No strong spots, rare but could happen (e.g. blank images)
             # Make sure correct metadata returned to allow reporting for the batch
             data["n_hits"] = 0
@@ -570,6 +612,7 @@ def assess_crystal_parameters_from_images(
     images_to_use: tuple[int, int],
     spotfinding_params: SpotfindingParams,
     indexing_params: IndexingParams,
+    spotfinding_results: SpotfindingResults | None = None,
 ) -> None:
     """
     Run spotfinding and indexing and report on the properties of
@@ -588,7 +631,7 @@ def assess_crystal_parameters_from_images(
     progress_reporter = ProgressReport({"images_per_batch": {}})
 
     # now run find spots and index
-    strong = ssx_find_spots(working_directory, spotfinding_params)
+    strong = find_spots(working_directory, spotfinding_params, spotfinding_results)
     if not strong:  # No strong spots, rare but could happen (e.g. blank images)
         xia2_logger.info("No spots found in selected image range.")
         return
@@ -644,6 +687,7 @@ def cumulative_assess_crystal_parameters(
     options: AlgorithmParams,
     spotfinding_params: SpotfindingParams,
     indexing_params: IndexingParams,
+    spotfinding_results: SpotfindingResults | None = None,
 ):
     xia2_logger.notice(banner("Assess crystal parameters"))  # type: ignore
     large_clusters: list[Cluster] = []
@@ -673,7 +717,7 @@ def cumulative_assess_crystal_parameters(
                     "proceeding with the images collected so far."
                 )
                 break
-        strong = ssx_find_spots(working_directory, spotfinding_params)
+        strong = find_spots(working_directory, spotfinding_params, spotfinding_results)
         # NB ideally count is formatted the same as batch numbering e.g 01 if >9 batches
         dir_placeholder = pathlib.Path(f"assess_batch_{count}")
         data: dict[str, Any] = {"directory": dir_placeholder}
@@ -765,6 +809,7 @@ def determine_reference_geometry_from_images(
     spotfinding_params: SpotfindingParams,
     indexing_params: IndexingParams,
     refinement_params: RefinementParams,
+    spotfinding_results: SpotfindingResults | None = None,
 ) -> None:
     """Run find spots, indexing and joint refinement in the working directory."""
     xia2_logger.notice(banner("Joint-refinement of experimental geometry"))  # type: ignore
@@ -774,7 +819,7 @@ def determine_reference_geometry_from_images(
     success_per_image: list[bool] = []
     progress_reporter = ProgressReport({"images_per_batch": {}})
 
-    strong = ssx_find_spots(working_directory, spotfinding_params)
+    strong = find_spots(working_directory, spotfinding_params, spotfinding_results)
     if not strong:  # No strong spots, rare but could happen (e.g. blank images)
         xia2_logger.info("No spots found in selected image range.")
         raise ValueError(
@@ -854,6 +899,7 @@ def cumulative_determine_reference_geometry(
     spotfinding_params: SpotfindingParams,
     indexing_params: IndexingParams,
     refinement_params: RefinementParams,
+    spotfinding_results: SpotfindingResults | None = None,
 ) -> None:
     xia2_logger.notice(banner("Joint-refinement of experimental geometry"))  # type: ignore
     cluster_plots: dict = {}
@@ -882,7 +928,7 @@ def cumulative_determine_reference_geometry(
                     "proceeding with the images collected so far."
                 )
                 break
-        strong = ssx_find_spots(working_directory, spotfinding_params)
+        strong = find_spots(working_directory, spotfinding_params, spotfinding_results)
         # NB ideally count is formatted the same as batch numbering e.g 01 if >9 batches
         dir_placeholder = pathlib.Path(f"refinement_batch_{count}")
         data: dict[str, Any] = {"directory": dir_placeholder}
@@ -1243,6 +1289,16 @@ def run_data_integration(
             "Unable to successfully import images, please check input filepaths"
         )
 
+    # Spotfinding results do not depend on the geometry, so can be reused
+    # between the processing stages below.
+    spotfinding_results = SpotfindingResults(
+        root_working_directory / "spotfinding" if options.reuse_spotfinding else None,
+        spotfinding_signature(
+            spotfinding_params, file_input.mask, file_input.import_phil
+        ),
+        options.external_spotfinding,
+    )
+
     # If space group and unit cell not both given, then assess the crystals
     if not (indexing_params.space_group and indexing_params.unit_cell):
         assess_wd = root_working_directory / "assess_crystals"
@@ -1253,10 +1309,16 @@ def run_data_integration(
                 options.assess_images_to_use,
                 spotfinding_params,
                 indexing_params,
+                spotfinding_results,
             )
         else:
             cumulative_assess_crystal_parameters(
-                assess_wd, imported_expts, options, spotfinding_params, indexing_params
+                assess_wd,
+                imported_expts,
+                options,
+                spotfinding_params,
+                indexing_params,
+                spotfinding_results,
             )
 
         xia2_logger.info(
@@ -1276,6 +1338,7 @@ def run_data_integration(
                 spotfinding_params,
                 indexing_params,
                 refinement_params,
+                spotfinding_results,
             )
         else:
             cumulative_determine_reference_geometry(
@@ -1285,6 +1348,7 @@ def run_data_integration(
                 spotfinding_params,
                 indexing_params,
                 refinement_params,
+                spotfinding_results,
             )
 
         # Reimport with this reference geometry to prepare for the main processing
@@ -1321,6 +1385,9 @@ def run_data_integration(
             )
     if not batch_directories:
         raise ValueError("Unable to determine directories for processing.")
+
+    if "find_spots" in options.steps:
+        populate_batches_from_existing_results(batch_directories, spotfinding_results)
 
     process_batches(
         batch_directories,

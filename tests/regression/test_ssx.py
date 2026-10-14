@@ -391,6 +391,108 @@ def test_stepwise_run_without_reference(dials_data, tmp_path):
     check_output(tmp_path, find_spots=True, index=True, integrate=True)
 
 
+def test_reuse_spotfinding_between_stages(dials_data, tmp_path):
+    """Spotfinding run during crystal assessment should be reused for geometry
+    refinement and the main processing, rather than being rerun."""
+    ssx = dials_data("cunir_serial")
+    with (tmp_path / "index.phil").open(mode="w") as f:
+        f.write("indexing.max_cell=150")
+    args = [
+        shutil.which("xia2.ssx"),
+        "batch_size=2",
+        "indexing.phil=index.phil",
+        "image=" + os.fspath(ssx / "merlin0047_1700*.cbf"),
+    ]
+    result = subprocess.run(args, cwd=tmp_path, capture_output=True)
+    assert not result.returncode and not result.stderr
+    assert (tmp_path / "assess_crystals").is_dir()
+    # Results saved for each batch of 2 images.
+    assert len(list((tmp_path / "spotfinding").glob("results_*.expt"))) == 3
+
+    args += [
+        "unit_cell=96.4,96.4,96.4,90,90,90",
+        "space_group=P213",
+        "integration.algorithm=stills",
+        "max_lattices=1",
+        "steps=find_spots+index+integrate",
+    ]
+    result = subprocess.run(args, cwd=tmp_path, capture_output=True)
+    assert not result.returncode and not result.stderr
+    log = (tmp_path / "xia2.ssx.log").read_text()
+    assert "Spotfinding" not in log
+    assert "Using existing spotfinding results for 2 of 2 batches" in log
+    assert len(list((tmp_path / "spotfinding").glob("results_*.expt"))) == 3
+    # The second batch (images 3-5) uses results from two assessment batches.
+    for batch in ["batch_1", "batch_2"]:
+        assert (tmp_path / batch / "spotfinding_reused").is_file()
+        strong = flex.reflection_table.from_file(tmp_path / batch / "strong.refl")
+        expts = load.experiment_list(
+            tmp_path / batch / "imported.expt", check_format=False
+        )
+        assert set(strong["id"]) == set(range(len(expts)))
+        assert list(strong.experiment_identifiers().values()) == list(
+            expts.identifiers()
+        )
+        assert (tmp_path / batch / "integrated_1.refl").is_file()
+
+    # Changing the spotfinding options means spotfinding is run again during
+    # geometry refinement, with these new results reused for the main processing.
+    args.append("min_spot_size=2")
+    result = subprocess.run(args, cwd=tmp_path, capture_output=True)
+    assert not result.returncode and not result.stderr
+    log = (tmp_path / "xia2.ssx.log").read_text()
+    assert "Spotfinding options have changed" in log
+    assert log.count("- Spotfinding -") == 3
+    assert "Using existing spotfinding results for 2 of 2 batches" in log
+    with (tmp_path / "spotfinding" / "spotfinding_params.json").open() as f:
+        assert json.load(f)["min_spot_size"] == 2
+    assert len(list((tmp_path / "spotfinding").glob("results_*.expt"))) == 3
+
+
+def test_external_spotfinding(dials_data, tmp_path):
+    """Spotfinding results generated outside of xia2 are used instead of
+    running spotfinding."""
+    ssx = dials_data("cunir_serial")
+    external = tmp_path / "external"
+    external.mkdir()
+    result = subprocess.run(
+        [
+            shutil.which("dials.import"),
+            os.fspath(ssx / "merlin0047_1700*.cbf"),
+            "convert_stills_to_sequences=True",
+        ],
+        cwd=external,
+        capture_output=True,
+    )
+    assert not result.returncode
+    result = subprocess.run(
+        [shutil.which("dials.find_spots"), "imported.expt", "min_spot_size=3"],
+        cwd=external,
+        capture_output=True,
+    )
+    assert not result.returncode
+
+    args = [
+        shutil.which("xia2.ssx"),
+        "unit_cell=96.4,96.4,96.4,90,90,90",
+        "space_group=P213",
+        "integration.algorithm=stills",
+        "max_lattices=1",
+        "steps=find_spots+index+integrate",
+        "spotfinding.external.experiments=external/imported.expt",
+        "spotfinding.external.reflections=external/strong.refl",
+        "image=" + os.fspath(ssx / "merlin0047_1700*.cbf"),
+    ]
+    result = subprocess.run(args, cwd=tmp_path, capture_output=True)
+    assert not result.returncode and not result.stderr
+    log = (tmp_path / "xia2.ssx.log").read_text()
+    assert "Spotfinding" not in log
+    assert not list((tmp_path / "spotfinding").glob("results_*"))
+    assert (tmp_path / "geometry_refinement" / "refined.expt").is_file()
+    assert (tmp_path / "batch_1" / "spotfinding_reused").is_file()
+    check_output(tmp_path, find_spots=True, index=True, integrate=True)
+
+
 def check_data_reduction_files(
     tmp_path, reindex=True, reference=False, d_min=None, d_max=None
 ):
