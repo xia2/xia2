@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import collections
 import errno
 import os
 from dataclasses import dataclass, field
@@ -49,29 +48,6 @@ class FilePair:
     @property
     def refl(self):
         return self._refl
-
-
-def _number_repeated_names(names: list[str]) -> list[str]:
-    """Append a count to any name that is given more than once, zero-padded
-    to the number of digits needed for that name, e.g. two occurrences of
-    'dose' become dose_1, dose_2, while twelve become dose_01 ... dose_12."""
-    counts = collections.Counter(names)
-    seen: dict[str, int] = collections.defaultdict(int)
-    numbered: list[str] = []
-    for name in names:
-        n = counts[name]
-        if n == 1:
-            numbered.append(name)
-        else:
-            seen[name] += 1
-            numbered.append(f"{name}_{seen[name]:0{len(str(n))}d}")
-    duplicates = [n for n, c in collections.Counter(numbered).items() if c > 1]
-    if duplicates:
-        raise ValueError(
-            f"Names given for series_repeat are ambiguous: {names}\n"
-            + f"Numbering repeated names gives duplicate names: {duplicates}"
-        )
-    return numbered
 
 
 @dataclass
