@@ -154,7 +154,14 @@ def DialsCosym(DriverType=None, decay_correction=None):
 
             logger.debug("dials.cosym status: OK")
 
-            assert os.path.exists(self._json)
+            if not os.path.exists(self._json):
+                logger.warning(
+                    f"dials.cosym ran to completion, but failed to suitably reindex all datasets. See log file for more details: {self.get_log_file()}"
+                )
+                raise FileNotFoundError(
+                    f"File not found: {self.get_xpid()}_dials.cosym.json"
+                )
+
             with open(self._json, "rb") as f:
                 self._cosym_analysis = json.load(f)
             if self._space_group is None:
