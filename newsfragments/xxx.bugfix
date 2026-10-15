@@ -1,0 +1,1 @@
+``xia2.multiplex``: Exit cleanly with more useful error message if cosym exits cleanly but doesn't produce the required files. 
