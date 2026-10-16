@@ -27,7 +27,7 @@ jobs:
     runs-on: ${{ matrix.runs_on }}
     steps:
     - name: Checkout Repository
-      uses: actions/checkout@v4
+      uses: actions/checkout@v7
       with:
         path: modules/xia2
     - uses: actions/setup-python@v5
