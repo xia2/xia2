@@ -782,3 +782,4 @@ def test_small_molecule(dials_data, run_in_tmp_path):
     # Check that shelx files were also generated, even though no composition was specified
     assert (run_in_tmp_path / "DataFiles" / "scaled.hkl").is_file()
     assert (run_in_tmp_path / "DataFiles" / "scaled.ins").is_file()
+    assert (run_in_tmp_path / "DataFiles" / "scaled.cif").is_file()
