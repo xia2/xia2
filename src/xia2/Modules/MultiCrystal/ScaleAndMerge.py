@@ -41,6 +41,7 @@ from xia2.Modules.Scaler.DialsScaler import (
 from xia2.Modules.SSX.util import run_in_directory
 from xia2.Wrappers.Dials.Cosym import DialsCosym
 from xia2.Wrappers.Dials.EstimateResolution import EstimateResolution
+from xia2.Wrappers.Dials.Functional.ExportCif import ExportCif
 from xia2.Wrappers.Dials.Functional.ExportShelx import ExportShelx
 from xia2.Wrappers.Dials.Functional.Merge import Merge
 from xia2.Wrappers.Dials.Refine import Refine
@@ -1469,8 +1470,7 @@ class MultiCrystalScale:
         MultiplexFileHandler.record_data_file(f"{output_name}.ins")
         MultiplexFileHandler.record_data_file(f"{output_name}.hkl")
         MultiplexFileHandler.record_log_file(export.get_output_log())
-        export_cif = ExportShelx()
-        export_cif.set_format("cif")
+        export_cif = ExportCif()
         export_cif.set_output_names(output_name)
         export_cif.set_composition(params.output.composition)
         export_cif.run(expts, refls)
