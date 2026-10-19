@@ -41,6 +41,7 @@ from xia2.Modules.Scaler.DialsScaler import (
 from xia2.Modules.SSX.util import run_in_directory
 from xia2.Wrappers.Dials.Cosym import DialsCosym
 from xia2.Wrappers.Dials.EstimateResolution import EstimateResolution
+from xia2.Wrappers.Dials.Functional.ExportCif import ExportCif
 from xia2.Wrappers.Dials.Functional.ExportShelx import ExportShelx
 from xia2.Wrappers.Dials.Functional.Merge import Merge
 from xia2.Wrappers.Dials.Refine import Refine
@@ -457,7 +458,7 @@ class MultiCrystalScale:
         temp_refls = copy.deepcopy(self._data_manager._reflections)
 
         if self._params.output.composition:
-            self.export_shelx(
+            self.export_small_molecule(
                 self._params,
                 self._data_manager._experiments,
                 self._data_manager._reflections,
@@ -715,7 +716,7 @@ class MultiCrystalScale:
         )
 
         if params.output.composition:
-            MultiCrystalScale.export_shelx(
+            MultiCrystalScale.export_small_molecule(
                 params,
                 data_manager._experiments,
                 data_manager._reflections,
@@ -819,7 +820,7 @@ class MultiCrystalScale:
         # and record one here.
 
         if params.output.composition:
-            MultiCrystalScale.export_shelx(
+            MultiCrystalScale.export_small_molecule(
                 params,
                 data_manager._experiments,
                 data_manager._reflections,
@@ -1456,7 +1457,7 @@ class MultiCrystalScale:
         return None
 
     @staticmethod
-    def export_shelx(
+    def export_small_molecule(
         params: libtbx.phil.scope_extract,
         expts: ExperimentList,
         refls: flex.reflection_table,
@@ -1469,6 +1470,12 @@ class MultiCrystalScale:
         MultiplexFileHandler.record_data_file(f"{output_name}.ins")
         MultiplexFileHandler.record_data_file(f"{output_name}.hkl")
         MultiplexFileHandler.record_log_file(export.get_output_log())
+        export_cif = ExportCif()
+        export_cif.set_output_names(output_name)
+        export_cif.set_composition(params.output.composition)
+        export_cif.run(expts, refls)
+        MultiplexFileHandler.record_data_file(f"{output_name}.cif")
+        MultiplexFileHandler.record_log_file(export_cif.get_output_log())
 
 
 class Scale:
