@@ -9,6 +9,7 @@ from typing import Optional
 import iotbx.phil
 from cctbx import sgtbx, uctbx
 from dials.array_family import flex
+from dials.util.image_grouping import parse_series_repeat_names
 from dxtbx.serialize import load
 
 
@@ -67,6 +68,7 @@ class ReductionParams:
     scaling_phil: Path | None = None
     grouping: Path | None = None
     dose_series_repeat: int | None = None
+    series_repeat_names: list[str] | None = None
     steps: list[str] = field(default_factory=lambda: ["scale", "merge"])
     reference_ksol: float = 0.35
     reference_bsol: float = 46.0
@@ -117,6 +119,15 @@ class ReductionParams:
                 raise FileNotFoundError(
                     errno.ENOENT, os.strerror(errno.ENOENT), os.fspath(grouping)
                 )
+        dose_series_repeat = params.dose_series_repeat
+        series_repeat_names = None
+        if params.series_repeat:
+            if dose_series_repeat:
+                raise ValueError(
+                    "Only one of dose_series_repeat and series_repeat can be specified"
+                )
+            series_repeat_names = parse_series_repeat_names(params.series_repeat)
+            dose_series_repeat = len(series_repeat_names)
         deltacchalf = False
         mean_i_over_sigma_threshold = None
         if params.filtering.method:
@@ -143,7 +154,8 @@ class ReductionParams:
             cosym_phil,
             scaling_phil,
             grouping,
-            params.dose_series_repeat,
+            dose_series_repeat,
+            series_repeat_names,
             params.workflow.steps,
             params.reference_model.k_sol,
             params.reference_model.b_sol,

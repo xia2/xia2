@@ -18,7 +18,7 @@ jobs:
 
     steps:
     - name: Label Conflicting Pull Requests
-      uses: eps1lon/actions-label-merge-conflict@1b1b1fcde06a9b3d089f3464c96417961dde1168
+      uses: eps1lon/actions-label-merge-conflict@0273be72a0bbd58fcd71d0d6c02c209b50d1e5e1   # v3.1.0
       with:
         dirtyLabel: 'PR: merge conflicts'
         repoToken: ${{ secrets.GITHUB_TOKEN }}
