@@ -258,7 +258,6 @@ def run(args=None):
         logger.info("Starting xia2.countrate")
         logger.info("=" * 60)
 
-        # Step 1: Import data
         run_dials_import(working_dir, params)
 
         experiments_file = working_dir / params.output.experiments
