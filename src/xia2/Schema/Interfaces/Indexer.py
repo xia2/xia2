@@ -641,9 +641,7 @@ class Indexer:
 
         self.index()
         experiment = self.get_indexer_experiment_list()[0]
-        return tuple(
-            beam_centre_raw_image(experiment.detector, experiment.beam)
-        )
+        return tuple(beam_centre_raw_image(experiment.detector, experiment.beam))
 
     def get_indexer_payload(self, this):
         """Attempt to get something from the indexer payload."""
