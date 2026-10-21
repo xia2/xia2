@@ -1,0 +1,1 @@
+The beam centre values reported to ISPyB (refinedXBeam/refinedYBeam in the XML and JSON output) were swapped, because ``get_indexer_beam_centre_raw_image`` reversed the raw-image (x, y) order before the ISPyB writers read it.
