@@ -214,8 +214,8 @@ class ISPyBXmlHandler:
 
                     beam = indxr.get_indexer_beam_centre_raw_image()
 
-                    fout.write("<refinedXBeam>%f</refinedXBeam>" % beam[0])
-                    fout.write("<refinedYBeam>%f</refinedYBeam>" % beam[1])
+                    fout.write("<refinedXBeam>%f</refinedXBeam>" % beam[1])
+                    fout.write("<refinedYBeam>%f</refinedYBeam>" % beam[0])
 
                     fout.write("</AutoProcIntegration>\n")
                     fout.write("</AutoProcIntegrationContainer>\n")
@@ -392,8 +392,8 @@ class ISPyBXmlHandler:
 
                     beam = indxr.get_indexer_beam_centre_raw_image()
 
-                    intgr_tmp["refinedXBeam"] = beam[0]
-                    intgr_tmp["refinedYBeam"] = beam[1]
+                    intgr_tmp["refinedXBeam"] = beam[1]
+                    intgr_tmp["refinedYBeam"] = beam[0]
 
                     tmp2.append(
                         {
