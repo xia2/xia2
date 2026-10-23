@@ -2,19 +2,8 @@
 
 
 {% extends "report_base.html" %}
-
-{% block css %}
-{{ super() }}
-<style>
-  .dendrogram-plot, .plot {
-    width: 100% !important;
-    height: auto !important;
-    float: none !important;
-  }
-</style>
-{% endblock %}
-
 {% block content %}
+
 
 <div class="container-fluid">
 
@@ -23,54 +12,59 @@
     </div>
 
     <ul class="nav nav-tabs">
-        <li class="active"><a data-toggle="tab" data-target="#cosym_coordinates_tab">Cosym coordinates</a></li>
-        <li><a data-toggle="tab" data-target="#reachability_tab">OPTICS reachability</a></li>
-        <li><a data-toggle="tab" data-target="#cc_cluster_tab">Correlation coefficient clustering</a></li>
-        <li><a data-toggle="tab" data-target="#cos_angle_cluster_tab">Cos angle clustering</a></li>
-        <li><a data-toggle="tab" data-target="#pca_tab">Principal component analysis</a></li>
+        <li class="active"><a data-toggle="tab" data-target="#coordinate_cluster_tab">Coordinate Clustering</a></li>
+        <li><a data-toggle="tab" data-target="#hierarchical_cluster_tab">Hierarchical Clustering</a></li>
         <li><a data-toggle="tab" data-target="#datasets_tab">Data sets</a></li>
         <li><a data-toggle="tab" data-target="#help_tab">Help</a></li>
     </ul>
 
     <div class="tab-content">
 
-        <div id="cosym_coordinates_tab" class="tab-pane in active">
+        <div id="coordinate_cluster_tab" class="tab-pane in active">
             <div class="container-fluid">
+                <h3>Coordinate Analysis</h3>
                 {{ macros.plotly_graph("cosym_coordinates_principal_components", cos_angle_cosym_graphs["cosym_coordinates_principal_components"]) }}
-            </div>
-        </div>
-
-        <div id="reachability_tab" class="tab-pane">
-            <div class="container-fluid">
                 {{ macros.plotly_graph("reachability", cos_angle_cosym_graphs["reachability"]) }}
             </div>
-        </div>
-
-        <div id="cc_cluster_tab" class="tab-pane">
             <div class="container-fluid">
-                {{ macros.plotly_graph("cc_cluster", cc_cluster_json, style="dendrogram-plot") }}
+                <div class="panel panel-default">
+                    <div class="panel-heading" data-toggle="collapse" data-target="#collapse_pca">
+                        <h4 class="panel-title">
+                            <a>Principal component analysis</a>
+                        </h4>
+                    </div>
+                    <div id="collapse_pca" class="panel-collapse collapse">
+                        <div class="panel-body">
+
+                            <div class="container-fluid">
+                                {{ macros.plotly_graph("pca_analysis", pca_plot, style="dendrogram-plot") }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
 
-        <div id="cos_angle_cluster_tab" class="tab-pane">
+        <div id="hierarchical_cluster_tab" class="tab-pane">
             <div class="container-fluid">
+                <h3>Correlation Clustering </h3>
+                {{ macros.plotly_graph("cc_cluster", cc_cluster_json, style="dendrogram-plot") }}
+            </div>
+            <div class="container-fluid">
+                <h3>Cosine-Angle Clustering</h3>
                 {{ macros.plotly_graph("cos_angle_cluster", cos_angle_cluster_json, style="dendrogram-plot") }}
             </div>
         </div>
 
-        <div id="pca_tab" class="tab-pane">
-            <div class="panel-group">
-                <div class="container-fluid">
-                    {{ macros.plotly_graph("pca_analysis", pca_plot, style="dendrogram-plot") }}
-                </div>
-            </div>
-        </div>
 
         <div id="help_tab" class="tab-pane">
             <div class="container-fluid" style="max-width: 900px; padding-top: 20px; margin-left: 0;">
                 <h2>Help</h2>
 
-                <h3>Cosym coordinates</h3>
+                <h3>Coordinate clustering</h3>
+                <p>Clustering analysis based on spatial density analysis of the cosym coordinates.</p>
+
+                <h4>Cosym coordinates</h4>
                 <p>
                     This graph shows the result of the coordinate method of clustering. 
                 </p>
@@ -93,7 +87,7 @@
                     Highlight a subsection using the box or lasso selection tools to produce a xia2.multiplex command to merge your selection. 
                 </p>
 
-                <h3>OPTICS reachability</h3>
+                <h4>OPTICS reachability</h4>
                 <p>
                     This graph shows the density structure of the cosym coordinates.
                 </p>
@@ -106,28 +100,7 @@
                 <p>
                     Highlight a subsection using the box or lasso selection tools to produce a xia2.multiplex command to merge your selection. 
                 </p>
-
-                <h3>Correlation coefficient clustering</h3>
-                <p>
-                    This graph shows the result of hierarchical clustering based on pairwise correlation coefficients between datasets.
-                    The heatmap shows the correlation coefficients, while the dendrograms show the hierarchical clustering structure.
-                    Datasets which connect higher up in the dendrogram are more different to each other. 
-                </p>
-                <p>
-                    Click on a branch in the dendrogram to produce a xia2.multiplex command to merge that cluster. 
-                </p>
-
-                <h3>Cos angle clustering</h3>
-                <p>
-                    This graph shows the result of hierarchical clustering based on pairwise cosine angles between datasets in the cosym coordinate plot.
-                    The heatmap shows the cosine angles, while the dendrograms show the hierarchical clustering structure.
-                    Datasets which connect higher up in the dendrogram are more systematically different to each other.
-                </p>
-                <p>
-                    Click on a branch in the dendrogram to produce a xia2.multiplex command to merge that cluster.
-                </p>
-
-                <h3>Principal component analysis</h3>
+                <h4>Principal component analysis</h4>
                 <p>
                     This matrix-style graph is an extension of the cosym coordinate plot to show between 2 and 6 dimensions. 
                     If more than 6 dimensions are present, only the first 6 are shown. 
@@ -138,6 +111,30 @@
                 <p>
                     Highlight a subsection using the box or lasso selection tools to produce a xia2.multiplex command to merge your selection.
                 </p>
+
+                <h3>Hierarchical clustering</h3>
+                <p>Arrangement of datasets by similary in a hierarchical manner using either the correlation coefficients or the cosine angles from the cosym coordinates.</p>
+
+                <h4>Correlation coefficient clustering</h4>
+                <p>
+                    This graph shows the result of hierarchical clustering based on pairwise correlation coefficients between datasets.
+                    The heatmap shows the correlation coefficients, while the dendrograms show the hierarchical clustering structure.
+                    Datasets which connect higher up in the dendrogram are more different to each other. 
+                </p>
+                <p>
+                    Click on a branch in the dendrogram to produce a xia2.multiplex command to merge that cluster. 
+                </p>
+
+                <h4>Cos angle clustering</h4>
+                <p>
+                    This graph shows the result of hierarchical clustering based on pairwise cosine angles between datasets in the cosym coordinate plot.
+                    The heatmap shows the cosine angles, while the dendrograms show the hierarchical clustering structure.
+                    Datasets which connect higher up in the dendrogram are more systematically different to each other.
+                </p>
+                <p>
+                    Click on a branch in the dendrogram to produce a xia2.multiplex command to merge that cluster.
+                </p>
+
             </div>
         </div>
 
@@ -152,55 +149,6 @@
     </div>
 
     {% include 'multiplex_cluster_selection.html' %}
-
-    <script>
-    (function() {
-        function resizePlot(div, heightRatio) {
-            var tabBar = document.querySelector('.nav-tabs');
-            var pageHeader = document.querySelector('.page-header');
-            var reservedHeight = (tabBar ? tabBar.offsetHeight : 40)
-                               + (pageHeader ? pageHeader.offsetHeight : 60)
-                               + 60;
-            var availableWidth = div.parentElement.clientWidth;
-            var availableHeight = window.innerHeight - reservedHeight;
-            var w = Math.min(availableWidth, availableHeight / heightRatio);
-            var h = Math.round(w * heightRatio);
-            if (w > 0) {
-                var titleFontSize = Math.max(12, Math.round(w / 35));
-                var legendFontSize = Math.max(10, Math.round(w / 50));
-                var markerSize = Math.max(3, Math.round(w / 110));
-                Plotly.relayout(div, {
-                    width: w,
-                    height: h,
-                    autosize: false,
-                    'title.font.size': titleFontSize,
-                    'legend.font.size': legendFontSize
-                });
-                Plotly.restyle(div, {'marker.size': markerSize});
-            }
-        }
-
-        var squareDivIds = ['cos_angle_cluster', 'cc_cluster', 'pca_analysis',
-                            'cosym_coordinates_principal_components'];
-        var wideDivIds = ['reachability'];
-
-        function resizeAllPlots() {
-            squareDivIds.forEach(function(id) {
-                var div = document.getElementById(id);
-                if (div) resizePlot(div, 1);
-            });
-            wideDivIds.forEach(function(id) {
-                var div = document.getElementById(id);
-                if (div) resizePlot(div, 0.75);
-            });
-        }
-
-        setTimeout(resizeAllPlots, 0);
-        window.addEventListener('resize', resizeAllPlots);
-        $('a[data-toggle="tab"]').on('shown.bs.tab', resizeAllPlots);
-
-    })();
-    </script>
 
 </div>
 
