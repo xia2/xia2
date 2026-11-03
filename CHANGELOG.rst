@@ -1,3 +1,29 @@
+xia2 3.31.0 (2026-11-03)
+========================
+
+Features
+--------
+
+- ``xia2.ssx``/``xia2.ssx_reduce``: Add a ``series_repeat=`` option, which generalises ``dose_series_repeat=``. It can be given as an integer, the size of the repeat, in which case the groups are named ``group_0``, ``group_1``, ... (matching ``dials.split_still_data``), or as a list of names for the groups, e.g. ``series_repeat=first,second,last``, in which case the number of names defines the size of the repeat and the names are used for the merged output files. A name may be repeated, in which case each occurrence is numbered in order, i.e. ``series_repeat=dose,dose,apo`` gives ``dose_1``, ``dose_2`` and ``apo``. (`#944 <https://github.com/xia2/xia2/issues/944>`_)
+- ``xia2.multiplex``: Additionally output .CIF files when ``small_molecule=True``. (`#955 <https://github.com/xia2/xia2/issues/955>`_)
+
+
+Bugfixes
+--------
+
+- ``xia2.ssx``/``xia2.ssx_reduce``: Fix possible truncation of the names recorded for the merged output files, caused by using ``str.rstrip`` rather than ``str.removesuffix`` to strip the file extension. (`#945 <https://github.com/xia2/xia2/issues/945>`_)
+- ``xia2.ssx``: Don't crash when merging a group for which merging statistics could not be calculated (e.g. a single crystal). (`#946 <https://github.com/xia2/xia2/issues/946>`_)
+- ``xia2.multiplex_filtering``: Make sure small molecule files are output when these options are set in the parent multiplex job. (`#950 <https://github.com/xia2/xia2/issues/950>`_)
+- ``xia2.multiplex``: Exit cleanly with more useful error message if cosym exits cleanly but doesn't produce the required files. (`#956 <https://github.com/xia2/xia2/issues/956>`_)
+- ``ISPyB output``: Report beam centre x and y values the correct way round in output files. (`#960 <https://github.com/xia2/xia2/issues/960>`_)
+
+
+Misc
+----
+
+- `#951 <https://github.com/xia2/xia2/issues/951>`_, `#953 <https://github.com/xia2/xia2/issues/953>`_, `#957 <https://github.com/xia2/xia2/issues/957>`_, `#961 <https://github.com/xia2/xia2/issues/961>`_
+
+
 xia2 3.30.0 (2026-08-03)
 ========================
 

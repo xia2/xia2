@@ -1,1 +1,0 @@
-``xia2.multiplex``: Additionally output .CIF files when small_molecule=True.
