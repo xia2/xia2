@@ -1,0 +1,1 @@
+``xia2.ssx`` and ``xia2.ssx_reduce`` now exit with a non-zero return code when processing fails or finds no usable data, instead of reporting success.
