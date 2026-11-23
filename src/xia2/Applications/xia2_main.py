@@ -44,7 +44,10 @@ def check_environment():
     for k in ccp4_keys:
         v = os.getenv(k)
         if not v:
-            raise RuntimeError("%s not defined - is CCP4 set up?" % k)
+            # CCP4 is only required for some pipelines, see
+            # xia2.Handlers.CommandLine
+            logger.info(f"{k} => not set")
+            continue
         if not v == v.strip():
             raise RuntimeError('spaces around "%s"' % v)
         logger.info(f"{k} => {v}")

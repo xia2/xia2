@@ -1,0 +1,1 @@
+``pipeline=dials`` no longer requires CCP4: FreeR flag generation/copying and merging of multi-wavelength data now use cctbx instead of freerflag and cad. The inter-wavelength radiation damage analysis (scaleit) is skipped if CCP4 is not available.

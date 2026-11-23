@@ -9,7 +9,9 @@ import xia2.Test.regression
 
 
 @pytest.mark.parametrize("pipeline", ["dials", "3dii"])
-def test_xia2(pipeline, regression_test, dials_data, tmp_path, ccp4):
+def test_xia2(pipeline, regression_test, dials_data, tmp_path, request):
+    # the DIALS pipeline does not require CCP4
+    ccp4 = request.getfixturevalue("ccp4") if pipeline != "dials" else None
     master_h5 = dials_data("vmxi_thaumatin") / "image_15799_master.h5:1:20"
     command_line = [
         shutil.which("xia2"),

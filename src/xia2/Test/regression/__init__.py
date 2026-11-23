@@ -31,7 +31,9 @@ def check_result(
     expected_data_files=default_data_files,
     expected_space_group=None,
 ):
-    ccp4 = ccp4["version"]
+    # If CCP4 is not used, compare against the most recent expected result
+    ccp4_used = ccp4 is not None
+    ccp4 = ccp4["version"] if ccp4_used else (99, 0, 0)
     xds = xds["version"] if xds else 0
 
     error_file = tmp_path / "xia2-error.txt"
@@ -132,7 +134,10 @@ def check_result(
         expected_summary_lines = fh.readlines()
 
     print()
-    print("CCP4 version is %d.%d.%d" % (ccp4[0], ccp4[1], ccp4[2]))
+    if ccp4_used:
+        print("CCP4 version is %d.%d.%d" % (ccp4[0], ccp4[1], ccp4[2]))
+    else:
+        print("CCP4 not used")
     if xds:
         print("XDS revision is %d" % xds)
     print("Platform is %s" % system)
