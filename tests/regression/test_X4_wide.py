@@ -97,7 +97,7 @@ def test_dials_aimless_with_dials_pipeline(regression_test, dials_data, tmp_path
     assert success, issues
 
 
-def test_dials(regression_test, dials_data, tmp_path, ccp4):
+def test_dials(regression_test, dials_data, tmp_path):
     command_line = [
         shutil.which("xia2"),
         "pipeline=dials",
@@ -141,7 +141,7 @@ def test_dials(regression_test, dials_data, tmp_path, ccp4):
         "X4_wide.dials",
         result,
         tmp_path,
-        ccp4,
+        None,
         expected_data_files=[
             "foo_bar_scaled.mtz",
             "foo_bar_scaled_unmerged.mtz",
@@ -170,7 +170,7 @@ def test_dials_aimless_split(regression_test, dials_data, tmp_path, ccp4):
     assert success, issues
 
 
-def test_dials_split(regression_test, dials_data, tmp_path, ccp4):
+def test_dials_split(regression_test, dials_data, tmp_path):
     command_line = [
         shutil.which("xia2"),
         "pipeline=dials",
@@ -185,7 +185,7 @@ def test_dials_split(regression_test, dials_data, tmp_path, ccp4):
         "X4_wide_split.dials",
         result,
         tmp_path,
-        ccp4,
+        None,
         expected_data_files=[
             "AUTOMATIC_DEFAULT_scaled.mtz",
             "AUTOMATIC_DEFAULT_scaled_unmerged.mtz",

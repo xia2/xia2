@@ -34,7 +34,7 @@ def test_dials_aimless(regression_test, dials_data, tmp_path, ccp4):
     assert success, issues
 
 
-def test_dials(regression_test, dials_data, tmp_path, ccp4):
+def test_dials(regression_test, dials_data, tmp_path):
     command_line = [
         shutil.which("xia2"),
         "pipeline=dials",
@@ -49,7 +49,7 @@ def test_dials(regression_test, dials_data, tmp_path, ccp4):
         "small_molecule.dials",
         result,
         tmp_path,
-        ccp4,
+        None,
         expected_data_files=expected_data_files,
     )
     assert success, issues

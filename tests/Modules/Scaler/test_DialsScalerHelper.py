@@ -17,10 +17,9 @@ random.seed(42)
 
 
 @pytest.fixture
-def helper_directory(ccp4, tmpdir):
+def helper_directory(tmpdir):
     """Initialise a DialsScalerHelper"""
 
-    # import kept here as the import depends on CCP4 being present
     from xia2.Modules.Scaler.DialsScaler import DialsScalerHelper
 
     helper = DialsScalerHelper()
@@ -347,7 +346,7 @@ test_data = [
     "refiner_lattices, possible_lattices, expected_output", test_data
 )
 def test_decide_correct_lattice_using_refiner(
-    ccp4, refiner_lattices, possible_lattices, expected_output
+    refiner_lattices, possible_lattices, expected_output
 ):
     refiner = simple_refiner(refiner_lattices)
 

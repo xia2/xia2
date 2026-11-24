@@ -14,7 +14,6 @@ import math
 import os
 
 from xia2.Handlers.Syminfo import get_num_symops, spacegroup_name_to_number
-from xia2.Wrappers.CCP4.Matthews_coef import Matthews_coef
 
 logger = logging.getLogger("xia2.lib.NMolLib")
 
@@ -194,16 +193,16 @@ def compute_solvent(
     nmol,
     sequence_length,
 ):
-    """Compute (using matthews_coef) the solvent fraction [0-1] of the
-    crystal."""
+    """Compute the solvent fraction [0-1] of the crystal from the Matthews
+    coefficient, using the same constants as CCP4 matthews_coef: an average
+    residue mass of 112.5 Da (5 C, 1.35 N, 1.5 O, 8 H, 0.05 S), a protein
+    partial specific volume of 0.74 cm^3/g (i.e. density 1/0.74 g/cm^3) and
+    0.602 for Avogadro's number in units of Da, A^3 and g/cm^3."""
 
-    m = Matthews_coef()
-
-    m.set_spacegroup(spacegroup)
-    m.set_cell((cell_a, cell_b, cell_c, cell_alpha, cell_beta, cell_gamma))
-    m.set_nmol(nmol)
-    m.set_nres(sequence_length)
-
-    m.compute_solvent()
-
-    return m.get_solvent()
+    volume = unit_cell_volume(cell_a, cell_b, cell_c, cell_alpha, cell_beta, cell_gamma)
+    residue_mass = 12.0 * 5 + 14.0 * 1.35 + 16.0 * 1.5 + 1.0 * 8 + 32.0 * 0.05
+    mass = (
+        residue_mass * sequence_length * nmol * spacegroup_number_operators(spacegroup)
+    )
+    matthews_coefficient = volume / mass
+    return 1.0 - (0.74 / 0.602) / matthews_coefficient

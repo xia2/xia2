@@ -6,6 +6,7 @@ from __future__ import annotations
 import logging
 import math
 import os
+import shutil
 import time
 from collections import OrderedDict
 
@@ -619,23 +620,8 @@ class CommonScaler(Scaler):
 
     def _scale_finish_chunk_4_mad_mangling(self):
         if len(self._scalr_scaled_refl_files) > 1:
-            reflection_files = {}
-
-            for wavelength in self._scalr_scaled_refl_files:
-                cad = self._factory.Cad()
-                cad.add_hklin(self._scalr_scaled_refl_files[wavelength])
-                cad.set_hklout(
-                    os.path.join(
-                        self.get_working_directory(), "cad-tmp-%s.mtz" % wavelength
-                    )
-                )
-                cad.set_new_suffix(wavelength)
-                cad.update()
-
-                reflection_files[wavelength] = cad.get_hklout()
-                FileHandler.record_temporary_file(cad.get_hklout())
-
-            # now merge the reflection files together...
+            # merge the reflection files together, with column names
+            # suffixed by the wavelength name
             hklout = os.path.join(
                 self.get_working_directory(),
                 f"{self._scalr_pname}_{self._scalr_xname}_merged.mtz",
@@ -644,11 +630,7 @@ class CommonScaler(Scaler):
 
             logger.debug("Merging all data sets to %s", hklout)
 
-            cad = self._factory.Cad()
-            for rf in reflection_files.values():
-                cad.add_hklin(rf)
-            cad.set_hklout(hklout)
-            cad.merge()
+            MtzUtils.merge_wavelength_files(self._scalr_scaled_refl_files, hklout)
 
             self._scalr_scaled_reflection_files["mtz_merged"] = hklout
 
@@ -753,83 +735,28 @@ class CommonScaler(Scaler):
             FileHandler.record_data_file("%s.hkl" % prefixpath)
 
     def _scale_finish_chunk_6_add_free_r(self):
-        hklout = os.path.join(
-            self.get_working_directory(),
-            f"{self._scalr_pname}_{self._scalr_xname}_free_temp.mtz",
-        )
-
-        FileHandler.record_temporary_file(hklout)
-
-        scale_params = PhilIndex.params.xia2.settings.scale
-        if self.get_scaler_freer_file():
-            # e.g. via .xinfo file
-
-            freein = self.get_scaler_freer_file()
-
-            logger.debug("Copying FreeR_flag from %s", freein)
-
-            c = self._factory.Cad()
-            c.set_freein(freein)
-            c.add_hklin(self._scalr_scaled_reflection_files["mtz_merged"])
-            c.set_hklout(hklout)
-            c.copyfree()
-
-        elif scale_params.freer_file is not None:
-            # e.g. via -freer_file command line argument
-
-            freein = scale_params.freer_file
-
-            logger.debug("Copying FreeR_flag from %s", freein)
-
-            c = self._factory.Cad()
-            c.set_freein(freein)
-            c.add_hklin(self._scalr_scaled_reflection_files["mtz_merged"])
-            c.set_hklout(hklout)
-            c.copyfree()
-
-        else:
-            if scale_params.free_total:
-                ntot = scale_params.free_total
-
-                # need to get a fraction, so...
-                nref = MtzUtils.nref_from_mtz(
-                    self._scalr_scaled_reflection_files["mtz_merged"]
-                )
-                free_fraction = float(ntot) / float(nref)
-            else:
-                free_fraction = scale_params.free_fraction
-
-            f = self._factory.Freerflag()
-            f.set_free_fraction(free_fraction)
-            f.set_hklin(self._scalr_scaled_reflection_files["mtz_merged"])
-            f.set_hklout(hklout)
-            f.add_free_flag()
-
-        # then check that this FreeR set is complete
-
-        hklin = hklout
+        hklin = self._scalr_scaled_reflection_files["mtz_merged"]
         hklout = os.path.join(
             self.get_working_directory(),
             f"{self._scalr_pname}_{self._scalr_xname}_free.mtz",
         )
 
-        # default fraction of 0.05
-        free_fraction = 0.05
+        scale_params = PhilIndex.params.xia2.settings.scale
 
-        if scale_params.free_fraction:
-            free_fraction = scale_params.free_fraction
-        elif scale_params.free_total:
-            ntot = scale_params.free_total()
+        # FreeR file given e.g. via .xinfo file or -freer_file command line
+        freein = self.get_scaler_freer_file() or scale_params.freer_file
 
-            # need to get a fraction, so...
-            nref = MtzUtils.nref_from_mtz(hklin)
-            free_fraction = float(ntot) / float(nref)
-
-        f = self._factory.Freerflag()
-        f.set_free_fraction(free_fraction)
-        f.set_hklin(hklin)
-        f.set_hklout(hklout)
-        f.complete_free_flag()
+        if freein:
+            logger.debug("Copying FreeR_flag from %s", freein)
+            MtzUtils.copy_free_flags(freein, hklin, hklout)
+        else:
+            if scale_params.free_total:
+                # need to get a fraction, so...
+                nref = MtzUtils.nref_from_mtz(hklin)
+                free_fraction = float(scale_params.free_total) / float(nref)
+            else:
+                free_fraction = scale_params.free_fraction
+            MtzUtils.add_free_flags(hklin, hklout, free_fraction)
 
         # remove 'mtz_merged' from the dictionary - this is made
         # redundant by the merged free...
@@ -842,6 +769,13 @@ class CommonScaler(Scaler):
         FileHandler.record_data_file(hklout)
 
     def _scale_finish_chunk_8_raddam(self):
+        if not shutil.which(os.path.join(os.environ.get("CBIN", ""), "scaleit")):
+            logger.debug(
+                "scaleit not available - skipping inter-wavelength radiation "
+                "damage analysis"
+            )
+            return
+
         crd = CCP4InterRadiationDamageDetector()
 
         crd.set_working_directory(self.get_working_directory())

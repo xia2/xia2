@@ -20,7 +20,7 @@ import pytest
     "multi_sweep_type",
     ("multi_sweep_indexing", "multi_sweep_refinement", "small_molecule"),
 )
-def test_multiple_sweeps(multi_sweep_type, ccp4, dials_data, tmp_path):
+def test_multiple_sweeps(multi_sweep_type, dials_data, tmp_path):
     """
     Run xia2 with various different multiple-sweep options.
 

@@ -615,6 +615,14 @@ class _CommandLine:
                     )
                 )
 
+        # Only the DIALS scaler can run without CCP4
+        scaler = PhilIndex.get_python_object().xia2.settings.scaler
+        if scaler in ("ccp4a", "xdsa") and not os.environ.get("CCP4"):
+            raise RuntimeError(
+                f"scaler={scaler} (pipeline={settings.pipeline}) requires CCP4, "
+                "but CCP4 is not set up. Set up CCP4, or use pipeline=dials"
+            )
+
 
 CommandLine = _CommandLine()
 CommandLine.setup()
