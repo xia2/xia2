@@ -373,9 +373,10 @@ def test_stepwise_run_without_reference(dials_data, tmp_path):
     check_output(tmp_path, find_spots=True)
 
     # Now rerun, check nothing further done if forgetting to specify geometry
+    # Should exit with returncode 1.
     args[-1] = "steps=index"
     result = subprocess.run(args, cwd=tmp_path, capture_output=True)
-    assert not result.returncode and not result.stderr
+    assert result.returncode == 1
     check_output(tmp_path, find_spots=True)
 
     # Now specify geometry
