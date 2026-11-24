@@ -68,7 +68,7 @@ def run(args=sys.argv[1:]):
                 args[args.index(item)] = f"input.reflections = {item}"
             else:
                 xia2_logger.error(f"Unhandled argument: {item}")
-                sys.exit(0)
+                sys.exit(1)
         params, _ = parser.parse_args(args=args, show_diff_phil=False)
 
     diff_phil = parser.diff_phil.as_str()
@@ -81,10 +81,10 @@ def run(args=sys.argv[1:]):
             run_xia2_ssx_reduce(cwd, params)
     except ValueError as e:
         xia2_logger.error(f"Error: {e}")
-        sys.exit(0)
+        sys.exit(1)
     except FileNotFoundError as e:
         xia2_logger.error(e)
-        sys.exit(0)
+        sys.exit(1)
     except Exception as e:
         with (cwd / "xia2-error.txt").open(mode="w") as fh:
             traceback.print_exc(file=fh)
